@@ -5,6 +5,8 @@ exporting an async `search()` returning normalized rows; a FastAPI bridge
 (`serve.py`) wraps the plugins so the Next.js cockpit at `/api/search` can
 fan out to them via HTTPS.
 
+Deploys to Fly.io automatically on push (see `.github/workflows/deploy-workers.yml`).
+
 ## Layout
 
 ```
