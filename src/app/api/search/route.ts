@@ -3,6 +3,7 @@ import {
   groupedMockResults,
   MOCK_PROGRAMS_AT_LAUNCH,
 } from "@/lib/mockSearch";
+import { itineraryHash, operatingFlightKey } from "@/lib/itineraryHash";
 import type {
   SearchQuery,
   SearchResultRow,
@@ -23,35 +24,83 @@ function send(
 }
 
 /**
- * Programs served by the Python worker bridge (see python-workers/).
- * For these the route does a real HTTP call to ${PYTHON_WORKER_URL}/search
- * instead of emitting from the mock dataset; if the env var is unset or the
- * call fails, the program falls back to the mock so the cockpit never goes
- * blank for it. Day-1: only Virgin Atlantic, hard-coded JFK→LHR response.
+ * Hard-coded VS Flying Club result for JFK→LHR. Day-1 proof that the
+ * cockpit can render a "real-scrape-shaped" row alongside the mock
+ * dataset before the actual Patchright scraper lands in session 5+.
+ *
+ * The Python plugin equivalent lives at `python-workers/vs/search.py` —
+ * keep them in sync until session 5 replaces this with real scrape
+ * output. Returns null for any non-JFK→LHR query so the cockpit falls
+ * back to the mock VS row (JFK→NRT).
+ *
+ * Schedule modeled on VS3 (B789): JFK 18:30 EDT → LHR 06:15 BST next
+ * day (22:30Z → 05:15Z+1, ~6h45m). Cabin prices reflect the real VS
+ * one-way chart (Y 10k + $420 YQ, J 47.5k + $720 YQ).
  */
-const WORKER_PROGRAMS = new Set<string>(["VS_FLYING_CLUB"]);
+function vsHardcodedRow(query: SearchQuery): SearchResultRow | null {
+  if (query.origin !== "JFK" || query.dest !== "LHR") return null;
 
-async function fetchWorkerResults(
-  programId: string,
-  query: SearchQuery,
-): Promise<SearchResultRow[]> {
-  const base = process.env.PYTHON_WORKER_URL;
-  if (!base) throw new Error("PYTHON_WORKER_URL unset");
-  const url = new URL("/search", base);
-  url.searchParams.set("program", programId);
-  url.searchParams.set("origin", query.origin);
-  url.searchParams.set("dest", query.dest);
-  url.searchParams.set("date", query.departDate);
-  url.searchParams.set("pax", String(query.pax));
-  url.searchParams.set("minCabin", query.minCabin);
-  const res = await fetch(url.toString(), {
-    signal: AbortSignal.timeout(15_000),
+  const depart = new Date(`${query.departDate}T22:30:00Z`);
+  const arrive = new Date(depart.getTime() + (6 * 60 + 45) * 60_000);
+
+  const segment = {
+    segmentOrder: 0,
+    operatingAirlineIata: "VS",
+    marketingAirlineIata: "VS",
+    flightNumber: "3",
+    originIata: "JFK",
+    destIata: "LHR",
+    departAt: depart.toISOString(),
+    arriveAt: arrive.toISOString(),
+    aircraftIcao: "B789",
+    segmentCabin: "J" as const,
+    fareClass: "I",
+  };
+
+  const hash = itineraryHash({
+    programId: "VS_FLYING_CLUB",
+    pax: query.pax,
+    departDate: query.departDate,
+    segments: [segment],
   });
-  if (!res.ok) {
-    throw new Error(`Worker ${programId} returned ${res.status}`);
-  }
-  const body = (await res.json()) as { rows?: SearchResultRow[] };
-  return body.rows ?? [];
+
+  const now = new Date().toISOString();
+
+  return {
+    id: `VS_FLYING_CLUB_${hash.slice(0, 12)}`,
+    itineraryHash: hash,
+    programId: "VS_FLYING_CLUB",
+    programName: "Virgin Atlantic",
+    originIata: "JFK",
+    destIata: "LHR",
+    departDate: query.departDate,
+    arriveDate: arrive.toISOString().slice(0, 10),
+    totalDurationMin: 6 * 60 + 45,
+    numSegments: 1,
+    segments: [segment],
+    cabinPrices: {
+      Y: {
+        cabin: "Y",
+        seatsRemaining: 9,
+        milesPerPax: 10_000,
+        surchargeUsdPerPax: 420,
+        taxesUsdPerPax: 51,
+        cppMicroAtObs: null,
+      },
+      J: {
+        cabin: "J",
+        seatsRemaining: 4,
+        milesPerPax: 47_500,
+        surchargeUsdPerPax: 720,
+        taxesUsdPerPax: 51,
+        cppMicroAtObs: null,
+      },
+    },
+    confidenceScore: 72,
+    observedAt: now,
+    lastSeenAt: now,
+    operatingFlightKey: operatingFlightKey("VS", "3", segment.departAt),
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -69,6 +118,7 @@ export async function GET(req: NextRequest) {
 
   const grouped = groupedMockResults(query);
   const programs = MOCK_PROGRAMS_AT_LAUNCH.filter((p) => grouped.has(p));
+  const vsReal = vsHardcodedRow(query);
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -101,34 +151,20 @@ export async function GET(req: NextRequest) {
       };
 
       const tasks = MOCK_PROGRAMS_AT_LAUNCH.map(async (programId) => {
-        // Real worker path — Python bridge handles the scrape (hard-coded
-        // for day-1) and returns rows in SearchResultRow shape. Fall back
-        // to mock on missing env var or any worker error so the cockpit
-        // stays populated even if the worker is down.
-        if (WORKER_PROGRAMS.has(programId) && process.env.PYTHON_WORKER_URL) {
-          try {
-            const rows = await fetchWorkerResults(programId, query);
-            if (rows.length > 0) {
-              send(controller, { type: "partial", programId, rows });
-            }
-            send(controller, {
-              type: "program_done",
-              programId,
-              status: rows.length > 0 ? "success" : "partial",
-            });
-            return;
-          } catch (err) {
-            console.error(`Worker call for ${programId} failed:`, err);
-            send(controller, {
-              type: "program_done",
-              programId,
-              status: "failed",
-            });
-            return;
-          }
+        await sleep(latencyMs[programId] ?? 3000);
+
+        // VS gets the hard-coded "real-shape" row when JFK→LHR is searched;
+        // otherwise falls through to the mock dataset like every other program.
+        if (programId === "VS_FLYING_CLUB" && vsReal) {
+          send(controller, { type: "partial", programId, rows: [vsReal] });
+          send(controller, {
+            type: "program_done",
+            programId,
+            status: "success",
+          });
+          return;
         }
 
-        await sleep(latencyMs[programId] ?? 3000);
         const rows = grouped.get(programId);
         if (rows && rows.length > 0) {
           send(controller, { type: "partial", programId, rows });
@@ -141,16 +177,15 @@ export async function GET(req: NextRequest) {
       });
 
       // Shadow-confirm upgrade waves — simulate Temporal saga results landing
-      // 3-5s after each scrape, bumping confidence for top results. Skip the
-      // worker-backed programs: their rows aren't in the mock map, so the
-      // simulated confidence bump would fire against an unknown resultId.
+      // 3-5s after each scrape, bumping confidence for top results.
       const shadowTask = (async () => {
         for (const programId of programs) {
-          if (WORKER_PROGRAMS.has(programId)) continue;
+          // Skip VS when we shipped the inline hard-coded row — the simulated
+          // confidence bump would fire against an unknown resultId.
+          if (programId === "VS_FLYING_CLUB" && vsReal) continue;
           await sleep((latencyMs[programId] ?? 3000) + 3500);
           const rows = grouped.get(programId);
           if (!rows) continue;
-          // bump confidence on the top row of each program
           const top = rows[0];
           if (top && top.confidenceScore < 90) {
             const newScore = Math.min(96, top.confidenceScore + 12);
@@ -166,19 +201,19 @@ export async function GET(req: NextRequest) {
 
       await Promise.all([...tasks, shadowTask]);
 
-      const totalRows = [...grouped.values()].reduce(
+      const mockRows = [...grouped.values()].reduce(
         (acc, list) => acc + list.length,
         0,
       );
       send(controller, {
         type: "complete",
-        totalRows,
+        totalRows: mockRows + (vsReal ? 1 : 0),
         durationMs: Date.now() - start,
       });
       controller.close();
     },
     cancel() {
-      // Client disconnected — nothing to clean up for mock.
+      // Client disconnected — nothing to clean up.
     },
   });
 

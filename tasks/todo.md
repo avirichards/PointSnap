@@ -148,22 +148,30 @@ Goal: prove the worker → DB → SSE → cockpit pipeline with a hard-coded VS 
 - [x] **Commit 3 — DB writeback.** `common/hash.py` Python port verified bit-for-bit equal to JS canonical hash. `common/db.py` writes search_results / result_segments / result_cabin_prices via psycopg with ON CONFLICT idempotency. Skipped when `PYTHONWORKERS_SKIP_DB=1` (or no DATABASE_URL).
 - [x] **Commit 4 — HTTP bridge.** `serve.py` FastAPI app: `GET /search?program=…&origin=…&dest=…&date=…` runs the plugin, persists, returns camelCase SearchResultRow JSON ready for SSE forwarding. 11/11 pytest green.
 - [x] **Commit 5 — Route wiring.** `src/app/api/search/route.ts` calls `${PYTHON_WORKER_URL}/search` for VS when env var is set; mock fallback on missing var or error; shadow-confirm skips worker-backed programs. typecheck + build + 15/15 vitest green. Smoke-tested locally end-to-end (uvicorn + next dev).
-- [ ] **Deploy worker to Fly.io + flip Vercel env var + verify on Vercel preview.** Blocked by sandbox network policy. Auth itself works (whoami / app create / org list all succeed across 3 token attempts: general PAT, regenerated PAT, app-scoped deploy token from /apps/pointsnap-workers/tokens). The build step fails with `x509: certificate signed by unknown authority` on the gRPC connection to Fly's builder VM — the container's egress filter is breaking TLS handshakes to non-fly.io hostnames the flyctl uses internally. Defer to next session.
+- [ ] **Deploy worker to Fly.io + flip Vercel env var + verify on Vercel preview.** **Deferred to session 5+** (when real Patchright scraping needs a long-running host). For day-1, the hard-coded VS response now lives inline in `src/app/api/search/route.ts` — same data, no Python middleman, no Fly dependency. The `python-workers/` code stays in the repo as the session-5 template.
 
-### Status at end of session 4
-- 5 commits pushed to `origin/claude/vs-scraper-day1-VlteK` (fast-forwarded from main first). Vercel auto-builds the preview; without `PYTHON_WORKER_URL` set, VS shows mock data — cockpit remains fully populated, no regression.
-- `python-workers/` code is complete and tested (11/11 pytest green: 4 hash parity + 4 bridge + 3 plugin).
-- Fly.io app `pointsnap-workers` exists with no machines yet (see "Actions required: Your app hasn't been deployed yet" screenshot in transcript). **Revoke the deploy tokens pasted into chat** from https://fly.io/dashboard/personal/tokens once session ends — they're in plain transcript.
-- Stale-branch deletion (claude/copy-claude-config-L2lrg, claude/flight-points-platform-AP3St, -24G73) still pending: harness git RPC returns 403 on `git push --delete`, no `delete_branch` MCP tool available. Delete via GitHub UI when convenient.
+### Status at end of session 4 (post-cleanup, Supabase live, Fly deferred)
+- 10 commits pushed to `origin/claude/vs-scraper-day1-VlteK` (DB migration, UI pages, inline VS, Fly removal).
+- **Database**: migrated Neon → Supabase. Project `cgoyetahoktqupkcvrli`, region us-east-1. 39 tables + 6 partitions + 108 indexes + 1 extension + seeds (4 alliances, 39 airlines, 132 airports, 40 aircraft, 13 programs, 7 currencies, 48 ratios, 6 bonuses, 40 valuations, 20 sweet spots).
+- **JS driver**: postgres-js + drizzle-orm/postgres-js (replaces neon-http). Works against both Neon (legacy) and Supabase; the cockpit picks up the env var.
+- **Cockpit**: `/api/search` now ships VS_FLYING_CLUB JFK→LHR data inline (Y at 10k+$420, J at 47.5k+$720, VS3 B789 segment). Other 12 programs continue from mock dataset. Real Patchright scrape replaces the inline hardcode in session 5+.
+- **New UI**: `/wallet` (lists 7 transferable currencies from DB), `/admin` (audit log feed), `/sign-in`, `/sign-up` (Clerk-detect placeholder forms). Header nav enabled for all.
+- **Fly.io**: app + tokens + workflow + secret all deleted in cleanup. python-workers/ code stays in the repo for session 5 redeployment.
+- **Connectors saved** (active in next session): Supabase MCP + Vercel MCP.
+- **Vercel env var**: user updated `DATABASE_URL` to the Supabase connection string and redeployed.
 
 ### Next-session pickup order
-1. **Deploy worker outside this sandbox.** Easiest path: from a laptop, run `cd python-workers && flyctl auth login` (browser auth, one-time), then `flyctl deploy`. Same fly.toml + Dockerfile already in repo. Should take <5 min once flyctl is authed. If Fly stays painful, Render.com is the fallback — same Dockerfile + a ~20-line render.yaml.
-2. **Flip `PYTHON_WORKER_URL`** in Vercel preview env vars (Settings → Environment Variables → new var named `PYTHON_WORKER_URL`, value = the Fly URL, scoped to Preview branch `claude/vs-scraper-day1-VlteK`). Trigger one redeploy (Deployments tab → ⋯ → Redeploy, uncheck Build Cache).
-3. **Verify on the Vercel preview URL.** Open the preview, go to /search, search JFK→LHR on any date → confirm Virgin Atlantic shows a real row (Y at 10,000 miles + $420 surcharge, J at 47,500 miles + $720) alongside the 12 mock rows. That's the day-1 done condition.
-4. **Begin session 5: real VS scrape.** Replace the hard-coded plugin with Patchright + IPRoyal residential proxy + occasional CapSolver. Same architecture, no changes needed in serve.py / route.ts.
+1. **Verify on Vercel preview**: open `/search`, search JFK→LHR for any date, confirm VS Flying Club row shows ~10k miles Y + ~47.5k miles J. Then open `/wallet`, confirm the 7 currencies render from Supabase (Chase UR, Amex MR, etc.).
+2. **HIG polish pass** on the cockpit and new pages using `apple-hig` skill — likely tweaks to mobile breakpoint behavior, touch-target sizes, dark-mode contrast on freshness/confidence badges.
+3. **OpenFlights airport sync** (132 → ~3000 airports). Improves search-form autocomplete coverage.
+4. **Begin session 5** (real Patchright scrape for VS) only on explicit ask. Needs IPRoyal proxies + CapSolver paid signups first.
 
-### Out of scope (session 5+)
-Real Patchright scrape, IPRoyal proxies, CapSolver, other 12 programs (Alaska/BA/SQ next at week 4 per docs/planning/03-scraper-architecture.md), BullMQ queue, shadow-confirm engine on Temporal.
+### Things still pending user action
+- Rotate Supabase DB password, service_role key, and PAT (all pasted into chat earlier — transcript security).
+- Old Neon project: delete it once Vercel preview is confirmed reading from Supabase (then we no longer pay for Neon).
+
+### Out of scope (later sessions)
+Real Patchright scrape, IPRoyal proxies, CapSolver, BullMQ queue, shadow-confirm engine on Temporal, browser extension, paywall enablement, Lufthansa direct scraper (v1.1).
 
 ---
 
