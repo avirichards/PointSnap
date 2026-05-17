@@ -11,6 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:bootstrap": "tsx scripts/applyBootstrap.ts",
     "db:seed": "tsx src/db/seed/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",

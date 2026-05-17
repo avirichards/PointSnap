@@ -490,12 +490,12 @@ CREATE INDEX "sweet_dest_gin" ON "sweet_spots" USING gin ("dest_pattern");--> st
 CREATE INDEX "sweet_tags_gin" ON "sweet_spots" USING gin ("tags");--> statement-breakpoint
 CREATE INDEX "audit_entity_idx" ON "admin_audit_events" USING btree ("entity_type","entity_id","occurred_at");--> statement-breakpoint
 CREATE INDEX "audit_actor_idx" ON "admin_audit_events" USING btree ("actor_user_id","occurred_at");--> statement-breakpoint
-CREATE INDEX "audit_time_idx" ON "admin_audit_events" USING btree ("occurred_at");
+CREATE INDEX "audit_time_idx" ON "admin_audit_events" USING btree ("occurred_at");--> statement-breakpoint
 -- Convert search_results_history to a partitioned parent.
 -- Drizzle generated it as a regular table; we drop and recreate as PARTITION BY RANGE (observed_at).
 -- See docs/planning/04-data-model.md §4 Partitioning Strategy.
 
-DROP TABLE IF EXISTS "search_results_history" CASCADE;
+DROP TABLE IF EXISTS "search_results_history" CASCADE;--> statement-breakpoint
 
 CREATE TABLE "search_results_history" (
   "id"               BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -510,7 +510,7 @@ CREATE TABLE "search_results_history" (
   "observed_at"      TIMESTAMPTZ NOT NULL,
   "confidence_score" SMALLINT    NOT NULL,
   CONSTRAINT "search_results_history_pkey" PRIMARY KEY ("id", "observed_at")
-) PARTITION BY RANGE ("observed_at");
+) PARTITION BY RANGE ("observed_at");--> statement-breakpoint
 
 -- Helper function: create one monthly partition.
 CREATE OR REPLACE FUNCTION create_history_partition(start_date DATE)
@@ -541,7 +541,7 @@ BEGIN
     partition_name || '_obs_idx', partition_name
   );
 END;
-$$;
+$$;--> statement-breakpoint
 
 -- Seed 6 months of partitions (3 back, 3 forward from today).
 -- Production scheduler should call create_history_partition() monthly on the 25th
@@ -555,7 +555,7 @@ BEGIN
     start_date := date_trunc('month', CURRENT_DATE + (m || ' month')::INTERVAL)::DATE;
     PERFORM create_history_partition(start_date);
   END LOOP;
-END $$;
+END $$;--> statement-breakpoint
 
 -- btree_gin extension is needed if we add mixed BTREE+GIN composite indexes later
 -- (e.g., for sweet_spots tags + program_id).
