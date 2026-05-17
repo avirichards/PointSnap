@@ -15,6 +15,65 @@ export const runtime = "nodejs";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Programs that defer to the Python worker (pointsnap-workers on Fly) when
+ * PYTHON_WORKER_URL is set. The worker hosts Patchright + IPRoyal proxies +
+ * CapSolver — real scraping infrastructure. When the env var isn't set
+ * (preview / local dev without the worker), each program falls through to
+ * the mock or inline hardcoded row, so the cockpit never goes blank.
+ */
+const WORKER_PROGRAMS = new Set<string>([
+  "VS_FLYING_CLUB",
+  "AS_MILEAGEPLAN",
+  "BA_AVIOS",
+  "AV_LIFEMILES",
+  "AF_FLYINGBLUE",
+  "UA_MP",
+  "TK_MILES_SMILES",
+  "NH_ANA",
+  "AA_AADVANTAGE",
+  "DL_SKYMILES",
+  "CX_CATHAY",
+  "AC_AEROPLAN",
+  "LH_MILES_MORE",
+]);
+const WORKER_TIMEOUT_MS = 15_000;
+
+async function fetchWorkerResults(
+  programId: string,
+  query: SearchQuery,
+): Promise<SearchResultRow[] | null> {
+  const base = process.env.PYTHON_WORKER_URL;
+  if (!base) return null;
+  const url =
+    `${base.replace(/\/$/, "")}/search?` +
+    new URLSearchParams({
+      program: programId,
+      origin: query.origin,
+      dest: query.dest,
+      date: query.departDate,
+      pax: String(query.pax),
+      minCabin: query.minCabin,
+    }).toString();
+
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), WORKER_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) {
+      console.warn(`worker ${programId} returned ${res.status}`);
+      return null;
+    }
+    const json = (await res.json()) as { rows?: SearchResultRow[] };
+    return Array.isArray(json.rows) ? json.rows : null;
+  } catch (err) {
+    console.warn(`worker ${programId} fetch failed:`, err);
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function send(
   controller: ReadableStreamDefaultController<Uint8Array>,
   event: SearchStreamEvent,
@@ -153,13 +212,36 @@ export async function GET(req: NextRequest) {
 
       // Track chart-only rows for the final totalRows count.
       let chartFallbackCount = 0;
+      let workerCount = 0;
+      const workerEnabled = !!process.env.PYTHON_WORKER_URL;
 
       const tasks = MOCK_PROGRAMS_AT_LAUNCH.map(async (programId) => {
         await sleep(latencyMs[programId] ?? 3000);
 
-        // VS gets the hard-coded "real-shape" row when JFK→LHR is searched;
-        // otherwise falls through to the mock dataset like every other program.
-        if (programId === "VS_FLYING_CLUB" && vsReal) {
+        // Priority 1: live data from the Python worker (when PYTHON_WORKER_URL
+        // is set). Worker serves all 13 programs; for non-VS programs it's
+        // currently the canonical seed data but the cockpit is no longer
+        // coupled to the Next.js mock generator. VS gets a real Patchright
+        // scrape attempt when Session 5 lands.
+        if (workerEnabled && WORKER_PROGRAMS.has(programId)) {
+          const workerRows = await fetchWorkerResults(programId, query);
+          if (workerRows && workerRows.length > 0) {
+            workerCount += workerRows.length;
+            send(controller, { type: "partial", programId, rows: workerRows });
+            send(controller, {
+              type: "program_done",
+              programId,
+              status: "success",
+            });
+            return;
+          }
+          // Worker returned [] or failed — fall through to chart fallback.
+        }
+
+        // Priority 2 (worker unavailable / off-route): VS gets the inline
+        // hard-coded JFK→LHR row when applicable; everything else uses the
+        // Next.js mock generator (JFK→NRT only).
+        if (programId === "VS_FLYING_CLUB" && vsReal && !workerEnabled) {
           send(controller, { type: "partial", programId, rows: [vsReal] });
           send(controller, {
             type: "program_done",
@@ -169,15 +251,17 @@ export async function GET(req: NextRequest) {
           return;
         }
 
-        const rows = grouped.get(programId);
-        if (rows && rows.length > 0) {
-          send(controller, { type: "partial", programId, rows });
-          send(controller, { type: "program_done", programId, status: "success" });
-          return;
+        if (!workerEnabled) {
+          const rows = grouped.get(programId);
+          if (rows && rows.length > 0) {
+            send(controller, { type: "partial", programId, rows });
+            send(controller, { type: "program_done", programId, status: "success" });
+            return;
+          }
         }
 
-        // No mock data for this program × route — try the chart fallback so
-        // the cockpit can show a "Chart-only" estimate instead of nothing.
+        // Priority 3: chart fallback — no worker data, no mock data. Cockpit
+        // shows a Chart-only estimate from the seeded BA/VS/ANA/CX charts.
         try {
           const fb = await chartFallback({
             programId,
@@ -204,11 +288,13 @@ export async function GET(req: NextRequest) {
       });
 
       // Shadow-confirm upgrade waves — simulate Temporal saga results landing
-      // 3-5s after each scrape, bumping confidence for top results.
+      // 3-5s after each scrape, bumping confidence for top results. Only
+      // fires for results that came from the Next.js mock generator (we
+      // know their IDs); worker-served and chart-fallback rows aren't in
+      // `grouped` so they're skipped automatically.
       const shadowTask = (async () => {
+        if (workerEnabled) return; // worker rows don't have IDs in `grouped`
         for (const programId of programs) {
-          // Skip VS when we shipped the inline hard-coded row — the simulated
-          // confidence bump would fire against an unknown resultId.
           if (programId === "VS_FLYING_CLUB" && vsReal) continue;
           await sleep((latencyMs[programId] ?? 3000) + 3500);
           const rows = grouped.get(programId);
@@ -228,13 +314,19 @@ export async function GET(req: NextRequest) {
 
       await Promise.all([...tasks, shadowTask]);
 
-      const mockRows = [...grouped.values()].reduce(
-        (acc, list) => acc + list.length,
-        0,
-      );
+      const mockRows = workerEnabled
+        ? 0
+        : [...grouped.values()].reduce(
+            (acc, list) => acc + list.length,
+            0,
+          );
       send(controller, {
         type: "complete",
-        totalRows: mockRows + (vsReal ? 1 : 0) + chartFallbackCount,
+        totalRows:
+          mockRows +
+          (vsReal && !workerEnabled ? 1 : 0) +
+          chartFallbackCount +
+          workerCount,
         durationMs: Date.now() - start,
       });
       controller.close();

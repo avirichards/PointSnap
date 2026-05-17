@@ -20,6 +20,8 @@ from fastapi.responses import JSONResponse
 
 from common.db import write_results, writeback_skipped
 from common.hash import itinerary_hash, operating_flight_key
+from common.mock_plugin import make_mock_plugin
+from common.seed_data import SEEDS_JFK_NRT
 from common.types import NormalizedResult, SearchQuery
 from vs import search as vs_search
 
@@ -29,11 +31,18 @@ log = logging.getLogger(__name__)
 app = FastAPI(title="pointsnap-workers", version="0.1.0")
 
 
-# Plugin registry. Session 5 adds more entries.
+# Plugin registry. VS gets its dedicated module so we can swap in a real
+# Patchright + IPRoyal scrape there (Session 5). The other 12 launch
+# programs use the make_mock_plugin factory + SEEDS_JFK_NRT data,
+# graduating to dedicated modules as their real scrapers come online.
 PluginCallable = Callable[..., Coroutine[None, None, list[NormalizedResult]]]
 PLUGINS: dict[str, PluginCallable] = {
     "VS_FLYING_CLUB": vs_search.search,
 }
+for _pid in SEEDS_JFK_NRT.keys():
+    if _pid in PLUGINS:
+        continue  # dedicated module wins
+    PLUGINS[_pid] = make_mock_plugin(_pid)
 
 
 def _serialize(query: SearchQuery, r: NormalizedResult) -> dict:

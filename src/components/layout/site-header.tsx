@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Moon, Sun, Wallet, Sparkles, Search, Shield, LogIn } from "lucide-react";
+import { Moon, Sun, Wallet, Sparkles, Search, Shield, LogIn, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/search", label: "Search", icon: Search },
+  { href: "/sweet-spots", label: "Sweet spots", icon: Star },
   { href: "/wallet", label: "Wallet", icon: Wallet },
   { href: "/admin", label: "Admin", icon: Shield },
 ] as const;
