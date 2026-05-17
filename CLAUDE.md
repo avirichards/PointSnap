@@ -1,3 +1,11 @@
+## Superpowers — Invoke First (DO THIS BEFORE ANY OTHER RESPONSE)
+
+At the very start of every session, before responding to the user or running any other tool, invoke the `using-superpowers` skill via the `Skill` tool. That skill establishes how to discover and use the 14+ Superpowers skills (`brainstorming`, `systematic-debugging`, `test-driven-development`, `writing-plans`, `executing-plans`, `verification-before-completion`, etc.) installed under `.claude/skills/`.
+
+This is mandatory and non-optional — it is the primary mechanism that gives Claude its Superpowers. If a SessionStart hook has already injected the same content, you can skip the tool call; otherwise, invoke it before doing anything else.
+
+---
+
 ## Git & Deployment Workflow (CRITICAL — READ FIRST)
 
 **This app is in production with live users. Protect the live site at all costs.**
