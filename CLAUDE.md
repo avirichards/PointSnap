@@ -22,67 +22,52 @@ Don't skip it for "small" UI changes. A badge color, a row-height tweak, a hover
 
 ### Branch structure
 
-- **`main`** — production. Vercel deploys from here. **Never push directly to `main`** (except on explicit "this is urgent" trigger).
-- **`dev`** — active staging / integration. Vercel previews from here. This is the target for merges — each conversation's work flows *through* `dev`, not directly *on* it.
-- **`claude/<slug>`** / **`feat/<topic>`** / **`fix/<topic>`** — short-lived per-conversation branches. Created inside an isolated worktree at the start of each conversation; merged into `dev` when the work is ready; deleted when the conversation ends. Kebab-case, short but specific.
+- **`main`** — production. Vercel auto-deploys this branch to the live site. **Never push directly to `main`** (except on explicit "this is urgent" trigger).
+- **`claude/<slug>`** / **`feat/<topic>`** / **`fix/<topic>`** — long-running or per-workstream working branches. Vercel previews every pushed branch automatically, so the feature branch itself serves as staging. Kebab-case, short but specific.
 
-**Never commit directly to `dev`, `main`, or someone else's feature branch.**
+There is **no `dev` branch** in this repo. The project is small, single-operator, and pre-real-user, so the simpler `feature branch → main` flow is enough. If a separate staging branch ever becomes useful (multi-developer phase, real-user phase), revisit this section then — don't preemptively reintroduce it.
+
+**Never commit directly to `main`, or to someone else's working branch.**
 
 Flow:
-1. Conversation starts → `EnterWorktree` creates a feature branch off `dev`. See §One worktree per conversation.
-2. Commit frequently as you work (after each logical milestone). Uncommitted work is fragile across tool restarts and refused by `ExitWorktree`.
-3. When the user says **"push it"** → push the feature branch (Vercel previews every pushed branch). Merge into `dev` only when the user explicitly asks to land the work.
-4. When the user says **"go live" / "push it live" / "merge to main"** → merge `dev` into `main`, push `main`, Vercel deploys production.
-5. When the conversation is done → `ExitWorktree` with `action: "remove"` once the branch is merged (if paused mid-flight, use `action: "keep"` so it can be resumed).
+1. Session starts → confirm/create the working branch. Default is to reuse the existing long-running working branch (which is normal for this project). Only create a new one when the user explicitly starts a separate workstream.
+2. Commit frequently as you work (after each logical milestone). Uncommitted work is fragile across tool restarts.
+3. When the user says **"push it"** → push the working branch. Vercel previews it automatically — share the preview URL.
+4. When the user says **"go live" / "push it live" / "merge to main"** → fast-forward (or merge) the working branch into `main`, push `main`. Vercel auto-deploys production.
+5. After a merge to main, ask the user whether the working branch should keep running for follow-up work or be deleted.
 
-After any merge to main:
-- Sync `dev` with `main` (`git merge main` on `dev`) so the preview branch doesn't drift behind production.
+### Working branch hygiene
 
-### One worktree per conversation
+The default working model is **one long-running working branch + occasional merges to main on explicit trigger**, not a fresh branch per Claude conversation. Commits accumulate on the working branch; the branch lives across many conversations.
 
-Claude Code runs multiple conversations against the same repository. A single working directory can only have one branch checked out — if two conversations share that directory and one runs `git checkout`, the other loses its files mid-work. This caused a "rates disappeared" incident once; don't repeat it.
+If multiple Claude conversations ever run against the same repo at once, switch to **worktree-per-conversation** (use `git worktree add` to give each conversation its own working directory + branch) — because two conversations sharing one working directory will fight over branch checkouts and lose work. With one conversation at a time (the current reality), a single working directory + single long-running working branch is fine.
 
-Use git worktrees to isolate each conversation. The branch-per-conversation rule becomes **worktree-per-conversation** — a stronger guarantee since worktrees hard-prevent concurrent branch conflicts, not just by convention.
+**At the start of any session that will touch code:**
+1. **Audit stale branches.** Run `git branch -a --no-merged main` to see what's hanging around. Surface unmerged branches to the user: *"N branches with unmerged work: X (N commits ahead), Y (N commits ahead). Want to land any before we start?"* Don't silently start fresh work on top of a graveyard — stale branches compound over time.
+2. **Confirm which working branch to use.** Almost always the existing long-running one. If the user is clearly starting a separate workstream (e.g. a hotfix while a feature is in flight), create a new one.
 
-**At the start of any conversation that will touch code:**
-1. **Audit stale branches first.** Run `git branch --no-merged dev` to see which feature branches still carry unmerged work. For each one, check uncommitted state (`git -C <worktree> status`), commits ahead of dev, and how old it is. Surface the list to the user before starting new work: *"Heads up, N branches behind dev from prior conversations: X (N commits), Y (N commits). Want to land any before we start, or leave them for now?"* Do not silently start fresh work on top of a graveyard — the longer stale branches sit, the harder the eventual consolidation. One day of drift is cheap; two weeks compounds.
-2. Call `EnterWorktree` to create a private working directory + branch. Branch should be named `claude/<short-feature-slug>` (or `feat/<topic>` / `fix/<topic>` for a human-named workstream). Use kebab-case, short but specific.
-3. That worktree is yours for the whole conversation — files, dev server, preview, everything stays isolated there.
-4. Never `git checkout <other-branch>` inside another conversation's worktree, and never `git checkout` branches that are already checked out elsewhere (git refuses anyway — a branch can only be checked out by one worktree at a time).
+**At the end of a workstream (not necessarily end of conversation):**
+1. Commit every change before stopping.
+2. Ask the user to pick an outcome: merge to `main` (complete + ready to ship), keep running (more work coming), or delete (dead end / abandoned).
 
-**Before ending the conversation:**
-1. Commit every change. `ExitWorktree` refuses to remove a worktree with uncommitted changes — that's the safety rail.
-2. **Explicitly ask the user to pick a landing outcome** before calling `ExitWorktree`. Don't default to "keep" silently — that's how branches silently accumulate. Three options:
-   - *Merge to `dev` now* → feature is complete, user wants preview on the main dev URL → merge, then `ExitWorktree` with `action: "remove"`.
-   - *Keep branch for continuation* → work is paused mid-flight and the next session will resume it → `ExitWorktree` with `action: "keep"`. Briefly note what's left.
-   - *Discard* → the work turned out to be a dead end → confirm explicitly, then `ExitWorktree` with `action: "remove"` and delete the branch.
-   If the user doesn't answer, default to "keep" but leave a clear note in the conversation transcript so the next start-of-conversation audit surfaces it.
-
-**Exceptions** (don't create a new worktree):
-- Read-only conversations (answering questions, searching code). Fine to work in the main repo dir.
-- Continuing an explicitly-in-progress conversation whose worktree already exists — reuse it.
+**Exceptions** (no branch ceremony needed):
+- Read-only conversations (answering questions, searching code).
 - Database-only work that doesn't modify source files.
 - Trivial single-file fixes the user explicitly requests against a named branch.
 
-When in doubt, ask the user what branch / worktree to use before editing.
-
-**When to merge back to `dev` vs. hold on the feature branch:**
-- Merge to `dev` when: the feature is complete AND the user wants to preview it, OR the user says "push it".
-- Hold on feature branch when: work is iterative and the user is still reviewing inside the current conversation — multiple commits will accumulate before merge. The Vercel preview URL still updates on pushes to the feature branch (Vercel previews every pushed branch), so you can share it without merging.
+When in doubt, ask the user.
 
 ### When the user says "push it to GitHub" or "push it":
-1. Push the **current feature branch** first (Vercel previews every pushed branch, so the user can review the exact WIP).
-2. If the user specifically asks to land the work, merge into `dev` and push `dev`.
-3. Never push to `main` directly.
+1. Push the **current working branch**. Vercel previews every pushed branch — share the preview URL.
+2. Do not merge to `main` unless the user explicitly says so.
 
 ### When the user says "push it live", "go live", or "merge to main":
-1. Ensure the feature branch is merged into `dev` (if not already).
-2. Merge `dev` → `main` and push `main`.
-3. Vercel automatically deploys to the live production site.
-4. After the merge, switch back to the feature branch (or `dev`) for any follow-up work.
+1. Fast-forward (or merge with `--no-ff` if non-FF) the working branch into `main`, push `main`.
+2. Vercel automatically deploys to the live production site.
+3. Ask the user whether to keep the working branch alive for follow-up work or delete it.
 
 ### When the user says "this is urgent, push straight to production":
-1. This is the ONLY time you push directly to `main`.
+1. This is the ONLY time you commit directly on `main`.
 2. Confirm with the user before doing it.
 
 ### Database migrations — GitHub-integrated auto-apply on Supabase
