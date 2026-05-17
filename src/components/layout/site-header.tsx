@@ -1,12 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun, Wallet, Sparkles } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Moon, Sun, Wallet, Sparkles, Search, Shield, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { useEffect, useState } from "react";
 
+const NAV_ITEMS = [
+  { href: "/search", label: "Search", icon: Search },
+  { href: "/wallet", label: "Wallet", icon: Wallet },
+  { href: "/admin", label: "Admin", icon: Shield },
+] as const;
+
 export function SiteHeader() {
+  const pathname = usePathname();
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -21,6 +29,9 @@ export function SiteHeader() {
     document.cookie = `theme=${next ? "dark" : "light"}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
   };
 
+  const isActive = (href: string) =>
+    href === "/search" ? pathname === "/" || pathname.startsWith("/search") : pathname.startsWith(href);
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-3 md:px-6">
@@ -33,17 +44,24 @@ export function SiteHeader() {
             the points cockpit
           </span>
         </Link>
-        <nav className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/search">
-              <Sparkles className="size-4" aria-hidden />
-              Search
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild disabled>
-            <Link href="/wallet" aria-disabled>
-              <Wallet className="size-4" aria-hidden />
-              <span className="hidden sm:inline">Wallet</span>
+        <nav className="ml-auto flex items-center gap-1" aria-label="Primary">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+            <Button
+              key={href}
+              variant={isActive(href) ? "secondary" : "ghost"}
+              size="sm"
+              asChild
+            >
+              <Link href={href} aria-current={isActive(href) ? "page" : undefined}>
+                <Icon className="size-4" aria-hidden />
+                <span className="hidden sm:inline">{label}</span>
+              </Link>
+            </Button>
+          ))}
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/sign-in">
+              <LogIn className="size-4" aria-hidden />
+              <span className="hidden sm:inline">Sign in</span>
             </Link>
           </Button>
           <Toggle
