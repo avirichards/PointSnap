@@ -101,9 +101,21 @@ async def browser_page(
 
 
 def creds_for(program_id: str) -> tuple[str | None, str | None]:
-    """Look up account credentials from Fly secrets, keyed by program.
+    """Look up scraper account credentials for a program.
 
-    Naming convention (matches docstring in each program's plugin):
+    Delegates to common.account_pool.acquire() which:
+      - Picks the least-recently-used active account from the account_pool
+        table in the DB (rotates across many warmed accounts).
+      - Reads the actual credentials from Fly secrets via env vars named
+        in the account row (env_user_var / env_pass_var).
+      - Tracks searches_today / hourly_window_start for per-account rate
+        limiting.
+
+    Falls back to the single-account env-var convention when:
+      - The DB isn't reachable (DATABASE_URL unset / connect error).
+      - No accounts are configured in account_pool for this program.
+
+    Single-account fallback env-var names (set via `fly secrets set`):
       BA_AVIOS      → BA_EXEC_CLUB_USER / BA_EXEC_CLUB_PASS
       AV_LIFEMILES  → LM_USER / LM_PASS
       AF_FLYINGBLUE → FB_USER / FB_PASS
@@ -115,19 +127,8 @@ def creds_for(program_id: str) -> tuple[str | None, str | None]:
       DL_SKYMILES   → DL_USER / DL_PASS
       AC_AEROPLAN   → AEROPLAN_USER / AEROPLAN_PASS
     """
-    mapping = {
-        "BA_AVIOS": ("BA_EXEC_CLUB_USER", "BA_EXEC_CLUB_PASS"),
-        "AV_LIFEMILES": ("LM_USER", "LM_PASS"),
-        "AF_FLYINGBLUE": ("FB_USER", "FB_PASS"),
-        "TK_MILES_SMILES": ("TK_MS_USER", "TK_MS_PASS"),
-        "NH_ANA": ("ANA_AMC_USER", "ANA_AMC_PASS"),
-        "CX_CATHAY": ("CX_USER", "CX_PASS"),
-        "LH_MILES_MORE": ("MM_CARD_NUM", "MM_PIN"),
-        "AA_AADVANTAGE": ("AA_USER", "AA_PASS"),
-        "DL_SKYMILES": ("DL_USER", "DL_PASS"),
-        "AC_AEROPLAN": ("AEROPLAN_USER", "AEROPLAN_PASS"),
-    }
-    keys = mapping.get(program_id)
-    if not keys:
+    from common.account_pool import acquire
+    creds = acquire(program_id)
+    if not creds:
         return (None, None)
-    return (os.environ.get(keys[0]), os.environ.get(keys[1]))
+    return (creds.username, creds.password)

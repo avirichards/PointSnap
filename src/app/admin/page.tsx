@@ -2,21 +2,18 @@ import { Shield } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
 import { AuditFeed, type AuditEvent } from "@/components/admin/audit-feed";
+import {
+  AccountPoolPanel,
+  type PoolRow,
+} from "@/components/admin/account-pool-panel";
 import { db, schema } from "@/db";
-import { desc } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 export const metadata = {
   title: "Admin — PointSnap",
-  description: "Operator audit log and admin controls.",
+  description: "Operator audit log + scraper account pool.",
 };
 
-/**
- * Admin shell. Reads from admin_audit_events server-side, then hands events
- * to the AuditFeed client component for filtering. RBAC (only-show-to-staff)
- * lands when Clerk is wired up — for now this is reachable to anyone but
- * shows no PII (audit log doesn't contain user-identifying data outside
- * actor_email which is the operator, not the customer).
- */
 async function loadAudit(): Promise<AuditEvent[]> {
   if (!db) return [];
   const rows = await db
@@ -41,8 +38,57 @@ async function loadAudit(): Promise<AuditEvent[]> {
   }));
 }
 
+async function loadAccountPool(): Promise<PoolRow[]> {
+  if (!db) return [];
+  // One row per program: counts by status + recent-usage. Programs without
+  // any pool rows still appear (LEFT JOIN'd) so the operator sees gaps.
+  const rows = await db.execute<{
+    program_id: string;
+    program_name: string;
+    active: number;
+    banned: number;
+    exhausted: number;
+    disabled: number;
+    total: number;
+    recently_used: number;
+  }>(sql`
+    SELECT
+      p.id   AS program_id,
+      p.name AS program_name,
+      COALESCE(SUM(CASE WHEN ap.status = 'active' THEN 1 ELSE 0 END), 0)::int    AS active,
+      COALESCE(SUM(CASE WHEN ap.status = 'banned' THEN 1 ELSE 0 END), 0)::int    AS banned,
+      COALESCE(SUM(CASE WHEN ap.status = 'exhausted' THEN 1 ELSE 0 END), 0)::int AS exhausted,
+      COALESCE(SUM(CASE WHEN ap.status = 'disabled' THEN 1 ELSE 0 END), 0)::int  AS disabled,
+      COALESCE(COUNT(ap.id), 0)::int                                              AS total,
+      COALESCE(SUM(CASE WHEN ap.last_used_at > now() - interval '1 hour' THEN 1 ELSE 0 END), 0)::int AS recently_used
+    FROM programs p
+    LEFT JOIN account_pool ap ON ap.program_id = p.id
+    GROUP BY p.id, p.name
+    ORDER BY p.name ASC
+  `);
+  return (rows as unknown as Array<{
+    program_id: string;
+    program_name: string;
+    active: number;
+    banned: number;
+    exhausted: number;
+    disabled: number;
+    total: number;
+    recently_used: number;
+  }>).map((r) => ({
+    programId: r.program_id,
+    programName: r.program_name,
+    active: r.active,
+    banned: r.banned,
+    exhausted: r.exhausted,
+    disabled: r.disabled,
+    total: r.total,
+    recentlyUsed: r.recently_used,
+  }));
+}
+
 export default async function AdminPage() {
-  const events = await loadAudit();
+  const [events, pool] = await Promise.all([loadAudit(), loadAccountPool()]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -59,11 +105,13 @@ export default async function AdminPage() {
             <Badge variant="outline" className="text-xs">staff only</Badge>
           </div>
           <p className="text-sm text-muted-foreground max-w-prose">
-            Audit log of operator actions — sweet-spot edits, manual data
-            overrides, scraper kill-switches, paywall toggles. Read-only at
-            the moment; mutation UIs land alongside the Clerk wiring.
+            Operator surface — scraper account pool health, audit log of
+            edits. Mutation UIs (add account, manual ban, override sweet
+            spot, kill-switch a scraper) land alongside the Clerk wiring.
           </p>
         </header>
+
+        <AccountPoolPanel rows={pool} />
 
         <AuditFeed events={events} />
       </main>
