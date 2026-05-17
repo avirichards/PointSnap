@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN pip install fastapi 'uvicorn[standard]' httpx 'psycopg[binary]' python-dotenv
+RUN pip install fastapi 'uvicorn[standard]' httpx 'psycopg[binary]' python-dotenv json5
 
 COPY . .
 

@@ -29,7 +29,11 @@ DEFAULT_HEADERS = {
     "User-Agent": CHROME_UA,
     "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
+    # br (brotli) deliberately omitted — httpx doesn't decompress brotli
+    # without the `brotli` package, and Virgin Atlantic / United / others
+    # readily return br when offered, then we 500 on decode. gzip/deflate
+    # are universally safe.
+    "Accept-Encoding": "gzip, deflate",
     "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
     "Sec-Ch-Ua-Mobile": "?0",
     "Sec-Ch-Ua-Platform": '"macOS"',

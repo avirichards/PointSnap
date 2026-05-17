@@ -9,6 +9,9 @@ dependencies = [
     "httpx>=0.27",
     "psycopg[binary]>=3.2",
     "python-dotenv>=1.0",
+    # JSON5 parsing for SvelteKit-style payloads with unquoted keys
+    # (used by as_mileageplan/search.py to parse Alaska's SSR-inlined data).
+    "json5>=0.10",
 ]
 
 [project.optional-dependencies]

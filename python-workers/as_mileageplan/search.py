@@ -32,6 +32,12 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
+try:
+    import json5  # robust parser for the SvelteKit unquoted-key payload
+    _HAS_JSON5 = True
+except ImportError:  # pragma: no cover — fall back to regex normalizer
+    _HAS_JSON5 = False
+
 from common.plugin_wrapper import with_canonical_fallback
 from common.scrape_client import scrape_client
 from common.types import CabinPrice, NormalizedResult, ResultSegment
@@ -203,10 +209,22 @@ async def _scrape_real(
             if not match:
                 log.warning("AS hydration payload not found in HTML (%d chars)", len(html))
                 return []
-            normalized = _js_object_to_json(match.group(1))
-            if not normalized:
-                return []
-            payload = json.loads(normalized)
+            raw = match.group(1)
+            payload = None
+            if _HAS_JSON5:
+                try:
+                    payload = json5.loads(raw)
+                except Exception as exc:  # noqa: BLE001
+                    log.debug("AS json5 parse failed: %s; trying regex fallback", exc)
+            if payload is None:
+                normalized = _js_object_to_json(raw)
+                if not normalized:
+                    return []
+                try:
+                    payload = json.loads(normalized)
+                except json.JSONDecodeError as exc:
+                    log.warning("AS regex-normalized parse failed: %s", exc)
+                    return []
             return _parse(payload, origin, dest, date)
         except json.JSONDecodeError as exc:
             log.warning("AS JSON parse failed: %s", exc)
