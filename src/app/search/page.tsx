@@ -119,13 +119,36 @@ export default function SearchPage() {
 
         <footer className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
           {durationMs !== null && (
-            <span>
-              {rows.length} result{rows.length === 1 ? "" : "s"} in{" "}
-              {(durationMs / 1000).toFixed(1)}s
-            </span>
+            <>
+              <span>
+                {rows.length} result{rows.length === 1 ? "" : "s"} in{" "}
+                {(durationMs / 1000).toFixed(1)}s
+              </span>
+              {(() => {
+                const chartOnly = rows.filter(
+                  (r) => r.confidenceScore < 25,
+                ).length;
+                const live = rows.length - chartOnly;
+                return (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span>
+                      {live} live / {chartOnly} chart-only
+                    </span>
+                    {chartOnly > 0 && (
+                      <>
+                        <span aria-hidden>·</span>
+                        <span>
+                          Chart-only rows are published-chart estimates, not
+                          confirmed availability
+                        </span>
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+            </>
           )}
-          <span aria-hidden>·</span>
-          <span>Mock data — scrapers wire in next phase</span>
           <span aria-hidden>·</span>
           <span>
             Shift-click any column header for multi-column sort

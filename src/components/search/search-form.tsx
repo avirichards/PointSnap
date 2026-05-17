@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import type { Cabin, SearchQuery } from "@/lib/types";
 import { AirportCombobox } from "./airport-combobox";
 
@@ -108,8 +108,13 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
         size="lg"
         className="col-span-2 md:col-span-1 h-11"
         disabled={isStreaming}
+        aria-busy={isStreaming || undefined}
       >
-        <Search className="size-4" aria-hidden />
+        {isStreaming ? (
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
+        ) : (
+          <Search className="size-4" aria-hidden />
+        )}
         {isStreaming ? "Searching…" : "Search"}
       </Button>
     </form>
