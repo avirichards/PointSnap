@@ -43,10 +43,10 @@ export default function SearchPage() {
             <Toggle
               pressed={compress}
               onPressedChange={setCompress}
-              size="sm"
+              size="default"
               variant="outline"
-              aria-label="Compact rows"
-              title="Compress rows"
+              aria-label={compress ? "Switch to roomy rows" : "Switch to compact rows"}
+              title="Toggle row density"
             >
               {compress ? <Rows4 className="size-4" /> : <Rows3 className="size-4" />}
               <span className="hidden md:inline">{compress ? "Roomy" : "Compact"}</span>
@@ -54,7 +54,7 @@ export default function SearchPage() {
             <Toggle
               pressed={collapseByFlight}
               onPressedChange={setCollapseByFlight}
-              size="sm"
+              size="default"
               variant="outline"
               aria-label="Collapse multiple programs ticketing the same flight"
               title="Group programs by physical flight"

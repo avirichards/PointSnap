@@ -15,11 +15,11 @@ const badgeVariants = cva(
         muted:
           "border-transparent bg-muted text-muted-foreground hover:bg-muted/80",
         fresh:
-          "border-transparent bg-[color:var(--color-fresh)]/15 text-[color:var(--color-fresh)] border border-[color:var(--color-fresh)]/30",
+          "border-transparent bg-[color:var(--color-fresh)]/20 text-[color:var(--color-fresh-fg)] border border-[color:var(--color-fresh)]/40",
         stale:
-          "border-transparent bg-[color:var(--color-stale)]/15 text-[color:var(--color-stale)] border border-[color:var(--color-stale)]/30",
+          "border-transparent bg-[color:var(--color-stale)]/20 text-[color:var(--color-stale-fg)] border border-[color:var(--color-stale)]/40",
         critical:
-          "border-transparent bg-[color:var(--color-stale-critical)]/15 text-[color:var(--color-stale-critical)] border border-[color:var(--color-stale-critical)]/30",
+          "border-transparent bg-[color:var(--color-stale-critical)]/20 text-[color:var(--color-stale-critical-fg)] border border-[color:var(--color-stale-critical)]/40",
       },
     },
     defaultVariants: { variant: "default" },

@@ -37,10 +37,13 @@
   --color-cabin-f: var(--cabin-f);
   --color-cabin-f-fg: var(--cabin-f-fg);
 
-  /* Freshness */
+  /* Freshness — bg/border use the bright accent, fg uses a contrast-adjusted text color (separate per theme so text reads in both modes) */
   --color-fresh: var(--fresh);
+  --color-fresh-fg: var(--fresh-fg);
   --color-stale: var(--stale);
+  --color-stale-fg: var(--stale-fg);
   --color-stale-critical: var(--stale-critical);
+  --color-stale-critical-fg: var(--stale-critical-fg);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -81,10 +84,13 @@
   --cabin-f: oklch(0.85 0.13 85);
   --cabin-f-fg: oklch(0.3 0.16 60);
 
-  /* Freshness */
+  /* Freshness — light mode: darker fg tones so text passes WCAG AA against the card bg */
   --fresh: oklch(0.7 0.18 145);
+  --fresh-fg: oklch(0.4 0.16 145);
   --stale: oklch(0.78 0.18 75);
+  --stale-fg: oklch(0.45 0.16 75);
   --stale-critical: oklch(0.65 0.21 25);
+  --stale-critical-fg: oklch(0.45 0.21 25);
 }
 
 .dark {
@@ -119,8 +125,11 @@
   --cabin-f-fg: oklch(0.98 0.12 90);
 
   --fresh: oklch(0.7 0.2 145);
+  --fresh-fg: oklch(0.85 0.2 145);
   --stale: oklch(0.78 0.2 80);
+  --stale-fg: oklch(0.88 0.2 80);
   --stale-critical: oklch(0.62 0.23 25);
+  --stale-critical-fg: oklch(0.78 0.23 25);
 }
 
 @layer base {

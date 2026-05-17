@@ -104,7 +104,7 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
           id="cabin"
           value={minCabin}
           onChange={(e) => setMinCabin(e.target.value as Cabin)}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <option value="Y">Economy</option>
           <option value="W">Premium</option>
@@ -115,7 +115,7 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
       <Button
         type="submit"
         size="lg"
-        className="col-span-2 md:col-span-1 h-10"
+        className="col-span-2 md:col-span-1 h-11"
         disabled={isStreaming}
       >
         <Search className="size-4" aria-hidden />

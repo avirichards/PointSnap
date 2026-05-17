@@ -49,26 +49,36 @@ export function SiteHeader() {
             <Button
               key={href}
               variant={isActive(href) ? "secondary" : "ghost"}
-              size="sm"
+              size="default"
+              className="px-3 sm:px-4"
               asChild
             >
-              <Link href={href} aria-current={isActive(href) ? "page" : undefined}>
+              <Link
+                href={href}
+                aria-current={isActive(href) ? "page" : undefined}
+                aria-label={label}
+              >
                 <Icon className="size-4" aria-hidden />
                 <span className="hidden sm:inline">{label}</span>
               </Link>
             </Button>
           ))}
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/sign-in">
+          <Button
+            variant="outline"
+            size="default"
+            className="px-3 sm:px-4"
+            asChild
+          >
+            <Link href="/sign-in" aria-label="Sign in">
               <LogIn className="size-4" aria-hidden />
               <span className="hidden sm:inline">Sign in</span>
             </Link>
           </Button>
           <Toggle
-            aria-label="Toggle theme"
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             pressed={isDark}
             onPressedChange={toggle}
-            size="sm"
+            size="default"
           >
             {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
           </Toggle>

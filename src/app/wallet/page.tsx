@@ -58,7 +58,7 @@ export default async function WalletPage() {
                 Bank rewards that transfer to airline partners.
               </p>
             </div>
-            <Button variant="outline" size="sm" disabled title="Sign in to edit">
+            <Button variant="outline" size="default" disabled title="Sign in to edit">
               Add balance
             </Button>
           </div>
@@ -99,7 +99,7 @@ export default async function WalletPage() {
                 for this purchase&rdquo; suggestions.
               </p>
             </div>
-            <Button variant="outline" size="sm" disabled title="Sign in to edit">
+            <Button variant="outline" size="default" disabled title="Sign in to edit">
               Add card
             </Button>
           </div>

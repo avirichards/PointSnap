@@ -311,11 +311,11 @@ function FragmentRow({
                     ? "Collapse alternative programs"
                     : `Show ${alternatives.length} more ways to book`
                 }
-                className="inline-flex size-5 items-center justify-center rounded hover:bg-accent text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-9 w-9 -my-1 items-center justify-center rounded hover:bg-accent text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronRight
                   className={cn(
-                    "size-3 transition-transform motion-reduce:transition-none",
+                    "size-4 transition-transform motion-reduce:transition-none",
                     isExpanded && "rotate-90",
                   )}
                   aria-hidden

@@ -81,12 +81,12 @@ export default async function AdminPage() {
               <Filter className="size-4 text-muted-foreground" aria-hidden />
               <Input
                 placeholder="Filter by actor, entity, or action…"
-                className="h-9 w-72 max-w-full text-sm"
+                className="w-72 max-w-full text-sm"
                 disabled
                 aria-label="Filter audit events"
               />
             </div>
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="default" disabled>
               Export CSV
             </Button>
           </div>
