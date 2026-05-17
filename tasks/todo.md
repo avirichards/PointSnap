@@ -106,6 +106,39 @@
 
 ---
 
-## Review (filled at end of session)
+## Review (session 2, 2026-05-17)
 
-(to be completed)
+### What landed
+- **All of Phase A** (scaffold + deps + shadcn-style components + dark mode default + fonts + PWA + env)
+- **All of Phase B** (full Drizzle schema across 9 files including all V1 improvements; migration 0000 generated cleanly; partition migration 0001 hand-authored)
+- **All of Phase C** (alliances, ~40 airlines, ~150 airports, ~40 aircraft, 13 programs, 7 transferables, full ratio matrix, 3 sample bonuses, valuations, 20 sweet spots — all real, idempotent)
+- **All of Phase D** (itineraryHash + effectiveCost + freshness + confidence + features + types + mockSearch + SSE API; 15 passing unit tests)
+- **All of Phase E** (search form + spreadsheet with all-cabins-per-row, cabin-tinted cells, color-coded Last Seen, confidence badges, multi-program collapse with "+N more ways to book", compact-row toggle, multi-column shift-sort, mobile-responsive sticky first-two-columns, dark mode toggle persists via cookie)
+- **All of Phase F** (README, HANDOFF.md changelog with deferral decisions, lessons.md, committed + pushed)
+
+### What's NOT done (intentionally deferred)
+- `program_partnerships` full N×M fare-class matrix seed — schema exists, easy fill-in when scrapers need it
+- Award charts seed (BA distance / ANA zones / CX zones / VS chart) — schema exists, 1-day fill-in
+- `/wallet`, `/admin`, Clerk sign-in/up — UI shells only
+- `pnpm db:import-csv` for Seats.aero exports — committed roadmap, v1.1
+- OpenFlights airport sync (~150 → ~3000 airports) — committed roadmap, v1.1
+- First real scraper (Virgin Atlantic recommended) — next session
+
+### Verification done
+- `pnpm test` → 15/15 passing
+- `pnpm typecheck` → clean
+- `pnpm build` → clean (only ƒ-dynamic routes; expected since /search is interactive)
+- `pnpm dev` → /search renders, /api/search streams SSE events end-to-end with real SHA256 hashes and correct operating_flight_keys; per-program waves visible with the expected p95-modeled latencies; BA correctly shows $580 YQ vs Aeroplan $0; cabin-tinted cells render; dark mode default applied via cookie + html class
+- All 13 launch programs surface in the per-program status strip in the right order
+
+### Branch state
+- `claude/flight-points-platform-AP3St-24G73` — pushed to origin
+- Clean working tree
+- Single commit: `3feae10 scaffold PointSnap: Next.js 15 + Drizzle Phase 1 schema + cockpit UI`
+
+### Suggested next-session targets (in priority order)
+1. First real scraper — **Virgin Atlantic** (1/5 difficulty, no auth, light captcha, validates the pipeline). Python project skeleton + Patchright + IPRoyal trial proxies + result writeback to Postgres via the existing schema. 3-5 days.
+2. CSV importer (`pnpm db:import-csv`) so real data is available before scraper-2 ships.
+3. Award chart full seeds for BA + ANA + CX + VS so the "Chart-only" confidence badge has real chart data to fall back to.
+4. `/wallet` page so the wallet-aware sort gets a UI surface to test.
+5. Clerk sign-in / sign-up + `/admin` shell with the audit log feed.
