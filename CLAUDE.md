@@ -85,77 +85,53 @@ When in doubt, ask the user what branch / worktree to use before editing.
 1. This is the ONLY time you push directly to `main`.
 2. Confirm with the user before doing it.
 
-### Database migrations — Claude applies, not CI
+### Database migrations — GitHub-integrated auto-apply on Supabase
 
-**User-facing rule:** the user says what they want changed; Claude does everything.
+**User-facing rule:** the user says what they want changed; Claude writes the migration file; pushing it to GitHub deploys it.
 
-There is no CI migration workflow. Claude owns the full apply loop because the user is non-technical and a mismatch between the `supabase/migrations/` folder and the `supabase_migrations.schema_migrations` tracking table previously caused every CI run to go red. Claude prevents drift by applying + recording in the same session.
+We use **Supabase's GitHub integration** (enabled when the project was created). The repo is connected to the Supabase project, and Supabase watches `supabase/migrations/`. On push:
+- **Preview branch**: pushing a migration to any non-`main` branch causes Supabase to spin up a preview database branch with the migration applied. That preview DB's URL can be wired into Vercel preview env vars for end-to-end testing before merge.
+- **Production apply**: merging to `main` causes Supabase to apply the migration to the production database.
 
-**When a schema change is needed, Claude must do all of the following — in order — for every migration:**
+This replaces the old "Claude applies via Management API + records in tracking table" flow. The drift incident on the previous project came from MIXING manual and CI migration paths. We now use exactly one path: **committed migration files via GitHub integration**, never manual SQL editor changes, never raw API DDL.
 
-1. **Write the file** at `supabase/migrations/YYYYMMDDHHMMSS_short_description.sql`. Use a full **14-digit UTC timestamp** prefix (e.g. `20260418213055_add_foo_column.sql`), not an 8-digit date. This matches Supabase CLI convention and future-proofs the repo if CI is ever reinstated.
+**When a schema change is needed, Claude must:**
+
+1. **Write the file** at `supabase/migrations/YYYYMMDDHHMMSS_short_description.sql`. Use a full **14-digit UTC timestamp** prefix (e.g. `20260418213055_add_foo_column.sql`), not an 8-digit date. Matches Supabase CLI convention.
 2. **Write the SQL idempotently.** `CREATE OR REPLACE` for functions, `CREATE ... IF NOT EXISTS` for tables/indexes/types/policies, `DROP ... IF EXISTS` for removals. End each migration with `NOTIFY pgrst, 'reload schema';` if it changes anything PostgREST exposes.
-3. **Apply it to the live DB** via the Supabase Management API using the access token in `~/.claude/settings.json`:
-   ```
-   POST https://api.supabase.com/v1/projects/<project-ref>/database/query
-   { "query": "<full SQL>" }
-   ```
-   The project ref is in settings.json.
-4. **Record it in the tracking table** in a separate call, in the same session, before moving on:
-   ```sql
-   INSERT INTO supabase_migrations.schema_migrations (version)
-   VALUES ('YYYYMMDDHHMMSS')
-   ON CONFLICT (version) DO NOTHING;
-   ```
-   The version string must match the filename prefix exactly. This step is what keeps the tracking table in sync with the filesystem — skipping it is the cause of every past drift.
-5. **Verify** by re-reading the object(s) the migration touched (e.g., `pg_get_functiondef` for a function, `\d table` equivalent for a table) and, where meaningful, calling the RPC end-to-end with the anon key.
-6. **Commit** the `.sql` file to the current branch with a descriptive `fix(db):` / `feat(db):` message. Do **not** bundle schema commits with unrelated code changes.
-7. **Push** to `dev` per the normal branch rules above. Only merge to `main` on explicit user trigger phrases.
+3. **Commit** the `.sql` file to the current feature branch with a descriptive `fix(db):` / `feat(db):` message. Do **not** bundle schema commits with unrelated code changes — schema commits are the unit Supabase applies.
+4. **Push** the branch. Supabase auto-creates a preview DB branch with the migration applied. Surface the preview branch URL/anon key to the user so they can paste into Vercel preview env vars if the frontend needs the new schema.
+5. **Verify** by querying the preview branch via psycopg/postgres-js against the preview connection string (or, once configured, the Supabase MCP server). Catch FK/constraint/RLS failures here before they hit production.
+6. **Merge to main** only on explicit user trigger (`merge to main`, `push it live`). Supabase auto-applies the migration to production on merge. Watch the Supabase dashboard's "Branches" tab to confirm the merge applied cleanly.
 
-### Database branches — default for any non-trivial DB work
+**Things Claude must NEVER do** (would recreate the past drift):
+- Apply DDL via the Supabase SQL editor in the dashboard.
+- POST DDL to the Management API's `/database/query` endpoint outside of a committed migration file.
+- Manually insert/delete rows in `supabase_migrations.schema_migrations` — Supabase manages that table now.
+- Hand-rewrite the contents of an already-applied migration file. If a migration is wrong, write a NEW migration that fixes it forward.
 
-We have Supabase branching enabled (Pro tier). The rule is the same idea as the `dev` git branch for frontend work: **any time you are about to make a database change that isn't a one-line read-only tweak, do it on a branch first, not against production.**
+**Seed data + verification queries** are explicitly exempt from this — they don't change schema. Run `pnpm db:seed` ad-hoc, query the DB ad-hoc via psycopg/postgres-js/MCP — all fine, no commits required.
 
-**When to branch:**
-- Any new table, new column, or index on an existing table.
-- Any change to an RPC, trigger, or RLS policy.
-- Any migration that moves, copies, deletes, or renames existing data.
-- Any multi-step DB work where one step depends on another.
+### Database branches — Supabase auto-creates them per Git branch
 
-**When direct-to-prod is OK:**
-- Single-statement, trivially reversible changes the user specifically asked for as one-offs (e.g. bumping one config row, seeding a single lookup value).
-- `NOTIFY pgrst, 'reload schema';` and similar no-data-touching ops.
-- Read-only queries for investigation.
+Supabase's GitHub integration handles branching automatically: every Git branch that contains changes in `supabase/migrations/` gets its own preview database with the new schema applied. No manual branch creation required.
 
-**Branch workflow:**
+**What this changes operationally:**
+- Don't call `POST /v1/projects/<ref>/branches` manually — Supabase creates branches when migrations are pushed.
+- The preview branch's connection string + anon key are visible in the Supabase dashboard under **Branches**. Read them from there to share with the user.
+- Branches auto-delete when the Git branch is deleted/merged, so no manual cleanup billing risk.
+- For multi-step DB work, each commit on the feature branch updates the same preview DB — exactly like Vercel preview deploys.
 
-1. Create the branch via the Supabase Management API:
-   ```
-   POST https://api.supabase.com/v1/projects/<project-ref>/branches
-   { "branch_name": "<short-kebab-descriptor>" }
-   ```
-   The response returns a new `project_ref` specific to the branch. Record it — every subsequent SQL call for this work must use the branch's project_ref, not production's.
-2. Apply the migration(s) via `…/v1/projects/<branch-project-ref>/database/query`. Run verification queries against the branch. Seed any test data you need (branches clone schema + migrations, not production data).
-3. If the frontend needs to hit the branch, have the user set Vercel Preview env vars (`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`) to the branch's URL/anon key, scoped to the `dev` git branch. Provide the exact values — the user won't know them.
-4. When the user approves the changes, merge the branch:
-   ```
-   POST https://api.supabase.com/v1/branches/<branch-id>/merge
-   ```
-   Only migrations + edge functions merge; hand-seeded test data stays on the branch.
-5. Re-run the backend verification against production to confirm the merge landed cleanly.
-6. Delete the branch via `DELETE …/v1/branches/<branch-id>` so it stops being billed.
-
-**Rollback safety layers to write alongside every branch-flow migration:**
+**Rollback safety still applies to every migration:**
 - The migration SQL itself, idempotent (`IF NOT EXISTS` / `ON CONFLICT DO NOTHING`).
-- A matching rollback SQL at `supabase/rollbacks/<same-prefix>_rollback.sql` that drops what the migration added and un-records the version from `supabase_migrations.schema_migrations`.
-- For destructive migrations, write backup tables (`CREATE TABLE dashlink_backup_YYYYMMDD__foo AS SELECT …`) inside the same transaction, BEFORE the delete, so the rollback can re-insert.
-- For anything touching existing production rows, capture a JSON snapshot to `scripts/<feature>-pre-migration-snapshot.json` and commit it to the repo before starting.
+- A matching rollback SQL at `supabase/rollbacks/<same-prefix>_rollback.sql` that drops what the migration added.
+- For destructive migrations, capture backup tables (`CREATE TABLE pointsnap_backup_YYYYMMDD__foo AS SELECT …`) inside the same migration, BEFORE the delete, so the rollback can re-insert.
+- For anything touching existing production rows, capture a JSON snapshot to `scripts/<feature>-pre-migration-snapshot.json` and commit it before starting.
 
 **Other constraints:**
 - **Prefer additive changes** (new columns, new tables) over destructive ones. Split "add new thing" and "remove old thing" into two separate migrations applied in two separate sessions — the gap between them is the verification window.
-- If a migration must drop or rename existing user-visible data, pause and explicitly confirm with the user before applying, even in auto mode.
-- Never apply raw SQL that isn't also saved as a migration file — that is exactly how the tracking table drifted out of sync in the past.
-- Temp files containing the access token (e.g. `/tmp/*.json` used for `--data-binary`) must be deleted at the end of the task.
+- If a migration must drop or rename existing user-visible data, pause and explicitly confirm with the user before committing, even in auto mode.
+- The Supabase MCP server (when configured per session) is the preferred way to inspect schema, run verification queries, and view branch status. Falls back to psycopg/postgres-js using the connection string in `.env.local`.
 
 ---
 
