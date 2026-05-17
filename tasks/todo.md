@@ -143,19 +143,27 @@
 Branch: `claude/vs-scraper-day1-VlteK` (fast-forwarded to main).
 Goal: prove the worker → DB → SSE → cockpit pipeline with a hard-coded VS response, verified on the Vercel preview URL.
 
-- [ ] **Commit 1 — Worker skeleton.** `python-workers/` with `pyproject.toml` (httpx, psycopg[binary], fastapi, uvicorn, python-dotenv; skip patchright/playwright for day 1), README, .gitignore, package init files, `common/types.py`, empty `vs/` and `serve.py` placeholders, `Dockerfile` + `fly.toml`.
-- [ ] **Commit 2 — VS plugin stub.** `python-workers/vs/search.py` exporting `async def search(origin, dest, date, cabin_filter) -> list[NormalizedResult]`. For JFK→LHR, return one DL-operated A359 J row at 90k VS miles + one Y row. Other O&D pairs return `[]`. Unit test for shape.
-- [ ] **Commit 3 — DB writeback.** `python-workers/common/db.py` writing to `searches` + `search_results` (ON CONFLICT itin_hash/program/date) + `result_segments` + `result_cabin_prices`. `common/hash.py` Python port of `itineraryHash` matching JS canonical form bit-for-bit. Unit test confirms hash parity with JS fixture.
-- [ ] **Commit 4 — HTTP bridge.** `python-workers/serve.py` FastAPI app: `GET /search?program=VS_FLYING_CLUB&origin=JFK&dest=LHR&date=YYYY-MM-DD` → run plugin → write to DB → return JSON list of `SearchResultRow`. Local smoke: `uvicorn serve:app --port 8001 && curl …`.
-- [ ] **Commit 5 — Route wiring + Vercel preview verify.** `src/app/api/search/route.ts` swaps the `VS_FLYING_CLUB` mock emission for an HTTP call to `process.env.PYTHON_WORKER_URL`; falls back to mock if unset. All 12 other programs stay simulated. Deploy worker to Fly.io, set `PYTHON_WORKER_URL` in Vercel preview env, verify `/search` on the preview URL shows a real VS row alongside 12 sim rows.
+- [x] **Commit 1 — Worker skeleton.** `python-workers/` scaffolded with `pyproject.toml`, README, Dockerfile, fly.toml, `common/types.py` dataclasses mirroring SearchResultRow.
+- [x] **Commit 2 — VS plugin stub.** `vs/search.py` returns hard-coded JFK→LHR result on VS3 (B789), Y + J cabin prices. Other O&D returns `[]`. 3 tests green.
+- [x] **Commit 3 — DB writeback.** `common/hash.py` Python port verified bit-for-bit equal to JS canonical hash. `common/db.py` writes search_results / result_segments / result_cabin_prices via psycopg with ON CONFLICT idempotency. Skipped when `PYTHONWORKERS_SKIP_DB=1` (or no DATABASE_URL).
+- [x] **Commit 4 — HTTP bridge.** `serve.py` FastAPI app: `GET /search?program=…&origin=…&dest=…&date=…` runs the plugin, persists, returns camelCase SearchResultRow JSON ready for SSE forwarding. 11/11 pytest green.
+- [x] **Commit 5 — Route wiring.** `src/app/api/search/route.ts` calls `${PYTHON_WORKER_URL}/search` for VS when env var is set; mock fallback on missing var or error; shadow-confirm skips worker-backed programs. typecheck + build + 15/15 vitest green. Smoke-tested locally end-to-end (uvicorn + next dev).
+- [ ] **Deploy worker to Fly.io + flip Vercel env var + verify on Vercel preview.** Blocked by sandbox network policy. Auth itself works (whoami / app create / org list all succeed across 3 token attempts: general PAT, regenerated PAT, app-scoped deploy token from /apps/pointsnap-workers/tokens). The build step fails with `x509: certificate signed by unknown authority` on the gRPC connection to Fly's builder VM — the container's egress filter is breaking TLS handshakes to non-fly.io hostnames the flyctl uses internally. Defer to next session.
 
-### Open items needing user input mid-flight
-- Neon `DATABASE_URL` for local dev (gitignored; previous session had it in `.env.local`). Worker can run plugin-only without DB; DB writeback test only happens on Fly.io.
-- Fly.io API token + region preference for worker deployment.
-- After Fly.io deploy, user sets `PYTHON_WORKER_URL` in Vercel preview-env vars scoped to this branch.
+### Status at end of session 4
+- 5 commits pushed to `origin/claude/vs-scraper-day1-VlteK` (fast-forwarded from main first). Vercel auto-builds the preview; without `PYTHON_WORKER_URL` set, VS shows mock data — cockpit remains fully populated, no regression.
+- `python-workers/` code is complete and tested (11/11 pytest green: 4 hash parity + 4 bridge + 3 plugin).
+- Fly.io app `pointsnap-workers` exists with no machines yet (see "Actions required: Your app hasn't been deployed yet" screenshot in transcript). **Revoke the deploy tokens pasted into chat** from https://fly.io/dashboard/personal/tokens once session ends — they're in plain transcript.
+- Stale-branch deletion (claude/copy-claude-config-L2lrg, claude/flight-points-platform-AP3St, -24G73) still pending: harness git RPC returns 403 on `git push --delete`, no `delete_branch` MCP tool available. Delete via GitHub UI when convenient.
+
+### Next-session pickup order
+1. **Deploy worker outside this sandbox.** Easiest path: from a laptop, run `cd python-workers && flyctl auth login` (browser auth, one-time), then `flyctl deploy`. Same fly.toml + Dockerfile already in repo. Should take <5 min once flyctl is authed. If Fly stays painful, Render.com is the fallback — same Dockerfile + a ~20-line render.yaml.
+2. **Flip `PYTHON_WORKER_URL`** in Vercel preview env vars (Settings → Environment Variables → new var named `PYTHON_WORKER_URL`, value = the Fly URL, scoped to Preview branch `claude/vs-scraper-day1-VlteK`). Trigger one redeploy (Deployments tab → ⋯ → Redeploy, uncheck Build Cache).
+3. **Verify on the Vercel preview URL.** Open the preview, go to /search, search JFK→LHR on any date → confirm Virgin Atlantic shows a real row (Y at 10,000 miles + $420 surcharge, J at 47,500 miles + $720) alongside the 12 mock rows. That's the day-1 done condition.
+4. **Begin session 5: real VS scrape.** Replace the hard-coded plugin with Patchright + IPRoyal residential proxy + occasional CapSolver. Same architecture, no changes needed in serve.py / route.ts.
 
 ### Out of scope (session 5+)
-Real Patchright scrape, IPRoyal proxies, CapSolver, other 12 programs, BullMQ queue.
+Real Patchright scrape, IPRoyal proxies, CapSolver, other 12 programs (Alaska/BA/SQ next at week 4 per docs/planning/03-scraper-architecture.md), BullMQ queue, shadow-confirm engine on Temporal.
 
 ---
 
