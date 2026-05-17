@@ -9,16 +9,13 @@ dependencies = [
     "httpx>=0.27",
     "psycopg[binary]>=3.2",
     "python-dotenv>=1.0",
-    # JSON5 parsing for SvelteKit-style payloads with unquoted keys
-    # (used by as_mileageplan/search.py to parse Alaska's SSR-inlined data).
-    "json5>=0.10",
+    "json5>=0.10",          # SvelteKit-style payloads (Alaska)
+    "patchright>=1.49",     # stealth browser for Akamai/Imperva/Shape/DataDome programs
+    "selectolax>=0.3",      # fast HTML parser for ANA's JSF response
+    "curl-cffi>=0.7",       # TLS-fingerprint impersonation for warm-session replay
 ]
 
 [project.optional-dependencies]
-# Session 5: real scraping. Day-1 ships without these.
-scrape = [
-    "patchright>=1.49",
-]
 dev = [
     "pytest>=8",
     "pytest-asyncio>=0.24",
