@@ -1,7 +1,14 @@
+/**
+ * Bootstrap the schema by applying scripts/bootstrap.sql to the configured
+ * Postgres. Uses postgres-js, so it works against any Postgres reachable
+ * on TCP 5432/6543. The Claude Code sandbox blocks both — for that path
+ * use `python3 scripts/applyToSupabase.py`, which goes through the
+ * Supabase Management API over HTTPS instead.
+ */
 import "../src/db/seed/_loadEnv";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 
 async function main() {
   const url = process.env.DATABASE_URL;
@@ -21,21 +28,25 @@ async function main() {
     `Applying ${statements.length} statements to ${url.split("@")[1]?.split("/")[0] ?? "(unknown host)"}`,
   );
 
-  const sql = neon(url);
-  let i = 0;
-  for (const stmt of statements) {
-    i++;
-    const preview = stmt.replace(/\s+/g, " ").slice(0, 80);
-    process.stdout.write(`  [${i}/${statements.length}] ${preview}…\n`);
-    await sql.query(stmt);
+  const sql = postgres(url, { prepare: false, max: 1 });
+  try {
+    let i = 0;
+    for (const stmt of statements) {
+      i++;
+      const preview = stmt.replace(/\s+/g, " ").slice(0, 80);
+      process.stdout.write(`  [${i}/${statements.length}] ${preview}…\n`);
+      await sql.unsafe(stmt);
+    }
+
+    console.log("✓ bootstrap complete");
+
+    const [{ table_count }] = await sql<
+      { table_count: number }[]
+    >`SELECT COUNT(*)::int AS table_count FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'`;
+    console.log(`  ${table_count} tables in public schema`);
+  } finally {
+    await sql.end();
   }
-
-  console.log("✓ bootstrap complete");
-
-  const [{ table_count }] = (await sql.query(
-    "SELECT COUNT(*)::int AS table_count FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'",
-  )) as Array<{ table_count: number }>;
-  console.log(`  ${table_count} tables in public schema`);
 }
 
 main()
