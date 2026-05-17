@@ -20,9 +20,25 @@ from fastapi.responses import JSONResponse
 
 from common.db import write_results, writeback_skipped
 from common.hash import itinerary_hash, operating_flight_key
-from common.mock_plugin import make_mock_plugin
-from common.seed_data import SEEDS_JFK_NRT
 from common.types import NormalizedResult, SearchQuery
+
+# Per-program plugin modules. Each exports a `search()` coroutine wrapped
+# by `with_canonical_fallback` so it always returns SOMETHING (real-scrape
+# row when the scrape succeeds; canonical seed otherwise). Real scrape
+# implementations land in each module's `_scrape_real()` function across
+# Sessions 5-10.
+from aa_aadvantage import search as aa_search
+from ac_aeroplan import search as ac_search
+from af_flyingblue import search as af_search
+from as_mileageplan import search as as_search
+from av_lifemiles import search as av_search
+from ba_avios import search as ba_search
+from cx_cathay import search as cx_search
+from dl_skymiles import search as dl_search
+from lh_miles_more import search as lh_search
+from nh_ana import search as nh_search
+from tk_miles_smiles import search as tk_search
+from ua_mp import search as ua_search
 from vs import search as vs_search
 
 load_dotenv()
@@ -31,18 +47,22 @@ log = logging.getLogger(__name__)
 app = FastAPI(title="pointsnap-workers", version="0.1.0")
 
 
-# Plugin registry. VS gets its dedicated module so we can swap in a real
-# Patchright + IPRoyal scrape there (Session 5). The other 12 launch
-# programs use the make_mock_plugin factory + SEEDS_JFK_NRT data,
-# graduating to dedicated modules as their real scrapers come online.
 PluginCallable = Callable[..., Coroutine[None, None, list[NormalizedResult]]]
 PLUGINS: dict[str, PluginCallable] = {
     "VS_FLYING_CLUB": vs_search.search,
+    "AS_MILEAGEPLAN": as_search.search,
+    "BA_AVIOS": ba_search.search,
+    "AV_LIFEMILES": av_search.search,
+    "AF_FLYINGBLUE": af_search.search,
+    "UA_MP": ua_search.search,
+    "TK_MILES_SMILES": tk_search.search,
+    "NH_ANA": nh_search.search,
+    "AA_AADVANTAGE": aa_search.search,
+    "DL_SKYMILES": dl_search.search,
+    "CX_CATHAY": cx_search.search,
+    "AC_AEROPLAN": ac_search.search,
+    "LH_MILES_MORE": lh_search.search,
 }
-for _pid in SEEDS_JFK_NRT.keys():
-    if _pid in PLUGINS:
-        continue  # dedicated module wins
-    PLUGINS[_pid] = make_mock_plugin(_pid)
 
 
 def _serialize(query: SearchQuery, r: NormalizedResult) -> dict:
