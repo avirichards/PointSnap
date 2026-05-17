@@ -567,10 +567,21 @@ function buildRow(seed: MockSeed, _query: SearchQuery): SearchResultRow {
   };
 }
 
-/** Group seeds by program for SSE per-program waves. */
+/** Group seeds by program for SSE per-program waves. Filters SEEDS so the
+ * mock only fires when the query's origin/dest match the seed's first/last
+ * segment. Other routes (e.g. HKG→LHR, LAX→CDG) cleanly fall through to
+ * the chart-fallback path so the cockpit can still show estimates. */
 export function groupedMockResults(query: SearchQuery) {
   const byProgram = new Map<string, SearchResultRow[]>();
   for (const seed of SEEDS) {
+    const firstSeg = seed.segments[0];
+    const lastSeg = seed.segments[seed.segments.length - 1];
+    if (
+      firstSeg.originIata !== query.origin ||
+      lastSeg.destIata !== query.dest
+    ) {
+      continue;
+    }
     const row = buildRow(seed, query);
     const list = byProgram.get(seed.programId) ?? [];
     list.push(row);
