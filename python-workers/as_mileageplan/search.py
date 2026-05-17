@@ -82,7 +82,10 @@ def _js_object_to_json(s: str) -> str | None:
         # 2. Replace single-quoted strings with double-quoted (basic — fails on
         #    apostrophes inside, which Alaska's payload doesn't seem to use).
         out = re.sub(r"'([^'\\]*(?:\\.[^'\\]*)*)'", r'"\1"', out)
-        # 3. Replace JS undefined / NaN with JSON nulls.
+        # 3. Replace JS undefined / NaN / `void 0` / `void(0)` with JSON nulls.
+        #    SvelteKit's minified output uses `void 0` heavily — that's what
+        #    breaks the parse at char ~6183 on Alaska's payload.
+        out = re.sub(r"\bvoid\s*\(\s*0\s*\)|\bvoid\s+0\b", "null", out)
         out = re.sub(r"\b(undefined|NaN)\b", "null", out)
         return out
     except Exception as exc:  # noqa: BLE001
