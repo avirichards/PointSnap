@@ -3,7 +3,11 @@ import {
   groupedMockResults,
   MOCK_PROGRAMS_AT_LAUNCH,
 } from "@/lib/mockSearch";
-import type { SearchQuery, SearchStreamEvent } from "@/lib/types";
+import type {
+  SearchQuery,
+  SearchResultRow,
+  SearchStreamEvent,
+} from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -16,6 +20,38 @@ function send(
   controller.enqueue(
     new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`),
   );
+}
+
+/**
+ * Programs served by the Python worker bridge (see python-workers/).
+ * For these the route does a real HTTP call to ${PYTHON_WORKER_URL}/search
+ * instead of emitting from the mock dataset; if the env var is unset or the
+ * call fails, the program falls back to the mock so the cockpit never goes
+ * blank for it. Day-1: only Virgin Atlantic, hard-coded JFK→LHR response.
+ */
+const WORKER_PROGRAMS = new Set<string>(["VS_FLYING_CLUB"]);
+
+async function fetchWorkerResults(
+  programId: string,
+  query: SearchQuery,
+): Promise<SearchResultRow[]> {
+  const base = process.env.PYTHON_WORKER_URL;
+  if (!base) throw new Error("PYTHON_WORKER_URL unset");
+  const url = new URL("/search", base);
+  url.searchParams.set("program", programId);
+  url.searchParams.set("origin", query.origin);
+  url.searchParams.set("dest", query.dest);
+  url.searchParams.set("date", query.departDate);
+  url.searchParams.set("pax", String(query.pax));
+  url.searchParams.set("minCabin", query.minCabin);
+  const res = await fetch(url.toString(), {
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) {
+    throw new Error(`Worker ${programId} returned ${res.status}`);
+  }
+  const body = (await res.json()) as { rows?: SearchResultRow[] };
+  return body.rows ?? [];
 }
 
 export async function GET(req: NextRequest) {
@@ -65,6 +101,33 @@ export async function GET(req: NextRequest) {
       };
 
       const tasks = MOCK_PROGRAMS_AT_LAUNCH.map(async (programId) => {
+        // Real worker path — Python bridge handles the scrape (hard-coded
+        // for day-1) and returns rows in SearchResultRow shape. Fall back
+        // to mock on missing env var or any worker error so the cockpit
+        // stays populated even if the worker is down.
+        if (WORKER_PROGRAMS.has(programId) && process.env.PYTHON_WORKER_URL) {
+          try {
+            const rows = await fetchWorkerResults(programId, query);
+            if (rows.length > 0) {
+              send(controller, { type: "partial", programId, rows });
+            }
+            send(controller, {
+              type: "program_done",
+              programId,
+              status: rows.length > 0 ? "success" : "partial",
+            });
+            return;
+          } catch (err) {
+            console.error(`Worker call for ${programId} failed:`, err);
+            send(controller, {
+              type: "program_done",
+              programId,
+              status: "failed",
+            });
+            return;
+          }
+        }
+
         await sleep(latencyMs[programId] ?? 3000);
         const rows = grouped.get(programId);
         if (rows && rows.length > 0) {
@@ -78,9 +141,12 @@ export async function GET(req: NextRequest) {
       });
 
       // Shadow-confirm upgrade waves — simulate Temporal saga results landing
-      // 3-5s after each scrape, bumping confidence for top results
+      // 3-5s after each scrape, bumping confidence for top results. Skip the
+      // worker-backed programs: their rows aren't in the mock map, so the
+      // simulated confidence bump would fire against an unknown resultId.
       const shadowTask = (async () => {
         for (const programId of programs) {
+          if (WORKER_PROGRAMS.has(programId)) continue;
           await sleep((latencyMs[programId] ?? 3000) + 3500);
           const rows = grouped.get(programId);
           if (!rows) continue;
