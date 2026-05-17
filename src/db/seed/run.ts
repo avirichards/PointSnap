@@ -25,6 +25,8 @@ import {
   VALUATIONS,
 } from "./transferables";
 import { SWEET_SPOTS } from "./sweetSpots";
+import { seedAwardCharts, type AwardChartSeedSummary } from "./awardCharts";
+import { seedAwardChartRules } from "./awardChartRules";
 
 export interface SeedSummary {
   alliances: number;
@@ -37,6 +39,8 @@ export interface SeedSummary {
   transferBonuses: number;
   valuations: number;
   sweetSpots: number;
+  awardCharts: AwardChartSeedSummary;
+  awardChartRules: number;
 }
 
 export async function runSeed(): Promise<SeedSummary> {
@@ -152,6 +156,9 @@ export async function runSeed(): Promise<SeedSummary> {
     )
     .onConflictDoNothing();
 
+  const awardChartsSummary = await seedAwardCharts(db);
+  const awardChartRulesCount = await seedAwardChartRules(db);
+
   return {
     alliances: ALLIANCES.length,
     airlines: AIRLINES.length,
@@ -163,5 +170,7 @@ export async function runSeed(): Promise<SeedSummary> {
     transferBonuses: bonusInserted,
     valuations: VALUATIONS.length,
     sweetSpots: SWEET_SPOTS.length,
+    awardCharts: awardChartsSummary,
+    awardChartRules: awardChartRulesCount,
   };
 }
