@@ -1,0 +1,111 @@
+# PointSnap Phase 0 Scaffold — Todo List
+
+**Session goal:** Scaffold Next.js 15 + TS + Tailwind + shadcn/ui + Drizzle + Postgres (Neon) + Redis (Upstash) + Clerk + Stripe; deploy full Phase 1 schema with V1 improvements baked in; seed 13 launch programs + reference data; build cross-program spreadsheet view with mocked JFK→NRT data, SSE streaming API, confidence/freshness badges, and mobile-first responsive table.
+
+**Branch:** `claude/flight-points-platform-AP3St-24G73`
+
+---
+
+## Phase A — Repository scaffold
+
+- [ ] `pnpm create next-app@latest` with TS + Tailwind + App Router + ESLint + src-dir, non-interactive
+- [ ] Install runtime deps: `drizzle-orm`, `postgres`, `@neondatabase/serverless`, `@upstash/redis`, `@clerk/nextjs`, `stripe`, `@tanstack/react-table`, `clsx`, `tailwind-merge`, `lucide-react`, `class-variance-authority`, `zod`
+- [ ] Install dev deps: `drizzle-kit`, `tsx`, `vitest`, `@types/node`
+- [ ] Initialize shadcn/ui (Slate base, Tailwind v4 mode, dark-mode default)
+- [ ] Add shadcn components: `button`, `input`, `dropdown-menu`, `select`, `badge`, `toggle`, `tooltip`, `dialog`, `tabs`, `command`, `popover`, `calendar`, `separator`, `skeleton`
+- [ ] `next.config.ts`: PWA manifest link, theme-color metadata, optimize-pkg-imports for lucide
+- [ ] `public/manifest.webmanifest`, `public/icon-{192,512}.png` placeholders, `apple-touch-icon.png` placeholder
+- [ ] Fonts: `next/font` Inter (sans) + JetBrains Mono (mono), wired into Tailwind theme
+- [ ] Dark-mode toggle: class strategy, default dark, persist in `localStorage`
+- [ ] `.env.local.example` with all required vars (DATABASE_URL, DATABASE_URL_UNPOOLED, UPSTASH_REDIS_REST_URL/TOKEN, CLERK_*, STRIPE_*)
+- [ ] `.env.local` with placeholder values so dev server boots without real services
+- [ ] `tasks/lessons.md` initialized
+
+## Phase B — Drizzle schema (data backbone)
+
+- [ ] `drizzle.config.ts` pointed at `./src/db/schema/index.ts`, dialect `postgresql`, driver `neon-http`, out `./drizzle/migrations`
+- [ ] `src/db/index.ts` — client factory (Neon HTTP for serverless, postgres-js for Node scripts)
+- [ ] `src/db/schema/reference.ts` — alliances, airlines, airports, aircraftTypes
+- [ ] `src/db/schema/programs.ts` — programs, programPartnerships, transferableCurrencies, transferRatios, transferBonuses, valuations + cabinEnum, pricingModelEnum
+- [ ] `src/db/schema/awardCharts.ts` — awardCharts, awardChartZones, zoneMemberships, awardChartCells, awardChartRules
+- [ ] `src/db/schema/users.ts` — users, **userSubscriptionTier enum (free|day_pass|pro|elite)**, userWalletBalances, userCardHoldings, userWatchers, userAlerts, userNotificationPrefs
+- [ ] `src/db/schema/searches.ts` — searches, searchResults, resultSegments **with `operating_flight_key` deterministic column**, resultCabinPrices, searchResultsHistory
+- [ ] `src/db/schema/confidence.ts` — confidenceSignals, shadowConfirmations
+- [ ] `src/db/schema/scrapers.ts` — scraperRuns, scraperErrors, bookingOutcomes
+- [ ] `src/db/schema/sweetSpots.ts` — sweetSpots **with `tags` JSONB + GIN**
+- [ ] `src/db/schema/adminAudit.ts` — adminAuditEvents (actor, entity_type, entity_id, action, diff JSONB, occurred_at)
+- [ ] `src/db/schema/index.ts` — re-export all
+- [ ] `drizzle-kit generate` runs cleanly (validates compilation, produces migration SQL)
+- [ ] Hand-authored follow-up migration `0001_partition_history.sql` for `search_results_history` partitioning (raw SQL since Drizzle can't express it)
+
+## Phase C — Seed data
+
+- [ ] `src/db/seed/index.ts` — orchestrator, idempotent ON CONFLICT upserts
+- [ ] `src/db/seed/alliances.ts` — Star, Oneworld, SkyTeam, None
+- [ ] `src/db/seed/airlines.ts` — ~40 carriers focused on launch-program partners
+- [ ] `src/db/seed/airports.ts` — ~150 hubs (top global, full ~3000 set is overkill for scaffold; flag for v1.1 OpenFlights sync)
+- [ ] `src/db/seed/aircraftTypes.ts` — ~30 popular types (777-300ER, A380, A350-900/1000, 787-9/10, A330-300, 747-8, etc.)
+- [ ] `src/db/seed/programs.ts` — 13 launch programs with `pricing_model` + `fuel_surcharge_passthrough` from research
+- [ ] `src/db/seed/transferables.ts` — 7 currencies (Chase UR, Amex MR, Cap One Venture, Citi TY, Bilt, Marriott, Wells Fargo)
+- [ ] `src/db/seed/transferRatios.ts` — full (currency × program) edge matrix
+- [ ] `src/db/seed/transferBonuses.ts` — current May 2026 active bonuses (stub: 2-3 entries)
+- [ ] `src/db/seed/valuations.ts` — internal cents-per-point for 13 programs + 7 currencies
+- [ ] `src/db/seed/awardCharts.ts` — BA distance chart (7 bands × 4 cabins), ANA zone chart (zones + region memberships), CX/LH/AS/VS chart stubs, dynamic stubs for DL/UA-OWN/AA-OWN/TK
+- [ ] `src/db/seed/awardChartRules.ts` — one row per program
+- [ ] `src/db/seed/programPartnerships.ts` — full matrix with fare-class maps
+- [ ] `src/db/seed/sweetSpots.ts` — ~20 launch sweet spots with tags (transcon, premium-cabin, intra-asia, etc.)
+- [ ] `src/db/seed/README.md` — what's stubbed vs production-quality, what needs follow-up
+
+## Phase D — Mock search + SSE API
+
+- [ ] `src/lib/itineraryHash.ts` — canonical serializer + SHA256; unit tests in `src/lib/__tests__/itineraryHash.test.ts`
+- [ ] `src/lib/effectiveCost.ts` — points × cpp + surcharge − transfer-bonus math; unit tests
+- [ ] `src/lib/freshness.ts` — bucket `lastSeenAt` → 'fresh' | 'stale' | 'stale-critical' with color tokens
+- [ ] `src/lib/confidence.ts` — score → bucket (Verified/High/Medium/Low/Chart-only) + badge spec
+- [ ] `src/lib/features.ts` — tier → feature gate map (paywall infrastructure, all enabled at launch)
+- [ ] `src/lib/types.ts` — `SearchResult`, `ResultCabinPrice`, `SearchStreamEvent` (`partial` | `program_done` | `confidence_update` | `complete`)
+- [ ] `src/lib/mockSearch.ts` — curated JFK→NRT dataset, ~30 rows across 8 programs, stress patterns:
+  - Y-only Spirit-like, J+F-only ANA, all-four EVA, surcharge-heavy BA via partner, surcharge-free Aeroplan, mixed-cabin (W+J), low-confidence outlier (recently moved by carrier), saver vs anytime distinction
+- [ ] `src/app/api/search/route.ts` — SSE endpoint streaming results in per-program waves with simulated 200ms–8s latencies; emits `confidence_update` 3-5s after `program_done` to simulate shadow-confirm
+- [ ] `src/lib/__tests__/mockSearch.test.ts` — verify mock matches schema shape
+
+## Phase E — Spreadsheet UI
+
+- [ ] `src/app/layout.tsx` — fonts, dark-mode root, theme-color, viewport
+- [ ] `src/app/page.tsx` — redirect to /search
+- [ ] `src/components/layout/site-header.tsx` — logo, nav, dark-mode toggle, account stub
+- [ ] `src/components/search/search-form.tsx` — origin/dest typeahead, depart date, return date toggle, pax, min-cabin, flex selector
+- [ ] `src/components/search/use-search-stream.tsx` — hook wrapping `EventSource`, accumulates results, surfaces per-program status (pending/done) + confidence upgrades
+- [ ] `src/components/spreadsheet/results-table.tsx` — `@tanstack/react-table`, all-cabins-per-row layout
+- [ ] `src/components/spreadsheet/columns.tsx` — Date, Program (logo+text), Operating airline, O→D + stops, Y/W/J/F (cabin-tinted cells), Seats, Surcharge, Duration, Last Seen (color-coded), Confidence (badge)
+- [ ] `src/components/spreadsheet/cabin-cell.tsx` — tinted price cell with seats remaining
+- [ ] `src/components/spreadsheet/last-seen-badge.tsx` — green ≤5m / yellow ≤1h / red >1h, relative time
+- [ ] `src/components/spreadsheet/confidence-badge.tsx` — Verified / High / Medium / Low / Chart-only
+- [ ] `src/components/spreadsheet/multi-program-row.tsx` — collapse-by-operating-flight ("1 flight, 3 ways to book") expander
+- [ ] `src/components/spreadsheet/table-toolbar.tsx` — compress-rows toggle, filter inputs, multi-column sort indicator
+- [ ] `src/app/search/page.tsx` — search shell with form + table, URL-persisted query state
+- [ ] Mobile: frozen first two columns via CSS `position: sticky`, horizontal scroll, ~40px row height, ~32px in compress mode
+
+## Phase F — Polish + handoff updates
+
+- [ ] `README.md` — dev quickstart, env vars, scripts
+- [ ] `docs/planning/HANDOFF.md` — append session changelog: V1 improvements applied, Korean SKYPASS deferred to Phase 3, calendar overlay tabled for Phase 2 commit, effective-cost module shipped
+- [ ] `tasks/lessons.md` — none yet, placeholder
+- [ ] Commit per phase, push to `claude/flight-points-platform-AP3St-24G73`
+- [ ] Run `pnpm dev` and verify spreadsheet renders the curated dataset end-to-end (cabin tinting, sort, mobile responsive, dark mode)
+
+## Verification
+
+- [ ] `pnpm build` clean (no TS errors, no lint errors)
+- [ ] `pnpm test` clean (itineraryHash, effectiveCost, mockSearch shape)
+- [ ] Dev server boots, /search renders, SSE stream populates rows in waves
+- [ ] Mobile viewport (375px wide) shows frozen first two columns + scrollable rest
+- [ ] Dark mode default, toggle works, persists across reload
+- [ ] Confidence badges + Last Seen colors visible
+- [ ] No console errors
+
+---
+
+## Review (filled at end of session)
+
+(to be completed)

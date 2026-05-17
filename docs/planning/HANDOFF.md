@@ -1,8 +1,35 @@
 # PointSnap — Conversation Handoff
 
-**Date:** 2026-05-17
-**Branch:** `claude/flight-points-platform-AP3St`
-**Status:** Planning complete, ready to scaffold
+**Date:** 2026-05-17 (rev 2)
+**Branch:** `claude/flight-points-platform-AP3St-24G73`
+**Status:** Phase 0 scaffold + Phase 1 schema + spreadsheet UI shipped (mock data). Scrapers next.
+
+---
+
+## Session 2 changelog (2026-05-17, rev 2)
+
+Phase 0 + Phase 1 schema + initial cockpit UI landed on `claude/flight-points-platform-AP3St-24G73`. Highlights:
+
+- **Next.js 15 + TS + Tailwind v4 + shadcn-style components** scaffolded; pnpm pinned to 10.33 to avoid build-script gates on Neon/Clerk/sharp.
+- **Drizzle schema** — all 23 tables across reference/programs/awardCharts/users/searches/confidence/scrapers/sweetSpots/adminAudit; migration `0000_modern_zombie.sql` generated; partition migration `0001_partition_history.sql` hand-authored for `search_results_history`.
+- **Seed data** — alliances, ~40 airlines, ~150 airports across 10 regions, ~40 aircraft types, 13 launch programs with `fuel_surcharge_passthrough` set from research, 7 transferable currencies, full ratio matrix, 3 sample May-2026 transfer bonuses, internal cpp valuations for all programs + currencies, 20 hand-curated sweet spots with tags. All real data; `pnpm db:seed` is idempotent.
+- **SSE-streaming search API** at `/api/search` — mock now, real scrapers later, same wire format (`meta` / `partial` / `program_done` / `confidence_update` / `complete`). Per-program latencies modeled on the scraper architecture's p95 budgets.
+- **Cross-program spreadsheet view** at `/search` — all four cabins per row, dark mode default, mobile responsive with sticky first-two-columns, compact-row toggle, group-by-physical-flight collapse with "+N more ways to book" affordance, multi-column shift-click sort, per-program status strip with live "querying" pills, confidence badges (Verified / High / Medium / Low / Chart-only) that upgrade live as shadow-confirm simulated completes, color-coded "Last Seen" (green ≤5m / yellow ≤1h / red >1h).
+- **V1 improvements baked in** (per user approval): SSE streaming API contract, mobile-first table, `operating_flight_key` deterministic column on `result_segments`, subscription tier enum on `users` (`free|day_pass|pro|elite`) + paywall-toggle in `lib/features.ts`, sweet-spot `tags` JSONB + GIN, admin audit log, PWA manifest + theme-color, `lib/itineraryHash.ts` with canonical serializer + 5 unit tests, `lib/effectiveCost.ts` with transfer-bonus math + 6 unit tests.
+- **Korean SKYPASS** — formally deferred to Phase 3; launch 13 unchanged. Calendar overlay (PointsYeah-style) committed to Phase 2.
+- **CLAUDE.md** — added "Always invoke `apple-hig` skill for UI/UX tasks" as a top-level durable instruction.
+
+What's NOT in this commit (next session's targets):
+- Award charts seeded (BA distance, ANA zones, CX zones) — schema exists, seed deferred
+- `program_partnerships` full N×M fare-class matrix — schema exists, seed deferred
+- First real scraper (Virgin Atlantic / Alaska / BA recommended; easy + most-coverage)
+- `/wallet`, `/admin`, sign-in/up flows
+- `pnpm db:import-csv` script for Seats.aero exports
+- OpenFlights airport sync (raise from 150 → ~3000 airports)
+
+---
+
+## TL;DR (original)
 
 ---
 
@@ -311,10 +338,11 @@ See `05-cathay-lufthansa-research.md` for the full report.
 
 1. **Commercial partnership with Seats.aero / Roame** for fallback inventory vs. scrape everything ourselves? Defer; decide at month 3.
 2. **Public API tier** at launch vs Elite-tier only? Defer; decide at month 6.
-3. **Korean SKYPASS** — was on the Seats.aero gap list but not in the launch 13. Add to Phase 3 expansion?
+3. ~~**Korean SKYPASS**~~ — **decided 2026-05-17**: defer to Phase 3 expansion. Launch 13 unchanged. Documented as a knowing gap.
 4. **Singapore KrisFlyer** — dropped from launch list in favor of Cathay. Reassess for v1.1?
-5. **Mobile app** — native iOS/Android or PWA at launch? Recommendation: PWA at launch (faster shipping), native in Phase 3.
+5. **Mobile app** — native iOS/Android or PWA at launch? Recommendation: PWA at launch (faster shipping), native in Phase 3. **PWA manifest landed in Phase 0.**
 6. **Legal review** for Aeroplan and AA before going live? Strongly recommend, even though decision is "ship day 1."
+7. **Calendar overlay (PointsYeah cash-vs-points style)** — **decided 2026-05-17**: commit to Phase 2.
 
 ---
 

@@ -6,6 +6,16 @@ This is mandatory and non-optional — it is the primary mechanism that gives Cl
 
 ---
 
+## UI / UX Design — Always Use the Apple HIG Skill
+
+**Whenever the task touches user-visible design** — building or modifying a page, component, layout, color scheme, typography, spacing, navigation pattern, form, table, mobile breakpoint, dark mode, motion, or accessibility behavior — invoke the `apple-hig` skill via the `Skill` tool **before writing the code**. This applies to web (Next.js / Tailwind / shadcn), responsive layouts, the spreadsheet, the search form, the wallet, the admin shell, and any future mobile app surface.
+
+The skill is "universal design expert grounded in Apple's HIG philosophy" — it covers any platform, not just iOS. Use it as the design lens for every PointSnap surface so the cockpit feels considered, dense-but-clear, and consistent. Apply HIG patterns even when ultimately styling with Tailwind/shadcn — the spacing rhythm, typographic hierarchy, color semantics, accessibility expectations, and interaction affordances all translate.
+
+Don't skip it for "small" UI changes. A badge color, a row-height tweak, a hover affordance — all benefit from the HIG check. The Phase 1 spreadsheet view especially deserves the audit since it's the marquee surface.
+
+---
+
 ## Git & Deployment Workflow (CRITICAL — READ FIRST)
 
 **This app is in production with live users. Protect the live site at all costs.**
