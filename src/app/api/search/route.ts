@@ -4,6 +4,7 @@ import {
   MOCK_PROGRAMS_AT_LAUNCH,
 } from "@/lib/mockSearch";
 import { itineraryHash, operatingFlightKey } from "@/lib/itineraryHash";
+import { chartFallback } from "@/lib/chartFallback";
 import type {
   SearchQuery,
   SearchResultRow,
@@ -150,6 +151,9 @@ export async function GET(req: NextRequest) {
         LH_MILES_MORE: 10800,
       };
 
+      // Track chart-only rows for the final totalRows count.
+      let chartFallbackCount = 0;
+
       const tasks = MOCK_PROGRAMS_AT_LAUNCH.map(async (programId) => {
         await sleep(latencyMs[programId] ?? 3000);
 
@@ -168,12 +172,35 @@ export async function GET(req: NextRequest) {
         const rows = grouped.get(programId);
         if (rows && rows.length > 0) {
           send(controller, { type: "partial", programId, rows });
+          send(controller, { type: "program_done", programId, status: "success" });
+          return;
         }
-        send(controller, {
-          type: "program_done",
-          programId,
-          status: rows && rows.length > 0 ? "success" : "partial",
-        });
+
+        // No mock data for this program × route — try the chart fallback so
+        // the cockpit can show a "Chart-only" estimate instead of nothing.
+        try {
+          const fb = await chartFallback({
+            programId,
+            origin: query.origin,
+            dest: query.dest,
+            departDate: query.departDate,
+            pax: query.pax,
+          });
+          if (fb) {
+            chartFallbackCount++;
+            send(controller, { type: "partial", programId, rows: [fb] });
+            send(controller, {
+              type: "program_done",
+              programId,
+              status: "success",
+            });
+            return;
+          }
+        } catch {
+          // DB unavailable or schema error — fall through to partial status.
+        }
+
+        send(controller, { type: "program_done", programId, status: "partial" });
       });
 
       // Shadow-confirm upgrade waves — simulate Temporal saga results landing
@@ -207,7 +234,7 @@ export async function GET(req: NextRequest) {
       );
       send(controller, {
         type: "complete",
-        totalRows: mockRows + (vsReal ? 1 : 0),
+        totalRows: mockRows + (vsReal ? 1 : 0) + chartFallbackCount,
         durationMs: Date.now() - start,
       });
       controller.close();

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import type { Cabin, SearchQuery } from "@/lib/types";
+import { AirportCombobox } from "./airport-combobox";
 
 interface SearchFormProps {
   initialQuery: SearchQuery;
@@ -40,32 +41,22 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
         <Label htmlFor="origin" className="text-xs text-muted-foreground uppercase tracking-wider">
           From
         </Label>
-        <Input
+        <AirportCombobox
           id="origin"
           value={origin}
-          onChange={(e) => setOrigin(e.target.value)}
-          maxLength={3}
-          placeholder="JFK"
-          className="uppercase tabular-nums text-base"
-          autoComplete="off"
-          spellCheck={false}
-          required
+          onChange={(iata) => setOrigin(iata)}
+          placeholder="From"
         />
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="dest" className="text-xs text-muted-foreground uppercase tracking-wider">
           To
         </Label>
-        <Input
+        <AirportCombobox
           id="dest"
           value={dest}
-          onChange={(e) => setDest(e.target.value)}
-          maxLength={3}
-          placeholder="NRT"
-          className="uppercase tabular-nums text-base"
-          autoComplete="off"
-          spellCheck={false}
-          required
+          onChange={(iata) => setDest(iata)}
+          placeholder="To"
         />
       </div>
       <div className="grid gap-1.5 col-span-2 md:col-span-1">

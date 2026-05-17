@@ -138,6 +138,64 @@ const ANA_FROM_JP: AnaCell[] = [
   { destZone: "SAM",   Y: 30_000, J: 55_000, F: 87_500 },
 ];
 
+// Additional non-JP origins. Each list is "outbound from origin"; symmetric
+// inbound is generated at insert time. Sourced from AwardWallet + 10xTravel
+// (RT chart, halved to OW). Non-overlapping with JP-outbound above.
+const ANA_FROM_NAM: AnaCell[] = [
+  { destZone: "KR_RU", Y: 30_000, J: 65_000, F: 102_000 },
+  { destZone: "CN_TW", Y: 15_000, J: 27_500, F: 45_000 },
+  { destZone: "SEA",   Y: 15_000, J: 27_500, F: 45_000 },
+  { destZone: "SAS",   Y: 40_000, J: 68_000, F: 120_000 },
+  { destZone: "HAW",   Y: 23_500, J: 42_500, F: 67_500 },
+  { destZone: "EUR",   Y: 27_500, J: 50_000, F: 82_500 },
+  { destZone: "MEA",   Y: 35_000, J: 65_000, F: 105_000 },
+  { destZone: "SAM",   Y: 30_000, J: 48_000, F: 90_000 },
+  { destZone: "OCE",   Y: 37_500, J: 72_500, F: 123_000 },
+];
+const ANA_FROM_EUR: AnaCell[] = [
+  { destZone: "KR_RU", Y: 30_000, J: 59_000, F: 100_000 },
+  { destZone: "CN_TW", Y: 15_000, J: 27_500, F: 45_000 },
+  { destZone: "SEA",   Y: 15_000, J: 27_500, F: 45_000 },
+  { destZone: "SAS",   Y: 29_500, J: 47_000, F: 88_500 },
+  { destZone: "HAW",   Y: 35_000, J: 65_000, F: 105_000 },
+  { destZone: "MEA",   Y: 30_000, J: 51_000, F: 91_000 },
+  { destZone: "SAM",   Y: 35_000, J: 65_000, F: 105_000 },
+  { destZone: "OCE",   Y: 40_000, J: 83_500, F: 142_000 },
+];
+const ANA_FROM_CN_TW: AnaCell[] = [
+  { destZone: "KR_RU", Y: 11_000, J: 21_000, F: 33_000 },
+  { destZone: "SAS",   Y: 18_000, J: 30_500, F: 54_000 },
+  { destZone: "HAW",   Y: 27_500, J: 55_500, F: 96_500 },
+  { destZone: "MEA",   Y: 48_000, J: 89_500, F: 139_000 },
+  { destZone: "OCE",   Y: 25_000, J: 48_000, F: 90_000 },
+];
+const ANA_FROM_SEA: AnaCell[] = [
+  { destZone: "KR_RU", Y: 11_000, J: 21_000, F: 33_000 },
+  { destZone: "SAS",   Y: 18_000, J: 30_500, F: 54_000 },
+  { destZone: "HAW",   Y: 27_500, J: 55_500, F: 96_500 },
+  { destZone: "MEA",   Y: 48_000, J: 89_500, F: 139_000 },
+  { destZone: "OCE",   Y: 25_000, J: 48_000, F: 90_000 },
+];
+const ANA_FROM_SAS: AnaCell[] = [
+  { destZone: "KR_RU", Y: 18_500, J: 31_000, F: 55_500 },
+  { destZone: "HAW",   Y: 32_500, J: 65_000, F: 121_000 },
+  { destZone: "MEA",   Y: 36_000, J: 67_000, F: 104_500 },
+  { destZone: "OCE",   Y: 23_000, J: 43_500, F: 83_000 },
+];
+const ANA_FROM_HAW: AnaCell[] = [
+  { destZone: "KR_RU", Y: 27_500, J: 55_500, F: 96_500 },
+  { destZone: "MEA",   Y: 45_000, J: 72_500, F: 110_000 },
+  { destZone: "SAM",   Y: 35_000, J: 65_000, F: 105_000 },
+  { destZone: "OCE",   Y: 30_000, J: 55_000, F: 100_500 },
+];
+const ANA_FROM_MEA: AnaCell[] = [
+  { destZone: "SAM", Y: 34_000, J: 58_500, F: 101_500 },
+  { destZone: "OCE", Y: 35_000, J: 66_500, F: 115_000 },
+];
+const ANA_FROM_KR_RU: AnaCell[] = [
+  { destZone: "SAM", Y: 61_000, J: 103_500, F: 173_500 },
+];
+
 // -----------------------------------------------------------------------------
 // CX ASIA MILES — zone chart, post-April 2025 refresh. OW pricing as published.
 // Heavy fuel surcharges per program-level surchargeRule, not per-cell.
@@ -178,6 +236,40 @@ const CX_FROM_HK: CxCell[] = [
   { destZone: "NAW", Y: 35_000, J: 75_000, F: 110_000 },
   { destZone: "NAE", Y: 42_500, J: 90_000, F: 125_000 },
   { destZone: "SAM", Y: 50_000, J: 110_000, F: 150_000 },
+];
+
+// Additional non-HK origins. NOTE: CX's actual chart is DISTANCE-BASED (6
+// bands), not zonal. The zone-pair pricing below uses representative
+// gateway distances (e.g. NAW=LAX, NAE=JFK, EUR=LHR) to map to a band. Off-
+// gateway pairs may misprice — SEA-LHR is 4,797mi (20k/60k/90k band) while
+// LAX-LHR is 5,440mi (27k/91k/125k band) but both share the NAW↔EUR cell.
+// Acceptable approximation for Phase 1; replace with distance-band chart in
+// Phase 2 once scrapers expose actual band data.
+const CX_FROM_NAW: CxCell[] = [
+  { destZone: "EUR", Y: 27_000, J: 91_000, F: 125_000 },
+  { destZone: "NAE", Y: 9_000,  J: 27_000, F: 43_000 },
+];
+const CX_FROM_NAE: CxCell[] = [
+  { destZone: "EUR", Y: 20_000, J: 60_000, F: 90_000 },
+];
+const CX_FROM_JK: CxCell[] = [
+  { destZone: "NAW", Y: 27_000, J: 91_000, F: 125_000 },
+  { destZone: "NAE", Y: 27_000, J: 91_000, F: 125_000 },
+  { destZone: "EUR", Y: 27_000, J: 91_000, F: 125_000 },
+];
+const CX_FROM_SEA: CxCell[] = [
+  { destZone: "NAW", Y: 38_000, J: 119_000, F: 160_000 },
+  { destZone: "NAE", Y: 38_000, J: 119_000, F: 160_000 },
+  { destZone: "EUR", Y: 27_000, J: 91_000,  F: 125_000 },
+];
+const CX_FROM_OCE: CxCell[] = [
+  { destZone: "NAW", Y: 27_000, J: 91_000,  F: 125_000 },
+  { destZone: "NAE", Y: 38_000, J: 119_000, F: 160_000 },
+];
+const CX_FROM_EUR: CxCell[] = [
+  { destZone: "SAS", Y: 20_000, J: 60_000, F: 90_000 },
+  { destZone: "SAF", Y: 27_000, J: 91_000, F: 125_000 },
+  { destZone: "MEA", Y: 20_000, J: 60_000, F: 90_000 },
 ];
 
 // -----------------------------------------------------------------------------
@@ -390,14 +482,15 @@ export async function seedAwardCharts(database: DrizzleDb): Promise<AwardChartSe
     cells += await insertVsCells(database, chartId);
   }
 
-  // ANA — Star Alliance partner zones (outbound from Japan only — partial seed)
+  // ANA — Star Alliance partner zones. All major origin zones populated;
+  // remaining intra-Asia/Oceania pairs deferred until scrapers backfill.
   {
     const chartId = await upsertChart(database, {
       programId: "NH_ANA",
       chartType: "zone",
       scope: "STAR_PARTNER",
       sourceUrl: "https://www.ana.co.jp/en/us/amc/reference/awardmiles/partners/",
-      notes: "Star Alliance partner chart. RT-only program; OW = RT/2. Outbound-from-JP cells seeded; other zone-pairs use chart symmetry until full transcription lands.",
+      notes: "Star Alliance partner chart. RT-only program; OW = RT/2. Covers JP/NAM/EUR/CN_TW/SEA/SAS/HAW/MEA/KR_RU as origin zones — all major redemption combinations.",
     });
     await resetChartChildren(database, chartId);
     charts++;
@@ -407,24 +500,40 @@ export async function seedAwardCharts(database: DrizzleDb): Promise<AwardChartSe
       (acc, z) => acc + (z.countries?.length ?? 0) + (z.airports?.length ?? 0),
       0,
     );
-    cells += await insertZoneCells(
-      database,
-      chartId,
-      zoneIds,
-      "JP",
-      ANA_FROM_JP,
-      ["Y", "J", "F"],
-    );
+    const anaCabins = ["Y", "J", "F"] as const;
+    for (const [origin, list] of [
+      ["JP", ANA_FROM_JP],
+      ["NAM", ANA_FROM_NAM],
+      ["EUR", ANA_FROM_EUR],
+      ["CN_TW", ANA_FROM_CN_TW],
+      ["SEA", ANA_FROM_SEA],
+      ["SAS", ANA_FROM_SAS],
+      ["HAW", ANA_FROM_HAW],
+      ["MEA", ANA_FROM_MEA],
+      ["KR_RU", ANA_FROM_KR_RU],
+    ] as const) {
+      cells += await insertZoneCells(
+        database,
+        chartId,
+        zoneIds,
+        origin,
+        list,
+        [...anaCabins],
+      );
+    }
   }
 
-  // CX — Asia Miles own-metal zones (outbound from HK — partial seed)
+  // CX — Asia Miles own-metal. Cathay's chart is actually distance-based (6
+  // bands); the zone overlay below uses representative-gateway pricing per
+  // pair. Acceptable approximation for Phase 1; revisit in Phase 2 with a
+  // proper distance chart once scrapers expose actual band data.
   {
     const chartId = await upsertChart(database, {
       programId: "CX_CATHAY",
       chartType: "zone",
       scope: "OWN_METAL",
       sourceUrl: "https://www.cathaypacific.com/cx/en_US/membership/asia-miles.html",
-      notes: "Post-April 2025 chart refresh. Fuel surcharges per program rule (doubled Mar 2026, +34% Apr, -13% May). Outbound-from-HK cells seeded; other zone-pairs use chart symmetry until full transcription lands.",
+      notes: "Post-April 2025 chart refresh. CX is actually distance-based; zone pricing uses representative gateway distances. Fuel surcharges per program rule (doubled Mar 2026, +34% Apr, -13% May).",
     });
     await resetChartChildren(database, chartId);
     charts++;
@@ -434,14 +543,25 @@ export async function seedAwardCharts(database: DrizzleDb): Promise<AwardChartSe
       (acc, z) => acc + (z.countries?.length ?? 0) + (z.airports?.length ?? 0),
       0,
     );
-    cells += await insertZoneCells(
-      database,
-      chartId,
-      zoneIds,
-      "HK",
-      CX_FROM_HK,
-      ["Y", "J", "F"],
-    );
+    const cxCabins = ["Y", "J", "F"] as const;
+    for (const [origin, list] of [
+      ["HK", CX_FROM_HK],
+      ["NAW", CX_FROM_NAW],
+      ["NAE", CX_FROM_NAE],
+      ["JK", CX_FROM_JK],
+      ["SEA", CX_FROM_SEA],
+      ["OCE", CX_FROM_OCE],
+      ["EUR", CX_FROM_EUR],
+    ] as const) {
+      cells += await insertZoneCells(
+        database,
+        chartId,
+        zoneIds,
+        origin,
+        list,
+        [...cxCabins],
+      );
+    }
   }
 
   return { charts, zones, zoneMemberships: memberships, cells };
