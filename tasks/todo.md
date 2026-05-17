@@ -136,6 +136,27 @@
 - Clean working tree
 - Single commit: `3feae10 scaffold PointSnap: Next.js 15 + Drizzle Phase 1 schema + cockpit UI`
 
+---
+
+## Review (session 3, 2026-05-17 — Neon live)
+
+### What landed
+- Real Neon URL written to `.env.local` (gitignored).
+- Network policy in this env still blocks TCP 5432, so we applied schema + seed via the Neon HTTPS driver instead of `psql`. `scripts/applyBootstrap.ts` (already on branch) ran 153 statements cleanly. Tracked separately: revisit `psql` workflow if/when 5432 egress is opened.
+- `pnpm db:bootstrap` → 39 base tables in `public` (33 schema tables + 6 monthly partitions `search_results_history_2026_02` … `_2026_07`).
+- `pnpm db:seed` → idempotent. Final counts: programs=13, airports=132, airlines=39, sweet_spots=20, transfer_ratios=48. (Airports/airlines/ratios are a touch below the ~150/40/49 sketched in the handoff because the seed files were curated tighter; not a defect — schema slots are still in place for the v1.1 OpenFlights sync.)
+- `pnpm typecheck && pnpm test && pnpm build` — all green. 15/15 unit tests pass. Build emits the 5 expected ƒ-dynamic routes (`/`, `/api/admin/seed`, `/api/search`, `/search`, `/_not-found`).
+- Small fix: both `applyBootstrap.ts` and `src/db/seed/index.ts` now load env from `.env.local` first via `src/db/seed/_loadEnv.ts` (plain `dotenv/config` only reads `.env`). Required so the scripts work outside the Next runtime.
+
+### Verification done
+- Schema: `information_schema.tables` query confirms all 33 base tables + 6 partitions.
+- Counts: verified via Neon HTTPS query (numbers above).
+- App health: typecheck + test + build all clean.
+
+### Not yet done (separate user steps)
+- Vercel project import + env-var paste (instructions delivered in chat).
+- First production deploy + `/search` smoke test + `/api/admin/seed?token=…` re-confirm (idempotent no-op, so safe).
+
 ### Suggested next-session targets (in priority order)
 1. First real scraper — **Virgin Atlantic** (1/5 difficulty, no auth, light captcha, validates the pipeline). Python project skeleton + Patchright + IPRoyal trial proxies + result writeback to Postgres via the existing schema. 3-5 days.
 2. CSV importer (`pnpm db:import-csv`) so real data is available before scraper-2 ships.

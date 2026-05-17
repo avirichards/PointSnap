@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./_loadEnv";
 import { runSeed } from "./run";
 
 async function main() {
