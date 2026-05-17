@@ -74,7 +74,7 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="pax" className="text-xs text-muted-foreground uppercase tracking-wider">
-          Pax
+          Passengers
         </Label>
         <Input
           id="pax"
@@ -84,6 +84,7 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
           value={pax}
           onChange={(e) => setPax(Math.max(1, Number(e.target.value)))}
           className="tabular-nums text-base"
+          aria-label="Number of passengers"
           required
         />
       </div>

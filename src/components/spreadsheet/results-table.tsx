@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from "lucide-react";
 import type { Cabin, SearchResultRow } from "@/lib/types";
-import { CABIN_ORDER } from "@/lib/types";
+import { CABIN_LABEL, CABIN_ORDER } from "@/lib/types";
 import { formatMiles } from "@/lib/effectiveCost";
 import { cn } from "@/lib/utils";
 import { CabinCell } from "./cabin-cell";
@@ -178,8 +178,12 @@ export function ResultsTable({
                 key={c}
                 widthClass="w-[88px] text-right"
                 onClick={(e) => onHeaderClick(c, e)}
+                title={`${c} — ${CABIN_LABEL[c]}`}
               >
-                <span className="inline-flex items-center gap-1 justify-end w-full">
+                <span
+                  className="inline-flex items-center gap-1 justify-end w-full"
+                  aria-label={`${CABIN_LABEL[c]} (${c})`}
+                >
                   {c}
                   <SortIcon keyId={c} />
                 </span>
@@ -257,16 +261,19 @@ function Th({
   widthClass,
   sticky,
   onClick,
+  title,
 }: {
   children: React.ReactNode;
   widthClass?: string;
   sticky?: string;
   onClick?: (e: React.MouseEvent) => void;
+  title?: string;
 }) {
   const isClickable = !!onClick;
   return (
     <th
       onClick={onClick}
+      title={title}
       className={cn(
         "py-2 px-2 text-left font-medium align-middle",
         widthClass,
