@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Compass, Rows3, Rows4 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SearchForm } from "@/components/search/search-form";
@@ -9,33 +10,70 @@ import { ProgramStatusStrip } from "@/components/spreadsheet/program-status-stri
 import { Toggle } from "@/components/ui/toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchStream } from "@/hooks/use-search-stream";
-import type { SearchQuery } from "@/lib/types";
+import type { Cabin, SearchQuery } from "@/lib/types";
 
 const defaultDepartDate = () =>
   new Date(Date.now() + 14 * 86400_000).toISOString().slice(0, 10);
 
+const VALID_CABINS: Cabin[] = ["Y", "W", "J", "F"];
+
+function queryToParams(q: SearchQuery): string {
+  const p = new URLSearchParams({
+    origin: q.origin,
+    dest: q.dest,
+    departDate: q.departDate,
+    pax: String(q.pax),
+    minCabin: q.minCabin,
+  });
+  if (q.returnDate) p.set("returnDate", q.returnDate);
+  return p.toString();
+}
+
 export default function SearchPage() {
-  const [query, setQuery] = useState<SearchQuery>({
-    origin: "JFK",
-    dest: "NRT",
-    departDate: defaultDepartDate(),
-    pax: 1,
-    minCabin: "Y",
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Read URL params on initial mount only. Back/forward updates don't sync
+  // the form fields — rare edge case; the URL still shows the right query
+  // and a fresh load picks it up correctly.
+  const [query, setQuery] = useState<SearchQuery>(() => {
+    const minCabinRaw = (
+      searchParams.get("minCabin") ?? "Y"
+    ).toUpperCase() as Cabin;
+    return {
+      origin: (searchParams.get("origin") ?? "JFK").toUpperCase().slice(0, 3),
+      dest: (searchParams.get("dest") ?? "NRT").toUpperCase().slice(0, 3),
+      departDate: searchParams.get("departDate") ?? defaultDepartDate(),
+      returnDate: searchParams.get("returnDate") ?? undefined,
+      pax: Math.max(1, Number(searchParams.get("pax") ?? "1")),
+      minCabin: VALID_CABINS.includes(minCabinRaw) ? minCabinRaw : "Y",
+    };
   });
   const [compress, setCompress] = useState(false);
   const [collapseByFlight, setCollapseByFlight] = useState(true);
 
   const { rows, programs, durationMs, isStreaming } = useSearchStream(query);
 
+  const handleSubmit = (q: SearchQuery) => {
+    setQuery(q);
+    router.replace(`/search?${queryToParams(q)}`, { scroll: false });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 mx-auto w-full max-w-screen-2xl px-3 md:px-6 py-4 md:py-6 space-y-4">
-        <SearchForm
-          initialQuery={query}
-          onSubmit={(q) => setQuery(q)}
-          isStreaming={isStreaming}
-        />
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex-1 mx-auto w-full max-w-screen-2xl px-3 md:px-6 py-4 md:py-6 space-y-4 focus:outline-none"
+      >
+        <div className="sticky top-14 z-30 -mx-3 md:-mx-6 px-3 md:px-6 py-3 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-transparent transition-colors data-[stuck=true]:border-border">
+          <SearchForm
+            initialQuery={query}
+            onSubmit={handleSubmit}
+            isStreaming={isStreaming}
+          />
+        </div>
 
         <div className="flex flex-wrap items-center gap-2 justify-between">
           <ProgramStatusStrip programs={programs} />

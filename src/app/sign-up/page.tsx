@@ -13,7 +13,11 @@ const CLERK_CONFIGURED = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-b from-background via-background to-muted/30">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-b from-background via-background to-muted/30 focus:outline-none"
+    >
       <Link
         href="/search"
         className="flex items-center gap-2 mb-8 text-base font-semibold tracking-tight"
@@ -100,6 +104,6 @@ export default function SignUpPage() {
           ← Back to search
         </Link>
       </p>
-    </div>
+    </main>
   );
 }

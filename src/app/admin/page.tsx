@@ -1,9 +1,7 @@
-import { Shield, Filter } from "lucide-react";
+import { Shield } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { AuditFeed, type AuditEvent } from "@/components/admin/audit-feed";
 import { db, schema } from "@/db";
 import { desc } from "drizzle-orm";
 
@@ -13,21 +11,13 @@ export const metadata = {
 };
 
 /**
- * Admin shell. Reads from admin_audit_events. RBAC (only-show-to-staff)
+ * Admin shell. Reads from admin_audit_events server-side, then hands events
+ * to the AuditFeed client component for filtering. RBAC (only-show-to-staff)
  * lands when Clerk is wired up — for now this is reachable to anyone but
- * shows no PII (the audit log doesn't contain user-identifying data
- * outside actor_id, which is a Clerk-user UUID).
+ * shows no PII (audit log doesn't contain user-identifying data outside
+ * actor_email which is the operator, not the customer).
  */
-async function loadAudit(): Promise<
-  Array<{
-    id: number;
-    actorEmail: string;
-    entityType: string;
-    entityId: string;
-    action: string;
-    occurredAt: Date;
-  }>
-> {
+async function loadAudit(): Promise<AuditEvent[]> {
   if (!db) return [];
   const rows = await db
     .select({
@@ -41,19 +31,15 @@ async function loadAudit(): Promise<
     .from(schema.adminAuditEvents)
     .orderBy(desc(schema.adminAuditEvents.occurredAt))
     .limit(100);
-  return rows;
+  return rows.map((r) => ({
+    id: r.id,
+    actorEmail: r.actorEmail,
+    entityType: r.entityType,
+    entityId: r.entityId,
+    action: r.action,
+    occurredAtIso: r.occurredAt.toISOString(),
+  }));
 }
-
-const relativeTime = (d: Date): string => {
-  const ms = Date.now() - d.getTime();
-  const min = Math.round(ms / 60_000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.round(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const day = Math.round(hr / 24);
-  return `${day}d ago`;
-};
 
 export default async function AdminPage() {
   const events = await loadAudit();
@@ -61,7 +47,11 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 mx-auto w-full max-w-screen-2xl px-3 md:px-6 py-4 md:py-6 space-y-6">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex-1 mx-auto w-full max-w-screen-2xl px-3 md:px-6 py-4 md:py-6 space-y-6 focus:outline-none"
+      >
         <header className="space-y-1">
           <div className="flex items-center gap-2">
             <Shield className="size-5 text-muted-foreground" aria-hidden />
@@ -75,77 +65,7 @@ export default async function AdminPage() {
           </p>
         </header>
 
-        <section className="rounded-lg border bg-card">
-          <div className="flex flex-wrap items-center justify-between gap-2 p-3 md:p-4">
-            <div className="flex items-center gap-2">
-              <Filter className="size-4 text-muted-foreground" aria-hidden />
-              <Input
-                placeholder="Filter by actor, entity, or action…"
-                className="w-72 max-w-full text-sm"
-                disabled
-                aria-label="Filter audit events"
-              />
-            </div>
-            <Button variant="outline" size="default" disabled>
-              Export CSV
-            </Button>
-          </div>
-          <Separator />
-          {events.length === 0 ? (
-            <div className="p-12 text-center">
-              <Shield
-                className="size-8 text-muted-foreground/40 mx-auto mb-3"
-                aria-hidden
-              />
-              <p className="text-sm text-muted-foreground">
-                No admin actions recorded yet.
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Events will appear here as operators edit sweet spots, override
-                scrape data, or flip kill switches.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40">
-                  <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-3 md:px-4 py-2 font-medium">When</th>
-                    <th className="px-3 md:px-4 py-2 font-medium">Actor</th>
-                    <th className="px-3 md:px-4 py-2 font-medium">Action</th>
-                    <th className="px-3 md:px-4 py-2 font-medium">Entity</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {events.map((e) => (
-                    <tr key={e.id} className="hover:bg-accent/30 transition-colors">
-                      <td className="px-3 md:px-4 py-2 whitespace-nowrap">
-                        <time
-                          dateTime={e.occurredAt.toISOString()}
-                          title={e.occurredAt.toISOString()}
-                        >
-                          {relativeTime(e.occurredAt)}
-                        </time>
-                      </td>
-                      <td className="px-3 md:px-4 py-2 font-mono text-xs text-muted-foreground">
-                        {e.actorEmail || "system"}
-                      </td>
-                      <td className="px-3 md:px-4 py-2">
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {e.action}
-                        </Badge>
-                      </td>
-                      <td className="px-3 md:px-4 py-2 text-muted-foreground">
-                        {e.entityType}
-                        <span className="font-mono text-xs"> #{e.entityId}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+        <AuditFeed events={events} />
       </main>
     </div>
   );

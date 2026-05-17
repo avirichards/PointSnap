@@ -37,7 +37,11 @@ export default async function WalletPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 mx-auto w-full max-w-screen-2xl px-3 md:px-6 py-4 md:py-6 space-y-6">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex-1 mx-auto w-full max-w-screen-2xl px-3 md:px-6 py-4 md:py-6 space-y-6 focus:outline-none"
+      >
         <header className="space-y-1">
           <div className="flex items-center gap-2">
             <Wallet className="size-5 text-muted-foreground" aria-hidden />
