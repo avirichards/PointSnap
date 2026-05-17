@@ -109,6 +109,40 @@ export default function SearchPage() {
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
+        ) : !isStreaming && rows.length === 0 ? (
+          <div className="rounded-lg border bg-card p-8 md:p-12 text-center space-y-3">
+            <p className="text-sm font-medium">No results for {query.origin} → {query.dest}.</p>
+            <p className="text-sm text-muted-foreground max-w-prose mx-auto">
+              We have live data for{" "}
+              <span className="font-mono">JFK → NRT</span> (full mock dataset),{" "}
+              <span className="font-mono">JFK → LHR</span> (Virgin Atlantic),
+              and chart-only estimates for routes covered by the BA, VS, ANA, or
+              CX charts. Other routes wait for the real scrapers (Phase 2).
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Try{" "}
+              <button
+                type="button"
+                onClick={() =>
+                  handleSubmit({ ...query, origin: "HKG", dest: "LHR" })
+                }
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                HKG → LHR
+              </button>
+              {" "}or{" "}
+              <button
+                type="button"
+                onClick={() =>
+                  handleSubmit({ ...query, origin: "JFK", dest: "LHR" })
+                }
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                JFK → LHR
+              </button>
+              {" "}to see chart-only results in action.
+            </p>
+          </div>
         ) : (
           <ResultsTable
             rows={rows}
