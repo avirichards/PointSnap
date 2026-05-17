@@ -138,6 +138,27 @@
 
 ---
 
+## Session 4 — Virgin Atlantic scraper, day-1 (hard-coded response)
+
+Branch: `claude/vs-scraper-day1-VlteK` (fast-forwarded to main).
+Goal: prove the worker → DB → SSE → cockpit pipeline with a hard-coded VS response, verified on the Vercel preview URL.
+
+- [ ] **Commit 1 — Worker skeleton.** `python-workers/` with `pyproject.toml` (httpx, psycopg[binary], fastapi, uvicorn, python-dotenv; skip patchright/playwright for day 1), README, .gitignore, package init files, `common/types.py`, empty `vs/` and `serve.py` placeholders, `Dockerfile` + `fly.toml`.
+- [ ] **Commit 2 — VS plugin stub.** `python-workers/vs/search.py` exporting `async def search(origin, dest, date, cabin_filter) -> list[NormalizedResult]`. For JFK→LHR, return one DL-operated A359 J row at 90k VS miles + one Y row. Other O&D pairs return `[]`. Unit test for shape.
+- [ ] **Commit 3 — DB writeback.** `python-workers/common/db.py` writing to `searches` + `search_results` (ON CONFLICT itin_hash/program/date) + `result_segments` + `result_cabin_prices`. `common/hash.py` Python port of `itineraryHash` matching JS canonical form bit-for-bit. Unit test confirms hash parity with JS fixture.
+- [ ] **Commit 4 — HTTP bridge.** `python-workers/serve.py` FastAPI app: `GET /search?program=VS_FLYING_CLUB&origin=JFK&dest=LHR&date=YYYY-MM-DD` → run plugin → write to DB → return JSON list of `SearchResultRow`. Local smoke: `uvicorn serve:app --port 8001 && curl …`.
+- [ ] **Commit 5 — Route wiring + Vercel preview verify.** `src/app/api/search/route.ts` swaps the `VS_FLYING_CLUB` mock emission for an HTTP call to `process.env.PYTHON_WORKER_URL`; falls back to mock if unset. All 12 other programs stay simulated. Deploy worker to Fly.io, set `PYTHON_WORKER_URL` in Vercel preview env, verify `/search` on the preview URL shows a real VS row alongside 12 sim rows.
+
+### Open items needing user input mid-flight
+- Neon `DATABASE_URL` for local dev (gitignored; previous session had it in `.env.local`). Worker can run plugin-only without DB; DB writeback test only happens on Fly.io.
+- Fly.io API token + region preference for worker deployment.
+- After Fly.io deploy, user sets `PYTHON_WORKER_URL` in Vercel preview-env vars scoped to this branch.
+
+### Out of scope (session 5+)
+Real Patchright scrape, IPRoyal proxies, CapSolver, other 12 programs, BullMQ queue.
+
+---
+
 ## Review (session 3, 2026-05-17 — Neon live)
 
 ### What landed
