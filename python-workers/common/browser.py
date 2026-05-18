@@ -51,6 +51,36 @@ def _proxy_kwargs(country: str | None = None, session: str | None = None) -> dic
     }
 
 
+def _scraperapi_proxy(country: str | None = None, render: bool = True) -> dict | None:
+    """Return Patchright proxy config pointing at ScraperAPI's proxy port.
+
+    ScraperAPI exposes their browser farm + clean residential IPs as a
+    standard HTTP proxy. Options encode into the username:
+      `scraperapi.render=true.country_code=us`
+    They handle Akamai/Imperva on their side — drop-in replacement for
+    IPRoyal for sites IPRoyal blocks (aa.com, delta.com, aircanada.com)
+    or that Akamai blocks via IPRoyal IPs (united, AF, KLM, TK, CX).
+
+    Credit cost: 5/req for render=true, 25/req for premium=true, 75
+    for both. Free tier 1k credits/mo. We default render=true (most
+    airline pages are SPAs that need JS) but skip premium unless a site
+    specifically needs it."""
+    key = os.environ.get("SCRAPERAPI_KEY")
+    if not key:
+        return None
+    opts: list[str] = ["scraperapi"]
+    if render:
+        opts.append("render=true")
+    cc = (country or os.environ.get("IPROYAL_COUNTRY") or "us").lower()
+    opts.append(f"country_code={cc}")
+    username = ".".join(opts)
+    return {
+        "server": "http://proxy-server.scraperapi.com:8001",
+        "username": username,
+        "password": key,
+    }
+
+
 @asynccontextmanager
 async def browser_page(
     *,
@@ -60,6 +90,8 @@ async def browser_page(
     proxy_country: str | None = None,
     proxy_session: str | None = None,
     disable_http2: bool = True,
+    use_scraperapi: bool = False,
+    scraperapi_render: bool = True,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -78,11 +110,12 @@ async def browser_page(
     # time so the worker boots even if Chromium isn't installed yet.
     from patchright.async_api import async_playwright
 
-    proxy_cfg = (
-        _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
-        if use_proxy
-        else None
-    )
+    if use_scraperapi:
+        proxy_cfg = _scraperapi_proxy(country=proxy_country, render=scraperapi_render)
+    elif use_proxy:
+        proxy_cfg = _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
+    else:
+        proxy_cfg = None
     launch_args = [
         "--no-sandbox",
         "--disable-dev-shm-usage",

@@ -195,6 +195,8 @@ async def diag_airline(
     country: str = Query("us", description="IPRoyal exit country (us, gb, ca, jp, etc.)"),
     session: str = Query("", description="IPRoyal sticky session id (optional)"),
     http2: int = Query(0, description="1 = enable HTTP/2 (default disabled)"),
+    scraperapi: int = Query(0, description="1 = route through ScraperAPI proxy port"),
+    scraperapi_render: int = Query(1, description="0 = no render (saves credits)"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
     page title + status + any console errors + a snippet of body html."""
@@ -202,11 +204,13 @@ async def diag_airline(
         from common.browser import browser_page
         console_errors: list[str] = []
         async with browser_page(
-            timeout_ms=45_000,
+            timeout_ms=120_000 if scraperapi else 45_000,
             use_proxy=bool(use_proxy),
             proxy_country=country or None,
             proxy_session=session or None,
             disable_http2=not bool(http2),
+            use_scraperapi=bool(scraperapi),
+            scraperapi_render=bool(scraperapi_render),
         ) as page:
             page.on(
                 "console",
