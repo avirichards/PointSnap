@@ -157,7 +157,14 @@ async def _scrape_real(
     body = _build_search_body(origin, dest, date, 1)
 
     try:
-        async with browser_page(timeout_ms=45_000) as page:
+        # AA detects ScraperAPI's shared pool ("multiple users from your IP")
+        # → premium=true uses clean residential IPs (25 credits/req instead of 5).
+        async with browser_page(
+            timeout_ms=150_000,
+            use_scraperapi=True,
+            scraperapi_premium=True,
+            proxy_country="us",
+        ) as page:
             # Prime Shape's _abck via real navigation
             await page.goto(SEARCH_PAGE, wait_until="domcontentloaded")
             await asyncio.sleep(2.0)  # let sensor.js run

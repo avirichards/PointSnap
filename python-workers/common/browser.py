@@ -51,26 +51,32 @@ def _proxy_kwargs(country: str | None = None, session: str | None = None) -> dic
     }
 
 
-def _scraperapi_proxy(country: str | None = None, render: bool = True) -> dict | None:
+def _scraperapi_proxy(
+    country: str | None = None,
+    render: bool = True,
+    premium: bool = False,
+) -> dict | None:
     """Return Patchright proxy config pointing at ScraperAPI's proxy port.
 
     ScraperAPI exposes their browser farm + clean residential IPs as a
     standard HTTP proxy. Options encode into the username:
-      `scraperapi.render=true.country_code=us`
+      `scraperapi.render=true.country_code=us.premium=true`
     They handle Akamai/Imperva on their side — drop-in replacement for
     IPRoyal for sites IPRoyal blocks (aa.com, delta.com, aircanada.com)
     or that Akamai blocks via IPRoyal IPs (united, AF, KLM, TK, CX).
 
     Credit cost: 5/req for render=true, 25/req for premium=true, 75
-    for both. Free tier 1k credits/mo. We default render=true (most
-    airline pages are SPAs that need JS) but skip premium unless a site
-    specifically needs it."""
+    for both. Free tier 5k credits/mo. We default render=true (most
+    airline pages are SPAs that need JS). Premium=true gets clean IPs
+    (needed when the site detects ScraperAPI's shared pool, e.g. AA)."""
     key = os.environ.get("SCRAPERAPI_KEY")
     if not key:
         return None
     opts: list[str] = ["scraperapi"]
     if render:
         opts.append("render=true")
+    if premium:
+        opts.append("premium=true")
     cc = (country or os.environ.get("IPROYAL_COUNTRY") or "us").lower()
     opts.append(f"country_code={cc}")
     username = ".".join(opts)
@@ -92,6 +98,7 @@ async def browser_page(
     disable_http2: bool = True,
     use_scraperapi: bool = False,
     scraperapi_render: bool = True,
+    scraperapi_premium: bool = False,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -111,7 +118,11 @@ async def browser_page(
     from patchright.async_api import async_playwright
 
     if use_scraperapi:
-        proxy_cfg = _scraperapi_proxy(country=proxy_country, render=scraperapi_render)
+        proxy_cfg = _scraperapi_proxy(
+            country=proxy_country,
+            render=scraperapi_render,
+            premium=scraperapi_premium,
+        )
     elif use_proxy:
         proxy_cfg = _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
     else:

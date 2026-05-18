@@ -100,7 +100,7 @@ async def _scrape_real(
         return []
 
     try:
-        async with browser_page(timeout_ms=90_000) as page:
+        async with browser_page(timeout_ms=150_000, use_scraperapi=True, proxy_country="de") as page:
             captured: dict[str, Any] = {}
 
             async def on_response(resp):

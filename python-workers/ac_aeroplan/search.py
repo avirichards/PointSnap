@@ -142,13 +142,16 @@ async def _scrape_real(
     url = SEARCH_URL_TMPL.format(origin=origin, dest=dest, date=date)
     user, pwd = creds_for(PROGRAM_ID)
 
-    # AC: IPRoyal residential blocks aircanada.com (provider anti-abuse list).
-    # Fly datacenter IPs work for aircanada.com **homepage** (200 OK) with
-    # HTTP/2 enabled, but the booking widget URL returns 403 unless we
-    # first warm the session via the homepage to mint Akamai cookies.
+    # AC: IPRoyal blocks aircanada.com at CONNECT, Fly direct gets Akamai
+    # 403 on the booking widget path, ScraperAPI's shared pool gets 499
+    # ("multiple users from your IP"). Premium=true uses clean residential
+    # exits (25 credits/req).
     try:
         async with browser_page(
-            timeout_ms=60_000, use_proxy=False, disable_http2=False
+            timeout_ms=150_000,
+            use_scraperapi=True,
+            scraperapi_premium=True,
+            proxy_country="ca",
         ) as page:
             captured: dict[str, Any] = {}
 

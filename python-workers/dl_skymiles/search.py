@@ -137,7 +137,7 @@ async def _scrape_real(
     body = _build_search_body(origin, dest, date, 1)
 
     try:
-        async with browser_page(timeout_ms=45_000) as page:
+        async with browser_page(timeout_ms=120_000, use_scraperapi=True, proxy_country="us") as page:
             await page.goto(SEARCH_PAGE, wait_until="domcontentloaded")
             await asyncio.sleep(3.0)  # DataDome JS warmup
 

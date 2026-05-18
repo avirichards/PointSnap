@@ -191,7 +191,7 @@ async def _scrape_real(
 ) -> list[NormalizedResult]:
     body = _build_body(origin, dest, date, 1, _united_cabin(cabin_filter))
     try:
-        async with browser_page(timeout_ms=45_000) as page:
+        async with browser_page(timeout_ms=120_000, use_scraperapi=True, proxy_country="us") as page:
             # Step 1: Land on united.com so Akamai's sensor.js mints the
             # bot-validation cookies. Without these, FetchFlights returns
             # 428 even with a valid bearer token.
