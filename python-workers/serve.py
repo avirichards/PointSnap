@@ -191,6 +191,7 @@ async def diag_airline(
     url: str = Query(..., description="Full URL to load via Patchright"),
     use_proxy: int = Query(1, description="0 = bypass proxy (use Fly egress)"),
     wait_ms: int = Query(0, description="ms to wait after domcontentloaded"),
+    wait_until: str = Query("domcontentloaded", description="domcontentloaded|load|commit|networkidle"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
     page title + status + any console errors + a snippet of body html."""
@@ -203,7 +204,7 @@ async def diag_airline(
                 lambda msg: console_errors.append(f"{msg.type}: {msg.text}")
                 if msg.type in ("error", "warning") else None,
             )
-            resp = await page.goto(url, wait_until="domcontentloaded")
+            resp = await page.goto(url, wait_until=wait_until)  # type: ignore[arg-type]
             if wait_ms:
                 await asyncio.sleep(wait_ms / 1000)
             title = await page.title()
