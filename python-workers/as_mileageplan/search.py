@@ -38,7 +38,6 @@ try:
 except ImportError:  # pragma: no cover — fall back to regex normalizer
     _HAS_JSON5 = False
 
-from common.plugin_wrapper import with_canonical_fallback
 from common.scrape_client import scrape_client
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
@@ -237,4 +236,4 @@ async def _scrape_real(
             return []
 
 
-search = with_canonical_fallback(PROGRAM_ID, _scrape_real)
+search = _scrape_real

@@ -13,8 +13,7 @@ Flow (Patchright-driven, no login strictly required for browse):
 If AEROPLAN_USER/PASS are set in Fly secrets, login first for better
 partner inventory coverage. Otherwise browse anonymously.
 
-Falls back to canonical JFK→NRT seed via with_canonical_fallback when
-the scrape returns empty or errors.
+Returns [] if the scrape fails — no canonical fallback.
 """
 
 from __future__ import annotations
@@ -25,7 +24,6 @@ from datetime import datetime, timezone
 from typing import Any
 
 from common.browser import browser_page, creds_for
-from common.plugin_wrapper import with_canonical_fallback
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
 log = logging.getLogger(__name__)
@@ -218,4 +216,4 @@ async def _scrape_real(
         return []
 
 
-search = with_canonical_fallback(PROGRAM_ID, _scrape_real)
+search = _scrape_real

@@ -13,19 +13,15 @@ chrome131 impersonation is the next defensive step if Akamai tightens.
 
 Returns one NormalizedResult per (date, cabin) for which the calendar
 shows availability (cabinPointsValue > 0). VS-operated only — Delta /
-ANA / SkyTeam partner segments aren't returned by this endpoint and
-remain canonical for now.
+ANA / SkyTeam partner segments aren't returned by this endpoint.
 
-Falls back to the prior JFK→LHR hardcoded VS3 row when:
-  - Live scrape returns empty for an on-route query (no availability)
-  - Live scrape fails (HTTP 411/403/429, parse error, etc.)
-  - Off-route query that the canonical JFK→LHR row would have answered
+Returns [] if the scrape fails or the route has no availability.
 """
 
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any
 
 from common.scrape_client import scrape_client
@@ -66,56 +62,6 @@ def _build_body(origin: str, dest: str, date: str) -> dict[str, Any]:
         "years": [d.year],
         "months": [MONTH_NAMES[d.month - 1]],
     }
-
-
-def _hardcoded_jfk_lhr(date: str) -> list[NormalizedResult]:
-    """JFK→LHR VS3 row — the original day-1 inline data. Used as fallback when
-    the live scrape can't answer (or returns empty) for the route we know
-    the cockpit prefers to demo."""
-    depart_date = datetime.strptime(date, "%Y-%m-%d").date()
-    depart_at = datetime.combine(
-        depart_date,
-        datetime.min.time().replace(hour=22, minute=30),
-        tzinfo=timezone.utc,
-    )
-    arrive_at = depart_at + timedelta(hours=6, minutes=45)
-    now = datetime.now(timezone.utc)
-    observed = _iso_utc(now)
-
-    segment = ResultSegment(
-        segment_order=0,
-        operating_airline_iata="VS",
-        marketing_airline_iata="VS",
-        flight_number="3",
-        origin_iata="JFK",
-        dest_iata="LHR",
-        depart_at=_iso_utc(depart_at),
-        arrive_at=_iso_utc(arrive_at),
-        aircraft_icao="B789",
-        segment_cabin="J",
-        fare_class="I",
-    )
-    cabin_prices = [
-        CabinPrice("Y", 9, 10_000, 420, 51),
-        CabinPrice("J", 4, 47_500, 720, 51),
-    ]
-    return [
-        NormalizedResult(
-            program_id=PROGRAM_ID,
-            program_name=PROGRAM_NAME,
-            origin_iata="JFK",
-            dest_iata="LHR",
-            depart_date=date,
-            arrive_date=(depart_date + timedelta(days=1)).isoformat(),
-            total_duration_min=405,
-            num_segments=1,
-            segments=[segment],
-            cabin_prices=cabin_prices,
-            confidence_score=72,
-            observed_at=observed,
-            last_seen_at=observed,
-        )
-    ]
 
 
 def _extract_for_date(
@@ -261,25 +207,4 @@ async def _scrape_real(
     return [result] if result else []
 
 
-async def search(
-    origin: str,
-    dest: str,
-    date: str,
-    cabin_filter: str = "Y",
-) -> list[NormalizedResult]:
-    """VS plugin entry. Tries real scrape first; falls back to the inline
-    JFK→LHR hardcoded row on failure (or for off-route JFK→LHR queries
-    that the real scrape doesn't answer)."""
-    try:
-        real = await _scrape_real(origin, dest, date, cabin_filter)
-        if real:
-            log.info("VS real scrape OK: %d row(s) for %s→%s", len(real), origin, dest)
-            return real
-    except Exception as exc:  # noqa: BLE001
-        log.warning("VS scrape exception: %s; falling back to hardcode", exc)
-
-    # Hardcoded JFK→LHR fallback — preserves the day-1 demo data for the
-    # route the cockpit's empty-state nudges users toward.
-    if (origin, dest) == ("JFK", "LHR"):
-        return _hardcoded_jfk_lhr(date)
-    return []
+search = _scrape_real

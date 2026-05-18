@@ -21,7 +21,6 @@ from datetime import datetime, timezone
 from typing import Any
 
 from common.browser import browser_page, creds_for
-from common.plugin_wrapper import with_canonical_fallback
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
 log = logging.getLogger(__name__)
@@ -166,4 +165,4 @@ async def _scrape_real(
         return []
 
 
-search = with_canonical_fallback(PROGRAM_ID, _scrape_real)
+search = _scrape_real
