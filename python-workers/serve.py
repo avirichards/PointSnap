@@ -11,6 +11,7 @@ results into the SSE `partial` event without translation.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Callable, Coroutine
 
@@ -188,31 +189,173 @@ async def diag_inputs(
 @app.get("/diag/airline")
 async def diag_airline(
     url: str = Query(..., description="Full URL to load via Patchright"),
+    use_proxy: int = Query(1, description="0 = bypass proxy (use Fly egress)"),
+    wait_ms: int = Query(0, description="ms to wait after domcontentloaded"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
-    page title + status + any console errors. Useful for confirming
-    whether Akamai/Imperva/etc. is blocking the request."""
+    page title + status + any console errors + a snippet of body html."""
     try:
         from common.browser import browser_page
         console_errors: list[str] = []
-        async with browser_page(timeout_ms=30_000) as page:
+        async with browser_page(timeout_ms=45_000, use_proxy=bool(use_proxy)) as page:
             page.on(
                 "console",
                 lambda msg: console_errors.append(f"{msg.type}: {msg.text}")
                 if msg.type in ("error", "warning") else None,
             )
             resp = await page.goto(url, wait_until="domcontentloaded")
+            if wait_ms:
+                await asyncio.sleep(wait_ms / 1000)
             title = await page.title()
+            body_text = (await page.locator("body").inner_text())[:600] if resp else ""
             return JSONResponse({
                 "ok": True,
                 "status": resp.status if resp else None,
                 "title": title,
                 "url": page.url,
+                "body_snippet": body_text,
                 "console_errors": console_errors[-10:],
             })
     except Exception as exc:  # noqa: BLE001
         return JSONResponse(
             {"ok": False, "error": str(exc)[:500]},
+            status_code=500,
+        )
+
+
+@app.get("/diag/ac_scrape")
+async def diag_ac_scrape(
+    origin: str = Query("YYZ"),
+    dest: str = Query("LHR"),
+    date: str = Query("2026-08-15"),
+) -> JSONResponse:
+    """Run the AC flow inline with per-step diagnostics so we can see
+    whether the XHR fires, the page state, and where 0 rows come from."""
+    try:
+        from common.browser import browser_page
+        from ac_aeroplan.search import SEARCH_URL_TMPL, AIR_BOUNDS_PATH, _parse_air_bounds
+
+        url = SEARCH_URL_TMPL.format(origin=origin, dest=dest, date=date)
+        captured: dict = {"responses_seen": [], "page_title": None, "page_url": None}
+
+        async with browser_page(timeout_ms=60_000, use_proxy=False) as page:
+            async def on_response(resp):
+                try:
+                    if AIR_BOUNDS_PATH in resp.url:
+                        captured["responses_seen"].append(
+                            {"url": resp.url, "status": resp.status}
+                        )
+                        if resp.status == 200:
+                            captured["json"] = await resp.json()
+                except Exception as exc:  # noqa: BLE001
+                    captured["responses_seen"].append({"error": str(exc)[:200]})
+            page.on("response", on_response)
+
+            resp = await page.goto(url, wait_until="domcontentloaded")
+            captured["initial_status"] = resp.status if resp else None
+            for _ in range(30):
+                if captured.get("json"):
+                    break
+                await asyncio.sleep(1.0)
+            captured["page_title"] = await page.title()
+            captured["page_url"] = page.url
+            captured["body_snippet"] = (await page.locator("body").inner_text())[:400]
+
+        payload = captured.get("json")
+        if not payload:
+            return JSONResponse({"ok": False, "stage": "no_xhr_captured", **{k: v for k, v in captured.items() if k != "json"}})
+        rows = _parse_air_bounds(payload, origin, dest, date)
+        groups = (payload.get("data") or {}).get("airBoundGroups") or []
+        return JSONResponse({
+            "ok": True,
+            "groups_in_payload": len(groups),
+            "rows_parsed": len(rows),
+            "first_group_keys": list((groups[0] or {}).keys()) if groups else [],
+            "responses_seen": captured["responses_seen"][:5],
+            "page_title": captured["page_title"],
+            "page_url": captured["page_url"],
+        })
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500], "traceback": traceback.format_exc()[-1000:]},
+            status_code=500,
+        )
+
+
+@app.get("/diag/ua_scrape")
+async def diag_ua_scrape(
+    origin: str = Query("EWR"),
+    dest: str = Query("HKG"),
+    date: str = Query("2026-08-15"),
+) -> JSONResponse:
+    """Run the UA flow inline with per-step diagnostics."""
+    try:
+        import json as _json
+        from common.browser import browser_page
+        from ua_mp.search import SEARCH_PAGE, _build_body, _united_cabin
+
+        async with browser_page(timeout_ms=60_000) as page:
+            r = await page.goto(SEARCH_PAGE, wait_until="domcontentloaded")
+            await asyncio.sleep(3.0)
+            initial_status = r.status if r else None
+            page_title = await page.title()
+            page_url = page.url
+
+            token_result = await page.evaluate(
+                """async () => {
+                    try {
+                        const r = await fetch('/api/token/anonymous', {credentials: 'include'});
+                        const txt = await r.text();
+                        return {status: r.status, body: txt.slice(0, 500)};
+                    } catch(e) { return {error: String(e)}; }
+                }"""
+            )
+            # Extract token if successful
+            token = None
+            try:
+                if token_result.get("status") == 200:
+                    parsed = _json.loads(token_result.get("body") or "{}")
+                    token = parsed.get("data", {}).get("token", {}).get("hash")
+            except Exception:  # noqa: BLE001
+                pass
+
+            search_result = None
+            if token:
+                body = _build_body(origin, dest, date, 1, _united_cabin("Y"))
+                search_result = await page.evaluate(
+                    """async ({body, token}) => {
+                        try {
+                            const r = await fetch('/api/flight/FetchFlights', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': '*/*',
+                                    'x-authorization-api': 'bearer ' + token,
+                                },
+                                body: JSON.stringify(body),
+                                credentials: 'include',
+                            });
+                            const t = await r.text();
+                            return { status: r.status, body_head: t.slice(0, 400) };
+                        } catch(e) { return {error: String(e)}; }
+                    }""",
+                    {"body": body, "token": token},
+                )
+
+        return JSONResponse({
+            "ok": True,
+            "page_initial_status": initial_status,
+            "page_title": page_title,
+            "page_url": page_url,
+            "token_result": token_result,
+            "token_extracted": bool(token),
+            "search_result": search_result,
+        })
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500], "traceback": traceback.format_exc()[-1000:]},
             status_code=500,
         )
 
