@@ -179,6 +179,18 @@ async def browser_page(
             ctx = await browser.new_context(**context_kwargs)
             page = await ctx.new_page()
         page.set_default_timeout(timeout_ms)
+        if use_scraperapi:
+            # ScraperAPI charges per resource. Block images/css/fonts/media
+            # so we pay for HTML + JS + XHR only — typically 10-20x credit
+            # savings per page.
+            async def _block_heavy(route):
+                if route.request.resource_type in (
+                    "image", "stylesheet", "font", "media", "manifest"
+                ):
+                    await route.abort()
+                else:
+                    await route.continue_()
+            await page.route("**/*", _block_heavy)
         try:
             yield page
         finally:
