@@ -276,7 +276,7 @@ async def diag_ac_scrape(
             except Exception as exc:  # noqa: BLE001
                 captured["warmup_error"] = str(exc)[:200]
 
-            resp = await page.goto(url, wait_until="domcontentloaded")
+            resp = await page.goto(url, wait_until="domcontentloaded", referer=WARMUP_URL)
             captured["initial_status"] = resp.status if resp else None
             for _ in range(30):
                 if captured.get("json"):

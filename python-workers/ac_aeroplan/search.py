@@ -191,8 +191,10 @@ async def _scrape_real(
                     log.warning("AC login attempt failed (continuing anonymously): %s", exc)
 
             # Step 3: Navigate to the booking widget with warmed cookies.
+            # Pass Referer=homepage so Akamai sees a believable navigation
+            # chain instead of a cold direct request to the protected URL.
             try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+                await page.goto(url, wait_until="domcontentloaded", timeout=45_000, referer=WARMUP_URL)
             except Exception as exc:  # noqa: BLE001
                 log.warning("AC booking widget goto failed: %s", exc)
                 return []
