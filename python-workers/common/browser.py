@@ -47,6 +47,7 @@ async def browser_page(
     *,
     timeout_ms: int = 30_000,
     user_data_dir: str | None = None,
+    use_proxy: bool = True,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -65,11 +66,15 @@ async def browser_page(
     # time so the worker boots even if Chromium isn't installed yet.
     from patchright.async_api import async_playwright
 
-    proxy_cfg = _proxy_kwargs().get("proxy")
+    proxy_cfg = _proxy_kwargs().get("proxy") if use_proxy else None
     launch_args = [
         "--no-sandbox",
         "--disable-dev-shm-usage",
         "--disable-blink-features=AutomationControlled",
+        # united.com HTTP/2 frame negotiation fails under Chromium+proxy
+        # in our environment; disabling HTTP/2 forces HTTP/1.1 which both
+        # IPRoyal and direct egress reliably handle.
+        "--disable-http2",
     ]
 
     async with async_playwright() as pw:

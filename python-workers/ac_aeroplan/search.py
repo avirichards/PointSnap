@@ -137,8 +137,11 @@ async def _scrape_real(
     url = SEARCH_URL_TMPL.format(origin=origin, dest=dest, date=date)
     user, pwd = creds_for(PROGRAM_ID)
 
+    # AC: IPRoyal residential blocks aircanada.com (provider anti-abuse list).
+    # Air Canada's edge accepts Fly's datacenter IP directly (verified
+    # via /diag/airline → 200 title="AC Loyalty"). Bypass proxy for AC.
     try:
-        async with browser_page(timeout_ms=45_000) as page:
+        async with browser_page(timeout_ms=45_000, use_proxy=False) as page:
             captured: dict[str, Any] = {}
 
             async def on_response(resp):
