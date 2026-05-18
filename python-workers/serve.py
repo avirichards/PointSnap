@@ -192,13 +192,20 @@ async def diag_airline(
     use_proxy: int = Query(1, description="0 = bypass proxy (use Fly egress)"),
     wait_ms: int = Query(0, description="ms to wait after domcontentloaded"),
     wait_until: str = Query("domcontentloaded", description="domcontentloaded|load|commit|networkidle"),
+    country: str = Query("us", description="IPRoyal exit country (us, gb, ca, jp, etc.)"),
+    session: str = Query("", description="IPRoyal sticky session id (optional)"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
     page title + status + any console errors + a snippet of body html."""
     try:
         from common.browser import browser_page
         console_errors: list[str] = []
-        async with browser_page(timeout_ms=45_000, use_proxy=bool(use_proxy)) as page:
+        async with browser_page(
+            timeout_ms=45_000,
+            use_proxy=bool(use_proxy),
+            proxy_country=country or None,
+            proxy_session=session or None,
+        ) as page:
             page.on(
                 "console",
                 lambda msg: console_errors.append(f"{msg.type}: {msg.text}")

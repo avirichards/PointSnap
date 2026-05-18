@@ -21,7 +21,7 @@ from typing import AsyncIterator
 log = logging.getLogger(__name__)
 
 
-def _proxy_kwargs() -> dict:
+def _proxy_kwargs(country: str | None = None, session: str | None = None) -> dict:
     # Diagnostic kill-switch: set SCRAPER_NO_PROXY=1 to bypass IPRoyal and
     # let Chromium use the Fly egress IP directly. Useful for confirming
     # whether ERR_TUNNEL_CONNECTION_FAILED is the proxy or the airline.
@@ -33,10 +33,19 @@ def _proxy_kwargs() -> dict:
     pwd = os.environ.get("IPROYAL_PROXY_PASS")
     if not all([host, port, user, pwd]):
         return {}
+    # IPRoyal username suffix syntax: `{user}_country-{cc}_session-{sid}`
+    # Defaults: country=us (most target sites are US-based), sticky
+    # session-id derived from country so repeated requests in the same
+    # scrape land on the same residential exit (helps with Akamai
+    # validation that ties cookies to IP).
+    country = (country or os.environ.get("IPROYAL_COUNTRY") or "us").lower()
+    user_suffixed = f"{user}_country-{country}"
+    if session:
+        user_suffixed = f"{user_suffixed}_session-{session}"
     return {
         "proxy": {
             "server": f"http://{host}:{port}",
-            "username": user,
+            "username": user_suffixed,
             "password": pwd,
         }
     }
@@ -48,6 +57,8 @@ async def browser_page(
     timeout_ms: int = 30_000,
     user_data_dir: str | None = None,
     use_proxy: bool = True,
+    proxy_country: str | None = None,
+    proxy_session: str | None = None,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -66,7 +77,11 @@ async def browser_page(
     # time so the worker boots even if Chromium isn't installed yet.
     from patchright.async_api import async_playwright
 
-    proxy_cfg = _proxy_kwargs().get("proxy") if use_proxy else None
+    proxy_cfg = (
+        _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
+        if use_proxy
+        else None
+    )
     launch_args = [
         "--no-sandbox",
         "--disable-dev-shm-usage",
