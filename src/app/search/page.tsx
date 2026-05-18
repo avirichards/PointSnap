@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Compass, Rows3, Rows4 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -33,6 +33,15 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Visiting /search with no origin/dest means the user arrived without
+  // selecting a route — send them to the home form instead of auto-running
+  // a default search.
+  const hasRouteParams =
+    !!searchParams.get("origin") && !!searchParams.get("dest");
+  useEffect(() => {
+    if (!hasRouteParams) router.replace("/");
+  }, [hasRouteParams, router]);
+
   // Read URL params on initial mount only. Back/forward updates don't sync
   // the form fields — rare edge case; the URL still shows the right query
   // and a fresh load picks it up correctly.
@@ -42,7 +51,7 @@ export default function SearchPage() {
     ).toUpperCase() as Cabin;
     return {
       origin: (searchParams.get("origin") ?? "JFK").toUpperCase().slice(0, 3),
-      dest: (searchParams.get("dest") ?? "NRT").toUpperCase().slice(0, 3),
+      dest: (searchParams.get("dest") ?? "LHR").toUpperCase().slice(0, 3),
       departDate: searchParams.get("departDate") ?? defaultDepartDate(),
       returnDate: searchParams.get("returnDate") ?? undefined,
       pax: Math.max(1, Number(searchParams.get("pax") ?? "1")),
@@ -113,34 +122,28 @@ export default function SearchPage() {
           <div className="rounded-lg border bg-card p-8 md:p-12 text-center space-y-3">
             <p className="text-sm font-medium">No results for {query.origin} → {query.dest}.</p>
             <p className="text-sm text-muted-foreground max-w-prose mx-auto">
-              We have live data for{" "}
-              <span className="font-mono">JFK → NRT</span> (full mock dataset),{" "}
-              <span className="font-mono">JFK → LHR</span> (Virgin Atlantic),
-              and chart-only estimates for routes covered by the BA, VS, ANA, or
-              CX charts. Other routes wait for the real scrapers (Phase 2).
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Try{" "}
-              <button
-                type="button"
-                onClick={() =>
-                  handleSubmit({ ...query, origin: "HKG", dest: "LHR" })
-                }
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                HKG → LHR
-              </button>
-              {" "}or{" "}
+              Live award-seat scraping is in active development. Routes with
+              confirmed coverage today:{" "}
               <button
                 type="button"
                 onClick={() =>
                   handleSubmit({ ...query, origin: "JFK", dest: "LHR" })
                 }
-                className="underline underline-offset-2 hover:text-foreground"
+                className="font-mono underline underline-offset-2 hover:text-foreground"
               >
                 JFK → LHR
-              </button>
-              {" "}to see chart-only results in action.
+              </button>{" "}
+              (Virgin Atlantic) and{" "}
+              <button
+                type="button"
+                onClick={() =>
+                  handleSubmit({ ...query, origin: "LAX", dest: "NRT" })
+                }
+                className="font-mono underline underline-offset-2 hover:text-foreground"
+              >
+                LAX → NRT
+              </button>{" "}
+              (Alaska Mileage Plan).
             </p>
           </div>
         ) : (
