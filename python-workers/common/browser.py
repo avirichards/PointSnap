@@ -99,6 +99,7 @@ async def browser_page(
     use_scraperapi: bool = False,
     scraperapi_render: bool = True,
     scraperapi_premium: bool = False,
+    use_brightdata: bool = False,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -139,6 +140,49 @@ async def browser_page(
         launch_args.append("--disable-http2")
 
     async with async_playwright() as pw:
+        if use_brightdata:
+            # Bright Data Browser API: hosted Chromium reached over CDP.
+            # BD handles the proxy + Akamai/Imperva/DataDome bypass on their
+            # side. Bandwidth-billed (~$8/GB) so we block heavy resources by
+            # default to keep monthly cost in the ~$5-15 range at personal
+            # search volume. Leave the UA at whatever BD's curated Chromium
+            # reports — overriding it would defeat their stealth tuning.
+            wss_url = os.environ.get("BRIGHTDATA_WSS_URL")
+            if not wss_url:
+                raise RuntimeError(
+                    "BRIGHTDATA_WSS_URL env var not configured"
+                )
+            browser = await pw.chromium.connect_over_cdp(
+                wss_url, timeout=timeout_ms
+            )
+            ctx = await browser.new_context(
+                viewport={"width": 1366, "height": 768},
+                locale="en-US",
+            )
+            page = await ctx.new_page()
+            page.set_default_timeout(timeout_ms)
+
+            async def _block_heavy_brd(route):
+                if route.request.resource_type in (
+                    "image", "stylesheet", "font", "media", "manifest"
+                ):
+                    await route.abort()
+                else:
+                    await route.continue_()
+            await page.route("**/*", _block_heavy_brd)
+
+            try:
+                yield page
+            finally:
+                try:
+                    await ctx.close()
+                except Exception:  # noqa: BLE001
+                    pass
+                try:
+                    await browser.close()
+                except Exception:  # noqa: BLE001
+                    pass
+            return
         if user_data_dir:
             # Persistent-context path: proxy goes directly on the call.
             ctx = await pw.chromium.launch_persistent_context(
