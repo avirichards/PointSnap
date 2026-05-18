@@ -124,9 +124,25 @@ def _extract_for_date(
     origin: str,
     dest: str,
 ) -> NormalizedResult | None:
-    """VS returns one entry per departure-day in the queried month. Pluck
-    the entry matching our target_date and convert to a NormalizedResult."""
-    day = next((d for d in payload if d.get("date") == target_date), None)
+    """VS calendar response shape:
+      payload = [
+        {
+          "date": "2026-08-01",     # ALWAYS 1st of month — top level is per-MONTH
+          "month": "AUGUST",
+          ...,
+          "pointsDays": [           # one entry PER DAY in the month
+            {"date": "2026-08-01", "seats": {...}, "minPrice": ..., ...},
+            {"date": "2026-08-02", "seats": {...}, ...},
+            ...
+          ]
+        }
+      ]
+    Walk pointsDays to find the day matching target_date."""
+    if not payload:
+        return None
+    month_entry = payload[0]
+    points_days = month_entry.get("pointsDays") or []
+    day = next((d for d in points_days if d.get("date") == target_date), None)
     if not day:
         return None
 
@@ -134,7 +150,7 @@ def _extract_for_date(
     surcharge_usd = int(round(float(day.get("minPrice") or 0) * 1.25))  # GBP→USD rough
 
     for vs_key, cabin_code in VS_CABIN_MAP.items():
-        cabin_data = (day.get("pointsDays") or [{}])[0].get("seats", {}).get(vs_key) or day.get("seats", {}).get(vs_key)
+        cabin_data = (day.get("seats") or {}).get(vs_key)
         if not cabin_data:
             continue
         miles = cabin_data.get("cabinPointsValue") or 0
@@ -209,7 +225,17 @@ async def _scrape_real(
                 follow_redirects=False,
             )
             if r1.status_code != 303 or not r1.headers.get("location"):
-                log.warning("VS step1 unexpected status %s", r1.status_code)
+                # Log the response body on non-303 so we can see what
+                # Akamai / the API actually returned (per VS agent's
+                # debugging note).
+                try:
+                    snippet = (r1.text or "")[:300]
+                except Exception:
+                    snippet = ""
+                log.warning(
+                    "VS step1 unexpected status %s; body[:300]=%s",
+                    r1.status_code, snippet,
+                )
                 return []
             location = r1.headers["location"]
             if not location.startswith("http"):
