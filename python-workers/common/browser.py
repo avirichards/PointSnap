@@ -50,15 +50,22 @@ async def browser_page(
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
-    When `user_data_dir` is provided, uses persistent context so cookies +
-    localStorage survive across calls (critical for login-bootstrap +
-    warm-session patterns).
+    Proxy handling: Chromium has a long-standing bug where launch-level
+    proxy auth sends a blank Proxy-Authorization header (see Playwright
+    #37444, #443, #34252). The fix — confirmed by IPRoyal docs and
+    Playwright Network docs — is to set `proxy={"server": "per-context"}`
+    at launch time as a sentinel, then attach the real proxy config
+    at the context level via `browser.new_context(proxy=...)`.
+
+    When `user_data_dir` is provided, uses persistent context (proxy goes
+    on launch_persistent_context directly, since there's no separate
+    context construction step).
     """
     # Lazy import — Patchright is heavy. Avoid loading at module import
     # time so the worker boots even if Chromium isn't installed yet.
     from patchright.async_api import async_playwright
 
-    proxy_kw = _proxy_kwargs()
+    proxy_cfg = _proxy_kwargs().get("proxy")
     launch_args = [
         "--no-sandbox",
         "--disable-dev-shm-usage",
@@ -67,28 +74,38 @@ async def browser_page(
 
     async with async_playwright() as pw:
         if user_data_dir:
+            # Persistent-context path: proxy goes directly on the call.
             ctx = await pw.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
                 headless=True,
                 args=launch_args,
-                **proxy_kw,
+                proxy=proxy_cfg if proxy_cfg else None,
             )
-            page = await ctx.new_page() if not ctx.pages else ctx.pages[0]
+            page = ctx.pages[0] if ctx.pages else await ctx.new_page()
+            browser = None
         else:
-            browser = await pw.chromium.launch(
-                headless=True,
-                args=launch_args,
-                **proxy_kw,
-            )
-            ctx = await browser.new_context(
-                user_agent=(
+            launch_kwargs: dict = {
+                "headless": True,
+                "args": launch_args,
+            }
+            # Chromium bug workaround: launch with "per-context" sentinel
+            # so context-level proxy auth actually fires.
+            if proxy_cfg:
+                launch_kwargs["proxy"] = {"server": "per-context"}
+            browser = await pw.chromium.launch(**launch_kwargs)
+
+            context_kwargs: dict = {
+                "user_agent": (
                     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) "
                     "Chrome/131.0.0.0 Safari/537.36"
                 ),
-                viewport={"width": 1366, "height": 768},
-                locale="en-US",
-            )
+                "viewport": {"width": 1366, "height": 768},
+                "locale": "en-US",
+            }
+            if proxy_cfg:
+                context_kwargs["proxy"] = proxy_cfg
+            ctx = await browser.new_context(**context_kwargs)
             page = await ctx.new_page()
         page.set_default_timeout(timeout_ms)
         try:
@@ -98,7 +115,7 @@ async def browser_page(
                 await ctx.close()
             except Exception:  # noqa: BLE001
                 pass
-            if not user_data_dir:
+            if browser:
                 try:
                     await browser.close()
                 except Exception:  # noqa: BLE001
