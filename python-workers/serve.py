@@ -126,6 +126,64 @@ async def health() -> dict[str, str | bool]:
     return {"status": "ok", "dbSkipped": writeback_skipped()}
 
 
+@app.get("/diag/proxy")
+async def diag_proxy() -> JSONResponse:
+    """Smoke-test Patchright + IPRoyal proxy. Loads httpbin.org/ip via
+    the configured proxy and returns the egress IP. If the IP is
+    IPRoyal's exit pool, proxy is working. If it's Fly's egress, proxy
+    config is silently being ignored. If it errors with ERR_TUNNEL_
+    CONNECTION_FAILED, the Chromium-auth bug is still present."""
+    import os
+    try:
+        from common.browser import browser_page
+        no_proxy = os.environ.get("SCRAPER_NO_PROXY") == "1"
+        async with browser_page(timeout_ms=20_000) as page:
+            await page.goto("https://httpbin.org/ip", wait_until="domcontentloaded")
+            body_text = await page.locator("body").inner_text()
+            return JSONResponse({
+                "ok": True,
+                "no_proxy_flag": no_proxy,
+                "body": body_text,
+            })
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500]},
+            status_code=500,
+        )
+
+
+@app.get("/diag/airline")
+async def diag_airline(
+    url: str = Query(..., description="Full URL to load via Patchright"),
+) -> JSONResponse:
+    """Smoke-test Patchright reaching a specific airline URL. Returns
+    page title + status + any console errors. Useful for confirming
+    whether Akamai/Imperva/etc. is blocking the request."""
+    try:
+        from common.browser import browser_page
+        console_errors: list[str] = []
+        async with browser_page(timeout_ms=30_000) as page:
+            page.on(
+                "console",
+                lambda msg: console_errors.append(f"{msg.type}: {msg.text}")
+                if msg.type in ("error", "warning") else None,
+            )
+            resp = await page.goto(url, wait_until="domcontentloaded")
+            title = await page.title()
+            return JSONResponse({
+                "ok": True,
+                "status": resp.status if resp else None,
+                "title": title,
+                "url": page.url,
+                "console_errors": console_errors[-10:],
+            })
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500]},
+            status_code=500,
+        )
+
+
 @app.get("/search")
 async def search(
     program: str = Query(..., description="Program ID, e.g. VS_FLYING_CLUB"),
