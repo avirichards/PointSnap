@@ -33,20 +33,20 @@ def _proxy_kwargs(country: str | None = None, session: str | None = None) -> dic
     pwd = os.environ.get("IPROYAL_PROXY_PASS")
     if not all([host, port, user, pwd]):
         return {}
-    # IPRoyal username suffix syntax: `{user}_country-{cc}_session-{sid}`
-    # Defaults: country=us (most target sites are US-based), sticky
-    # session-id derived from country so repeated requests in the same
-    # scrape land on the same residential exit (helps with Akamai
-    # validation that ties cookies to IP).
+    # IPRoyal targeting suffix goes on the PASSWORD field (not username):
+    # `{password}_country-{cc}_session-{sid}_lifetime-{dur}`
+    # Defaults: country=us (most target sites are US-based) — without this
+    # the residential pool returns random global exits (observed Vietnam IP)
+    # which Akamai then geo-blocks or slow-rolls.
     country = (country or os.environ.get("IPROYAL_COUNTRY") or "us").lower()
-    user_suffixed = f"{user}_country-{country}"
+    pwd_suffixed = f"{pwd}_country-{country}"
     if session:
-        user_suffixed = f"{user_suffixed}_session-{session}"
+        pwd_suffixed = f"{pwd_suffixed}_session-{session}_lifetime-10m"
     return {
         "proxy": {
             "server": f"http://{host}:{port}",
-            "username": user_suffixed,
-            "password": pwd,
+            "username": user,
+            "password": pwd_suffixed,
         }
     }
 

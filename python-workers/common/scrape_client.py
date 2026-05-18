@@ -43,15 +43,22 @@ DEFAULT_HEADERS = {
 }
 
 
-def proxy_url() -> str | None:
-    """Construct an http://user:pass@host:port URL from env, or None if unset."""
+def proxy_url(country: str | None = None, session: str | None = None) -> str | None:
+    """Construct an http://user:pass_country-cc@host:port URL from env, or None.
+
+    IPRoyal targeting goes on the PASSWORD field — `password_country-us`
+    forces US exits, `_session-xxx_lifetime-10m` makes the exit sticky."""
     host = os.environ.get("IPROYAL_PROXY_HOST")
     port = os.environ.get("IPROYAL_PROXY_PORT")
     user = os.environ.get("IPROYAL_PROXY_USER")
     password = os.environ.get("IPROYAL_PROXY_PASS")
     if not all([host, port, user, password]):
         return None
-    return f"http://{user}:{password}@{host}:{port}"
+    country = (country or os.environ.get("IPROYAL_COUNTRY") or "us").lower()
+    pwd_suffixed = f"{password}_country-{country}"
+    if session:
+        pwd_suffixed = f"{pwd_suffixed}_session-{session}_lifetime-10m"
+    return f"http://{user}:{pwd_suffixed}@{host}:{port}"
 
 
 @asynccontextmanager
