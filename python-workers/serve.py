@@ -194,6 +194,7 @@ async def diag_airline(
     wait_until: str = Query("domcontentloaded", description="domcontentloaded|load|commit|networkidle"),
     country: str = Query("us", description="IPRoyal exit country (us, gb, ca, jp, etc.)"),
     session: str = Query("", description="IPRoyal sticky session id (optional)"),
+    http2: int = Query(0, description="1 = enable HTTP/2 (default disabled)"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
     page title + status + any console errors + a snippet of body html."""
@@ -205,6 +206,7 @@ async def diag_airline(
             use_proxy=bool(use_proxy),
             proxy_country=country or None,
             proxy_session=session or None,
+            disable_http2=not bool(http2),
         ) as page:
             page.on(
                 "console",

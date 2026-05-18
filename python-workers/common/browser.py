@@ -59,6 +59,7 @@ async def browser_page(
     use_proxy: bool = True,
     proxy_country: str | None = None,
     proxy_session: str | None = None,
+    disable_http2: bool = True,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -86,11 +87,12 @@ async def browser_page(
         "--no-sandbox",
         "--disable-dev-shm-usage",
         "--disable-blink-features=AutomationControlled",
-        # united.com HTTP/2 frame negotiation fails under Chromium+proxy
-        # in our environment; disabling HTTP/2 forces HTTP/1.1 which both
-        # IPRoyal and direct egress reliably handle.
-        "--disable-http2",
     ]
+    if disable_http2:
+        # united.com HTTP/2 frame negotiation can fail under Chromium+proxy
+        # in some configs; some sites (delta.com) require HTTP/2 ALPN to
+        # negotiate. Toggle per call so we can pick the right stack per site.
+        launch_args.append("--disable-http2")
 
     async with async_playwright() as pw:
         if user_data_dir:
