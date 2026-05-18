@@ -160,6 +160,11 @@ async def browser_page(
             }
             if proxy_cfg:
                 context_kwargs["proxy"] = proxy_cfg
+            if use_scraperapi:
+                # ScraperAPI terminates TLS at their proxy and re-presents
+                # their own cert; trust it so HTTPS goto's don't hit
+                # ERR_CERT_AUTHORITY_INVALID.
+                context_kwargs["ignore_https_errors"] = True
             ctx = await browser.new_context(**context_kwargs)
             page = await ctx.new_page()
         page.set_default_timeout(timeout_ms)
