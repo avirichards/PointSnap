@@ -152,6 +152,39 @@ async def diag_proxy() -> JSONResponse:
         )
 
 
+@app.get("/diag/inputs")
+async def diag_inputs(
+    url: str = Query(..., description="URL to load via Patchright"),
+    use_proxy: int = Query(1, description="0 = bypass proxy"),
+) -> JSONResponse:
+    """Loads a page and dumps all input/button selectors. Use to find the
+    right `name=` / `id=` for the form fields each scraper has to fill."""
+    try:
+        from common.browser import browser_page
+        async with browser_page(timeout_ms=30_000, use_proxy=bool(use_proxy)) as page:
+            resp = await page.goto(url, wait_until="domcontentloaded")
+            inputs = await page.evaluate(
+                """() => Array.from(document.querySelectorAll('input,button,select')).map(el => ({
+                    tag: el.tagName.toLowerCase(),
+                    type: el.type || null,
+                    name: el.getAttribute('name') || null,
+                    id: el.id || null,
+                    placeholder: el.placeholder || null,
+                    aria_label: el.getAttribute('aria-label') || null,
+                    text: (el.innerText || el.value || '').slice(0, 50),
+                })).filter(x => x.name || x.id || x.placeholder || x.aria_label)"""
+            )
+            return JSONResponse({
+                "ok": True,
+                "url": page.url,
+                "status": resp.status if resp else None,
+                "title": await page.title(),
+                "inputs": inputs[:50],  # cap
+            })
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"ok": False, "error": str(exc)[:500]}, status_code=500)
+
+
 @app.get("/diag/airline")
 async def diag_airline(
     url: str = Query(..., description="Full URL to load via Patchright"),
