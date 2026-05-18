@@ -2,21 +2,21 @@
 
 ## Current state: 2 of 13 plugins returning live data
 
-| Program | Status | Why |
-|---|---|---|
-| **VS_FLYING_CLUB** | ✓ LIVE | Calendar API, no Akamai gating |
-| **AS_MILEAGEPLAN** | ✓ LIVE | SvelteKit SSR, alaskaair.com not heavily protected |
-| AC_AEROPLAN | ✗ blocked | IPRoyal refuses CONNECT to aircanada.com; Fly direct returns Akamai 403 |
-| AA_AADVANTAGE | ✗ blocked | IPRoyal refuses CONNECT to aa.com; Fly direct returns Akamai 403 |
-| DL_SKYMILES | ✗ blocked | IPRoyal refuses CONNECT to delta.com; Fly direct returns Akamai 444 |
-| UA_MP | ✗ blocked | united.com Akamai silently drops TCP from both Fly and IPRoyal IPs |
-| BA_AVIOS | ✗ throttled | Returns "Information Page" queue/throttler instead of login form |
-| AF_FLYINGBLUE | ✗ blocked | airfrance.com timeout |
-| TK_MILES_SMILES | ✗ blocked | turkishairlines.com timeout |
-| AV_LIFEMILES | ✗ blocked | avianca.com returns Akamai 403 |
-| NH_ANA | not tested | no creds yet |
-| CX_CATHAY | not tested | no creds yet |
-| LH_MILES_MORE | not tested | no creds yet |
+| Program | Marketing page (Fly direct + H2) | Booking widget | Status |
+|---|---|---|---|
+| **VS_FLYING_CLUB** | n/a (calendar API) | ✓ | **LIVE** |
+| **AS_MILEAGEPLAN** | n/a (SSR endpoint) | ✓ | **LIVE** |
+| AC_AEROPLAN | ✓ 200 OK | ✗ 403 (path-protected by Akamai) | needs proxy / Web Unlocker |
+| NH_ANA | ✓ 200 OK | ✗ aswbe-i.ana.co.jp times out | needs proxy / creds + investigation |
+| LH_MILES_MORE | ✓ 200 OK | ✗ login URL 404 in plugin (wrong URL) | URL fixable, then probably works |
+| AA_AADVANTAGE | ✗ Akamai 403 from Fly; IPRoyal CONNECT refused | — | needs different proxy |
+| DL_SKYMILES | ✗ Akamai 444 from Fly; IPRoyal CONNECT refused | — | needs different proxy |
+| UA_MP | ✗ H2 protocol error from Fly; IPRoyal timeouts | — | needs different proxy |
+| BA_AVIOS | ✗ "Information Page" queue from IPRoyal | — | needs queue-skipper or different proxy |
+| AF_FLYINGBLUE | ✗ H2 protocol error from Fly; IPRoyal timeouts | — | needs different proxy |
+| TK_MILES_SMILES | ✗ H2 protocol error from Fly; IPRoyal timeouts | — | needs different proxy |
+| CX_CATHAY | ✗ H2 protocol error from Fly | — | needs different proxy |
+| AV_LIFEMILES | ✗ Akamai 403 from Fly | — | needs different proxy |
 
 ## Root cause: IP reputation
 
@@ -76,10 +76,24 @@ If we expect heavy use (>100k searches/mo), **Option C + Option D combined** is 
 ## What I've done in this session without your decision
 
 - Forced IPRoyal exits to country=US (was returning random global IPs, including Vietnam — airline edges geo-filtered those)
+- Fixed the IPRoyal username/password targeting (suffix goes on password, not username — earlier session had it wrong, getting ERR_PROXY_AUTH_UNSUPPORTED)
 - Added sticky session support for IPRoyal (keeps the same exit IP across requests in one scrape — needed for Akamai _abck cookie validation)
 - Added `/diag/ac_scrape` and `/diag/ua_scrape` endpoints that run the actual scrape with full per-step diagnostics surfaced into the response (so we don't need fly logs to debug)
 - Made HTTP/2 toggleable per call (some sites need it, others break with it)
 - Confirmed VS and AS still live after these changes
+- For AC: enabled HTTP/2 + cookie warmup via homepage + Referer header — still 403 on booking widget. Akamai's path-level rule needs more than cookies+Referer (likely sec-cpt challenge or auth token).
+- Confirmed via direct probes: aircanada.com homepage, ana.co.jp, lufthansa.com all reachable from Fly direct + HTTP/2 (200 OK). Their booking/login subdomains either 404 (LH plugin URL wrong) or 403 (AC widget) or timeout (ANA aswbe-i).
+
+## Verified-blocked summary
+
+Even with every workaround tried (Patchright stealth, US geo, sticky sessions, cookie warmup, Referer chaining, HTTP/2 toggle), these airlines remain unreachable from our infrastructure:
+
+- **Akamai-blocked at TLS/edge**: aa.com, delta.com, united.com, lifemiles.com, flyingblue.com, klm.com, turkishairlines.com, cathaypacific.com, airfrance.com
+- **Akamai-blocked at booking widget path** (homepage works): aircanada.com
+- **Queue-throttled**: britishairways.com
+- **IPRoyal CONNECT refused** (regardless of country): aa.com, delta.com, aircanada.com
+
+The pattern: airline sites that depend on Akamai BMP have all blocklisted Fly's datacenter IP range and IPRoyal's residential pool. Beating this requires either pristine IPs (Bright Data residential at ~$15/GB) or a render-as-a-service that pools their own clean IPs + browsers (ZenRows, Bright Data Web Unlocker, ScraperAPI).
 
 ## What I'd need from you
 
