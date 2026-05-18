@@ -38,6 +38,11 @@ SEARCH_URL_TMPL = (
     "&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB"
 )
 LOGIN_URL = "https://www.aircanada.com/aeroplan/login"
+# Hit the homepage first so Akamai's sensor.js mints `_abck` (solved-state)
+# and `bm_sz` cookies on this datacenter IP. The booking widget URL is
+# path-protected by Akamai 403 — only requests with valid cookies and
+# matching IP get past it.
+WARMUP_URL = "https://www.aircanada.com"
 AIR_BOUNDS_PATH = "/v2/search/air-bounds"
 
 
@@ -138,10 +143,13 @@ async def _scrape_real(
     user, pwd = creds_for(PROGRAM_ID)
 
     # AC: IPRoyal residential blocks aircanada.com (provider anti-abuse list).
-    # Air Canada's edge accepts Fly's datacenter IP directly (verified
-    # via /diag/airline → 200 title="AC Loyalty"). Bypass proxy for AC.
+    # Fly datacenter IPs work for aircanada.com **homepage** (200 OK) with
+    # HTTP/2 enabled, but the booking widget URL returns 403 unless we
+    # first warm the session via the homepage to mint Akamai cookies.
     try:
-        async with browser_page(timeout_ms=45_000, use_proxy=False) as page:
+        async with browser_page(
+            timeout_ms=60_000, use_proxy=False, disable_http2=False
+        ) as page:
             captured: dict[str, Any] = {}
 
             async def on_response(resp):
@@ -163,11 +171,18 @@ async def _scrape_real(
                 ),
             )
 
-            # Optional login (improves partner coverage; not required for browse).
+            # Step 1: Warm-up — load homepage so Akamai sensor.js completes
+            # and mints valid `_abck` (solved-state) + `bm_sz` cookies.
+            try:
+                await page.goto(WARMUP_URL, wait_until="domcontentloaded", timeout=30_000)
+                await asyncio.sleep(4.0)  # let sensor.js finish
+            except Exception as exc:  # noqa: BLE001
+                log.warning("AC homepage warmup failed: %s", exc)
+
+            # Step 2: Optional login (better partner coverage; not required).
             if user and pwd:
                 try:
                     await page.goto(LOGIN_URL, wait_until="domcontentloaded")
-                    # Aeroplan login form selectors per flightplan-tool ac/searcher.js:
                     await page.fill("input[name='J_USERNAME'], input#cust", user)
                     await page.fill("input[name='J_PASSWORD'], input#pin", pwd)
                     await page.click("button[type='submit'], #login-btn")
@@ -175,9 +190,15 @@ async def _scrape_real(
                 except Exception as exc:  # noqa: BLE001
                     log.warning("AC login attempt failed (continuing anonymously): %s", exc)
 
-            await page.goto(url, wait_until="domcontentloaded")
-            # Wait up to 30s for the air-bounds XHR.
-            for _ in range(30):
+            # Step 3: Navigate to the booking widget with warmed cookies.
+            try:
+                await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("AC booking widget goto failed: %s", exc)
+                return []
+
+            # Wait up to 45s for the air-bounds XHR.
+            for _ in range(45):
                 if captured.get("json"):
                     break
                 await asyncio.sleep(1.0)

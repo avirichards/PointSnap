@@ -243,12 +243,19 @@ async def diag_ac_scrape(
     whether the XHR fires, the page state, and where 0 rows come from."""
     try:
         from common.browser import browser_page
-        from ac_aeroplan.search import SEARCH_URL_TMPL, AIR_BOUNDS_PATH, _parse_air_bounds
+        from ac_aeroplan.search import (
+            SEARCH_URL_TMPL,
+            WARMUP_URL,
+            AIR_BOUNDS_PATH,
+            _parse_air_bounds,
+        )
 
         url = SEARCH_URL_TMPL.format(origin=origin, dest=dest, date=date)
         captured: dict = {"responses_seen": [], "page_title": None, "page_url": None}
 
-        async with browser_page(timeout_ms=60_000, use_proxy=False) as page:
+        async with browser_page(
+            timeout_ms=60_000, use_proxy=False, disable_http2=False
+        ) as page:
             async def on_response(resp):
                 try:
                     if AIR_BOUNDS_PATH in resp.url:
@@ -260,6 +267,14 @@ async def diag_ac_scrape(
                 except Exception as exc:  # noqa: BLE001
                     captured["responses_seen"].append({"error": str(exc)[:200]})
             page.on("response", on_response)
+
+            # Warmup: load homepage so Akamai sensor.js mints solved cookies.
+            try:
+                wresp = await page.goto(WARMUP_URL, wait_until="domcontentloaded", timeout=30_000)
+                captured["warmup_status"] = wresp.status if wresp else None
+                await asyncio.sleep(4.0)
+            except Exception as exc:  # noqa: BLE001
+                captured["warmup_error"] = str(exc)[:200]
 
             resp = await page.goto(url, wait_until="domcontentloaded")
             captured["initial_status"] = resp.status if resp else None
