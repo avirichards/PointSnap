@@ -37,3 +37,16 @@ Even with GB-targeted IPRoyal exit (BT residential 82.28.x), BA serves a queue/t
 - **VS_FLYING_CLUB**: live (calendar API, no Akamai gating)
 - **AS_MILEAGEPLAN**: live (SvelteKit SSR — alaskaair.com not protected by Akamai for that route)
 Both via IPRoyal US-residential. All other 11 plugins hit one of the blockers above.
+
+### ScraperAPI proxy mode is per-resource — burns credits fast
+With ScraperAPI's proxy-port endpoint and `render=true`, every HTTP resource the browser fetches counts as one charged request. A single delta.com page load fired ~150 requests through the proxy = 150 credits. Free tier 5000 credits/mo → ~33 page loads of that complexity. Mitigation: `page.route("**/*", lambda r: route.abort() if resource_type in ("image","stylesheet","font","media","manifest") else route.continue_())` blocks heavy resources and saves ~15x. Better: switch to ScraperAPI's API endpoint mode (`https://api.scraperapi.com/?url=X&render=true`) which charges 5 credits flat per page, not per resource.
+
+### ScraperAPI "premium" tier is required for AA/AC/UA
+On the shared pool, aa.com and aircanada.com return 499 "We detected multiple users connecting from your IP address — only allowed for paid subscription plans"; united.com returns 500 "Protected domains may require premium=true". `premium=true` in the username (`scraperapi.render=true.premium=true.country_code=us`) uses clean residential exits and costs 25 credits/request instead of 5.
+
+### ScraperAPI proxy needs ignore_https_errors
+ScraperAPI's proxy port terminates TLS at their server and re-presents their own certificate; Chromium reports `ERR_CERT_AUTHORITY_INVALID` unless the context is created with `ignore_https_errors=True`. Same applies to any future MITM-style proxy.
+
+### Two layers to fix per stuck plugin
+1. **Network access** — ScraperAPI proxy + premium for hard sites. Done.
+2. **Parse layer** — each plugin's XHR endpoint / form selector / response shape was written speculatively against historical AwardWiz references and never tested against live responses. Even with the page loading, scrapers return `rows: []` because the parsers don't match current API shapes. This is real iteration work per plugin (~30-60 min each), not infrastructure.
