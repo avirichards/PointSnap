@@ -22,6 +22,11 @@ log = logging.getLogger(__name__)
 
 
 def _proxy_kwargs() -> dict:
+    # Diagnostic kill-switch: set SCRAPER_NO_PROXY=1 to bypass IPRoyal and
+    # let Chromium use the Fly egress IP directly. Useful for confirming
+    # whether ERR_TUNNEL_CONNECTION_FAILED is the proxy or the airline.
+    if os.environ.get("SCRAPER_NO_PROXY") == "1":
+        return {}
     host = os.environ.get("IPROYAL_PROXY_HOST")
     port = os.environ.get("IPROYAL_PROXY_PORT")
     user = os.environ.get("IPROYAL_PROXY_USER")
