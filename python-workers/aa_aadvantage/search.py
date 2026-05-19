@@ -289,15 +289,16 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 print(f"AA: attempt {attempt} homepage hard-blocked (title={home_title!r})", flush=True)
                 return ("page_blocked", [])
 
-            # Step 2: wait up to 60s for AA-required cookies to mint
+            # Step 2: wait up to 120s for AA-required cookies to mint
+            # (Sekinal uses 90s wait_for_function; we add buffer for slower BD-MITM TLS)
             cookies_dict: dict[str, str] = {}
             user_agent: str = ""
             cookies_ready = False
             t_start = asyncio.get_event_loop().time()
             last_log = 0.0
-            for _wait_round in range(60):
+            for _wait_round in range(120):
                 elapsed = asyncio.get_event_loop().time() - t_start
-                if elapsed > 60:
+                if elapsed > 120:
                     break
                 try:
                     cks = await asyncio.wait_for(page.context.cookies(), timeout=2.0)
