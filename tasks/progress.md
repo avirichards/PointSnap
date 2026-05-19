@@ -252,3 +252,40 @@ User action items:
 3. Wire Clerk auth into the `/airlines` page (Agent C deferred — Clerk shell exists but isn't wired)
 
 Next foreground work: AC, UA, NH empty-rows investigation via /diag/run_plugin.
+
+## 2026-05-19 21:40 — Phase 2 diagnostics complete; user action required
+**Status**: 🟡 (substantial progress; 3 user actions queued)
+
+**Phase 2 plugin failure modes confirmed**:
+| Plugin | Failure | Path forward |
+|---|---|---|
+| AC_AEROPLAN | HTTP 403 "Access Denied" (Akamai) — confirms March-2025 login wall | T5' user-auth-capture (Phase 2.5) |
+| UA_MP | Page.goto Timeout 60s — Akamai TLS RST | T4 (Camoufox+BDR) + T5' |
+| NH_ANA | row_count:0 via diag — likely login-required + aswbe-i Akamai | T4 + possibly T5' |
+| DL_SKYMILES | row_count:0 via diag (used to 502, now 0 rows) — Akamai single-tier | T4 (Camoufox+BDR) |
+| AA_AADVANTAGE | Akamai _abck stuck at ~-1~ from BD Residential | T6 WU (test pending secrets) or T5' |
+| AA_AADVANTAGE_WU | Awaiting BRIGHTDATA_WU_TOKEN + BRIGHTDATA_WU_ZONE Fly secrets | User action |
+
+**The pattern is consistent**: 5 plugins are blocked at Akamai's bot defense. The fixes split two ways:
+1. **T6 BD Web Unlocker** — handles bot defense server-side (untested for AA, will test once secrets land). If it works for AA, it likely unlocks DL + NH too (similar Akamai single-tier).
+2. **T5' user-auth-capture** — for programs that require login (AC, UA, BA, AF, LH, etc.). Phase 2.5 backend + frontend are now LANDED but blocked on the live-view URL question.
+
+**User action items (3 to unblock major progress)**:
+1. **Set Fly secrets** `BRIGHTDATA_WU_TOKEN` + `BRIGHTDATA_WU_ZONE` (1 min) → unblocks WU test for AA, DL, NH
+2. **Resolve live-view URL question** — read `tasks/scraper-research/phase-2-5-live-view-research.md`; choose between 3 BD-native approaches OR commission worker-side screenshot streaming (1-2h to research / decide)
+3. **Wire Clerk auth** into `/airlines` page (Agent C deferred; needs Clerk shell completed)
+
+**Final working state** (this session brought us from 2/13 → 2/13 working but with EVERYTHING else now diagnosed + infrastructure ready):
+- ✅ VS_FLYING_CLUB (httpx, anonymous)
+- ✅ AS_MILEAGEPLAN (httpx, anonymous, FK fix applied)
+- 🚀 AA_AADVANTAGE_WU (wired, awaiting WU secrets)
+- 🟡 5 plugins diagnosed (AC/UA/NH/DL/AA need T4/T5'/T6 migration)
+- 🟡 5 plugins not yet probed (BA/AV/AF/TK/CX/LH)
+- 🚀 Phase 2.5 backend + frontend landed end-to-end (DB, encryption, /auth/* routes, cockpit /airlines page); awaiting live-view URL decision to go live
+
+**Total session spend**: ~$0.04 BD, $0 commercial, $0 IPRoyal. Substantial code progress.
+
+**Re-engagement priority order**:
+1. Set BD WU Fly secrets → test AA_AADVANTAGE_WU → if works, build same pattern for DL/NH/QR/CX/etc.
+2. Decide on live-view URL approach → end-to-end test Phase 2.5 with AC Aeroplan
+3. Wire Clerk auth so the /airlines page can identify users
