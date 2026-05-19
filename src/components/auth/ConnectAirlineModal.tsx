@@ -250,7 +250,10 @@ export function ConnectAirlineModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-3xl w-[min(100vw-2rem,820px)] p-0 gap-0",
+          // Override the shadcn default (which is grid + p-6 + gap-4 +
+          // max-w-lg). We need flex column + zero padding so the iframe
+          // can stretch edge-to-edge.
+          "max-w-3xl w-[min(100vw-2rem,820px)] p-0 gap-0 grid-rows-none flex flex-col",
           // Full-screen sheet on small viewports (HIG mobile pattern)
           "sm:rounded-xl rounded-none sm:h-auto h-[100dvh] max-h-[100dvh] sm:max-h-[92dvh]",
         )}
@@ -327,7 +330,6 @@ function ModalBody({ phase, secsLeft, onRetry }: BodyProps) {
         icon={<ShieldCheck className="size-6 text-muted-foreground" aria-hidden />}
         title="Auth capture isn't deployed yet"
         description={phase.message}
-        tone="info"
       />
     );
   }
@@ -343,7 +345,6 @@ function ModalBody({ phase, secsLeft, onRetry }: BodyProps) {
             <Button onClick={onRetry} size="sm">Try again</Button>
           ) : null
         }
-        tone="error"
       />
     );
   }
@@ -354,7 +355,6 @@ function ModalBody({ phase, secsLeft, onRetry }: BodyProps) {
         icon={<CheckCircle2 className="size-7 text-[color:var(--color-fresh-fg)]" aria-hidden />}
         title="Connected!"
         description="Your session is saved. PointSnap can now search award space on this program."
-        tone="success"
       />
     );
   }
@@ -442,7 +442,6 @@ interface CenteredStateProps {
   title: string;
   description: string;
   action?: React.ReactNode;
-  tone?: "default" | "info" | "success" | "error";
 }
 
 function CenteredState({ icon, title, description, action }: CenteredStateProps) {
