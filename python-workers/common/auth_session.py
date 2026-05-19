@@ -9,14 +9,17 @@ cookies and stores them encrypted-at-rest in `program_auth_sessions`.
 
 On every subsequent search for that (user, program) pair, the worker:
   1. reads the row via `get_active_session()`
-  2. decrypts via `decrypt_cookies()` (server-side, pgsodium AEAD-det)
+  2. decrypts via `decrypt_cookies()` (server-side, Supabase Vault —
+     authenticated encryption, Supabase manages the key out-of-band)
   3. injects the cookie list into a fresh Camoufox / Patchright context
      via `inject_cookies()`
 
 The migration `20260519211710_program_auth_sessions.sql` provides the
-encryption primitives — Python never sees the encryption key, just the
-ciphertext and the two `public.encrypt_cookies(...)` /
-`public.decrypt_cookies(...)` SQL functions.
+encryption primitives — Python never sees the encryption key. The wrapper
+SQL functions `public.encrypt_cookies(plain, user_id, program_id,
+existing_secret_id)` and `public.decrypt_cookies(secret_id, user_id,
+program_id)` are owned by postgres and run SECURITY DEFINER, so we
+expose only those to service_role rather than direct Vault access.
 
 This module deliberately ignores the `auth.users` foreign key when the
 worker's `DATABASE_URL` happens to not have RLS context — service_role
@@ -72,16 +75,18 @@ async def get_active_session(user_id: str, program_id: str) -> dict | None:
         async with await psycopg.AsyncConnection.connect(dsn) as conn:
             async with conn.cursor() as cur:
                 # Fetch + decrypt in one round-trip. The decrypt happens
-                # in-database via the SECURITY DEFINER wrapper; if the row
-                # is expired we still return None (caller treats as
-                # "session unavailable, prompt user to reconnect").
+                # in-database via the SECURITY DEFINER wrapper (Vault), which
+                # also verifies the secret's metadata name matches the row's
+                # (user_id, program_id) before returning cleartext — defense
+                # against a swapped pointer attack.
                 await cur.execute(
                     """
                     SELECT
                       id,
-                      public.decrypt_cookies(cookies_encrypted, user_id, program_id) AS cookies_json,
+                      public.decrypt_cookies(cookies_secret_id, user_id, program_id) AS cookies_json,
                       cookies_meta,
-                      expires_at
+                      expires_at,
+                      cookies_secret_id
                     FROM public.program_auth_sessions
                     WHERE user_id = %s
                       AND program_id = %s
@@ -92,14 +97,25 @@ async def get_active_session(user_id: str, program_id: str) -> dict | None:
                 row = await cur.fetchone()
                 if not row:
                     return None
-                session_id, cookies_json, meta, expires_at = row
+                session_id, cookies_json, meta, expires_at, secret_id = row
 
                 # Expired?
                 if expires_at and expires_at <= datetime.now(timezone.utc):
                     return None
 
+                if cookies_json is None:
+                    # decrypt_cookies returned NULL — pointer/Vault mismatch.
+                    log.warning(
+                        "auth_session.get_active_session: decrypt returned "
+                        "NULL for session %s (secret_id=%s) — likely a "
+                        "stale row or swap attack",
+                        session_id,
+                        secret_id,
+                    )
+                    return None
+
                 try:
-                    cookies = json.loads(cookies_json) if cookies_json else []
+                    cookies = json.loads(cookies_json)
                 except (json.JSONDecodeError, TypeError) as exc:
                     log.warning(
                         "auth_session.get_active_session: bad JSON for "
@@ -156,29 +172,49 @@ async def save_session(
     try:
         async with await psycopg.AsyncConnection.connect(dsn) as conn:
             async with conn.cursor() as cur:
-                # Encrypt server-side via the SECURITY DEFINER wrapper. We
-                # bind the ciphertext to (user_id, program_id) as
-                # additional-data, so the row can't be swapped between
-                # users without the decryption later failing.
+                # Two-step write: (1) read any existing row's secret id so
+                # we update-in-place rather than orphan vault rows; (2)
+                # upsert the table row. encrypt_cookies() handles the Vault
+                # create-or-update internally and returns the resulting
+                # secret_id which we store on the table row.
+                #
+                # We do this as a single SQL with a CTE so it's still one
+                # round-trip and atomic. The CTE computes the resolved
+                # secret_id by calling encrypt_cookies with whatever
+                # existing_secret_id we found (NULL on first connect).
                 await cur.execute(
                     """
+                    WITH existing AS (
+                      SELECT cookies_secret_id
+                        FROM public.program_auth_sessions
+                       WHERE user_id = %s::uuid
+                         AND program_id = %s
+                    ),
+                    enc AS (
+                      SELECT public.encrypt_cookies(
+                               %s,
+                               %s::uuid,
+                               %s,
+                               (SELECT cookies_secret_id FROM existing)
+                             ) AS secret_id
+                    )
                     INSERT INTO public.program_auth_sessions (
                       user_id,
                       program_id,
-                      cookies_encrypted,
+                      cookies_secret_id,
                       cookies_meta,
                       expires_at
                     )
-                    VALUES (
+                    SELECT
+                      %s::uuid,
                       %s,
-                      %s,
-                      public.encrypt_cookies(%s, %s::uuid, %s),
+                      enc.secret_id,
                       %s::jsonb,
                       %s::timestamptz
-                    )
+                    FROM enc
                     ON CONFLICT (user_id, program_id)
                     DO UPDATE SET
-                      cookies_encrypted = EXCLUDED.cookies_encrypted,
+                      cookies_secret_id = EXCLUDED.cookies_secret_id,
                       cookies_meta      = EXCLUDED.cookies_meta,
                       expires_at        = EXCLUDED.expires_at,
                       last_used_at      = NULL,
@@ -187,13 +223,12 @@ async def save_session(
                     RETURNING id
                     """,
                     (
-                        user_id,
-                        program_id,
-                        cookies_json,
-                        user_id,
-                        program_id,
-                        meta_json,
-                        expires_at,
+                        # existing CTE — lookup keys
+                        user_id, program_id,
+                        # enc CTE — encrypt args
+                        cookies_json, user_id, program_id,
+                        # INSERT values
+                        user_id, program_id, meta_json, expires_at,
                     ),
                 )
                 row = await cur.fetchone()
