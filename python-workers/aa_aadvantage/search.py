@@ -156,17 +156,19 @@ async def _scrape_real(
     body = _build_search_body(origin, dest, date, 1)
 
     try:
-        # AA detects ScraperAPI's shared pool ("multiple users from your IP")
-        # → premium=true uses clean residential IPs (25 credits/req instead of 5).
+        # AA Akamai path-blocks direct loads of /booking/* but accepts them
+        # when Referer is a valid aa.com path. Empirically confirmed against
+        # /diag/airline — pure `Referer: aa.com/loyalty/login` header bypass,
+        # no cookie warmup needed (and warmup actually *hurts*: cookies set
+        # on /loyalty/* trigger a path-mismatch block on /booking/*).
         async with browser_page(
             timeout_ms=150_000,
-            use_scraperapi=True,
-            scraperapi_premium=True,
-            proxy_country="us",
+            use_brightdata=True,
         ) as page:
-            # Prime Shape's _abck via real navigation
-            await page.goto(SEARCH_PAGE, wait_until="domcontentloaded")
-            await asyncio.sleep(2.0)  # let sensor.js run
+            # Prime sensor.js for /booking AND present a valid same-origin
+            # referer in the same shot.
+            await page.goto(SEARCH_PAGE, wait_until="domcontentloaded", referer=LOGIN_URL)
+            await asyncio.sleep(2.0)  # let sensor.js run on the booking page
 
             if user and pwd:
                 try:
