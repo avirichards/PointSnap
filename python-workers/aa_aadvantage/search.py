@@ -41,7 +41,11 @@ PROGRAM_NAME = "AAdvantage"
 
 SEARCH_PAGE = "https://www.aa.com/booking/find-flights"
 LOYALTY_REFERER = "https://www.aa.com/loyalty/login"
-MAX_ATTEMPTS = 10
+MAX_ATTEMPTS = 30
+# BD lets you embed a country in the session_id ("...-country-XX"). Rotate
+# across multiple residential pools — US is heavily blacklisted by AA today;
+# other-country residentials may be less filtered.
+COUNTRY_ROTATION = ["us", "ca", "gb", "de", "jp", "au"]
 
 
 def _build_search_body(origin: str, dest: str, date: str, pax: int) -> dict[str, Any]:
@@ -146,12 +150,14 @@ async def _scrape_real(
     print(f"AA: ===== search start {origin}->{dest} {date} =====", flush=True)
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        session_id = f"aa{uuid.uuid4().hex[:8]}"
+        country = COUNTRY_ROTATION[(attempt - 1) % len(COUNTRY_ROTATION)]
+        # BD session format with country embed: aa<rand>-country-<cc>
+        session_id = f"aa{uuid.uuid4().hex[:6]}-country-{country}"
         print(f"AA: attempt {attempt}/{MAX_ATTEMPTS} session={session_id}", flush=True)
 
         try:
             async with browser_page(
-                timeout_ms=90_000,
+                timeout_ms=60_000,
                 use_brightdata=True,
                 brightdata_session=session_id,
             ) as page:
@@ -175,15 +181,21 @@ async def _scrape_real(
                 page.on("response", _on_response)
 
                 await page.goto(SEARCH_PAGE, wait_until="domcontentloaded", referer=LOYALTY_REFERER)
-                await asyncio.sleep(3.0)
+                await asyncio.sleep(2.5)
 
                 title = await page.title()
-                body_text = (await page.locator("body").inner_text())[:200]
+                body_text = (await page.locator("body").inner_text())[:300]
                 if "Access Denied" in title or "Access Denied" in body_text:
-                    print(f"AA: attempt {attempt} PAGE_BLOCKED title={title!r}", flush=True)
+                    # Dump body+url on the first block per country to diagnose what Akamai is returning
+                    if attempt <= 6:
+                        full_html = (await page.content())[:800]
+                        print(f"AA:   blocked country={country} url={page.url}", flush=True)
+                        print(f"AA:   blocked body={body_text!r}", flush=True)
+                        print(f"AA:   blocked html[:500]={full_html[:500]!r}", flush=True)
+                    print(f"AA: attempt {attempt} PAGE_BLOCKED country={country}", flush=True)
                     continue
 
-                print(f"AA: attempt {attempt} PAGE_LOADED title={title!r}", flush=True)
+                print(f"AA: attempt {attempt} PAGE_LOADED country={country} title={title!r}", flush=True)
                 print(f"AA:   page url after load: {page.url}", flush=True)
 
                 # Dump form structure
