@@ -43,7 +43,7 @@ PROGRAM_ID = "AA_AADVANTAGE"
 PROGRAM_NAME = "AAdvantage"
 
 ENTRY_URL = "https://www.aa.com/"  # direct homepage, avoids mobile->www redirect chain
-MAX_ATTEMPTS = 3  # Sekinal pattern retries up to 3x on transient Akamai blocks
+MAX_ATTEMPTS = 1  # debugging — single attempt for fast signal; bump to 3 once working
 
 # Module-level diagnostic state — last scrape's captured XHRs, exposed via
 # /diag/aa_last endpoint so we can inspect without depending on fly logs.
@@ -176,47 +176,12 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                     pass
             page.on("response", _on_response)
 
-            # Step 1: warm-up on homepage so sensor.js fires
-            print(f"AA: attempt {attempt} warm-up → {ENTRY_URL}", flush=True)
-            try:
-                await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
-            except Exception as exc:  # noqa: BLE001
-                err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
-                print(f"AA: attempt {attempt} homepage goto failed: {err_str}", flush=True)
-                LAST_RUN_DIAG["attempts"].append({
-                    "attempt": attempt,
-                    "stage": "homepage_goto",
-                    "error": err_str,
-                })
-                return ("nav_failed", [])
-            await asyncio.sleep(2.0)
-
-            # Step 2: dismiss cookie banner if present (Sekinal step)
-            for sel in (
-                "#accept-recommended-btn-handler",
-                "#onetrust-accept-btn-handler",
-                'button:has-text("Accept all")',
-                'button:has-text("Accept All")',
-            ):
-                try:
-                    btn = await page.wait_for_selector(sel, timeout=2_000, state="visible")
-                    if btn:
-                        await btn.click()
-                        await asyncio.sleep(1.0)
-                        break
-                except Exception:  # noqa: BLE001
-                    continue
-
-            # Quick check for hard block on homepage
-            try:
-                home_title = await asyncio.wait_for(page.title(), timeout=5.0)
-            except Exception:  # noqa: BLE001
-                home_title = ""
-            if "Access Denied" in home_title:
-                print(f"AA: attempt {attempt} homepage hard-blocked (title={home_title!r})", flush=True)
-                return ("page_blocked", [])
-
-            # Step 3: build deep-link with slices and navigate
+            # Skipping homepage warm-up: AA test #4 showed homepage→deep-link
+            # in the same Camoufox+BD-Residential session triggers
+            # SEC_ERROR_UNKNOWN_ISSUER on the 2nd goto (BD's MITM cert handling
+            # somehow degrades after the first navigation). Direct deep-link
+            # via /diag/airline works fine. So we skip the homepage step and
+            # let the deep-link page's own sensor.js fire from a fresh context.
             slices_json = json.dumps(
                 [{"orig": origin, "origNearby": False,
                   "dest": dest, "destNearby": False,
