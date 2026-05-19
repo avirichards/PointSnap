@@ -185,3 +185,40 @@ Phase 2 work now in priority order:
 5. Move down rubric priority list
 
 **Spent**: ~5 MB BD, ~$0.04, ~0 IPRoyal (presume), ~0 commercial
+
+## 2026-05-19 19:30 — End-of-session summary
+**Status**: 🟡 (substantial progress; AA blocked on commercial spend authorization)
+
+### What landed this session
+- ✅ Plan v2 written + approved (`/root/.claude/plans/knowing-everything-you-know-warm-bunny.md`)
+- ✅ BD Residential zone created by user + secret set on Fly
+- ✅ Phase 0 complete (8 parallel research subagents → `tasks/scraper-rubric.md` + 8 research files in `tasks/scraper-research/`)
+- ✅ Camoufox + BD Residential infrastructure (commit f5e7bef, 30849cb, 924ac63, 485de86, 84f2bfd, f29a135)
+- ✅ AA plugin rewritten from form-fill → Sekinal cookie-mint + curl_cffi pattern (commits 587d4a6 → cc84f1e → 924ac63 → 485de86)
+- ✅ AA blocker written to `tasks/blockers.md` after 7 failed iterations
+- ✅ Phase 2 plugin probe sweep (1 working / 4 silent-fail / 1 hard-500)
+- ✅ `/diag/run_plugin` endpoint added (commit 9aeda52) for isolated plugin debugging
+
+### What's open
+- **AA**: 7 iterations exhausted free options. `_abck` won't reach `~0~` from BD Residential US IPs. Next experiments documented in `tasks/blockers.md` need user authorization (BD Web Unlocker, ASN/state targeting, alternative providers, Hyper Solutions, api.aa.com probe).
+- **AS_MILEAGEPLAN**: Hard HTTP 500 (uncaught exception). `/diag/run_plugin` deploy pending propagation.
+- **DL_SKYMILES**: HTTP 502 (plugin raises). Same diag needed.
+- **AC/UA/NH**: 200 with empty rows (silent failure). Need per-plugin diag.
+- **Phase 2.5 (T5' user-auth-capture)**: Not started. Major piece of work blocked on AC Aeroplan unlock.
+- **Phase 3 (10 new programs)**: Not started.
+
+### What's working now
+- VS_FLYING_CLUB ✅ (verified end-to-end this session)
+- Worker /health, /diag/aa_last, /diag/airline ✅
+
+### Total spend
+- Bright Data: ~5 MB (~$0.04)
+- Commercial APIs: $0
+- IPRoyal: presumed ~$0 (small smoke probes)
+
+### Re-engagement points for user (in priority order)
+1. **Read `tasks/blockers.md`** and authorize an AA experiment (or accept AA staying blocked until later)
+2. **Wait for `/diag/run_plugin` deploy** then re-probe AS/DL to see the actual exceptions — should self-resolve once GH Action completes
+3. **Confirm Phase 2.5 priority** — should we start the auth-capture frontend work in parallel with broken-plugin fixes, or defer until more plugins are working?
+4. **JetBlue plugin** — could be built next as the "easiest Phase 3" target while AA and others stall
+
