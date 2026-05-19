@@ -126,29 +126,24 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             timeout_ms=120_000,
             use_brightdata=True,
         ) as page:
-            captured_xhrs: list[dict] = []
-            all_post_xhrs: list[dict] = []  # diagnostic: ALL POSTs to aa.com domains
+            captured_xhrs: list[dict] = []  # graphql + booking APIs (parser candidates)
 
             async def _on_response(resp):
                 try:
                     url = resp.url
-                    method = resp.request.method if hasattr(resp, "request") else ""
-                    # Capture ALL POST responses on aa.com — we don't know
-                    # which endpoint AA's modern booking widget actually uses.
-                    if "aa.com" in url and (method == "POST" or any(
-                        p in url for p in ("api", "search", "booking", "flight", "itinerary", "shop")
-                    )):
-                        ct = (resp.headers or {}).get("content-type", "") or ""
-                        item = {"url": url, "status": resp.status, "method": method, "content_type": ct}
-                        if "json" in ct.lower() and resp.status == 200:
-                            try:
-                                item["json"] = await resp.json()
-                            except Exception:
-                                pass
-                        all_post_xhrs.append(item)
-                        # Original strict-prefix capture remains for the parser
-                        if any(p in url for p in ("/booking/api/", "/api/booking/", "/api/search/")):
-                            captured_xhrs.append(item)
+                    if "/services/graphql" not in url and not any(
+                        p in url for p in ("/booking/api/", "/api/booking/", "/api/search/itinerary")
+                    ):
+                        return
+                    ct = (resp.headers or {}).get("content-type", "") or ""
+                    if "json" not in ct.lower() or resp.status != 200:
+                        return
+                    item = {"url": url, "status": resp.status, "content_type": ct}
+                    try:
+                        item["json"] = await resp.json()
+                    except Exception:
+                        return
+                    captured_xhrs.append(item)
                 except Exception:  # noqa: BLE001
                     pass
             page.on("response", _on_response)
@@ -251,28 +246,26 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             await asyncio.sleep(6.0)  # extra time for XHR to fire and complete
 
             print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
-            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} matching + {len(all_post_xhrs)} all aa.com XHRs", flush=True)
-            # Show ALL POST/api XHRs so we can identify what AA actually fires
-            for x in all_post_xhrs[:20]:
-                has_json = "json" in x
-                print(f"AA:   ALL-XHR {x.get('method','?'):5} {x['status']} ct={x.get('content_type','')[:30]:30} json={has_json} {x['url'][:140]}", flush=True)
+            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} graphql/booking JSON XHRs", flush=True)
 
-            # Find a usable JSON payload in the XHRs
-            for x in captured_xhrs:
-                if "json" in x and isinstance(x["json"], dict):
-                    payload = x["json"]
-                    if payload.get("slices"):
-                        parsed = _parse_xhr(payload, origin, dest, date)
-                        if parsed:
-                            return ("ok", parsed)
+            # Dump captured JSON XHRs so we can see AA's GraphQL response shape
+            # and write a parser for whichever query type contains the flight data.
+            for i, x in enumerate(captured_xhrs):
+                payload = x["json"]
+                # Heuristic: GraphQL responses have {data: {...}} shape
+                top_keys = list(payload.keys())[:10] if isinstance(payload, dict) else []
+                data_keys = list((payload.get("data") or {}).keys())[:10] if isinstance(payload.get("data") if isinstance(payload, dict) else None, dict) else []
+                # Dump the body (truncated) so we can inspect once
+                blob = json.dumps(payload)[:1200]
+                print(f"AA:   XHR#{i} {x['url'][:90]} top_keys={top_keys} data_keys={data_keys}", flush=True)
+                print(f"AA:     body[:1200]={blob}", flush=True)
 
-            # If no useful XHR, look at the page itself for award prices (HTML results page)
-            page_text = await page.locator("body").inner_text()
-            if "miles" in page_text.lower() and (origin in page_text or dest in page_text):
-                # Found a results page rendered to HTML — but we'd need a separate parser.
-                # For now, report this as a partial success so we know the form submission worked.
-                print(f"AA: attempt {attempt} got HTML results page (parser TBD); text snippet: {page_text[:600]!r}", flush=True)
-                return ("html_results_unparsed", [])
+                # Try old-style parser first (in case some still match the old shape)
+                if isinstance(payload, dict) and payload.get("slices"):
+                    parsed = _parse_xhr(payload, origin, dest, date)
+                    if parsed:
+                        return ("ok", parsed)
+                # TODO: write a GraphQL-response parser once we see the shape
 
             return ("no_results", [])
 
