@@ -164,20 +164,51 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             if "Access Denied" in title:
                 return ("page_blocked", [])
 
-            # Look for the booking form. It uses field name 'originAirport' on
-            # both mobile and desktop variants.
+            # Wait for the form (any input with originAirport or similar name).
             try:
                 await page.wait_for_selector("input[name='originAirport']", timeout=15_000)
-            except Exception as exc:  # noqa: BLE001
-                # Form not present; capture what IS on the page for diagnosis
-                form_dump = await page.evaluate("""
-                    () => Array.from(document.querySelectorAll('input,select,button[type="submit"]')).slice(0,40).map(el => ({
+            except Exception:  # noqa: BLE001
+                pass  # we'll dump page state anyway
+
+            # DIAGNOSTIC: dump EVERY form, button (any visible), and link on
+            # the loaded page so we can see what the actual search widget is.
+            page_dump = await page.evaluate("""
+                () => {
+                    const inputs = Array.from(document.querySelectorAll('input,select')).slice(0,80).map(el => ({
                         tag: el.tagName.toLowerCase(), name: el.getAttribute('name'),
-                        id: el.id, type: el.type || null, aria: el.getAttribute('aria-label'),
-                    })).filter(x => x.name || x.id || x.aria)
-                """)
-                print(f"AA: attempt {attempt} form not found; inputs on page: {json.dumps(form_dump)[:600]}", flush=True)
-                return ("no_form", [])
+                        id: el.id, type: el.type || null, value: (el.value||'').slice(0,30),
+                        aria: el.getAttribute('aria-label'), placeholder: el.placeholder,
+                        visible: el.offsetParent !== null,
+                    })).filter(x => x.name || x.id || x.aria || x.placeholder);
+                    const buttons = Array.from(document.querySelectorAll('button, input[type="submit"]')).slice(0,40).map(el => ({
+                        tag: el.tagName.toLowerCase(),
+                        text: (el.innerText || el.value || '').slice(0,40).trim(),
+                        type: el.type, id: el.id, name: el.getAttribute('name'),
+                        aria: el.getAttribute('aria-label'),
+                        data_test: el.getAttribute('data-testid') || el.getAttribute('data-test'),
+                        visible: el.offsetParent !== null,
+                    }));
+                    const forms = Array.from(document.querySelectorAll('form')).slice(0,8).map(f => ({
+                        id: f.id, name: f.getAttribute('name'),
+                        action: f.action, method: f.method,
+                        visible: f.offsetParent !== null,
+                    }));
+                    const has_react = !!window.React;
+                    const has_submitSearch = typeof window.submitSearch === 'function';
+                    return {inputs, buttons, forms, has_react, has_submitSearch};
+                }
+            """)
+            print(f"AA: attempt {attempt} PAGE DUMP:", flush=True)
+            print(f"AA:   forms: {json.dumps(page_dump.get('forms', []))[:600]}", flush=True)
+            print(f"AA:   has_react={page_dump.get('has_react')} has_submitSearch={page_dump.get('has_submitSearch')}", flush=True)
+            print(f"AA:   visible inputs: {json.dumps([i for i in page_dump.get('inputs', []) if i.get('visible')])[:1200]}", flush=True)
+            print(f"AA:   visible buttons: {json.dumps([b for b in page_dump.get('buttons', []) if b.get('visible')])[:1200]}", flush=True)
+
+            # Save the dump to the diag for /diag/aa_last
+            try:
+                LAST_RUN_DIAG.setdefault("page_dumps", []).append({"attempt": attempt, "dump": page_dump})
+            except Exception:  # noqa: BLE001
+                pass
 
             print(f"AA: attempt {attempt} form found, filling…", flush=True)
 
