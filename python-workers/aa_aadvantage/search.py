@@ -1,25 +1,27 @@
-"""American AAdvantage award search plugin — mobile-redirect form-fill.
+"""American AAdvantage award search plugin — Sekinal/aa_contest pattern.
 
-Discovery path through session 5:
-  - BD Browser API on www.aa.com/booking/find-flights: Akamai 403 across all
-    IPs/countries/sessions; sensor.js cookies never validate.
-  - BD Web Unlocker direct API POST: AA returns error 309 (no session).
-  - CapSolver Akamai BMP: CapSolver deprecated this task type.
-  - **BD Browser API on mobile.aa.com**: HTTP 200 — Akamai redirects
-    mobile.aa.com → www.aa.com/homePage.do, the latter loads cleanly with
-    full HTML. From there the legacy `reservationFlightSearchForm` is
-    available and Patchright can fill + submit it like a real user.
+Phase 0 (2026-05-19) confirmed the original mobile.aa.com form-fill approach
+fails because the post-form Akamai "Challenge Validation" interstitial doesn't
+clear from Fly egress. The canonical 2026 bypass (per Sekinal/aa_contest +
+asadfix/scraping-guide) is a "deep-link + XHR capture" flow:
 
 Flow:
-  1. Browser API navigates to mobile.aa.com → AA redirects → homePage.do
-     loads (200 OK, full HTML).
-  2. Wait for the booking form to render.
-  3. Fill originAirport, destinationAirport, departDate.
-  4. Toggle the "redeem miles" checkbox so AA returns award prices.
-  5. Click the search submit button.
-  6. Capture either the resulting XHR (AA fires a booking API call) or
-     the navigation to the results page.
-  7. Parse cabin prices.
+  1. Camoufox loads aa.com homepage (sensor.js fires; _abck cookie minted).
+  2. Optionally accept cookie banner.
+  3. Navigate to /booking/search?slices=[...]&searchType=Award&... deep-link.
+     AA's SPA auto-fires POST /booking/api/search/itinerary.
+  4. page.on("response") captures the JSON XHR.
+  5. Parse via _parse_xhr (same parser as before; payload shape unchanged).
+
+No proxy needed (Sekinal proves Fly egress works for AA). No captcha solver.
+Cookie validity ~30min. IP block cooldown ~40min after detection.
+
+Per Agent 1's Phase 0 deep-dive on Sekinal (commit Nov 7 2025, MIT-licensed):
+  - Camoufox kwargs: headless=virtual, humanize=True, block_webrtc=True,
+    geoip=True, window=(1366,768). (browser_page() already sets these.)
+  - Critical AA cookies after warm-up: XSRF-TOKEN, spa_session_id.
+  - Header injection on API calls (if doing curl_cffi replay): X-XSRF-TOKEN,
+    X-CID derived from those cookies. NOT NEEDED for in-page XHR capture.
 """
 
 from __future__ import annotations
@@ -41,7 +43,7 @@ PROGRAM_ID = "AA_AADVANTAGE"
 PROGRAM_NAME = "AAdvantage"
 
 ENTRY_URL = "https://www.aa.com/"  # direct homepage, avoids mobile->www redirect chain
-MAX_ATTEMPTS = 1  # while debugging Camoufox+Akamai; bump back up once we have a working baseline
+MAX_ATTEMPTS = 3  # Sekinal pattern retries up to 3x on transient Akamai blocks
 
 # Module-level diagnostic state — last scrape's captured XHRs, exposed via
 # /diag/aa_last endpoint so we can inspect without depending on fly logs.
@@ -123,27 +125,39 @@ def _date_mmddyyyy(iso_date: str) -> str:
 
 
 async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[str, list[NormalizedResult]]:
-    """One attempt: load mobile.aa.com → home page → fill form → submit →
-    capture XHR. Returns (verdict, results)."""
+    """One attempt at AA award search via the Sekinal/aa_contest pattern.
+
+    Steps:
+      1. Camoufox warms up on aa.com homepage (sensor.js fires; _abck minted).
+      2. Optionally dismiss cookie banner.
+      3. Navigate to /booking/search?slices=[...]&searchType=Award deep-link.
+         AA's SPA auto-fires POST /booking/api/search/itinerary on load.
+      4. Capture the XHR JSON via page.on("response").
+      5. Parse via _parse_xhr (payload shape unchanged from old form-fill flow).
+
+    Returns (verdict, results). Verdicts:
+      ok | nav_failed | page_blocked | xhr_timeout | xhr_no_slices |
+      no_results | crash
+    """
+    import random as _rand
+    import urllib.parse as _urlparse
+
     try:
         async with browser_page(
             timeout_ms=120_000,
             use_camoufox=True,
-            use_proxy=False,  # Sekinal/aa_contest proves Fly egress works for AA
+            use_proxy=False,  # Sekinal proves Fly egress works; no BD needed
         ) as page:
-            captured_xhrs: list[dict] = []  # graphql + booking APIs (parser candidates)
+            captured_xhrs: list[dict] = []
 
             async def _on_response(resp):
                 try:
-                    url = resp.url
-                    if "/services/graphql" not in url and not any(
-                        p in url for p in ("/booking/api/", "/api/booking/", "/api/search/itinerary")
-                    ):
+                    if "/booking/api/search/itinerary" not in resp.url:
                         return
                     ct = (resp.headers or {}).get("content-type", "") or ""
                     if "json" not in ct.lower() or resp.status != 200:
                         return
-                    item = {"url": url, "status": resp.status, "content_type": ct}
+                    item = {"url": resp.url, "status": resp.status}
                     try:
                         item["json"] = await resp.json()
                     except Exception:
@@ -153,254 +167,142 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                     pass
             page.on("response", _on_response)
 
-            print(f"AA: attempt {attempt} navigating to {ENTRY_URL}", flush=True)
-            # domcontentloaded fires when HTML is parsed; AA has continuous
-            # analytics XHRs so networkidle never settles within the timeout.
-            await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
+            # Step 1: warm-up on homepage so sensor.js fires
+            print(f"AA: attempt {attempt} warm-up → {ENTRY_URL}", flush=True)
+            try:
+                await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
+            except Exception as exc:  # noqa: BLE001
+                print(f"AA: attempt {attempt} homepage goto failed: {exc!r}", flush=True)
+                return ("nav_failed", [])
+            await asyncio.sleep(2.0)
 
-            # AA serves an Akamai behavioral-challenge interstitial. Wait
-            # for sensor.js to either pass (title becomes real) or fail
-            # (Access Denied), simulating motion meanwhile. Every async
-            # call is bounded by asyncio.wait_for so a hung page can't
-            # lock the whole scrape.
-            import random as _rand
-            cleared = False
+            # Step 2: dismiss cookie banner if present (Sekinal step)
+            for sel in (
+                "#accept-recommended-btn-handler",
+                "#onetrust-accept-btn-handler",
+                'button:has-text("Accept all")',
+                'button:has-text("Accept All")',
+            ):
+                try:
+                    btn = await page.wait_for_selector(sel, timeout=2_000, state="visible")
+                    if btn:
+                        await btn.click()
+                        await asyncio.sleep(1.0)
+                        break
+                except Exception:  # noqa: BLE001
+                    continue
+
+            # Quick check for hard block on homepage
+            try:
+                home_title = await asyncio.wait_for(page.title(), timeout=5.0)
+            except Exception:  # noqa: BLE001
+                home_title = ""
+            if "Access Denied" in home_title:
+                print(f"AA: attempt {attempt} homepage hard-blocked (title={home_title!r})", flush=True)
+                return ("page_blocked", [])
+
+            # Step 3: build deep-link with slices and navigate
+            slices_json = json.dumps(
+                [{"orig": origin, "origNearby": False,
+                  "dest": dest, "destNearby": False,
+                  "date": date}],
+                separators=(",", ":"),
+            )
+            search_url = (
+                "https://www.aa.com/booking/search?"
+                "locale=en_US&fareType=Lowest&pax=1&adult=1&type=OneWay&"
+                "searchType=Award&cabin=&carriers=ALL&travelType=personal&"
+                f"slices={_urlparse.quote(slices_json)}"
+            )
+            print(f"AA: attempt {attempt} deep-link → /booking/search?…&slices={slices_json}", flush=True)
+
+            try:
+                await page.goto(search_url, wait_until="domcontentloaded", timeout=60_000)
+            except Exception as exc:  # noqa: BLE001
+                print(f"AA: attempt {attempt} deep-link goto failed: {exc!r}", flush=True)
+                return ("nav_failed", [])
+
+            # Check for hard block on search page
+            try:
+                title = await asyncio.wait_for(page.title(), timeout=5.0)
+            except Exception:  # noqa: BLE001
+                title = ""
+            try:
+                body_preview = (await asyncio.wait_for(
+                    page.locator("body").inner_text(), timeout=5.0))[:400]
+            except Exception:  # noqa: BLE001
+                body_preview = ""
+            if "Access Denied" in title or "Access Denied" in body_preview:
+                print(f"AA: attempt {attempt} search page hard-blocked (title={title!r})", flush=True)
+                return ("page_blocked", [])
+
+            # Step 4: wait up to 30s for the itinerary XHR with humanized motion
             t_start = asyncio.get_event_loop().time()
-            for round_idx in range(20):  # 20 * 2s = 40s max
-                if asyncio.get_event_loop().time() - t_start > 40:
+            for _wait_round in range(30):
+                if captured_xhrs:
                     break
-                # Each interactive call: 3s strict timeout, swallow all errors
+                if asyncio.get_event_loop().time() - t_start > 30:
+                    break
+                # Light motion to feed sensor.js (per Sekinal pattern)
                 try:
                     await asyncio.wait_for(
-                        page.mouse.move(_rand.randint(100, 1200), _rand.randint(100, 600), steps=2),
-                        timeout=3.0,
+                        page.mouse.move(
+                            _rand.randint(200, 1100), _rand.randint(150, 550), steps=3,
+                        ),
+                        timeout=2.0,
                     )
                 except Exception:  # noqa: BLE001
                     pass
+                await asyncio.sleep(1.0)
+
+            # Final scroll nudge if still empty (Sekinal pattern step 4)
+            if not captured_xhrs:
                 try:
-                    cur_title = await asyncio.wait_for(page.title(), timeout=3.0)
-                except Exception:  # noqa: BLE001
-                    cur_title = ""
-                try:
-                    cookies_obj = await asyncio.wait_for(page.context.cookies(), timeout=3.0)
-                except Exception:  # noqa: BLE001
-                    cookies_obj = []
-                abck = next((c.get("value", "") for c in cookies_obj if c.get("name") == "_abck"), "")
-                abck_trusted = "~0~" in abck
-
-                if cur_title and "Access Denied" not in cur_title:
-                    print(f"AA: attempt {attempt} title cleared @ round {round_idx} title={cur_title!r}", flush=True)
-                    cleared = True
-                    break
-                if abck_trusted:
-                    print(f"AA: attempt {attempt} _abck=~0~ @ round {round_idx}", flush=True)
-                    cleared = True
-                    break
-                if round_idx in (0, 8, 19):
-                    print(f"AA: attempt {attempt} round {round_idx} title={cur_title!r} abck[:40]={abck[:40]!r}", flush=True)
-                await asyncio.sleep(2.0)
-
-            if not cleared:
-                print(f"AA: attempt {attempt} challenge unresolved in 40s — bail before fill", flush=True)
-                # Don't waste another 100s on selectors that won't exist on
-                # a challenge page; return immediately so we have headroom
-                # for a parallel retry path.
-                return ("challenge_unresolved", [])
-
-            title = await page.title()
-            url_now = page.url
-            # inner_text returns empty for not-yet-rendered content; use
-            # raw HTML to see what actually came back.
-            html_preview = (await page.content())[:1200]
-            body_preview = (await page.locator("body").inner_text())[:400]
-            html_len = len(await page.content())
-            print(f"AA: attempt {attempt} loaded title={title!r} url={url_now} html_len={html_len}", flush=True)
-
-            # Stash this state in diag for inspection even when fill fails
-            try:
-                LAST_RUN_DIAG.setdefault("page_states", []).append({
-                    "attempt": attempt, "title": title, "url": url_now,
-                    "body_preview": body_preview, "html_preview": html_preview,
-                    "html_len": html_len,
-                })
-            except Exception:  # noqa: BLE001
-                pass
-
-            if "Access Denied" in title or "Access Denied" in body_preview:
-                return ("page_blocked", [])
-
-            # Wait for the form (any input with originAirport or similar name).
-            try:
-                await page.wait_for_selector("input[name='originAirport']", timeout=15_000)
-            except Exception:  # noqa: BLE001
-                pass  # we'll dump page state anyway
-
-            # DIAGNOSTIC: dump EVERY form, button (any visible), and link on
-            # the loaded page so we can see what the actual search widget is.
-            page_dump = await page.evaluate("""
-                () => {
-                    const inputs = Array.from(document.querySelectorAll('input,select')).slice(0,80).map(el => ({
-                        tag: el.tagName.toLowerCase(), name: el.getAttribute('name'),
-                        id: el.id, type: el.type || null, value: (el.value||'').slice(0,30),
-                        aria: el.getAttribute('aria-label'), placeholder: el.placeholder,
-                        visible: el.offsetParent !== null,
-                    })).filter(x => x.name || x.id || x.aria || x.placeholder);
-                    const buttons = Array.from(document.querySelectorAll('button, input[type="submit"]')).slice(0,40).map(el => ({
-                        tag: el.tagName.toLowerCase(),
-                        text: (el.innerText || el.value || '').slice(0,40).trim(),
-                        type: el.type, id: el.id, name: el.getAttribute('name'),
-                        aria: el.getAttribute('aria-label'),
-                        data_test: el.getAttribute('data-testid') || el.getAttribute('data-test'),
-                        visible: el.offsetParent !== null,
-                    }));
-                    const forms = Array.from(document.querySelectorAll('form')).slice(0,8).map(f => ({
-                        id: f.id, name: f.getAttribute('name'),
-                        action: f.action, method: f.method,
-                        visible: f.offsetParent !== null,
-                    }));
-                    const has_react = !!window.React;
-                    const has_submitSearch = typeof window.submitSearch === 'function';
-                    return {inputs, buttons, forms, has_react, has_submitSearch};
-                }
-            """)
-            print(f"AA: attempt {attempt} PAGE DUMP:", flush=True)
-            print(f"AA:   forms: {json.dumps(page_dump.get('forms', []))[:600]}", flush=True)
-            print(f"AA:   has_react={page_dump.get('has_react')} has_submitSearch={page_dump.get('has_submitSearch')}", flush=True)
-            print(f"AA:   visible inputs: {json.dumps([i for i in page_dump.get('inputs', []) if i.get('visible')])[:1200]}", flush=True)
-            print(f"AA:   visible buttons: {json.dumps([b for b in page_dump.get('buttons', []) if b.get('visible')])[:1200]}", flush=True)
-
-            # Save the dump to the diag for /diag/aa_last
-            try:
-                LAST_RUN_DIAG.setdefault("page_dumps", []).append({"attempt": attempt, "dump": page_dump})
-            except Exception:  # noqa: BLE001
-                pass
-
-            print(f"AA: attempt {attempt} form found, filling via real keystrokes…", flush=True)
-            step_errors: list[dict] = []
-
-            async def _step(name: str, coro_fn):
-                """Run a fill step; log + record failure but don't abort."""
-                try:
-                    await coro_fn()
-                    return True
-                except Exception as exc:  # noqa: BLE001
-                    err = {"step": name, "type": type(exc).__name__, "msg": str(exc)[:300]}
-                    step_errors.append(err)
-                    print(f"AA: attempt {attempt} step '{name}' FAILED: {err}", flush=True)
-                    return False
-
-            # 1. One-way radio (force=True bypasses overlap/visibility checks)
-            await _step("click_oneway", lambda: page.click(
-                "input[name='tripType'][value='oneWay']", timeout=8_000, force=True))
-            # 2. Award checkbox
-            await _step("check_redeem", lambda: page.check(
-                "input[name='redeemMiles']", timeout=8_000, force=True))
-            # 3. Origin — fill triggers input/change events
-            await _step("fill_origin", lambda: page.fill(
-                "input[name='originAirport']", origin, timeout=8_000, force=True))
-            await asyncio.sleep(0.7)
-            await page.keyboard.press("Tab")
-            # 4. Destination
-            await _step("fill_dest", lambda: page.fill(
-                "input[name='destinationAirport']", dest, timeout=8_000, force=True))
-            await asyncio.sleep(0.7)
-            await page.keyboard.press("Tab")
-            # 5. Departure date — use id selector since name has duplicates
-            await _step("fill_date", lambda: page.fill(
-                "input[id='aa-leavingOn']", _date_mmddyyyy(date), timeout=8_000, force=True))
-            await page.keyboard.press("Tab")
-            await asyncio.sleep(0.5)
-
-            # 6. Submit
-            submit_ok = await _step("click_submit", lambda: page.click(
-                "input[type='submit'][id='flightSearchForm.button.reSubmit']",
-                timeout=10_000, force=True))
-
-            # Stash step errors in diag regardless of outcome
-            try:
-                LAST_RUN_DIAG.setdefault("step_errors", []).append({
-                    "attempt": attempt, "errors": step_errors,
-                })
-            except Exception:  # noqa: BLE001
-                pass
-
-            if not submit_ok and step_errors:
-                # If submit failed AND we had other failures, surface them
-                return ("fill_failed", [])
-            print(f"AA: attempt {attempt} fields filled ({len(step_errors)} step errors), submit clicked", flush=True)
-
-            # Wait for the post-submit navigation, then watch for the title to
-            # change away from 'Challenge Validation' (Akamai's interstitial on
-            # the results page). During this wait, simulate human mouse + scroll
-            # behavior — sensor.js scores sessions partly on movement, and a
-            # session that LOOKS active is more likely to graduate to trusted.
-            try:
-                await page.wait_for_load_state("load", timeout=30_000)
-            except Exception:  # noqa: BLE001
-                pass
-            await asyncio.sleep(2.0)
-
-            import random
-            for wait_round in range(24):  # 24 * 2.5s = 60s
-                cur_title = await page.title()
-                if "Challenge Validation" not in cur_title and "Access Denied" not in cur_title:
-                    print(f"AA: attempt {attempt} challenge CLEARED at round {wait_round} (title={cur_title!r})", flush=True)
-                    break
-                if wait_round in (0, 6, 12, 18, 23):
-                    print(f"AA: attempt {attempt} still on challenge (round {wait_round}, title={cur_title!r})", flush=True)
-                # Random mouse movement
-                try:
-                    await page.mouse.move(random.randint(100, 1200), random.randint(100, 600), steps=5)
+                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                    await asyncio.sleep(5.0)
                 except Exception:  # noqa: BLE001
                     pass
-                # Slight scroll
-                try:
-                    await page.evaluate(f"window.scrollBy(0, {random.randint(-50, 50)})")
-                except Exception:  # noqa: BLE001
-                    pass
-                await asyncio.sleep(2.5)
 
-            print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
-            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} graphql/booking JSON XHRs", flush=True)
-
-            # Stash captured XHRs in module-level diag so /diag/aa_last can serve them
+            # Stash diag (always, even on empty result)
+            try:
+                title_now = await asyncio.wait_for(page.title(), timeout=3.0)
+            except Exception:  # noqa: BLE001
+                title_now = ""
+            html_len = 0
+            try:
+                html_len = len(await asyncio.wait_for(page.content(), timeout=3.0))
+            except Exception:  # noqa: BLE001
+                pass
             attempt_diag = {
                 "attempt": attempt,
-                "post_submit_url": page.url,
-                "post_submit_title": await page.title(),
-                "xhrs": [],
+                "deep_link_url": search_url[:500],
+                "final_url": page.url,
+                "title": title_now,
+                "html_len": html_len,
+                "xhrs_seen": len(captured_xhrs),
+                "xhrs": [{"url": x["url"], "status": x["status"],
+                          "has_slices": isinstance(x.get("json"), dict) and bool(x["json"].get("slices"))}
+                         for x in captured_xhrs],
             }
-            for x in captured_xhrs:
-                attempt_diag["xhrs"].append({
-                    "url": x["url"],
-                    "status": x["status"],
-                    "content_type": x.get("content_type"),
-                    "payload": x["json"],  # full payload — can be large
-                })
             LAST_RUN_DIAG["attempts"].append(attempt_diag)
 
-            # Look for a GraphQL response that contains actual flight data.
-            # Heuristics: top-level data key isn't 'staticContent'/'loginInfo'
-            # AND the payload contains slice/flight/itinerary text.
-            for i, x in enumerate(captured_xhrs):
-                payload = x["json"]
+            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} itinerary XHRs", flush=True)
+
+            if not captured_xhrs:
+                return ("xhr_timeout", [])
+
+            # Step 5: parse the first XHR that has a slices array
+            for x in captured_xhrs:
+                payload = x.get("json")
                 if not isinstance(payload, dict):
                     continue
-                # Old shape (just in case AA still serves it under some query)
                 if payload.get("slices"):
                     parsed = _parse_xhr(payload, origin, dest, date)
                     if parsed:
                         return ("ok", parsed)
-                # New shape: look for flight-y content in data
-                data = payload.get("data") or {}
-                data_keys = list(data.keys())
-                if data_keys and not all(k in ("staticContent", "loginInfo") for k in data_keys):
-                    # This is a NEW graphql query we haven't seen — could be
-                    # the search response. Mark verdict so we can write a
-                    # parser once we see the shape.
-                    return ("new_graphql_unparsed", [])
+                    return ("no_results", [])
 
-            return ("no_results", [])
+            return ("xhr_no_slices", [])
 
     except Exception as exc:  # noqa: BLE001
         print(f"AA: attempt {attempt} crash: {type(exc).__name__}: {str(exc)[:200]}", flush=True)
