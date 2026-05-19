@@ -84,3 +84,33 @@ Re-running smoke now (background curl b4q41se1e, ~6min wall-clock max).
 
 **Spent**: ~10 BD MB (smoke probes), ~$0.001
 **Next**: If smoke #2 returns rows, AA flips ✅ and Phase 2 starts; if still timeout, inspect diag _abck state, possibly add a click-search-button fallback, possibly try BD Residential
+
+## 2026-05-19 18:11 — AA Sekinal test #2: _abck stuck at ~-1~ from Fly egress
+**Status**: 🔴 (failed — pivoting)
+**Outcome**: 3× xhr_timeout, but the new diag revealed the root cause:
+- `_abck` minted to `~-1~` (untrusted) on all 3 attempts
+- Never reached `~0~` (trusted) within the 90s wait
+- 12 cookies received → sensor.js IS executing
+- title="" + html_len=2380 → SPA never rendered the booking widget because the API never fired
+
+Akamai BMP is flagging Fly's datacenter egress IP regardless of Camoufox's Firefox-like fingerprint. Sekinal's claim of "Fly egress works for AA" is contradicted by our actual measurements; their setup likely uses a residential exit or different cloud.
+
+**Pivot**: switch AA to BD Residential (commit f29a135). Refactored Camoufox branch in browser_page() to use explicit new_context with `ignore_https_errors=True` when `use_brightdata_residential=True` (BD MITMs HTTPS by default, serving its own cert; Firefox throws SEC_ERROR_UNKNOWN_ISSUER without this).
+
+AA plugin call site now:
+```python
+browser_page(
+    use_camoufox=True,
+    use_brightdata_residential=True,
+    brightdata_country="us",
+    brightdata_session=f"aa_{int(time.time())}_{attempt}",
+)
+```
+
+3-test smoke chain (background b2bjsxtmq, ~16min worst case):
+1. BD Residential SSL fix verified via geo.brdtest.com
+2. AA homepage via BD Residential US — does Akamai serve it?
+3. Full AA search end-to-end
+
+**Spent**: ~$0 BD (no bytes flowed yet via BD; previous tests all failed at TLS)
+**Next**: Read 3-test outcome; if BD US IPs also Akamai-flagged, escalate to BD Web Unlocker (different product); if works, AA flips ✅ and Phase 2 (JetBlue first) starts
