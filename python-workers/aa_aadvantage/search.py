@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 PROGRAM_ID = "AA_AADVANTAGE"
 PROGRAM_NAME = "AAdvantage"
 
-ENTRY_URL = "https://mobile.aa.com/booking"  # redirects to www.aa.com/homePage.do
+ENTRY_URL = "https://www.aa.com/"  # direct homepage, avoids mobile->www redirect chain
 MAX_ATTEMPTS = 3
 
 # Module-level diagnostic state — last scrape's captured XHRs, exposed via
@@ -158,20 +158,25 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             # analytics XHRs so networkidle never settles within the timeout.
             await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
             # Camoufox/Firefox JS renders slower than Chromium-via-CDP — give
-            # the booking form widget extra time to mount.
-            await asyncio.sleep(12.0)
+            # the booking form widget extra time to mount. Akamai sensor.js
+            # also runs in this window which is what we want.
+            await asyncio.sleep(20.0)
 
             title = await page.title()
             url_now = page.url
+            # inner_text returns empty for not-yet-rendered content; use
+            # raw HTML to see what actually came back.
+            html_preview = (await page.content())[:1200]
             body_preview = (await page.locator("body").inner_text())[:400]
-            print(f"AA: attempt {attempt} loaded title={title!r} url={url_now}", flush=True)
-            print(f"AA: attempt {attempt} body[:400]={body_preview!r}", flush=True)
+            html_len = len(await page.content())
+            print(f"AA: attempt {attempt} loaded title={title!r} url={url_now} html_len={html_len}", flush=True)
 
             # Stash this state in diag for inspection even when fill fails
             try:
                 LAST_RUN_DIAG.setdefault("page_states", []).append({
                     "attempt": attempt, "title": title, "url": url_now,
-                    "body_preview": body_preview,
+                    "body_preview": body_preview, "html_preview": html_preview,
+                    "html_len": html_len,
                 })
             except Exception:  # noqa: BLE001
                 pass
