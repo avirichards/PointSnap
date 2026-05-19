@@ -211,49 +211,58 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 pass
 
             print(f"AA: attempt {attempt} form found, filling via real keystrokes…", flush=True)
+            step_errors: list[dict] = []
 
-            # Use Patchright's real input methods — set_val + dispatchEvent
-            # didn't trigger AA's jQuery typeahead/datepicker; we need actual
-            # keystrokes + tabs so the widgets accept the values.
-            try:
-                # 1. Click "One way"
-                await page.click("input[name='tripType'][value='oneWay']", timeout=10_000)
-                # 2. Check "Redeem miles"
-                redeem = page.locator("input[name='redeemMiles']")
-                if await redeem.is_checked() is False:
-                    await redeem.check(timeout=10_000)
-                # 3. Origin — clear PIT default and type our airport
-                origin_field = page.locator("input[name='originAirport']")
-                await origin_field.click()
-                await origin_field.fill("")  # clear
-                await origin_field.fill(origin)
-                await asyncio.sleep(0.7)  # let typeahead surface
-                await page.keyboard.press("Tab")
-                # 4. Destination
-                dest_field = page.locator("input[name='destinationAirport']")
-                await dest_field.click()
-                await dest_field.fill(dest)
-                await asyncio.sleep(0.7)
-                await page.keyboard.press("Tab")
-                # 5. Date
-                date_field = page.locator("input[name='departDate']")
-                await date_field.click()
-                await date_field.fill(_date_mmddyyyy(date))
-                await page.keyboard.press("Tab")
-                print(f"AA: attempt {attempt} fields filled, clicking submit…", flush=True)
-            except Exception as exc:  # noqa: BLE001
-                print(f"AA: attempt {attempt} fill failed: {type(exc).__name__}: {str(exc)[:150]}", flush=True)
-                return ("fill_failed", [])
+            async def _step(name: str, coro_fn):
+                """Run a fill step; log + record failure but don't abort."""
+                try:
+                    await coro_fn()
+                    return True
+                except Exception as exc:  # noqa: BLE001
+                    err = {"step": name, "type": type(exc).__name__, "msg": str(exc)[:300]}
+                    step_errors.append(err)
+                    print(f"AA: attempt {attempt} step '{name}' FAILED: {err}", flush=True)
+                    return False
 
+            # 1. One-way radio (force=True bypasses overlap/visibility checks)
+            await _step("click_oneway", lambda: page.click(
+                "input[name='tripType'][value='oneWay']", timeout=8_000, force=True))
+            # 2. Award checkbox
+            await _step("check_redeem", lambda: page.check(
+                "input[name='redeemMiles']", timeout=8_000, force=True))
+            # 3. Origin — fill triggers input/change events
+            await _step("fill_origin", lambda: page.fill(
+                "input[name='originAirport']", origin, timeout=8_000, force=True))
+            await asyncio.sleep(0.7)
+            await page.keyboard.press("Tab")
+            # 4. Destination
+            await _step("fill_dest", lambda: page.fill(
+                "input[name='destinationAirport']", dest, timeout=8_000, force=True))
+            await asyncio.sleep(0.7)
+            await page.keyboard.press("Tab")
+            # 5. Departure date — use id selector since name has duplicates
+            await _step("fill_date", lambda: page.fill(
+                "input[id='aa-leavingOn']", _date_mmddyyyy(date), timeout=8_000, force=True))
+            await page.keyboard.press("Tab")
             await asyncio.sleep(0.5)
 
-            # Real click on the submit input — id has dots so use attribute selector
+            # 6. Submit
+            submit_ok = await _step("click_submit", lambda: page.click(
+                "input[type='submit'][id='flightSearchForm.button.reSubmit']",
+                timeout=10_000, force=True))
+
+            # Stash step errors in diag regardless of outcome
             try:
-                await page.click("input[type='submit'][id='flightSearchForm.button.reSubmit']", timeout=10_000)
-                print(f"AA: attempt {attempt} submit clicked", flush=True)
-            except Exception as exc:  # noqa: BLE001
-                print(f"AA: attempt {attempt} submit click failed: {exc}", flush=True)
-                return ("submit_failed", [])
+                LAST_RUN_DIAG.setdefault("step_errors", []).append({
+                    "attempt": attempt, "errors": step_errors,
+                })
+            except Exception:  # noqa: BLE001
+                pass
+
+            if not submit_ok and step_errors:
+                # If submit failed AND we had other failures, surface them
+                return ("fill_failed", [])
+            print(f"AA: attempt {attempt} fields filled ({len(step_errors)} step errors), submit clicked", flush=True)
 
             # Wait for either navigation or search XHR. Use load (not
             # networkidle — AA's analytics never goes idle).
