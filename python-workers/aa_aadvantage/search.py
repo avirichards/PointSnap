@@ -20,10 +20,11 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from common.browser import browser_page, creds_for
+from common.browser import browser_page
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
 log = logging.getLogger(__name__)
@@ -146,21 +147,24 @@ def _parse(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[N
     return results
 
 
-MAX_RETRIES = 8  # AA's Akamai partially blacklists BD's pool; per-IP success ~20%.
+MAX_RETRIES = 15  # AA Akamai blacklists much of BD's pool; per-random-IP ~20%.
 
 # Sticky-session cache. Bright Data assigns one exit IP per session_id and
 # pins it for ~10min idle. Once we find a session that bypasses Akamai we
-# reuse it for subsequent searches — turns the ~5-attempt cost into a
-# 1-attempt cost most of the time. Worker restart resets the cache.
+# reuse it for subsequent searches. Worker restart resets the cache.
 _GOOD_SESSION_ID: str | None = None
-_NEXT_PROBE_INDEX: int = 1
+
+
+def _new_session_id() -> str:
+    """Random short ID — uniform sample of BD's IP pool. Sequential
+    aa1, aa2... deterministically hashes to fixed IPs and got us a
+    streak of 8 all-blocked draws; random IDs avoid that."""
+    return f"aa{uuid.uuid4().hex[:10]}"
 
 
 async def _try_once(
     attempt: int,
     session_id: str,
-    user: str | None,
-    pwd: str | None,
     body: dict[str, Any],
     origin: str,
     dest: str,
@@ -169,17 +173,18 @@ async def _try_once(
     """One BD-session attempt with a specific sticky session_id. Returns
     (verdict, results). verdict ∈ {'ok','page_blocked','api_blocked','bad_json','crash'}."""
     try:
+        # 30s context timeout: blocked IPs return 403 fast (~3s), good IPs
+        # finish in <15s; anything slower than 30s is a dead session worth
+        # rotating off. Saves probe budget vs the prior 150s timeout.
         async with browser_page(
-            timeout_ms=150_000,
+            timeout_ms=30_000,
             use_brightdata=True,
             brightdata_session=session_id,
         ) as page:
-            # Prime sensor.js for /booking AND present a same-origin referer
-            # in the same shot. Empirical: bare goto = 403; with referer the
-            # request looks like organic intra-site navigation and Akamai
-            # accepts it on ~20% of BD's exit IPs.
+            # Same-origin Referer bypasses Akamai's path-block on /booking/*
+            # when the assigned BD IP isn't on Akamai's deepest blacklist.
             await page.goto(SEARCH_PAGE, wait_until="domcontentloaded", referer=LOGIN_URL)
-            await asyncio.sleep(2.0)  # sensor.js
+            await asyncio.sleep(1.5)  # sensor.js
 
             # Fast-fail block check before spending an API call.
             title = await page.title()
@@ -187,16 +192,9 @@ async def _try_once(
             if "Access Denied" in title or "Access Denied" in body_text:
                 return ("page_blocked", [])
 
-            # Optional login (anonymous works for browse; logged-in improves partner inventory).
-            if user and pwd:
-                try:
-                    await page.goto(LOGIN_URL, wait_until="domcontentloaded")
-                    await page.fill("input[name='loginID']", user)
-                    await page.fill("input[name='password']", pwd)
-                    await page.click("button[type='submit']")
-                    await page.wait_for_load_state("networkidle", timeout=15_000)
-                except Exception as exc:  # noqa: BLE001
-                    log.warning("AA attempt %d login failed (continuing anonymously): %s", attempt, exc)
+            # Login flow deliberately skipped — anonymous browse returns the
+            # same award inventory for our purposes, and the previous login
+            # flow had a 150s timeout when AA changed the loginID selector.
 
             # Fire the search XHR from inside the live page so per-request
             # tokens are appended automatically.
@@ -230,36 +228,33 @@ async def _scrape_real(
     date: str,
     cabin_filter: str = "Y",
 ) -> list[NormalizedResult]:
-    global _GOOD_SESSION_ID, _NEXT_PROBE_INDEX
-    user, pwd = creds_for(PROGRAM_ID)
+    global _GOOD_SESSION_ID
     body = _build_search_body(origin, dest, date, 1)
 
-    # Step 1: if we've found a working session previously, try it first.
-    # A working session typically holds for ~10min of inactivity before BD
-    # rotates the underlying IP, so most subsequent calls land 1-attempt.
+    # Step 1: cached working session, if any.
     if _GOOD_SESSION_ID:
-        verdict, results = await _try_once(1, _GOOD_SESSION_ID, user, pwd, body, origin, dest, date)
+        verdict, results = await _try_once(1, _GOOD_SESSION_ID, body, origin, dest, date)
         if verdict == "ok":
             log.info("AA: cached session %s succeeded (%d results)", _GOOD_SESSION_ID, len(results))
             return results
         log.info("AA: cached session %s stopped working (verdict=%s), rotating", _GOOD_SESSION_ID, verdict)
         _GOOD_SESSION_ID = None
 
-    # Step 2: probe new sessions until one passes Akamai. Increment the
-    # probe index globally so consecutive calls don't replay known-bad IDs.
+    # Step 2: probe random session IDs until one passes Akamai.
     verdicts: list[str] = []
     for attempt in range(1, MAX_RETRIES + 1):
-        session_id = f"aa{_NEXT_PROBE_INDEX}"
-        _NEXT_PROBE_INDEX += 1
-        verdict, results = await _try_once(attempt, session_id, user, pwd, body, origin, dest, date)
-        verdicts.append(f"{session_id}={verdict}")
+        session_id = _new_session_id()
+        verdict, results = await _try_once(attempt, session_id, body, origin, dest, date)
+        verdicts.append(verdict)  # don't include session_id in summary; spammy
         if verdict == "ok":
             _GOOD_SESSION_ID = session_id
-            log.info("AA: found working session %s on probe %d/%d (%d results, prior=%s)",
-                     session_id, attempt, MAX_RETRIES, len(results), verdicts[:-1])
+            log.info("AA: found working session %s on probe %d/%d (%d results, verdicts=%s)",
+                     session_id, attempt, MAX_RETRIES, len(results), verdicts)
             return results
+        # Tight backoff — most failures are 403 returned within 3-5s, so the
+        # main throttle is browser context teardown, not Akamai.
         if attempt < MAX_RETRIES:
-            await asyncio.sleep(1.0 + attempt * 0.3)
+            await asyncio.sleep(0.5)
 
     log.warning("AA: exhausted %d probes, verdicts=%s", MAX_RETRIES, verdicts)
     return []
