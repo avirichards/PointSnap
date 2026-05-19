@@ -594,8 +594,25 @@ async def search(
         log.exception("Plugin %s raised", program)
         raise HTTPException(status_code=502, detail=f"Plugin error: {exc}") from exc
 
-    db_summary = await write_results(query, results)
-    rows = [_serialize(query, r) for r in results]
+    try:
+        db_summary = await write_results(query, results)
+    except Exception as exc:  # noqa: BLE001 — surface DB errors with detail
+        log.exception("write_results failed for %s", program)
+        import traceback
+        raise HTTPException(
+            status_code=503,
+            detail=f"DB write error ({type(exc).__name__}): {str(exc)[:500]} | tb: {traceback.format_exc()[-500:]}",
+        ) from exc
+
+    try:
+        rows = [_serialize(query, r) for r in results]
+    except Exception as exc:  # noqa: BLE001
+        log.exception("_serialize failed for %s", program)
+        import traceback
+        raise HTTPException(
+            status_code=503,
+            detail=f"Serialize error ({type(exc).__name__}): {str(exc)[:500]} | tb: {traceback.format_exc()[-500:]}",
+        ) from exc
     return JSONResponse(
         {
             "program": program,
