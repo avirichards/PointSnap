@@ -191,7 +191,14 @@ async def browser_page(
                 camoufox_kwargs["geoip"] = True  # auto-derive TZ/lat/long from exit IP
 
         async with AsyncCamoufox(**camoufox_kwargs) as browser:
-            page = await browser.new_page()
+            # Use explicit new_context so we can pass ignore_https_errors when
+            # BD Residential MITMs HTTPS (BD intercepts TLS and presents its
+            # own cert; Firefox throws SEC_ERROR_UNKNOWN_ISSUER without this).
+            context_kwargs: dict = {}
+            if use_brightdata_residential:
+                context_kwargs["ignore_https_errors"] = True
+            context = await browser.new_context(**context_kwargs)
+            page = await context.new_page()
             page.set_default_timeout(timeout_ms)
             # NOTE: deliberately NOT blocking stylesheets/fonts in the Camoufox
             # branch — Firefox treats `display:none` differently than Chromium
@@ -209,7 +216,7 @@ async def browser_page(
                 yield page
             finally:
                 try:
-                    await page.context.close()
+                    await context.close()
                 except Exception:  # noqa: BLE001
                     pass
         return

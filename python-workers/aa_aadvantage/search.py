@@ -140,13 +140,22 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
       no_results | crash
     """
     import random as _rand
+    import time as _time
     import urllib.parse as _urlparse
 
     try:
+        # Phase 1 smoke (2026-05-19) proved Fly egress is Akamai-flagged for
+        # AA: _abck stays at ~-1~ (untrusted) for the full 90s wait, so AA's
+        # SPA never fires the search API. Switching to BD Residential
+        # (country=US, sticky session) to get a clean residential IP that
+        # Akamai's sensor.js can score to trusted ~0~. ignore_https_errors
+        # is required because BD MITMs HTTPS by default.
         async with browser_page(
             timeout_ms=120_000,
             use_camoufox=True,
-            use_proxy=False,  # Sekinal proves Fly egress works; no BD needed
+            use_brightdata_residential=True,
+            brightdata_country="us",
+            brightdata_session=f"aa_{int(_time.time())}_{attempt}",
         ) as page:
             captured_xhrs: list[dict] = []
 
