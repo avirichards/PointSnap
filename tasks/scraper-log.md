@@ -331,3 +331,450 @@ Subagent on Patchright stealth hardening reported:
 | `0be102a` | feat(diag): add referer + user_agent params to /diag/airline |
 | `43942e6` | feat(diag): add brightdata=1 query param to /diag/airline |
 | `c7cfc64` | feat(scraper): add Bright Data Browser API path to browser_page() |
+
+---
+
+## Sample responses (so you don't have to re-discover the shapes)
+
+### Akamai "Access Denied" — hard deny (440 bytes)
+```html
+<html><head>
+<title>Access Denied</title>
+</head><body>
+<h1>Access Denied</h1>
+ 
+You don't have permission to access "http://www.aa.com/booking/find-flights" on this server.<p>
+Reference #18.e768c917.1779162238.5660acd5
+</p><p>https://errors.edgesuite.net/18.e768c917.1779162238.5660acd5</p>
+
+
+</body></html>
+```
+- `<title>Access Denied</title>` — title-check works
+- `errors.edgesuite.net` reference — Akamai trace ID format
+- No script, no redemption — fully blacklisted IP for this session
+- `html_len`: 439-441 bytes
+
+### Akamai behavioral challenge — soft (2380 bytes)
+```html
+<!DOCTYPE html><html lang="en"><head></head><body>
+<script type="text/javascript" src="/Y1atzWeFtkT0CpHX9D40vFNYnFY/c07mS6YL3h/O2Zv/Ug8rWAN/4C30u?v=92e4d221-6cdf-7337-5efe-481b41991730&t=310488769"></script>
+<div id="sec-if-cpt-container" role="main" style="display: none">
+    <div class="behavioral-content">
+        <div id="sec-bc-text-container"></div>
+        <div id="sec-bc-tile-parent">
+            <div id="sec-bc-tile-container"></div>
+        </div>
+        <div class="sec-bc-button-p... (truncated)
+```
+- `<title>` is EMPTY (no title tag in <head>)
+- Script src has randomized path + `?v=<uuid>&t=<timestamp>` query
+- `sec-if-cpt-container` = "secure: in-flight challenge container" (Akamai BMP marker)
+- `style="display: none"` = challenge is invisible by default; sensor.js will either pass silently OR reveal the tile-puzzle if scoring fails
+- `html_len`: 2380 bytes (always — Akamai's template)
+
+### AA "real homepage" (~76 KB)
+- `<title>American Airlines - Airline tickets and low fares at aa.com</title>`
+- Contains `<form name="reservationFlightSearchForm" id="reservationFlightSearchForm" onsubmit="submitSearch(getCurrentSearch())" method="post" action="/booking/find-flights">`
+- Form has: originAirport, destinationAirport, departDate, returnDate, tripType radio, redeemMiles checkbox, _csrf hidden, flightSearchForm.button.reSubmit submit input
+- This is what we WANT to land on. Currently we don't reach it via Patchright OR Camoufox+Fly-egress.
+
+### AA app-level error 309 (from WU direct POST)
+```json
+{"error":"309","fareBenefits":[],"products":[],"responseMetadata":null,"slices":[],"utag":null}
+```
+- HTTP 200 (not Akamai's 403)
+- Returned by AA's backend when `/booking/api/search/itinerary` is hit without valid browser session cookies
+- Body length: 96 bytes
+- Same response regardless of cookies/Origin/Referer/X-CSRF-Token
+
+### AA `_abck` cookie states
+- `~-1~-1~-1~...` = unvalidated / challenged. sensor.js ran but didn't trust this session.
+- `~0~-1~-1~...` = TRUSTED. sensor.js silently passed. We never see this from BD/Camoufox on Fly egress.
+- We DO see ~11-12 cookies set on every BD Browser API session (including `_abck`, `bm_sz`, `ROUTEID`, `dtCookie`, `akavpau_www_aahomepage`, etc.) but `_abck` always stays in `~-1~` form.
+
+### `/services/graphql` queries observed (post-form-submit on www.aa.com)
+- `{"data": {"staticContent": {"locale": "en_US", "url": "/en_US/fragments/home-page/emergency-response/go-dark.json", ...}}}` — homepage init only
+- `{"data": {"loginInfo": {"expiry": 0, "status": 200}}}` — login probe
+- **No flight-search GraphQL query observed in any test.** AA's UI dispatches some other request (probably form POST → server-rendered results) or it's blocked by Challenge Validation before firing.
+
+---
+
+## Useful testing commands (copy-paste)
+
+### Trigger AA search end-to-end + read diag
+```bash
+curl -s --max-time 300 "https://pointsnap-workers.fly.dev/search?program=AA_AADVANTAGE&origin=JFK&dest=LAX&date=2026-08-15" > /tmp/r.json
+echo "size: $(wc -c < /tmp/r.json), rows: $(python3 -c "import json; print(len(json.load(open('/tmp/r.json')).get('rows',[])))" )"
+curl -s --max-time 30 https://pointsnap-workers.fly.dev/diag/aa_last > /tmp/d.json
+python3 -c "import json; d=json.load(open('/tmp/d.json')); print(f'verdicts: {d.get(\"verdicts\")}'); [print(f'  attempt {s.get(\"attempt\")}: title={s.get(\"title\")[:40]!r} html_len={s.get(\"html_len\")} url={s.get(\"url\")}') for s in d.get('page_states', [])]"
+```
+
+### Test BD WU directly against AA's API
+```bash
+curl -s --max-time 90 -X POST https://api.brightdata.com/request \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920" \
+  -d '{
+    "zone": "pointsnap_webunlock",
+    "url": "https://www.aa.com/booking/api/search/itinerary",
+    "format": "raw",
+    "method": "POST",
+    "body": "{\"slices\":[{\"origin\":\"JFK\",\"destination\":\"LAX\",\"departureDate\":\"2026-08-15\",\"allCarriers\":true,\"departureTime\":\"040001\"}],\"passengers\":[{\"type\":\"adult\",\"count\":1}],\"tripOptions\":{\"locale\":\"en_US\",\"searchType\":\"Award\"},\"requestHeader\":{\"clientId\":\"AAcom\"}}",
+    "headers": {"Content-Type": "application/json", "Accept": "application/json"}
+  }'
+```
+Expected: `{"error":"309", ...}` JSON. If this changes shape, AA's API moved.
+
+### Test BD Browser API loads ANY airline homepage
+```bash
+curl -s --max-time 60 "https://pointsnap-workers.fly.dev/diag/airline?url=https%3A%2F%2Fwww.<airline>.com&brightdata=1&wait_ms=4000" | python3 -m json.tool
+```
+Replace `<airline>` with `aa`, `aircanada`, `delta`, etc. Expected for 9 of 11: status=200 with real title. For AA: status=403 Access Denied.
+
+### Test from Apify (sample only — no token yet)
+```bash
+curl -X POST \
+  "https://api.apify.com/v2/acts/igolaizola~flight-award-scraper/run-sync-get-dataset-items?format=json&timeout=120" \
+  -H "Authorization: Bearer $APIFY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"origins":["JFK"],"destinations":["LAX"],"startDate":"2026-08-15","endDate":"2026-08-15","cabin":"business","issuers":["american"],"maxItems":50}'
+```
+
+### Direct curl to AA from Fly worker (smoke test) — currently always fails
+```bash
+curl -s --max-time 30 https://www.aa.com/
+# → either Access Denied (440 bytes) or behavioral challenge (2380 bytes)
+```
+
+### Check what's deployed (without flyctl)
+```bash
+# Health
+curl -s https://pointsnap-workers.fly.dev/health
+# → {"status":"ok","dbSkipped":false}
+
+# Endpoints currently registered
+curl -s https://pointsnap-workers.fly.dev/openapi.json | python3 -c "import json,sys; print(list(json.load(sys.stdin).get('paths',{}).keys()))"
+```
+
+---
+
+## BD configuration reference
+
+### Browser API zone (the CDP one we've been using)
+- Name: `pointsnap`
+- WSS URL: `wss://brd-customer-hl_6f5ad35c-zone-pointsnap:n7h9hjvh70lp@brd.superproxy.io:9222`
+- Stored as Fly secret `BRIGHTDATA_WSS_URL`
+- CAPTCHA Solver: ON (no extra cost)
+- Premium domains: OFF (aa.com not on BD's premium list; toggling on for AA didn't change behavior)
+- Connect via: `pw.chromium.connect_over_cdp(wss_url)`
+- Sticky session: append `-session-<id>` to the username portion of the WSS URL
+- Country override: append `-country-<cc>` to the username
+
+### Web Unlocker zone (the HTTP-API one for raw POST)
+- Name: `pointsnap_webunlock`
+- API: `POST https://api.brightdata.com/request`
+- Auth: `Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` (account-level API key)
+- Body format: `{"zone": "<zone>", "url": "<target>", "format": "raw"|"json", "method": "GET"|"POST", "body": "<string>", "headers": {...}}`
+- **Field-name gotcha:** POST body field is `body` (NOT `data` — `data` rejected with validation error)
+- HTML pages: WU hits `expect_element` selector wait for `#weeklyCarousel` (BD's stale AA detection). Times out at ~90s with `x-brd-error: captcha or protection page found`.
+- API endpoints: works directly. AA returns app error 309.
+
+### Account API key (separate from zone passwords)
+- Value: `8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` (visible in BD popups during setup)
+- Used for: WU Bearer auth, BD's REST APIs
+- **Security:** in our chat transcript. User should rotate when done with this work.
+
+### BD Residential proxy (not yet set up)
+- This is the missing piece for Camoufox + clean IP. The user has Browser API + Web Unlocker; would need to add Residential as a third zone.
+- Connection format (when set up): `proxy = {"server": "http://brd.superproxy.io:33335", "username": "brd-customer-<id>-zone-<zone>-country-us-session-<sid>", "password": "<password>"}`
+- Pass via Camoufox: `AsyncCamoufox(proxy=proxy_dict, geoip=True, ...)`
+
+---
+
+## Camoufox configuration that gets us this far
+
+```python
+from camoufox.async_api import AsyncCamoufox
+
+async with AsyncCamoufox(
+    headless="virtual",         # uses bundled Xvfb wrapper
+    humanize=True,              # smooth cursor movement
+    locale="en-US",
+    window=(1366, 768),
+    block_webrtc=True,          # prevents IP leak if proxied
+    geoip=False,                # only True with proxy
+) as browser:
+    page = await browser.new_page()
+    # Resource blocking: ONLY block image/media in Firefox.
+    # Blocking CSS makes elements offsetParent === null in Firefox.
+    async def _block_heavy(route):
+        if route.request.resource_type in ("image", "media"):
+            await route.abort()
+        else:
+            await route.continue_()
+    await page.route("**/*", _block_heavy)
+```
+
+Sekinal's minimum-viable config (from `Sekinal/aa_contest`):
+```python
+async with AsyncCamoufox(headless=headless) as browser:
+    page = await browser.new_page()
+```
+Then they `page.wait_for_function(...)` up to 90s for sensor.js to validate `_abck`.
+
+---
+
+## Patchright vs Camoufox: empirical signals on aa.com
+
+| Signal | Patchright (Chromium) | Camoufox (Firefox) |
+|---|---|---|
+| Page-load success rate | ~0-5% (was 20% before Akamai re-flagged BD's pool) | Same / similar |
+| Cookies minted | 11-12 (incl. `_abck` in `~-1~` form) | 11-12 (incl. `_abck` in `~-1~` form) |
+| `_abck` upgrades to `~0~` | Never | Not yet observed in our tests |
+| Form fill works (when page loads) | Yes | Yes (with longer wait for JS) |
+| Form submit + navigation | Yes (got real SID) | Untested (challenge doesn't clear) |
+| Results page Challenge Validation | Always | Always (so far) |
+| Memory per session | ~250 MB | ~500 MB |
+| First-launch time | ~2-3s | ~5-7s |
+
+---
+
+## Per-subagent findings (full detail)
+
+### Subagent #1: open-source AA scrapers (2026-05-19)
+
+- `Sekinal/aa_contest` — 1 star, active. Uses **Camoufox + curl_cffi Firefox-133 impersonation**. Pivoted FROM Patchright/Playwright. Claims "100% pass rate, 10-30s on first request" for Akamai. No proxy required per README. Reference for the architecture we're following.
+- `borski/travel-hacking-toolkit` — 495 stars, active. Uses Patchright + Chromium + xvfb in Docker. Only does AAdvantage balance/status, not award search.
+- `lg/awardwiz` — archived Sept 2024. Used "Arkalis" engine (Chromium via raw CDP). Reference for plugin shapes / response parsers but those have likely drifted.
+- `tszumowski/aa_flight_search_tool` — 9 stars, unmaintained, Selenium. Dead.
+
+Key technical findings:
+- **TLS layer matters more than fingerprint** — `curl_cffi impersonate="chrome124"` or `firefox133` is the consensus 2026 building block per asadfix scraping guide and The Web Scraping Club.
+- **ISP/static residential proxies, never rotating mid-session** — Akamai scores trust across a session.
+- **Cookie injection alone does NOT work** — `_abck` is fingerprint-bound; mismatch invalidates instantly.
+- **Hyper Solutions** (€100/mo for 50K req, drops to €1/k at 1M) is the only paid sensor-data-as-a-service.
+
+### Subagent #2: AA mobile app API (2026-05-19)
+
+- Endpoint confirmed: `POST https://www.aa.com/booking/api/search/itinerary` with the request body shape AwardWiz documented.
+- **No public mobile API reverse-engineering exists.** Zero MITM/Frida writeups on GitHub/Medium/blogs. AA's app is cert-pinned + requires jailbroken device.
+- NDC / partner API not viable. Exploreamerican.com sales-only (cash, no awards), requires ARC/IATA accreditation.
+- No public AAdvantage account-tier APIs.
+- `/services/graphql` only serves static-content + login-info queries — no flight-search GraphQL query exists.
+
+### Subagent #3: alternative Akamai BMP solvers (2026-05-19)
+
+Scrapeway May-2026 Akamai bench:
+- Firecrawl, ScraperAPI, Scrapfly: 100% on StockX
+- ZenRows: 95%
+- ScrapingBee: 0%, Scrapingdog: 0%, Scrapingant: 0%
+
+Top recommendations:
+1. **Scrapfly** — $30/mo Discovery (1k free credits), 100% on Walmart (Akamai + behavioral combo similar to AA). Use `asp=true&render_js=true&session=<id>`. **Failed Akamai requests are FREE.** Best signal-to-noise candidate not yet tried.
+2. **ScrapeBadger** — explicit Patchright + sensor.js execution. PAYG from $10, non-expiring credits. Failed Akamai not charged.
+3. **ScraperAPI Akamai endpoint** — only 68.95% in Proxyway harder bench. Skip.
+
+Skip: Multilogin, AdsPower, Kameleo, Octobrowser (fingerprint tools, NOT sensor.js solvers, no Akamai BMP receipts). NetNut, Crawlbase, Smartproxy mobile, AnyIP, Browserless stealth, ScrapeOps, BotProof — no independent data.
+
+### Subagent #4: oneworld partner workaround (2026-05-19)
+
+Ranked partner sites for AA inventory:
+1. **British Airways Reward Flight Finder** — best AA coverage. URL: `britishairways.com/travel/flightfinderhome/public/en_gb`. PUBLIC, no FF login. BUT Akamai BMP same as aa.com — not materially easier.
+2. **Alaska Airlines** (alaskaair.com) — easier scraping, partial AA coverage. WE ALREADY HAVE THIS via AS plugin (httpx + IPRoyal).
+3. **Qantas** — public flight reward finder, lighter protection. ≤1200mi each way coverage of AA.
+
+Hidden mobile API: `timrogers/ba_rewards` Ruby gem reverse-engineered BA's iOS Avios Flight Finder private API. Different auth surface, lighter protection than web. Worth exploring if direct AA fails.
+
+Aggregators already doing partner-derived AA: Seats.aero, AwardFares, point.me, Roame all infer AA from partner backends (BA, Alaska especially).
+
+### Subagent #5: Patchright stealth hardening (2026-05-19)
+
+Bright Data Browser API + Patchright currently at ~40-50% trusted. Gap closures available:
+- `apify/fingerprint-injector` + 7 manual `addInitScript` patches: +30-50% (navigator.webdriver, plugins, chrome.runtime, permissions.query consistency, WebGL params, navigator.languages, iframe webdriver propagation)
+- Canvas/AudioContext noise injection: +10% (must be deterministic per session, not per-call random)
+- `oxymouse` Gaussian + Bezier mouse paths: +10-20%
+- `rebrowser/rebrowser-patches` — closes Runtime.Enable CDP leak but doesn't change Akamai outcome (Akamai is TLS+behavior+sensor, not Runtime.Enable)
+- Total layered hardening: ~75-85% best case
+
+What Patchright already handles: Runtime.enable leak (uses isolated ExecutionContexts), Console.enable leak, --enable-automation removed, --disable-blink-features=AutomationControlled, closed shadow root traversal.
+
+What Patchright does NOT patch: behavioral signals (mouse/keyboard/scroll timing — Akamai's biggest tell), Canvas/WebGL/Audio fingerprint values, navigator.plugins/mimeTypes/permissions.query consistency, window.chrome.app/runtime/csi/loadTimes, prototype-chain Proxy CDP trap (unpatched in V8 as of March 2026).
+
+**Conclusion:** Camoufox sidesteps these client-side patches entirely by being a real Firefox.
+
+### Subagent #6: Apify igolaizola integration spec (2026-05-19)
+
+- API: `POST https://api.apify.com/v2/acts/igolaizola~flight-award-scraper/run-sync-get-dataset-items`
+- Auth: `Bearer <APIFY_API_TOKEN>`
+- 23 programs supported (all 13 of ours covered EXCEPT BA Avios, NH ANA, CX Cathay, AV LifeMiles — those 4 not in actor)
+- **Hard 60-day date window** (deal-breaker per user requirement)
+- $3/1000 results pricing. ~$3/mo at our usage volume.
+- Apify Free plan: $5/mo platform credits, no card.
+- Actor 2 months old, 164 total users, 26 MAU, 0 ratings — beta-ish but credible author (98.4% run success across 51 actors).
+- Apify dev's tech stack (inferred from his GitHub): Go + chromedp (CDP-driven Chromium) + Apify Residential proxies. **No proprietary Akamai bypass** — same approach we're building.
+
+### Subagent #7: Camoufox integration deep-dive (2026-05-19)
+
+Concrete migration plan delivered:
+- `pyproject.toml`: add `camoufox[geoip]>=0.4`
+- Dockerfile: add Firefox/GTK/Xvfb apt deps, `python -m camoufox fetch` build step. ~+430 MB image growth.
+- Set `PLAYWRIGHT_BROWSERS_PATH=/app/.cache/camoufox`
+- `common/browser.py`: add `use_camoufox=True` branch with `AsyncCamoufox(headless="virtual", humanize=True, geoip=False, ...)`
+- Fly memory: 4GB is enough (current `performance-2x` config)
+- Sekinal's verified-working config: minimal — `AsyncCamoufox(headless=headless)` + `page.wait_for_function(...)` for `_abck` to validate.
+
+### Subagent #8: curl_cffi + sensor_data techniques (2026-05-19)
+
+- **The cookie-mint + curl_cffi pattern is the canonical 2026 free Akamai bypass.** Camoufox/Patchright mints `_abck` in trusted state, exports cookies to `curl_cffi` with `impersonate="firefox133"`, replay against API endpoint.
+- `curl_cffi` alone CANNOT execute sensor.js — it's only ~10% of the bypass. Browser cookie-mint is required.
+- AwardWiz used this pattern (Arkalis-Chromium for mint, curl-cffi for replay) — archived but pattern is sound.
+- Hyper Solutions docs explicitly document Akamai web v3 + sec-cpt + pixel; BMP v4 mobile NOT advertised — verify with sales.
+- Open-source sensor generators (xvertile, xiaoweigege) documented as outdated for Akamai v3+.
+- `rebrowser-patchright` doesn't change Akamai outcome — fixes Runtime.Enable not behavior.
+
+### Subagent #9: Apify actor source inspection (2026-05-19)
+
+- igolaizola has 51 actors on Apify, github.com/igolaizola with ~30 repos.
+- His `chromedp` fork (forked from chromedp/chromedp) — pushed 2026-03-23. Active maintenance of CDP-driver fork = strong signal his actor uses real Chromium via CDP, not pure HTTP.
+- `darkpanda` fork of `lightpanda-io/browser` (Zig-based headless, Playwright/Puppeteer-compatible via CDP) — pushed 2026-03-24. Lightweight Chromium alternative.
+- `chromote` — Chrome-in-Docker with VNC + remote debugging :9222. Operational chassis for browser-in-container.
+- Other actors are Go + `net/http` + browser-like headers (idealista-scraper, fr24).
+- Shopify Discovery writeup (Oct 2025): "browser automation is overkill" for Shopify — but Shopify isn't Akamai.
+- **No "akamai" / "sensor_data" / "_abck" / "utls" / "bmp" strings anywhere in his repos.** No published technique. Source code for flight-award-scraper is closed.
+
+**Verdict:** Apify's "trick" is just real Chromium + residential proxies. Same architecture we're targeting with Camoufox.
+
+---
+
+## User's explicit constraints + goals (capture before pivots)
+
+- **"I want every flight from every carrier"** — comprehensive AA inventory required, partial-via-partners is insufficient
+- **"60-day cap is unacceptable"** — Apify is out for this reason alone
+- **"If the Apify developer can figure it out, I want to be able to figure it out too"** — DIY ownership preferred over rented service
+- **"I don't care how long this takes you just figure it out"** — committed to multi-session work
+- **"Stop suggesting to quit"** — proactively explore options instead of recommending Seats.aero / drop-AA
+- All 23 programs Apify covers + 4 we already have (BA, NH, CX, AV) = 27-program eventual scope
+- No explicit ceiling on monthly cost (so far)
+
+---
+
+## "If you need to..." cookbook
+
+### ...test whether AA is currently scrapeable
+1. Hit `https://www.aa.com/` direct via curl. If HTML is 76+ KB and has `reservationFlightSearchForm`: Akamai has loosened. If 2380 bytes (`sec-if-cpt-container`): challenge interstitial. If 440 bytes (`Access Denied`): hard deny.
+2. Hit `/diag/airline?url=https%3A%2F%2Fwww.aa.com&brightdata=1&wait_ms=4000` on the worker. Read title + body_snippet.
+3. Hit `/search?program=AA_AADVANTAGE&origin=JFK&dest=LAX&date=<60-day-out>` and read `/diag/aa_last` immediately.
+
+### ...debug a stuck Camoufox session
+1. Check `/diag/aa_last`. If `started_at` exists but `verdicts: None` after >5min: session is hanging. Worker may need restart.
+2. If `page_states` are populated but `step_errors` are present: form fill timeouts; selector miss or page state wrong.
+3. If `html_len == 2380`: stuck on Akamai behavioral challenge.
+4. If `html_len == 440-441`: hard Access Denied (IP blacklisted).
+
+### ...migrate a non-AA plugin from BD-Browser-API to Camoufox
+1. Read the plugin's `async with browser_page(...)` call
+2. Change `use_brightdata=True` → `use_camoufox=True`. Add `use_proxy=False` for testing (or `use_proxy=True` once BD Residential is configured)
+3. Verify Firefox-specific behaviors: timer thresholds may need bumping, `wait_until="domcontentloaded"` works (don't use `networkidle`)
+4. Tests rendering: pages that need CSS to render forms — Firefox may differ from Chromium
+
+### ...add a new program plugin (one of the 10 Apify-covered but we don't have)
+1. Read `vs/search.py` or `as_mileageplan/search.py` for the httpx-based template (use this when target site has no Akamai BMP).
+2. Read `aa_aadvantage/search.py` for the Camoufox template (use when target needs full browser).
+3. Add the new plugin's directory to `pyproject.toml` packages list.
+4. Add `<PROGRAM_ID>` import + dispatch entry in `serve.py`'s `PLUGINS` dict.
+5. Seed the program in `src/db/seed/programs.ts` (Drizzle).
+6. Add to seed run if it's the first deploy.
+
+### ...investigate a new airline's anti-bot setup
+1. WU GET via `format=json` against the homepage. Look at headers + body in returned JSON. Akamai = `_abck`/`bm_sz` cookies. Imperva = `incap_ses_*`. Cloudflare = `cf_clearance`. DataDome = `datadome` cookie.
+2. Try `format=raw` on the home page. If 2380 bytes with `sec-if-cpt-container`: Akamai BMP challenge variant. 
+3. Browser API + form-fill: if it works, the protection is Akamai-light (Imperva, DataDome can sometimes be browser-bypassed easily).
+
+### ...look at what the deployed worker actually has
+```bash
+curl -s https://pointsnap-workers.fly.dev/openapi.json | python3 -m json.tool | grep -E '"/.*":' | sort
+```
+
+### ...test BD Web Unlocker's POST capability against any API endpoint
+```bash
+WU_PAYLOAD=$(python3 -c 'import json; print(json.dumps({
+  "zone": "pointsnap_webunlock",
+  "url": "<target API URL>",
+  "format": "raw",
+  "method": "POST",
+  "body": "<json-string-body>",
+  "headers": {"Content-Type":"application/json"}
+}))')
+curl -s -X POST https://api.brightdata.com/request \
+  -H "Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920" \
+  -H "Content-Type: application/json" \
+  -d "$WU_PAYLOAD"
+```
+
+---
+
+## Open angles, fully expanded
+
+### 1. Camoufox + BD Residential proxy (HIGHEST PRIORITY)
+**Hypothesis:** Akamai's hard-deny on ~50% of attempts is IP-rep based (Fly egress is a datacenter IP). BD Residential gives a real consumer IP.
+
+**Steps:**
+1. User creates a new BD zone, type "Residential Proxy" (not Browser API, not WU)
+2. User shares connection params: `username` (incl. zone), `password`, `port` (usually 33335)
+3. Update `common/browser.py` Camoufox branch to accept the residential proxy URL when `use_proxy=True`
+4. Test AA via `use_camoufox=True, use_proxy=True`
+
+**Expected:** Higher % of attempts pass Akamai's initial IP-rep check. Sensor.js still needs to validate behavior + browser fingerprint — Camoufox handles the fingerprint, residential IP handles the rep.
+
+**Cost:** BD Residential is ~$8.40/GB. At ~2 MB/search, 100 searches/mo = ~$1.68/mo.
+
+### 2. Camoufox cookie-mint + curl_cffi replay (SECOND PRIORITY)
+**Hypothesis:** Even if Camoufox loads the page through behavioral challenge, we can't reliably re-render the search results page (Challenge Validation). Solution: harvest validated cookies from Camoufox, replay against the actual API with curl_cffi.
+
+**Steps:**
+1. Camoufox loads www.aa.com (with 1+ above so we have a real IP)
+2. Wait for `_abck` to upgrade to `~0~` (validated) using `page.wait_for_function`
+3. Export `page.context.cookies()` to a dict
+4. Build curl_cffi POST: `curl_cffi.AsyncSession(impersonate="firefox133").post("https://www.aa.com/booking/api/search/itinerary", headers=..., cookies=cookies, json=body)`
+5. Parse response
+
+**Why this is the canonical 2026 free Akamai bypass.** AwardWiz's exact pattern. Camoufox just replaces AwardWiz's Arkalis-Chromium.
+
+### 3. Hyper Solutions paid sensor-data API (FALLBACK)
+**Hypothesis:** If we can't beat Akamai with browser-based mint, pay for valid sensor_data.
+
+**Steps:**
+1. User signs up at hypersolutions.co. Get API key.
+2. Add `hyper-sdk` Python package.
+3. Flow: GET aa.com → get sensor script URL + challenge context → POST to Hyper with `(url, ua, abck, bm_sz, version, script, context, accept_language, ip)` → receive `sensor_data` → POST sensor_data to Akamai's script endpoint → get back validated `_abck` cookie → use cookies for API calls.
+
+**Cost:** ~€100/mo for 50K requests. €1/k at 1M+.
+
+**Risk:** Their public docs only cover Akamai web v3, not BMP v4 — verify with sales first.
+
+### 4. Solve the visible tile-puzzle (LOW PRIORITY)
+**Hypothesis:** When sensor.js fails, Akamai shows a click-puzzle in `sec-bc-tile-container`. CapSolver-like image solvers don't cover this Akamai-specific pattern.
+
+**Steps:** Probably involves image classification (CNN) on the visible tiles. Out of scope for personal-use.
+
+### 5. Longer Camoufox wait with denser simulation (LOW PRIORITY)
+**Hypothesis:** 5+ min of dense behavioral signals will eventually pass sensor.js scoring.
+
+**Steps:** Bump wait to 300s. Add scroll, click, mousemove with varied timing.
+
+**Risk:** Diminishing returns. Akamai BMP looks at quality of signals, not quantity.
+
+### 6. Camoufox `headless=False` with real Xvfb (LOW PRIORITY)
+**Hypothesis:** Bundled `headless="virtual"` differs detectably from real Xvfb.
+
+**Steps:** Run actual `xvfb-run uvicorn ...` in the container with `DISPLAY=:99`. Set `headless=False`.
+
+**Risk:** Maintenance overhead. Probably no real benefit.
+
+### 7. BA mobile API via timrogers/ba_rewards pattern (CROSS-CHECK)
+**Hypothesis:** BA's mobile API has lighter protection than the web. We could pull AA inventory via BA's "Avios Flight Finder" mobile endpoint.
+
+**Steps:** Read `timrogers/ba_rewards` Ruby gem. Port the auth + request logic to Python. Test.
+
+**Limitation:** This is BA's data, not AA's — partial inventory only.
