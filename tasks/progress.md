@@ -157,3 +157,31 @@ Test #6 in flight (bl95z7cxp, ~5min). New verdict codes capture failure modes: n
 
 **Spent**: ~5 MB BD across all smoke probes, ~$0.04
 **Next**: Read test #6; if ok → AA flips ✅ + Phase 2; if api_403 → AA's API also Akamai-gated and we need _abck=~0~ minted via Camoufox first; if no_cookies → AA's bootstrap doesn't mint those cookies on homepage alone; pivot accordingly
+
+## 2026-05-19 19:15 — Phase 2 plugin status (probe sweep)
+**Status**: 🟡 (mixed)
+**Outcome**: Probed 6 of 13 plugins to assess Phase 2 baseline:
+
+| Program | HTTP | Status | Notes |
+|---|---|---|---|
+| VS_FLYING_CLUB | 200 | ✅ working | Returns real rows JFK→LHR (verified this session) |
+| AS_MILEAGEPLAN | **500** | ❌ broken | Uncaught exception in write_results or _serialize (plugin has inner try/except, can't be plugin code) |
+| AC_AEROPLAN | 200 | 🟡 empty | 128b response = empty rows (silent failure) |
+| DL_SKYMILES | **502** | ❌ broken | Plugin raises uncaught exception |
+| UA_MP | 200 | 🟡 empty | 122b response = empty rows |
+| NH_ANA | 200 | 🟡 empty | 123b response = empty rows, fast (0.15s) — likely never hits upstream |
+
+Added `/diag/run_plugin` endpoint (commit 9aeda52) — runs plugin in isolation, captures traceback, serializes rows individually so we pinpoint where the failure is (plugin scrape vs DB write vs row serialize). Probing AS + DL now via this endpoint.
+
+## 2026-05-19 19:15 — AA escalated to blockers.md, pivot to Phase 2
+**Status**: 🟡
+**Outcome**: AA's 7 transport iterations exhausted free options. Written to `tasks/blockers.md` with 6 suggested next experiments needing user authorization (BD Web Unlocker first; ASN/state targeting; alternative providers; Hyper Solutions; api.aa.com probe). User reviews when ready.
+
+Phase 2 work now in priority order:
+1. Fix AS_MILEAGEPLAN 500 (diag in flight) — needed since it's a "presumed working" anchor
+2. Fix DL_SKYMILES 502 — same diag
+3. Diagnose AC/UA/NH empty-rows (separate diag endpoints per plugin)
+4. Build JetBlue plugin (T2 — easiest new program per Phase 0 rubric)
+5. Move down rubric priority list
+
+**Spent**: ~5 MB BD, ~$0.04, ~0 IPRoyal (presume), ~0 commercial
