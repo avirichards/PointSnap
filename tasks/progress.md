@@ -114,3 +114,20 @@ browser_page(
 
 **Spent**: ~$0 BD (no bytes flowed yet via BD; previous tests all failed at TLS)
 **Next**: Read 3-test outcome; if BD US IPs also Akamai-flagged, escalate to BD Web Unlocker (different product); if works, AA flips ✅ and Phase 2 (JetBlue first) starts
+
+## 2026-05-19 18:30 — AA test #3 (BD Residential): mixed results
+**Status**: 🟡 (debugging)
+**Outcome**: Direct /diag/airline?use_camoufox=1&brightdata_residential=1 against aa.com returns HTTP 200 with sensor.js executing (confirmed twice, 10min apart). **BD Residential reaches aa.com fine.** BD geo info: AT&T Enterprises ASN 7018, Los Angeles, CA — clean US residential IP.
+
+But the full /search call returns rows=[] with verdicts=['nav_failed','crash','nav_failed']. The plugin's 3-attempt loop fails where the direct /diag works.
+
+The current per-attempt diag was empty (returns occur before diag-append site). Added exception capture to LAST_RUN_DIAG for homepage_goto, deep_link_goto, and outer crash stages (commit 30849cb). Re-running smoke now (bmydkiv5s, ~10min).
+
+Hypotheses for nav_failed+crash:
+- 3 sequential Camoufox launches on Fly exhaust memory (each ~300MB)
+- BD pool returns degraded IPs for rapid sequential sessions
+- AA detects pattern after first session and blocks subsequent sessions
+- BD per-session billing burns through some limit
+
+**Spent**: ~1MB BD (smoke probes), ~$0.001
+**Next**: read exception detail; if memory/concurrency: reduce MAX_ATTEMPTS to 1 or add cooldown between attempts; if BD pool issue: try BD Web Unlocker fallback (user created earlier)
