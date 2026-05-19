@@ -264,22 +264,35 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 return ("fill_failed", [])
             print(f"AA: attempt {attempt} fields filled ({len(step_errors)} step errors), submit clicked", flush=True)
 
-            # Wait for the post-submit navigation, then watch for the title
-            # to change away from 'Challenge Validation' (Akamai's interstitial
-            # on the results page). If sensor.js validates, title flips to the
-            # real results page. Up to 60s for that to happen.
+            # Wait for the post-submit navigation, then watch for the title to
+            # change away from 'Challenge Validation' (Akamai's interstitial on
+            # the results page). During this wait, simulate human mouse + scroll
+            # behavior — sensor.js scores sessions partly on movement, and a
+            # session that LOOKS active is more likely to graduate to trusted.
             try:
                 await page.wait_for_load_state("load", timeout=30_000)
             except Exception:  # noqa: BLE001
                 pass
-            await asyncio.sleep(3.0)
-            for wait_round in range(12):  # 12 * 2.5s = 30s additional
+            await asyncio.sleep(2.0)
+
+            import random
+            for wait_round in range(24):  # 24 * 2.5s = 60s
                 cur_title = await page.title()
                 if "Challenge Validation" not in cur_title and "Access Denied" not in cur_title:
-                    print(f"AA: attempt {attempt} challenge cleared at wait round {wait_round} (title={cur_title!r})", flush=True)
+                    print(f"AA: attempt {attempt} challenge CLEARED at round {wait_round} (title={cur_title!r})", flush=True)
                     break
-                if wait_round in (0, 4, 11):
-                    print(f"AA: attempt {attempt} still on challenge page (round {wait_round}, title={cur_title!r})", flush=True)
+                if wait_round in (0, 6, 12, 18, 23):
+                    print(f"AA: attempt {attempt} still on challenge (round {wait_round}, title={cur_title!r})", flush=True)
+                # Random mouse movement
+                try:
+                    await page.mouse.move(random.randint(100, 1200), random.randint(100, 600), steps=5)
+                except Exception:  # noqa: BLE001
+                    pass
+                # Slight scroll
+                try:
+                    await page.evaluate(f"window.scrollBy(0, {random.randint(-50, 50)})")
+                except Exception:  # noqa: BLE001
+                    pass
                 await asyncio.sleep(2.5)
 
             print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
