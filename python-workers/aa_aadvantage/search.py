@@ -145,8 +145,10 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             page.on("response", _on_response)
 
             print(f"AA: attempt {attempt} navigating to {ENTRY_URL}", flush=True)
-            await page.goto(ENTRY_URL, wait_until="networkidle", timeout=90_000)
-            await asyncio.sleep(2.0)
+            # domcontentloaded fires when HTML is parsed; AA has continuous
+            # analytics XHRs so networkidle never settles within the timeout.
+            await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
+            await asyncio.sleep(5.0)  # let initial JS render the form
 
             title = await page.title()
             url_now = page.url
@@ -224,12 +226,13 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 print(f"AA: attempt {attempt} submit failed: {exc}", flush=True)
                 return ("submit_failed", [])
 
-            # Wait for either navigation or search XHR
+            # Wait for either navigation or search XHR. Use load (not
+            # networkidle — AA's analytics never goes idle).
             try:
-                await page.wait_for_load_state("networkidle", timeout=60_000)
+                await page.wait_for_load_state("load", timeout=30_000)
             except Exception:  # noqa: BLE001
                 pass
-            await asyncio.sleep(3.0)
+            await asyncio.sleep(6.0)  # extra time for XHR to fire and complete
 
             print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
             print(f"AA: attempt {attempt} captured {len(captured_xhrs)} relevant XHRs", flush=True)
