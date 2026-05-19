@@ -102,6 +102,7 @@ async def browser_page(
     scraperapi_premium: bool = False,
     use_brightdata: bool = False,
     brightdata_session: str | None = None,
+    use_camoufox: bool = False,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -116,6 +117,51 @@ async def browser_page(
     on launch_persistent_context directly, since there's no separate
     context construction step).
     """
+    # Camoufox path — Firefox-based stealth with fingerprints injected at
+    # the C++ level before any JS can observe them. Defeats Akamai BMP's
+    # sensor.js where Patchright fails (proven by Sekinal/aa_contest).
+    # Uses headless="virtual" which spawns Xvfb internally so the session
+    # looks headful to Akamai but doesn't need a real display.
+    if use_camoufox:
+        from camoufox.async_api import AsyncCamoufox
+
+        camoufox_kwargs: dict = {
+            "headless": "virtual",
+            "humanize": True,
+            "locale": "en-US",
+            "window": (1366, 768),
+            "block_webrtc": True,
+            "geoip": False,  # only enable when using a residential proxy
+        }
+        # Fly's egress IP works for AA per Sekinal — skip proxy by default.
+        # Callers can pass use_proxy=True to route through IPRoyal/BD residential.
+        if use_proxy:
+            ip_proxy = _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
+            if ip_proxy:
+                camoufox_kwargs["proxy"] = ip_proxy
+                camoufox_kwargs["geoip"] = True  # auto-derive TZ/lat/long from exit IP
+
+        async with AsyncCamoufox(**camoufox_kwargs) as browser:
+            page = await browser.new_page()
+            page.set_default_timeout(timeout_ms)
+            # Block heavy resources to reduce bandwidth + speed up navigation.
+            async def _block_heavy_camou(route):
+                if route.request.resource_type in (
+                    "image", "stylesheet", "font", "media", "manifest"
+                ):
+                    await route.abort()
+                else:
+                    await route.continue_()
+            await page.route("**/*", _block_heavy_camou)
+            try:
+                yield page
+            finally:
+                try:
+                    await page.context.close()
+                except Exception:  # noqa: BLE001
+                    pass
+        return
+
     # Lazy import — Patchright is heavy. Avoid loading at module import
     # time so the worker boots even if Chromium isn't installed yet.
     from patchright.async_api import async_playwright

@@ -128,7 +128,8 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
     try:
         async with browser_page(
             timeout_ms=120_000,
-            use_brightdata=True,
+            use_camoufox=True,
+            use_proxy=False,  # Sekinal/aa_contest proves Fly egress works for AA
         ) as page:
             captured_xhrs: list[dict] = []  # graphql + booking APIs (parser candidates)
 

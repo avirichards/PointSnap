@@ -10,7 +10,8 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "python-dotenv>=1.0",
     "json5>=0.10",          # SvelteKit-style payloads (Alaska)
-    "patchright>=1.49",     # stealth browser for Akamai/Imperva/Shape/DataDome programs
+    "patchright>=1.49",     # legacy stealth browser (kept for non-AA plugins during transition)
+    "camoufox[geoip]>=0.4", # Firefox-based stealth; defeats Akamai BMP on AA where Patchright fails
     "selectolax>=0.3",      # fast HTML parser for ANA's JSF response
     "curl-cffi>=0.7",       # TLS-fingerprint impersonation for warm-session replay
 ]
