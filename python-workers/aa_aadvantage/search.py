@@ -124,222 +124,264 @@ def _date_mmddyyyy(iso_date: str) -> str:
     return f"{m}/{d}/{y}"
 
 
-async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[str, list[NormalizedResult]]:
-    """One attempt at AA award search via the Sekinal/aa_contest pattern.
+async def _search_via_curl_cffi(
+    cookies: dict[str, str],
+    user_agent: str,
+    origin: str,
+    dest: str,
+    date: str,
+    bd_proxy_url: str | None,
+) -> tuple[str, dict | None]:
+    """POST to AA's `/booking/api/search/itinerary` with curl_cffi using
+    Firefox 135 TLS fingerprint (matches what Camoufox just minted in).
 
-    Steps:
-      1. Camoufox warms up on aa.com homepage (sensor.js fires; _abck minted).
-      2. Optionally dismiss cookie banner.
-      3. Navigate to /booking/search?slices=[...]&searchType=Award deep-link.
-         AA's SPA auto-fires POST /booking/api/search/itinerary on load.
-      4. Capture the XHR JSON via page.on("response").
-      5. Parse via _parse_xhr (payload shape unchanged from old form-fill flow).
+    Per Sekinal/aa_contest's cookie-replay pattern: the API gate validates
+    cookies + TLS fingerprint. With valid `XSRF-TOKEN` + `spa_session_id`
+    + Firefox 135 JA4, AA serves the response regardless of whether
+    _abck has progressed past ~-1~ to ~0~ (the ~0~ requirement is for
+    the SPA browser session, not the API itself).
 
-    Returns (verdict, results). Verdicts:
-      ok | nav_failed | page_blocked | xhr_timeout | xhr_no_slices |
-      no_results | crash
+    Returns (verdict, json_payload). Verdicts:
+      ok | api_403 | api_html | api_no_json | api_no_slices | curl_err
     """
-    import random as _rand
-    import time as _time
-    import urllib.parse as _urlparse
+    from curl_cffi.requests import AsyncSession
+
+    payload = {
+        "metadata": {"selectedProducts": [], "tripType": "OneWay", "udo": {}},
+        "passengers": [{"type": "adult", "count": 1}],
+        "requestHeader": {"clientId": "AAcom"},
+        "slices": [{
+            "allCarriers": True, "cabin": "", "connectionCity": None,
+            "departureDate": date, "destination": dest,
+            "destinationNearbyAirports": False, "maxStops": None,
+            "origin": origin, "originNearbyAirports": False,
+        }],
+        "tripOptions": {
+            "corporateBooking": False, "fareType": "Lowest",
+            "locale": "en_US", "pointOfSale": "", "searchType": "Award",
+        },
+        "loyaltyInfo": None,
+        "version": "",
+        "queryParams": {"sliceIndex": 0, "sessionId": "", "solutionSet": "",
+                        "solutionId": "", "sort": "CARRIER"},
+    }
+    headers = {
+        "User-Agent": user_agent,
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Content-Type": "application/json",
+        "Referer": "https://www.aa.com/",
+        "Origin": "https://www.aa.com",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+    }
+    # AA-required header injection from cookies (Sekinal pattern)
+    if cookies.get("XSRF-TOKEN"):
+        headers["X-XSRF-TOKEN"] = cookies["XSRF-TOKEN"]
+    if cookies.get("spa_session_id"):
+        headers["X-CID"] = cookies["spa_session_id"]
 
     try:
-        # Phase 1 smoke (2026-05-19) proved Fly egress is Akamai-flagged for
-        # AA: _abck stays at ~-1~ (untrusted) for the full 90s wait, so AA's
-        # SPA never fires the search API. Switching to BD Residential
-        # (country=US, sticky session) to get a clean residential IP that
-        # Akamai's sensor.js can score to trusted ~0~. ignore_https_errors
-        # is required because BD MITMs HTTPS by default.
+        async with AsyncSession(impersonate="firefox135") as s:
+            r = await s.post(
+                "https://www.aa.com/booking/api/search/itinerary",
+                json=payload,
+                headers=headers,
+                cookies=cookies,
+                proxy=bd_proxy_url,
+                verify=False,  # BD MITMs HTTPS by default
+                timeout=30,
+            )
+    except Exception as exc:  # noqa: BLE001
+        return (f"curl_err:{type(exc).__name__}", None)
+
+    if r.status_code == 403:
+        return ("api_403", None)
+    ct = r.headers.get("content-type", "").lower()
+    if "html" in ct:
+        return ("api_html", None)
+    try:
+        body = r.json()
+    except Exception:  # noqa: BLE001
+        return ("api_no_json", None)
+    if not isinstance(body, dict) or not body.get("slices"):
+        return ("api_no_slices", body if isinstance(body, dict) else None)
+    return ("ok", body)
+
+
+def _build_bd_proxy_url(session_id: str) -> str | None:
+    """Assemble a BD Residential proxy URL string (`http://user:pass@host:port`)
+    with the same session_id used by Camoufox, so curl_cffi exits through the
+    same residential IP that minted the cookies.
+
+    Without IP consistency Akamai may invalidate the session on first
+    cookie replay.
+    """
+    import os as _os
+    from urllib.parse import urlparse as _urlp
+
+    raw = _os.environ.get("BRIGHTDATA_RESIDENTIAL_URL")
+    if not raw:
+        return None
+    p = _urlp(raw)
+    username = p.username or ""
+    if session_id and "-session-" not in username:
+        username = f"{username}-session-{session_id}"
+    if "-country-" not in username:
+        username = f"{username}-country-us"
+    return f"http://{username}:{p.password}@{p.hostname}:{p.port}"
+
+
+async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[str, list[NormalizedResult]]:
+    """One attempt at AA award search via Sekinal's cookie-mint + curl_cffi
+    replay pattern.
+
+    Steps:
+      1. Camoufox + BD Residential loads aa.com homepage (NOT the deep-link —
+         deep-link triggers a visible Akamai challenge interstitial).
+      2. Wait up to 60s for AA's critical cookies (XSRF-TOKEN, spa_session_id)
+         to be minted by the SPA's bootstrap script.
+      3. Export cookies + user-agent from the Camoufox session.
+      4. Hand off to curl_cffi (Firefox 135 TLS impersonation) which POSTs to
+         /booking/api/search/itinerary through the SAME BD residential session
+         (IP consistency matters — Akamai invalidates sessions that swap IPs).
+      5. Parse response via _parse_xhr (payload shape unchanged).
+
+    Returns (verdict, results). Verdicts:
+      ok | nav_failed | page_blocked | no_cookies | <curl_cffi verdicts>
+      | no_results | crash
+    """
+    import time as _time
+
+    session_id = f"aa_{int(_time.time())}_{attempt}"
+    bd_proxy_url = _build_bd_proxy_url(session_id)
+    if not bd_proxy_url:
+        return ("crash", [])
+
+    try:
         async with browser_page(
             timeout_ms=120_000,
             use_camoufox=True,
             use_brightdata_residential=True,
             brightdata_country="us",
-            brightdata_session=f"aa_{int(_time.time())}_{attempt}",
+            brightdata_session=session_id,
         ) as page:
-            captured_xhrs: list[dict] = []
-
-            async def _on_response(resp):
-                try:
-                    if "/booking/api/search/itinerary" not in resp.url:
-                        return
-                    ct = (resp.headers or {}).get("content-type", "") or ""
-                    if "json" not in ct.lower() or resp.status != 200:
-                        return
-                    item = {"url": resp.url, "status": resp.status}
-                    try:
-                        item["json"] = await resp.json()
-                    except Exception:
-                        return
-                    captured_xhrs.append(item)
-                except Exception:  # noqa: BLE001
-                    pass
-            page.on("response", _on_response)
-
-            # Skipping homepage warm-up: AA test #4 showed homepage→deep-link
-            # in the same Camoufox+BD-Residential session triggers
-            # SEC_ERROR_UNKNOWN_ISSUER on the 2nd goto (BD's MITM cert handling
-            # somehow degrades after the first navigation). Direct deep-link
-            # via /diag/airline works fine. So we skip the homepage step and
-            # let the deep-link page's own sensor.js fire from a fresh context.
-            slices_json = json.dumps(
-                [{"orig": origin, "origNearby": False,
-                  "dest": dest, "destNearby": False,
-                  "date": date}],
-                separators=(",", ":"),
-            )
-            search_url = (
-                "https://www.aa.com/booking/search?"
-                "locale=en_US&fareType=Lowest&pax=1&adult=1&type=OneWay&"
-                "searchType=Award&cabin=&carriers=ALL&travelType=personal&"
-                f"slices={_urlparse.quote(slices_json)}"
-            )
-            print(f"AA: attempt {attempt} deep-link → /booking/search?…&slices={slices_json}", flush=True)
-
+            # Step 1: load homepage (works cleanly from BD residential per
+            # earlier smoke tests; no visible Akamai challenge on this path)
+            print(f"AA: attempt {attempt} homepage → {ENTRY_URL}", flush=True)
             try:
-                await page.goto(search_url, wait_until="domcontentloaded", timeout=60_000)
+                await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
             except Exception as exc:  # noqa: BLE001
                 err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
-                print(f"AA: attempt {attempt} deep-link goto failed: {err_str}", flush=True)
+                print(f"AA: attempt {attempt} homepage goto failed: {err_str}", flush=True)
                 LAST_RUN_DIAG["attempts"].append({
-                    "attempt": attempt,
-                    "stage": "deep_link_goto",
-                    "error": err_str,
+                    "attempt": attempt, "stage": "homepage_goto", "error": err_str,
                 })
                 return ("nav_failed", [])
 
-            # Check for hard block on search page
+            # Quick check for hard block / Access Denied
             try:
-                title = await asyncio.wait_for(page.title(), timeout=5.0)
+                home_title = await asyncio.wait_for(page.title(), timeout=5.0)
             except Exception:  # noqa: BLE001
-                title = ""
-            try:
-                body_preview = (await asyncio.wait_for(
-                    page.locator("body").inner_text(), timeout=5.0))[:400]
-            except Exception:  # noqa: BLE001
-                body_preview = ""
-            if "Access Denied" in title or "Access Denied" in body_preview:
-                print(f"AA: attempt {attempt} search page hard-blocked (title={title!r})", flush=True)
+                home_title = ""
+            if "Access Denied" in home_title:
+                print(f"AA: attempt {attempt} homepage hard-blocked (title={home_title!r})", flush=True)
                 return ("page_blocked", [])
 
-            # Step 4: wait up to 90s for the itinerary XHR with humanized motion
-            # and Akamai _abck cookie monitoring (per Sekinal's 90s wait_for_function).
-            # Sensor.js scoring can take 30-60s; SPA fires the API only after
-            # _abck reaches the trusted "~0~" state.
+            # Step 2: wait up to 60s for AA-required cookies to mint
+            cookies_dict: dict[str, str] = {}
+            user_agent: str = ""
+            cookies_ready = False
             t_start = asyncio.get_event_loop().time()
-            last_abck_log = 0.0
-            for _wait_round in range(90):
-                if captured_xhrs:
-                    break
+            last_log = 0.0
+            for _wait_round in range(60):
                 elapsed = asyncio.get_event_loop().time() - t_start
-                if elapsed > 90:
+                if elapsed > 60:
                     break
-                # Light motion to feed sensor.js (per Sekinal pattern)
                 try:
-                    await asyncio.wait_for(
-                        page.mouse.move(
-                            _rand.randint(200, 1100), _rand.randint(150, 550), steps=3,
-                        ),
-                        timeout=2.0,
+                    cks = await asyncio.wait_for(page.context.cookies(), timeout=2.0)
+                    cookies_dict = {c["name"]: c["value"] for c in cks}
+                except Exception:  # noqa: BLE001
+                    cookies_dict = {}
+                if "XSRF-TOKEN" in cookies_dict and "spa_session_id" in cookies_dict:
+                    cookies_ready = True
+                    break
+                if elapsed - last_log >= 10.0:
+                    last_log = elapsed
+                    abck = cookies_dict.get("_abck", "")
+                    print(
+                        f"AA: attempt {attempt} +{int(elapsed)}s "
+                        f"cookies={len(cookies_dict)} xsrf={'XSRF-TOKEN' in cookies_dict} "
+                        f"spa_sid={'spa_session_id' in cookies_dict} _abck[:40]={abck[:40]!r}",
+                        flush=True,
                     )
-                except Exception:  # noqa: BLE001
-                    pass
-                # Log _abck state every 10s for diag visibility
-                if elapsed - last_abck_log >= 10.0:
-                    last_abck_log = elapsed
-                    try:
-                        cks = await asyncio.wait_for(page.context.cookies(), timeout=2.0)
-                        abck = next((c.get("value", "") for c in cks if c.get("name") == "_abck"), "")
-                        trusted = "~0~" in abck
-                        title_now = await asyncio.wait_for(page.title(), timeout=2.0)
-                        print(
-                            f"AA: attempt {attempt} +{int(elapsed)}s "
-                            f"title={title_now!r} _abck_trusted={trusted} "
-                            f"abck[:40]={abck[:40]!r} xhrs={len(captured_xhrs)}",
-                            flush=True,
-                        )
-                    except Exception:  # noqa: BLE001
-                        pass
-                await asyncio.sleep(1.0)
+                await asyncio.sleep(1.5)
 
-            # Final scroll nudge if still empty (Sekinal pattern step 4)
-            if not captured_xhrs:
-                try:
-                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                    await asyncio.sleep(5.0)
-                except Exception:  # noqa: BLE001
-                    pass
-
-            # Stash diag (always, even on empty result)
+            # Get user-agent from Camoufox
             try:
-                title_now = await asyncio.wait_for(page.title(), timeout=3.0)
+                user_agent = await asyncio.wait_for(
+                    page.evaluate("navigator.userAgent"), timeout=3.0,
+                )
             except Exception:  # noqa: BLE001
-                title_now = ""
-            html_len = 0
-            try:
-                html_len = len(await asyncio.wait_for(page.content(), timeout=3.0))
-            except Exception:  # noqa: BLE001
-                pass
-            # On XHR timeout, capture page HTML + cookies for triage
-            html_preview = ""
-            abck_final = ""
-            cookies_count = 0
-            if not captured_xhrs:
-                try:
-                    html_full = await asyncio.wait_for(page.content(), timeout=5.0)
-                    html_preview = html_full[:2000]
-                except Exception:  # noqa: BLE001
-                    pass
-                try:
-                    cks = await asyncio.wait_for(page.context.cookies(), timeout=3.0)
-                    cookies_count = len(cks)
-                    abck_final = next((c.get("value", "") for c in cks if c.get("name") == "_abck"), "")
-                except Exception:  # noqa: BLE001
-                    pass
+                user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0"
 
+            # Capture final cookie state for diag (before potential API failure)
+            abck_final = cookies_dict.get("_abck", "")
             attempt_diag = {
                 "attempt": attempt,
-                "deep_link_url": search_url[:500],
-                "final_url": page.url,
-                "title": title_now,
-                "html_len": html_len,
-                "html_preview": html_preview,
-                "cookies_count": cookies_count,
+                "stage": "post_cookie_mint",
+                "cookies_count": len(cookies_dict),
+                "cookies_ready": cookies_ready,
                 "abck": abck_final[:80],
                 "abck_trusted": "~0~" in abck_final,
-                "xhrs_seen": len(captured_xhrs),
-                "xhrs": [{"url": x["url"], "status": x["status"],
-                          "has_slices": isinstance(x.get("json"), dict) and bool(x["json"].get("slices"))}
-                         for x in captured_xhrs],
+                "has_xsrf": "XSRF-TOKEN" in cookies_dict,
+                "has_spa_sid": "spa_session_id" in cookies_dict,
+                "user_agent": user_agent[:120],
             }
-            LAST_RUN_DIAG["attempts"].append(attempt_diag)
 
-            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} itinerary XHRs", flush=True)
+            if not cookies_ready:
+                print(f"AA: attempt {attempt} required cookies never minted in 60s", flush=True)
+                LAST_RUN_DIAG["attempts"].append(attempt_diag)
+                return ("no_cookies", [])
 
-            if not captured_xhrs:
-                return ("xhr_timeout", [])
+            print(
+                f"AA: attempt {attempt} cookies ready in {int(asyncio.get_event_loop().time() - t_start)}s "
+                f"({len(cookies_dict)} cookies, _abck_trusted={'~0~' in abck_final})",
+                flush=True,
+            )
 
-            # Step 5: parse the first XHR that has a slices array
-            for x in captured_xhrs:
-                payload = x.get("json")
-                if not isinstance(payload, dict):
-                    continue
-                if payload.get("slices"):
-                    parsed = _parse_xhr(payload, origin, dest, date)
-                    if parsed:
-                        return ("ok", parsed)
-                    return ("no_results", [])
+        # Camoufox session closed; now hand off to curl_cffi (outside the
+        # `async with` so the proxy connection is fresh — avoids cert state
+        # contamination from the browser's TLS session).
+        print(f"AA: attempt {attempt} curl_cffi POST → /booking/api/search/itinerary", flush=True)
+        verdict, body = await _search_via_curl_cffi(
+            cookies=cookies_dict,
+            user_agent=user_agent,
+            origin=origin,
+            dest=dest,
+            date=date,
+            bd_proxy_url=bd_proxy_url,
+        )
+        attempt_diag["curl_verdict"] = verdict
+        attempt_diag["api_has_slices"] = bool(body and body.get("slices"))
+        LAST_RUN_DIAG["attempts"].append(attempt_diag)
 
-            return ("xhr_no_slices", [])
+        if verdict != "ok" or not body:
+            print(f"AA: attempt {attempt} curl_cffi verdict={verdict}", flush=True)
+            return (verdict, [])
+
+        parsed = _parse_xhr(body, origin, dest, date)
+        if not parsed:
+            return ("no_results", [])
+        return ("ok", parsed)
 
     except Exception as exc:  # noqa: BLE001
         err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
         print(f"AA: attempt {attempt} crash: {err_str}", flush=True)
         try:
             LAST_RUN_DIAG["attempts"].append({
-                "attempt": attempt,
-                "stage": "outer_crash",
-                "error": err_str,
+                "attempt": attempt, "stage": "outer_crash", "error": err_str,
             })
         except Exception:  # noqa: BLE001
             pass
