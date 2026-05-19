@@ -239,6 +239,84 @@ async def diag_airline(
         )
 
 
+@app.get("/diag/warmup")
+async def diag_warmup(
+    warmup_url: str = Query(..., description="First URL to load (mints Akamai cookies via sensor.js)"),
+    target_url: str = Query(..., description="Second URL — loaded in the same browser session after warmup"),
+    warmup_wait_ms: int = Query(5000, description="ms to wait after warmup page loads (sensor.js completion)"),
+    target_wait_ms: int = Query(2000, description="ms to wait after target page loads"),
+    brightdata: int = Query(1, description="route via Bright Data (default 1 for this endpoint)"),
+    capture_xhr: str = Query("", description="optional substring; capture first matching XHR response body"),
+) -> JSONResponse:
+    """Two-step navigation: load warmup_url first to mint Akamai/Imperva
+    cookies in the BD browser session, then load target_url in the same
+    session. Returns both responses' status + title + cookies count. Use
+    this to bypass Akamai path-protection on sites like aa.com where the
+    homepage 403s but specific paths (loyalty, aadvantage) succeed."""
+    try:
+        from common.browser import browser_page
+        result: dict = {"warmup": {}, "target": {}, "captured": None}
+        captured_body: dict = {}
+        async with browser_page(
+            timeout_ms=120_000,
+            use_brightdata=bool(brightdata),
+        ) as page:
+            if capture_xhr:
+                async def _on_response(resp):
+                    if capture_xhr in resp.url and resp.status == 200 and "captured" not in captured_body:
+                        try:
+                            captured_body["captured"] = {
+                                "url": resp.url,
+                                "status": resp.status,
+                                "body": (await resp.text())[:2000],
+                            }
+                        except Exception:  # noqa: BLE001
+                            pass
+                page.on("response", _on_response)
+
+            # Step 1: warmup
+            try:
+                r1 = await page.goto(warmup_url, wait_until="domcontentloaded", timeout=60_000)
+                await asyncio.sleep(warmup_wait_ms / 1000)
+                result["warmup"] = {
+                    "status": r1.status if r1 else None,
+                    "title": (await page.title())[:80],
+                    "url": page.url,
+                    "cookies": len(await page.context.cookies()),
+                }
+            except Exception as exc:  # noqa: BLE001
+                result["warmup"] = {"error": str(exc)[:200]}
+                return JSONResponse({"ok": False, **result})
+
+            # Step 2: target (same session, cookies carry over)
+            try:
+                r2 = await page.goto(target_url, wait_until="domcontentloaded", timeout=60_000, referer=warmup_url)
+                await asyncio.sleep(target_wait_ms / 1000)
+                body = (await page.locator("body").inner_text())[:400]
+                result["target"] = {
+                    "status": r2.status if r2 else None,
+                    "title": (await page.title())[:80],
+                    "url": page.url,
+                    "cookies": len(await page.context.cookies()),
+                    "body_snippet": body,
+                }
+            except Exception as exc:  # noqa: BLE001
+                result["target"] = {"error": str(exc)[:200]}
+
+            if captured_body:
+                result["captured"] = captured_body.get("captured")
+
+            target_status = result["target"].get("status")
+            target_body = result["target"].get("body_snippet", "")
+            ok = (target_status == 200 and "Access Denied" not in target_body)
+            return JSONResponse({"ok": ok, **result})
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500]},
+            status_code=500,
+        )
+
+
 @app.get("/diag/ac_scrape")
 async def diag_ac_scrape(
     origin: str = Query("YYZ"),
