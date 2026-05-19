@@ -508,6 +508,67 @@ async def diag_ua_scrape(
         )
 
 
+@app.get("/diag/run_plugin")
+async def diag_run_plugin(
+    program: str = Query(...),
+    origin: str = Query(..., min_length=3, max_length=3),
+    dest: str = Query(..., min_length=3, max_length=3),
+    date: str = Query(...),
+) -> JSONResponse:
+    """Run a plugin in isolation with traceback capture. Surfaces the
+    actual exception for plugins that 500 in production /search.
+
+    Calls plugin → captures any raise. Calls _serialize → captures separately.
+    Skips write_results (DB write). This lets us see if the failure is in
+    the scrape or in serialization."""
+    import traceback
+    plugin = PLUGINS.get(program)
+    if plugin is None:
+        return JSONResponse({"ok": False, "error": f"Unknown program: {program}"}, status_code=404)
+
+    origin_u = origin.upper()
+    dest_u = dest.upper()
+
+    plugin_err: dict | None = None
+    rows: list[NormalizedResult] = []
+    try:
+        rows = await plugin(origin_u, dest_u, date, "Y")
+    except Exception as exc:  # noqa: BLE001
+        plugin_err = {
+            "type": type(exc).__name__,
+            "msg": str(exc)[:500],
+            "traceback": traceback.format_exc()[-2000:],
+        }
+
+    if plugin_err:
+        return JSONResponse({"ok": False, "stage": "plugin", **plugin_err})
+
+    # Try to serialize each row individually so we can see which one breaks
+    query = SearchQuery(origin=origin_u, dest=dest_u, depart_date=date, pax=1, min_cabin="Y")  # type: ignore[arg-type]
+    serialized: list[dict] = []
+    serialize_err: dict | None = None
+    for i, r in enumerate(rows):
+        try:
+            serialized.append(_serialize(query, r))
+        except Exception as exc:  # noqa: BLE001
+            serialize_err = {
+                "row_index": i,
+                "type": type(exc).__name__,
+                "msg": str(exc)[:500],
+                "traceback": traceback.format_exc()[-2000:],
+                "row_repr": repr(r)[:1000],
+            }
+            break
+
+    return JSONResponse({
+        "ok": serialize_err is None,
+        "row_count": len(rows),
+        "serialized_count": len(serialized),
+        "serialize_err": serialize_err,
+        "sample": serialized[:1],
+    })
+
+
 @app.get("/search")
 async def search(
     program: str = Query(..., description="Program ID, e.g. VS_FLYING_CLUB"),
