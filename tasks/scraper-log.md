@@ -4,6 +4,131 @@
 
 ---
 
+## Project anatomy + entry points (READ FIRST IF NEW TO PROJECT)
+
+### What PointSnap is
+Personal-use airline-award-search cockpit. User submits search (origin/dest/date) on the Next.js frontend; frontend fans out to per-program scrapers; results merge into a spreadsheet view. **Goal: comprehensive coverage of all 23+ major loyalty programs with unlimited date range.** Currently 2/13 working (VS, AS via httpx); the other 11 silently return `[]`.
+
+### System layers
+```
+User browser
+  │
+  ▼
+Next.js cockpit on Vercel (./src/app/api/search/route.ts)
+  │  fans out to 13 plugins; SSE-streams results back
+  │  calls ${PYTHON_WORKER_URL}/search?program=X&origin=Y&dest=Z&date=...
+  ▼
+Python FastAPI worker on Fly.io (pointsnap-workers)
+  │  serve.py:PLUGINS dict dispatches to one of 13 plugins
+  ▼
+Plugin under python-workers/<program>/search.py
+  │  most call common/browser.py:browser_page(...) context manager
+  │  VS/AS call common/scrape_client.py:scrape_client(...) (httpx)
+  ▼
+Either:
+  • httpx + IPRoyal residential (for VS, AS — sites with no Akamai)
+  • Bright Data Browser API via CDP (for the 10 Akamai/Imperva sites)
+  • Bright Data Web Unlocker REST API (for direct API POST tests)
+  • Camoufox + Fly direct egress (currently being tried for AA)
+  ▼
+Airline website → returns JSON / HTML → plugin parses → NormalizedResult[]
+  ▼
+serve.py serializes to camelCase SearchResultRow → writes to Supabase → returns JSON to Next.js
+```
+
+### File layout (everything you'll likely touch)
+```
+PointSnap/
+├── python-workers/                    ← deployed to Fly.io as `pointsnap-workers`
+│   ├── serve.py                       ← FastAPI app, /search + /health + /diag/* endpoints
+│   ├── common/
+│   │   ├── browser.py                 ← browser_page() context manager — Patchright/BD/Camoufox
+│   │   ├── scrape_client.py           ← httpx client (IPRoyal residential or direct)
+│   │   ├── types.py                   ← NormalizedResult / ResultSegment / CabinPrice
+│   │   ├── db.py                      ← write_results() — Supabase upserts
+│   │   └── account_pool.py            ← per-program login credentials lookup
+│   ├── aa_aadvantage/search.py        ← AA plugin (current battlefield)
+│   ├── ac_aeroplan/search.py          ← AC plugin (BD migrated, untested)
+│   ├── as_mileageplan/search.py       ← AS plugin (httpx, ✅ working)
+│   ├── vs/search.py                   ← VS plugin (httpx, ✅ working)
+│   ├── ba_avios/, dl_skymiles/, ua_mp/, af_flyingblue/, lh_miles_more/,
+│   │   tk_miles_smiles/, nh_ana/, cx_cathay/, av_lifemiles/
+│   ├── pyproject.toml                 ← deps: patchright + camoufox + httpx + curl-cffi
+│   ├── Dockerfile                     ← Firefox + Xvfb + Chromium + camoufox fetch
+│   └── fly.toml                       ← app=pointsnap-workers, performance-2x:4096MB, iad
+├── .github/workflows/deploy-workers.yml  ← GitHub Action that deploys python-workers/ to Fly
+├── src/app/api/search/route.ts        ← Next.js SSE endpoint, calls Python worker
+├── tasks/scraper-log.md               ← THIS FILE
+├── tasks/lessons.md                   ← older lessons (prefer scraper-log.md for scraper work)
+├── tasks/todo.md                      ← session plan tracker (history of phases)
+└── CLAUDE.md                          ← project-wide rules; §12 covers this log
+```
+
+### Deployed worker reference
+- **Worker URL:** `https://pointsnap-workers.fly.dev`
+- **Fly app name:** `pointsnap-workers`
+- **Region:** `iad` (Virginia, US East — closest to Supabase us-east-1)
+- **VM size:** `performance-2x` (2 vCPU, 4096 MB) — `auto_stop_machines = "stop"`, `min_machines_running = 0` so it sleeps when idle
+- **Deploy mechanism:** push to a branch in the workflow allowlist (currently includes `claude/review-scraper-strategy-CXHmM` and `main`) triggers `.github/workflows/deploy-workers.yml`. Workflow runs `flyctl deploy --remote-only --app pointsnap-workers --ha=false` on GitHub-hosted Ubuntu runner.
+- **GitHub Actions auth:** `FLY_API_TOKEN` is set as a GitHub repo secret (added by user). Don't try to add via MCP — there's no MCP tool for GitHub secrets, user adds it via repo Settings → Secrets and variables → Actions.
+- **First-time Camoufox build:** ~10-15 minutes (downloads Firefox bundle). Subsequent rebuilds are fast (cache hit).
+- **Cache miss trigger:** changes to `pyproject.toml` or Dockerfile invalidate the install layer. Changes to `*.py` only invalidate the final `COPY . .` layer.
+
+### Currently-configured Fly secrets (visible via `flyctl secrets list`)
+| Secret | What it's for | Source |
+|---|---|---|
+| `BRIGHTDATA_WSS_URL` | BD Browser API CDP WSS endpoint | User created `pointsnap` zone |
+| `BRIGHTDATA_API_KEY` | BD account API key for WU REST calls | `8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` |
+| `CAPSOLVER_API_KEY` | CapSolver REST auth | User set in earlier session — CapSolver no longer useful (dropped Akamai) |
+| `DATABASE_URL` | Supabase Postgres connection string | User pasted from .env.local |
+| `IPROYAL_PROXY_HOST/PORT/USER/PASS` | IPRoyal residential proxies (VS/AS) | Earlier session |
+| `AA_USER`, `AA_PASS` | AA AAdvantage login (optional in plugin) | User configured earlier |
+| `BA_EXEC_CLUB_USER`, `BA_EXEC_CLUB_PASS` | BA Avios login | Earlier |
+| `DL_USER`, `DL_PASS` | Delta login | Earlier |
+| `SCRAPERAPI_KEY` | ScraperAPI auth | Legacy; can be removed in Phase 7 cleanup |
+
+User's BD account: rotates the visible API key after sessions for security.
+
+### Cockpit (frontend) reference
+- **Hosted:** Vercel (every git push to any branch gets a preview deploy; `main` → production)
+- **DB:** Supabase project `cgoyetahoktqupkcvrli` in `us-east-1`. Connection string is the DATABASE_URL above.
+- **Worker URL config:** Vercel env var `PYTHON_WORKER_URL=https://pointsnap-workers.fly.dev`. The Next.js route falls back to mock data if this env var is unset (so the frontend works in pure-frontend dev).
+
+### The `/diag/*` endpoints (debugging surface — use these)
+- `GET /health` — liveness check, returns `{"status":"ok","dbSkipped":bool}`
+- `GET /diag/airline?url=<encoded>&brightdata=1|use_proxy=1|use_camoufox=1` — load any URL via the chosen transport, return title/status/body_snippet/console errors. Useful for "does X transport reach Y airline" checks.
+- `GET /diag/warmup?warmup_url=&target_url=&brightdata=1` — two-step navigation in one BD session (for Akamai cookie warmup pattern). Largely abandoned but still exists.
+- `GET /diag/aa_last` — returns the LAST_RUN_DIAG dict from `aa_aadvantage/search.py`. Contains per-attempt page_states (title, url, html_preview, html_len), step_errors, page_dumps (visible forms/inputs/buttons), verdicts. **Critical** for debugging Camoufox runs since fly logs are unreachable from this sandbox.
+- `GET /diag/proxy` — IPRoyal proxy health check (loads httpbin.org/ip)
+- `GET /diag/inputs?url=...` — dump all form inputs on a target page (selector finder)
+- `GET /diag/ac_scrape`, `/diag/ua_scrape` — per-plugin debug runs
+
+### Sandbox network limitations (THIS CLAUDE ENVIRONMENT, not the Fly worker)
+**This Claude session runs in a sandbox that BLOCKS non-HTTPS outbound:**
+- ✅ Allowed: TCP/443 to any host (HTTPS). curl/WebFetch to public URLs work.
+- ❌ Blocked: TCP to arbitrary ports — Fly's wireguard tunnel (mesh net), BD's CDP port 9222, Fly's depot builder gRPC channels.
+- **Implication:** can't run `flyctl ssh`, can't run `flyctl deploy` from here (wireguard fails). MUST use GitHub Actions for deploys. Can use HTTPS-only flyctl commands (`fly status`, `fly machine list`, `fly logs --no-tail`) IF the token is valid.
+- **Fly token status (end of session 5):** EXPIRED. Error: `verify: invalid token: all tokens missing third-party discharge tokens`. User would need to generate a new one at https://fly.io/user/personal_access_tokens.
+- **Workaround used:** built `/diag/aa_last` endpoint to expose worker internal state via HTTPS instead of relying on flyctl logs.
+
+### How to "catch up" if you're a fresh Claude
+1. Read this entire file (`tasks/scraper-log.md`) top to bottom — should take ~10 minutes.
+2. Read `CLAUDE.md` §12 (Scraper Engineering Log discipline) and §1-§11 for project rules.
+3. Check current branch (`git branch -a`): work is on `claude/review-scraper-strategy-CXHmM`.
+4. Hit `https://pointsnap-workers.fly.dev/health` to confirm worker is up.
+5. Hit `https://pointsnap-workers.fly.dev/diag/aa_last` to see the last AA scrape state.
+6. Check "Open angles, fully expanded" section at the bottom — that's the prioritized untested list of next moves.
+7. Ask the user which open angle to pursue if you're unsure (or pick #1 = BD Residential + Camoufox by default).
+
+### Currently-pending issues at end of session 5 (what's broken right now)
+- ❌ **AA AAdvantage**: returns `verdicts=['challenge_unresolved']` after 40s — Camoufox loads www.aa.com but Akamai's behavioral challenge doesn't clear. Top untested fix: BD Residential proxy.
+- ❌ **AC/DL/UA/BA/AF/LH/TK/NH/CX/AV**: migrated from ScraperAPI to BD Browser API but never tested end-to-end after migration. Likely each has parser drift (per session-3 `lessons.md` note that parsers were written speculatively against AwardWiz 2024 references). Each plugin needs individual debugging.
+- ⚠️ **AS_MILEAGEPLAN** returned `Internal Server Error` (500) on one test call mid-session. Worker auto-stop edge case, not a code bug. Re-test before worrying.
+- ⚠️ **Fly auth token expired** — would need fresh PAT from user for any `flyctl` commands.
+- ⚠️ **Python `logging.info`/`logging.warning` calls silently dropped** by Fly logs (some Python logging config interaction). Plugins use `print(flush=True)` as a workaround.
+
+---
+
 ## Quick reference: working state (as of 2026-05-19)
 
 | Program | Status | Transport | Notes |
