@@ -41,7 +41,7 @@ PROGRAM_ID = "AA_AADVANTAGE"
 PROGRAM_NAME = "AAdvantage"
 
 ENTRY_URL = "https://www.aa.com/"  # direct homepage, avoids mobile->www redirect chain
-MAX_ATTEMPTS = 3
+MAX_ATTEMPTS = 1  # while debugging Camoufox+Akamai; bump back up once we have a working baseline
 
 # Module-level diagnostic state — last scrape's captured XHRs, exposed via
 # /diag/aa_last endpoint so we can inspect without depending on fly logs.
@@ -201,7 +201,11 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 await asyncio.sleep(2.0)
 
             if not cleared:
-                print(f"AA: attempt {attempt} challenge unresolved in 40s", flush=True)
+                print(f"AA: attempt {attempt} challenge unresolved in 40s — bail before fill", flush=True)
+                # Don't waste another 100s on selectors that won't exist on
+                # a challenge page; return immediately so we have headroom
+                # for a parallel retry path.
+                return ("challenge_unresolved", [])
 
             title = await page.title()
             url_now = page.url
