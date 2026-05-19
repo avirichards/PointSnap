@@ -131,3 +131,29 @@ Hypotheses for nav_failed+crash:
 
 **Spent**: ~1MB BD (smoke probes), ~$0.001
 **Next**: read exception detail; if memory/concurrency: reduce MAX_ATTEMPTS to 1 or add cooldown between attempts; if BD pool issue: try BD Web Unlocker fallback (user created earlier)
+
+## 2026-05-19 18:45 — AA test #5 diagnosis: visible Akamai challenge on deep-link
+**Status**: 🟡 (testing full Sekinal pattern)
+**Outcome**: Test #4's exception-capture diag revealed:
+- attempt 1+2: SEC_ERROR_UNKNOWN_ISSUER on deep_link_goto (BD MITM cert handling degrades on 2nd goto in same context)
+- attempt 3: Page crashed on homepage_goto (resource exhaustion accumulating)
+
+Test #5 (skip homepage, deep-link only, single attempt) captured the actual HTML:
+- HTML body: Akamai's visible BMP challenge interstitial with `sec-if-cpt-container`, `sec-bc-tile-parent`, "Powered and protected by Akamai" logo, tile-puzzle UI
+- `_abck=~-1~` (untrusted) — visible challenge gates _abck=~0~ behind a human-solvable CAPTCHA
+- 12 cookies, 0 XHRs
+
+**Pivot to Sekinal's FULL pattern** (commit 485de86): cookie-mint + curl_cffi API replay.
+- Camoufox loads ONLY the homepage (clean from BD residential)
+- Wait up to 60s for XSRF-TOKEN + spa_session_id to mint
+- Export cookies + user-agent
+- curl_cffi (impersonate=firefox135) POSTs to /booking/api/search/itinerary directly
+- Through the SAME BD sticky session for IP consistency
+- verify=False because BD MITMs HTTPS
+
+The API gate validates cookies + TLS fingerprint, NOT _abck=~0~ (which is the SPA browser session gate). So this can work even when _abck stays at ~-1~ from non-trusted IPs.
+
+Test #6 in flight (bl95z7cxp, ~5min). New verdict codes capture failure modes: no_cookies, api_403, api_html, api_no_json, api_no_slices, curl_err:<type>.
+
+**Spent**: ~5 MB BD across all smoke probes, ~$0.04
+**Next**: Read test #6; if ok → AA flips ✅ + Phase 2; if api_403 → AA's API also Akamai-gated and we need _abck=~0~ minted via Camoufox first; if no_cookies → AA's bootstrap doesn't mint those cookies on homepage alone; pivot accordingly
