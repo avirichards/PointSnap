@@ -198,6 +198,8 @@ async def diag_airline(
     scraperapi: int = Query(0, description="1 = route through ScraperAPI proxy port"),
     scraperapi_render: int = Query(1, description="0 = no render (saves credits)"),
     brightdata: int = Query(0, description="1 = route through Bright Data Browser API (CDP); takes precedence over scraperapi/use_proxy"),
+    referer: str = Query("", description="optional Referer header for the navigation"),
+    user_agent: str = Query("", description="optional User-Agent override (e.g., mobile UA for sites that route mobile traffic differently)"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
     page title + status + any console errors + a snippet of body html."""
@@ -214,12 +216,19 @@ async def diag_airline(
             scraperapi_render=bool(scraperapi_render),
             use_brightdata=bool(brightdata),
         ) as page:
+            if user_agent:
+                # Override UA at the context level so subsequent requests
+                # inherit it. Useful for probing AA mobile-vs-desktop routing.
+                await page.set_extra_http_headers({"User-Agent": user_agent})
             page.on(
                 "console",
                 lambda msg: console_errors.append(f"{msg.type}: {msg.text}")
                 if msg.type in ("error", "warning") else None,
             )
-            resp = await page.goto(url, wait_until=wait_until)  # type: ignore[arg-type]
+            goto_kwargs: dict = {"wait_until": wait_until}
+            if referer:
+                goto_kwargs["referer"] = referer
+            resp = await page.goto(url, **goto_kwargs)  # type: ignore[arg-type]
             if wait_ms:
                 await asyncio.sleep(wait_ms / 1000)
             title = await page.title()
