@@ -149,20 +149,22 @@ async def _scrape_real(
     real form-fill flow."""
     print(f"AA: ===== search start {origin}->{dest} {date} =====", flush=True)
 
+    # Skip 'us' — empirically gets a hard block with no redemption. Non-US
+    # countries get the Akamai soft-challenge variant which embeds sensor.js
+    # and is solvable by letting Patchright execute it then retrying.
+    non_us_rotation = ["ca", "gb", "de", "jp", "au"]
+
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        country = COUNTRY_ROTATION[(attempt - 1) % len(COUNTRY_ROTATION)]
-        # BD session format with country embed: aa<rand>-country-<cc>
+        country = non_us_rotation[(attempt - 1) % len(non_us_rotation)]
         session_id = f"aa{uuid.uuid4().hex[:6]}-country-{country}"
         print(f"AA: attempt {attempt}/{MAX_ATTEMPTS} session={session_id}", flush=True)
 
         try:
             async with browser_page(
-                timeout_ms=60_000,
+                timeout_ms=90_000,
                 use_brightdata=True,
                 brightdata_session=session_id,
             ) as page:
-                # Capture every XHR response that hits a booking-related URL —
-                # we don't yet know the exact endpoint AA's UI fires.
                 captured: dict[str, Any] = {"xhrs": []}
 
                 async def _on_response(resp):
@@ -170,30 +172,39 @@ async def _scrape_real(
                     if any(p in url for p in ("/booking/api/", "/api/booking/", "/aapi/", "/search/")):
                         try:
                             ct = (resp.headers or {}).get("content-type", "")
-                            captured["xhrs"].append({
-                                "url": url,
-                                "status": resp.status,
-                                "content_type": ct,
-                            })
+                            captured["xhrs"].append({"url": url, "status": resp.status, "content_type": ct})
                         except Exception:  # noqa: BLE001
                             pass
-
                 page.on("response", _on_response)
 
-                await page.goto(SEARCH_PAGE, wait_until="domcontentloaded", referer=LOYALTY_REFERER)
-                await asyncio.sleep(2.5)
+                # First request — Akamai soft-challenge will return 403 with
+                # an embedded sensor.js. networkidle waits for the script to
+                # finish minting cookies.
+                await page.goto(SEARCH_PAGE, wait_until="networkidle", referer=LOYALTY_REFERER, timeout=60_000)
+                await asyncio.sleep(4.0)  # extra margin for sensor.js to complete and Set-Cookie to apply
 
                 title = await page.title()
-                body_text = (await page.locator("body").inner_text())[:300]
-                if "Access Denied" in title or "Access Denied" in body_text:
-                    # Dump body+url on the first block per country to diagnose what Akamai is returning
-                    if attempt <= 6:
-                        full_html = (await page.content())[:800]
-                        print(f"AA:   blocked country={country} url={page.url}", flush=True)
-                        print(f"AA:   blocked body={body_text!r}", flush=True)
-                        print(f"AA:   blocked html[:500]={full_html[:500]!r}", flush=True)
-                    print(f"AA: attempt {attempt} PAGE_BLOCKED country={country}", flush=True)
-                    continue
+                if "Access Denied" in title:
+                    # Soft-challenge variant — sensor.js has now (hopefully) minted
+                    # the _abck cookie. Reload the page in the same session; cookies
+                    # carry over and Akamai should accept this second request.
+                    cookies_before = len(await page.context.cookies())
+                    print(f"AA: attempt {attempt} got challenge (cookies={cookies_before}); reloading after sensor.js", flush=True)
+                    try:
+                        await page.goto(SEARCH_PAGE, wait_until="networkidle", referer=LOYALTY_REFERER, timeout=60_000)
+                        await asyncio.sleep(2.5)
+                    except Exception as exc:  # noqa: BLE001
+                        print(f"AA: attempt {attempt} reload failed: {type(exc).__name__}: {str(exc)[:120]}", flush=True)
+                        continue
+                    title = await page.title()
+                    cookies_after = len(await page.context.cookies())
+                    print(f"AA: attempt {attempt} after reload title={title!r} cookies={cookies_after}", flush=True)
+                    if "Access Denied" in title:
+                        if attempt <= 4:
+                            html = (await page.content())[:600]
+                            print(f"AA:   still blocked body=html[:500]={html[:500]!r}", flush=True)
+                        print(f"AA: attempt {attempt} PAGE_BLOCKED_after_reload country={country}", flush=True)
+                        continue
 
                 print(f"AA: attempt {attempt} PAGE_LOADED country={country} title={title!r}", flush=True)
                 print(f"AA:   page url after load: {page.url}", flush=True)
