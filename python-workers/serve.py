@@ -127,6 +127,17 @@ async def health() -> dict[str, str | bool]:
     return {"status": "ok", "dbSkipped": writeback_skipped()}
 
 
+@app.get("/diag/aa_last")
+async def diag_aa_last() -> JSONResponse:
+    """Return the last AA scrape's captured XHRs + diagnostic info.
+    Workaround for not having fly-logs access right now."""
+    try:
+        from aa_aadvantage.search import LAST_RUN_DIAG
+        return JSONResponse(LAST_RUN_DIAG)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 @app.get("/diag/proxy")
 async def diag_proxy() -> JSONResponse:
     """Smoke-test Patchright + IPRoyal proxy. Loads httpbin.org/ip via

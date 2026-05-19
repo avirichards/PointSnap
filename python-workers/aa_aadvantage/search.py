@@ -43,6 +43,10 @@ PROGRAM_NAME = "AAdvantage"
 ENTRY_URL = "https://mobile.aa.com/booking"  # redirects to www.aa.com/homePage.do
 MAX_ATTEMPTS = 3
 
+# Module-level diagnostic state — last scrape's captured XHRs, exposed via
+# /diag/aa_last endpoint so we can inspect without depending on fly logs.
+LAST_RUN_DIAG: dict = {"attempts": []}
+
 
 def _cabin_from_aa(product_type: str) -> str | None:
     s = (product_type or "").upper()
@@ -248,24 +252,28 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
             print(f"AA: attempt {attempt} captured {len(captured_xhrs)} graphql/booking JSON XHRs", flush=True)
 
-            # Dump captured JSON XHRs so we can see AA's GraphQL response shape
-            # and write a parser for whichever query type contains the flight data.
+            # Stash captured XHRs in module-level diag so /diag/aa_last can serve them
+            attempt_diag = {
+                "attempt": attempt,
+                "post_submit_url": page.url,
+                "post_submit_title": await page.title(),
+                "xhrs": [],
+            }
+            for x in captured_xhrs:
+                attempt_diag["xhrs"].append({
+                    "url": x["url"],
+                    "status": x["status"],
+                    "content_type": x.get("content_type"),
+                    "payload": x["json"],  # full payload — can be large
+                })
+            LAST_RUN_DIAG["attempts"].append(attempt_diag)
+
             for i, x in enumerate(captured_xhrs):
                 payload = x["json"]
-                # Heuristic: GraphQL responses have {data: {...}} shape
-                top_keys = list(payload.keys())[:10] if isinstance(payload, dict) else []
-                data_keys = list((payload.get("data") or {}).keys())[:10] if isinstance(payload.get("data") if isinstance(payload, dict) else None, dict) else []
-                # Dump the body (truncated) so we can inspect once
-                blob = json.dumps(payload)[:1200]
-                print(f"AA:   XHR#{i} {x['url'][:90]} top_keys={top_keys} data_keys={data_keys}", flush=True)
-                print(f"AA:     body[:1200]={blob}", flush=True)
-
-                # Try old-style parser first (in case some still match the old shape)
                 if isinstance(payload, dict) and payload.get("slices"):
                     parsed = _parse_xhr(payload, origin, dest, date)
                     if parsed:
                         return ("ok", parsed)
-                # TODO: write a GraphQL-response parser once we see the shape
 
             return ("no_results", [])
 
@@ -280,6 +288,12 @@ async def _scrape_real(
     date: str,
     cabin_filter: str = "Y",
 ) -> list[NormalizedResult]:
+    global LAST_RUN_DIAG
+    LAST_RUN_DIAG = {
+        "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "origin": origin, "dest": dest, "date": date,
+        "attempts": [],
+    }
     print(f"AA: ===== search start {origin}->{dest} {date} =====", flush=True)
     verdicts = []
     for attempt in range(1, MAX_ATTEMPTS + 1):
@@ -287,12 +301,12 @@ async def _scrape_real(
         verdicts.append(verdict)
         if verdict == "ok":
             print(f"AA: attempt {attempt} SUCCESS ({len(results)} rows, prior={verdicts[:-1]})", flush=True)
+            LAST_RUN_DIAG["verdicts"] = verdicts
+            LAST_RUN_DIAG["row_count"] = len(results)
             return results
-        if verdict in ("html_results_unparsed",):
-            # Partial success — page loaded with results but parser TBD.
-            # Continue to next attempt in case we eventually get JSON XHR.
-            pass
     print(f"AA: exhausted {MAX_ATTEMPTS} attempts, verdicts={verdicts}", flush=True)
+    LAST_RUN_DIAG["verdicts"] = verdicts
+    LAST_RUN_DIAG["row_count"] = 0
     return []
 
 
