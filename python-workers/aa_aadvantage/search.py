@@ -181,7 +181,13 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             try:
                 await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
             except Exception as exc:  # noqa: BLE001
-                print(f"AA: attempt {attempt} homepage goto failed: {exc!r}", flush=True)
+                err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+                print(f"AA: attempt {attempt} homepage goto failed: {err_str}", flush=True)
+                LAST_RUN_DIAG["attempts"].append({
+                    "attempt": attempt,
+                    "stage": "homepage_goto",
+                    "error": err_str,
+                })
                 return ("nav_failed", [])
             await asyncio.sleep(2.0)
 
@@ -228,7 +234,13 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             try:
                 await page.goto(search_url, wait_until="domcontentloaded", timeout=60_000)
             except Exception as exc:  # noqa: BLE001
-                print(f"AA: attempt {attempt} deep-link goto failed: {exc!r}", flush=True)
+                err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+                print(f"AA: attempt {attempt} deep-link goto failed: {err_str}", flush=True)
+                LAST_RUN_DIAG["attempts"].append({
+                    "attempt": attempt,
+                    "stage": "deep_link_goto",
+                    "error": err_str,
+                })
                 return ("nav_failed", [])
 
             # Check for hard block on search page
@@ -356,7 +368,16 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             return ("xhr_no_slices", [])
 
     except Exception as exc:  # noqa: BLE001
-        print(f"AA: attempt {attempt} crash: {type(exc).__name__}: {str(exc)[:200]}", flush=True)
+        err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+        print(f"AA: attempt {attempt} crash: {err_str}", flush=True)
+        try:
+            LAST_RUN_DIAG["attempts"].append({
+                "attempt": attempt,
+                "stage": "outer_crash",
+                "error": err_str,
+            })
+        except Exception:  # noqa: BLE001
+            pass
         return ("crash", [])
 
 
