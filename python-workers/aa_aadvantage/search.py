@@ -149,21 +149,20 @@ async def _scrape_real(
     real form-fill flow."""
     print(f"AA: ===== search start {origin}->{dest} {date} =====", flush=True)
 
-    # Skip 'us' — empirically gets a hard block with no redemption. Non-US
-    # countries get the Akamai soft-challenge variant which embeds sensor.js
-    # and is solvable by letting Patchright execute it then retrying.
-    non_us_rotation = ["ca", "gb", "de", "jp", "au"]
-
+    # Empirical from session 5: sticky sessions (brightdata_session=X) pin
+    # to a smaller subset of BD's pool and get 0% Akamai page-load success.
+    # BD's DEFAULT rotation (no session_id) samples wider — T3 of the bypass
+    # battery this morning hit a working IP that way. Try that path here:
+    # no sticky session, no country override, just raw default rotation per
+    # attempt. Each browser_page() call gets a fresh IP from BD's whole pool.
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        country = non_us_rotation[(attempt - 1) % len(non_us_rotation)]
-        session_id = f"aa{uuid.uuid4().hex[:6]}-country-{country}"
-        print(f"AA: attempt {attempt}/{MAX_ATTEMPTS} session={session_id}", flush=True)
+        print(f"AA: attempt {attempt}/{MAX_ATTEMPTS} (default BD rotation)", flush=True)
 
         try:
             async with browser_page(
                 timeout_ms=90_000,
                 use_brightdata=True,
-                brightdata_session=session_id,
+                # No brightdata_session — BD rotates randomly across pool.
             ) as page:
                 captured: dict[str, Any] = {"xhrs": []}
 
@@ -203,10 +202,10 @@ async def _scrape_real(
                         if attempt <= 4:
                             html = (await page.content())[:600]
                             print(f"AA:   still blocked body=html[:500]={html[:500]!r}", flush=True)
-                        print(f"AA: attempt {attempt} PAGE_BLOCKED_after_reload country={country}", flush=True)
+                        print(f"AA: attempt {attempt} PAGE_BLOCKED_after_reload", flush=True)
                         continue
 
-                print(f"AA: attempt {attempt} PAGE_LOADED country={country} title={title!r}", flush=True)
+                print(f"AA: attempt {attempt} PAGE_LOADED title={title!r}", flush=True)
                 print(f"AA:   page url after load: {page.url}", flush=True)
 
                 # Dump form structure
