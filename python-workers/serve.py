@@ -199,7 +199,7 @@ async def diag_inputs(
 
 @app.get("/diag/airline")
 async def diag_airline(
-    url: str = Query(..., description="Full URL to load via Patchright"),
+    url: str = Query(..., description="Full URL to load via Patchright/Camoufox"),
     use_proxy: int = Query(1, description="0 = bypass proxy (use Fly egress)"),
     wait_ms: int = Query(0, description="ms to wait after domcontentloaded"),
     wait_until: str = Query("domcontentloaded", description="domcontentloaded|load|commit|networkidle"),
@@ -209,23 +209,42 @@ async def diag_airline(
     scraperapi: int = Query(0, description="1 = route through ScraperAPI proxy port"),
     scraperapi_render: int = Query(1, description="0 = no render (saves credits)"),
     brightdata: int = Query(0, description="1 = route through Bright Data Browser API (CDP); takes precedence over scraperapi/use_proxy"),
+    use_camoufox: int = Query(0, description="1 = use Camoufox (Firefox stealth) instead of Patchright"),
+    brightdata_residential: int = Query(0, description="1 = use BD Residential proxy (requires use_camoufox=1; sets BD as the egress)"),
+    brightdata_country: str = Query("", description="BD Residential country code (us, gb, de, jp, etc.) — used when brightdata_residential=1"),
+    brightdata_session: str = Query("", description="BD sticky session id (~10min IP pinning); used by both brightdata=1 and brightdata_residential=1"),
     referer: str = Query("", description="optional Referer header for the navigation"),
     user_agent: str = Query("", description="optional User-Agent override (e.g., mobile UA for sites that route mobile traffic differently)"),
 ) -> JSONResponse:
-    """Smoke-test Patchright reaching a specific airline URL. Returns
-    page title + status + any console errors + a snippet of body html."""
+    """Smoke-test reaching a specific airline URL. Returns page title +
+    status + any console errors + a snippet of body html.
+
+    Transport selection:
+      brightdata_residential=1 + use_camoufox=1  → T3 (canonical Akamai bypass)
+      use_camoufox=1                              → Camoufox + Fly egress
+      brightdata=1                                → BD Browser API (legacy CDP path)
+      scraperapi=1                                → ScraperAPI (deprecated)
+      default                                     → Patchright + IPRoyal
+    """
     try:
         from common.browser import browser_page
         console_errors: list[str] = []
+        # Higher timeout for stealth browsers (Camoufox first-startup + BD
+        # residential CONNECT can each take 30+s).
+        timeout_ms = 120_000 if (scraperapi or brightdata or use_camoufox or brightdata_residential) else 45_000
         async with browser_page(
-            timeout_ms=120_000 if (scraperapi or brightdata) else 45_000,
-            use_proxy=bool(use_proxy) and not brightdata,
+            timeout_ms=timeout_ms,
+            use_proxy=bool(use_proxy) and not (brightdata or brightdata_residential),
             proxy_country=country or None,
             proxy_session=session or None,
             disable_http2=not bool(http2),
-            use_scraperapi=bool(scraperapi) and not brightdata,
+            use_scraperapi=bool(scraperapi) and not (brightdata or brightdata_residential),
             scraperapi_render=bool(scraperapi_render),
-            use_brightdata=bool(brightdata),
+            use_brightdata=bool(brightdata) and not brightdata_residential,
+            use_camoufox=bool(use_camoufox),
+            use_brightdata_residential=bool(brightdata_residential),
+            brightdata_country=brightdata_country or None,
+            brightdata_session=brightdata_session or None,
         ) as page:
             if user_agent:
                 # Override UA at the context level so subsequent requests

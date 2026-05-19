@@ -903,3 +903,62 @@ curl -s -X POST https://api.brightdata.com/request \
 **Steps:** Read `timrogers/ba_rewards` Ruby gem. Port the auth + request logic to Python. Test.
 
 **Limitation:** This is BA's data, not AA's — partial inventory only.
+
+---
+
+## Session 11 — 2026-05-19 — Phase 0 recon kickoff + BD Residential infrastructure
+
+### Plan approved
+User approved the multi-phase recovery plan (`/root/.claude/plans/knowing-everything-you-know-warm-bunny.md`). Key decisions:
+- **Transport rubric** with 9 tiers (T0 httpx → T7 commercial + T5' user-auth + T8 partner backdoor)
+- **Phase 0**: 8 parallel research subagents to build per-airline transport rubric BEFORE any code
+- **Phase 1**: 5-variant parallel attack on AA (A: Camoufox+BDR, B: cookie-mint+curl_cffi, C: mobile.aa.com, D: BD Browser API legacy, E: bulk calendar endpoint)
+- **Phase 2.5 (parallel with Phase 2)**: user-initiated auth-capture flow (cockpit-streamed Camoufox login → harvest cookies → replay), for MFA-gated programs like Aeroplan
+- **Spend cap**: $50/day BD Residential ($8/GB rate → ~1,250 searches)
+- **No stored credentials** — frontend auth only
+- **Hands-off execution** per `tasks/progress.md` + `tasks/blockers.md`
+
+### Bright Data Residential zone created
+User created zone `pointsnap_residential` in BD dashboard. Connection URL:
+```
+http://brd-customer-hl_6f5ad35c-zone-pointsnap_residential:p96hs5z78sku@brd.superproxy.io:33335
+```
+(Credentials stored as Fly secret `BRIGHTDATA_RESIDENTIAL_URL` — NEVER committed.)
+
+Config decisions:
+- **Default countries: ANY** (per-request `-country-XX` override via username modifier instead of zone-level config)
+- **Web Unlocker API toggle: OFF** (we want raw proxies, the worker handles bot logic)
+- **Shared (Pay per GB) at $8/GB** (corrects earlier $2.50/GB misquote)
+- **Sticky sessions: per-request via `-session-<id>` username modifier** (~10min idle pinning)
+
+### Infrastructure code landed (commit pending)
+1. **`common/browser.py:_brightdata_residential_proxy(country, session)`** — new helper. Parses `BRIGHTDATA_RESIDENTIAL_URL` env, injects `-country-XX` and `-session-YY` into the username segment. Returns Camoufox/Playwright-compatible proxy dict.
+2. **`common/browser.py:browser_page()`** — new params: `use_brightdata_residential: bool`, `brightdata_country: str | None`. When `use_camoufox=True` + `use_brightdata_residential=True`, routes through BD Residential as the Camoufox proxy. Priority: BD Residential > IPRoyal > none.
+3. **`serve.py:/diag/airline`** — new query params: `use_camoufox`, `brightdata_residential`, `brightdata_country`, `brightdata_session`. Ad-hoc smoke testing of T3 (Camoufox + BD Residential) from any URL.
+
+Code compiles cleanly (`python -c "import ast; ast.parse(...)"` confirmed).
+
+### Phase 0 dispatched
+8 background research subagents launched in parallel at 2026-05-19 16:45 UTC:
+1. **Agent 1**: AA / Akamai OSS deep-dive (Sekinal/aa_contest, asadfix bypass, 2026 blog posts)
+2. **Agent 2**: Apify igolaizola actor reverse-engineering
+3. **Agent 3**: 28-domain bot defense profiling (HTTP HEAD probes + cookie/header classification)
+4. **Agent 4**: Mobile API endpoint mapping (per-airline app intercepts from community sources)
+5. **Agent 5**: T5' user-auth viability per airline (login req'd, MFA flavor, cookie portability)
+6. **Agent 6**: Community knowledge mining (FlyerTalk, Reddit, Twitter, niche blogs)
+7. **Agent 7**: Commercial API matrix (Duffel/Amadeus/Sabre/Travelport — critically: AWARD search vs revenue-only)
+8. **Agent 8**: Partner-backdoor cross-check map (alliances + bilaterals for triangulation, NEVER primary)
+
+Each writes to `/home/user/PointSnap/tasks/scraper-research/agent-{N}-{topic}.md`. Output consolidated into `tasks/scraper-rubric.md` after all return (~25-30min wall-clock expected).
+
+### What didn't change yet (pending Phase 0 + Phase 1)
+- AA plugin still uses `use_camoufox=True, use_proxy=False` — Phase 1 will rewrite as 5-variant dispatcher
+- No new plugins yet — Phase 3
+- Cockpit `/airlines` page doesn't exist yet — Phase 2.5
+
+### Next session pickup
+- Phase 0 agents return; consolidate findings into `tasks/scraper-rubric.md`
+- Update AA plugin to call `browser_page(use_camoufox=True, use_brightdata_residential=True, brightdata_country="us", brightdata_session=f"aa_{int(time.time())}")` — Variant A
+- Write Phase 1 Variants B/C/D/E as separate functions in `aa_aadvantage/search_variants.py`
+- Wire `/diag/aa_va` … `/diag/aa_ve` endpoints
+- Smoke-test all 5 variants in parallel

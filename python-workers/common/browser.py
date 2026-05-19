@@ -52,6 +52,40 @@ def _proxy_kwargs(country: str | None = None, session: str | None = None) -> dic
     }
 
 
+def _brightdata_residential_proxy(
+    country: str | None = None,
+    session: str | None = None,
+) -> dict | None:
+    """Parse BRIGHTDATA_RESIDENTIAL_URL env var into Camoufox/Playwright proxy kwargs.
+
+    Expected env format:
+      http://brd-customer-hl_XXX-zone-<zone>:PASSWORD@brd.superproxy.io:33335
+
+    BD encodes per-request modifiers as username segments:
+      -country-XX  → routes through that country's residential pool
+      -session-YY  → sticky IP for ~10min idle (cookie continuity across retries)
+
+    Returns None when BRIGHTDATA_RESIDENTIAL_URL is unset (callers should
+    raise rather than silently fall through).
+    """
+    from urllib.parse import urlparse
+
+    url = os.environ.get("BRIGHTDATA_RESIDENTIAL_URL")
+    if not url:
+        return None
+    parsed = urlparse(url)
+    username = parsed.username or ""
+    if country and "-country-" not in username:
+        username = f"{username}-country-{country.lower()}"
+    if session and "-session-" not in username:
+        username = f"{username}-session-{session}"
+    return {
+        "server": f"http://{parsed.hostname}:{parsed.port}",
+        "username": username,
+        "password": parsed.password or "",
+    }
+
+
 def _scraperapi_proxy(
     country: str | None = None,
     render: bool = True,
@@ -102,6 +136,8 @@ async def browser_page(
     scraperapi_premium: bool = False,
     use_brightdata: bool = False,
     brightdata_session: str | None = None,
+    use_brightdata_residential: bool = False,
+    brightdata_country: str | None = None,
     use_camoufox: bool = False,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
@@ -133,9 +169,22 @@ async def browser_page(
             "block_webrtc": True,
             "geoip": False,  # only enable when using a residential proxy
         }
-        # Fly's egress IP works for AA per Sekinal — skip proxy by default.
-        # Callers can pass use_proxy=True to route through IPRoyal/BD residential.
-        if use_proxy:
+        # Proxy selection (in priority order): BD Residential > IPRoyal > none.
+        # BD Residential is the 2026-canonical Akamai/Imperva bypass when paired
+        # with Camoufox (per Sekinal/aa_contest + asadfix). IPRoyal is the
+        # cheaper fallback for sites that don't have BMP-grade defenses.
+        if use_brightdata_residential:
+            bd_proxy = _brightdata_residential_proxy(
+                country=brightdata_country or proxy_country,
+                session=brightdata_session or proxy_session,
+            )
+            if not bd_proxy:
+                raise RuntimeError(
+                    "use_brightdata_residential=True but BRIGHTDATA_RESIDENTIAL_URL not set"
+                )
+            camoufox_kwargs["proxy"] = bd_proxy
+            camoufox_kwargs["geoip"] = True
+        elif use_proxy:
             ip_proxy = _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
             if ip_proxy:
                 camoufox_kwargs["proxy"] = ip_proxy
