@@ -29,6 +29,7 @@ from common.types import NormalizedResult, SearchQuery
 # implementations land in each module's `_scrape_real()` function across
 # Sessions 5-10.
 from aa_aadvantage import search as aa_search
+from aa_aadvantage import search_wu as aa_search_wu
 from ac_aeroplan import search as ac_search
 from af_flyingblue import search as af_search
 from as_mileageplan import search as as_search
@@ -47,6 +48,11 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(title="pointsnap-workers", version="0.1.0")
 
+# Phase 2.5 user-initiated auth-capture routes (T5' tier).
+# /auth/start, /auth/status, /auth/finalize — see auth/capture.py.
+from auth.capture import router as auth_router
+app.include_router(auth_router, prefix="/auth")
+
 
 PluginCallable = Callable[..., Coroutine[None, None, list[NormalizedResult]]]
 PLUGINS: dict[str, PluginCallable] = {
@@ -59,6 +65,7 @@ PLUGINS: dict[str, PluginCallable] = {
     "TK_MILES_SMILES": tk_search.search,
     "NH_ANA": nh_search.search,
     "AA_AADVANTAGE": aa_search.search,
+    "AA_AADVANTAGE_WU": aa_search_wu.search,
     "DL_SKYMILES": dl_search.search,
     "CX_CATHAY": cx_search.search,
     "AC_AEROPLAN": ac_search.search,
@@ -134,6 +141,17 @@ async def diag_aa_last() -> JSONResponse:
     try:
         from aa_aadvantage.search import LAST_RUN_DIAG
         return JSONResponse(LAST_RUN_DIAG)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.get("/diag/aa_wu_last")
+async def diag_aa_wu_last() -> JSONResponse:
+    """Last AA Web Unlocker variant run — captures WU status, raw_text head,
+    parsed JSON keys, AA error envelope, slice count."""
+    try:
+        from aa_aadvantage.search_wu import LAST_RUN_DIAG as WU_DIAG
+        return JSONResponse(WU_DIAG)
     except Exception as exc:  # noqa: BLE001
         return JSONResponse({"error": str(exc)}, status_code=500)
 
