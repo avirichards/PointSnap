@@ -144,11 +144,14 @@ async def browser_page(
         async with AsyncCamoufox(**camoufox_kwargs) as browser:
             page = await browser.new_page()
             page.set_default_timeout(timeout_ms)
-            # Block heavy resources to reduce bandwidth + speed up navigation.
+            # NOTE: deliberately NOT blocking stylesheets/fonts in the Camoufox
+            # branch — Firefox treats `display:none` differently than Chromium
+            # when CSS isn't loaded, and elements can fail `offsetParent !==
+            # null` visibility checks even though they're in the DOM. We pay
+            # a small bandwidth cost in exchange for the page actually
+            # rendering. Only block heavy media to keep load times sane.
             async def _block_heavy_camou(route):
-                if route.request.resource_type in (
-                    "image", "stylesheet", "font", "media", "manifest"
-                ):
+                if route.request.resource_type in ("image", "media"):
                     await route.abort()
                 else:
                     await route.continue_()

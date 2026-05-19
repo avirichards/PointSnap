@@ -157,12 +157,26 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             # domcontentloaded fires when HTML is parsed; AA has continuous
             # analytics XHRs so networkidle never settles within the timeout.
             await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
-            await asyncio.sleep(5.0)  # let initial JS render the form
+            # Camoufox/Firefox JS renders slower than Chromium-via-CDP — give
+            # the booking form widget extra time to mount.
+            await asyncio.sleep(12.0)
 
             title = await page.title()
             url_now = page.url
+            body_preview = (await page.locator("body").inner_text())[:400]
             print(f"AA: attempt {attempt} loaded title={title!r} url={url_now}", flush=True)
-            if "Access Denied" in title:
+            print(f"AA: attempt {attempt} body[:400]={body_preview!r}", flush=True)
+
+            # Stash this state in diag for inspection even when fill fails
+            try:
+                LAST_RUN_DIAG.setdefault("page_states", []).append({
+                    "attempt": attempt, "title": title, "url": url_now,
+                    "body_preview": body_preview,
+                })
+            except Exception:  # noqa: BLE001
+                pass
+
+            if "Access Denied" in title or "Access Denied" in body_preview:
                 return ("page_blocked", [])
 
             # Wait for the form (any input with originAirport or similar name).
