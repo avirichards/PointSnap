@@ -157,10 +157,47 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             # domcontentloaded fires when HTML is parsed; AA has continuous
             # analytics XHRs so networkidle never settles within the timeout.
             await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
-            # Camoufox/Firefox JS renders slower than Chromium-via-CDP — give
-            # the booking form widget extra time to mount. Akamai sensor.js
-            # also runs in this window which is what we want.
-            await asyncio.sleep(20.0)
+
+            # AA serves an Akamai behavioral-challenge interstitial at the
+            # initial page load (look for `sec-if-cpt-container` in HTML).
+            # Sensor.js needs ~30-90s to (a) collect behavioral signals and
+            # (b) decide we're trusted. During this window we simulate
+            # human-like motion to feed the behavioral classifier.
+            #
+            # We wait for either: title flips to a real AA page title, OR
+            # _abck cookie reaches `~0~-1~-1` (validated state).
+            import random as _rand
+            cleared = False
+            for round_idx in range(36):  # 36 * 2.5s = 90s max
+                # Mouse movement + scroll signals
+                try:
+                    await page.mouse.move(
+                        _rand.randint(100, 1200), _rand.randint(100, 600), steps=4
+                    )
+                    await page.evaluate(f"window.scrollBy(0, {_rand.randint(-30, 30)})")
+                except Exception:  # noqa: BLE001
+                    pass
+
+                # Check if challenge is done
+                cur_title = await page.title()
+                cookies_obj = await page.context.cookies()
+                abck = next((c.get("value", "") for c in cookies_obj if c.get("name") == "_abck"), "")
+                abck_trusted = "~0~" in abck  # ~-1~ = unvalidated, ~0~ = trusted
+
+                if cur_title and "Access Denied" not in cur_title and "Challenge" not in cur_title:
+                    print(f"AA: attempt {attempt} title cleared at round {round_idx} title={cur_title!r}", flush=True)
+                    cleared = True
+                    break
+                if abck_trusted:
+                    print(f"AA: attempt {attempt} _abck validated (~0~) at round {round_idx}", flush=True)
+                    cleared = True
+                    break
+                if round_idx in (0, 8, 20, 35):
+                    print(f"AA: attempt {attempt} round {round_idx} title={cur_title!r} abck[:50]={abck[:50]!r}", flush=True)
+                await asyncio.sleep(2.5)
+
+            if not cleared:
+                print(f"AA: attempt {attempt} challenge did NOT clear after 90s", flush=True)
 
             title = await page.title()
             url_now = page.url
