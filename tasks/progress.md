@@ -68,3 +68,19 @@ AA plugin commit: 587d4a6 (deployed via GH Action)
 
 **Spent**: ~65 min wall-clock, 0 BD bytes (no proxy used per Sekinal), $0
 **Next**: AA end-to-end test in flight (background); if rows>0, AA flips to ✅ in rubric and we move to Phase 2 starting with B6 JetBlue (T0 — easiest); if 0 rows, inspect /diag/aa_last for verdict, adjust pattern
+
+## 2026-05-19 18:05 — AA Sekinal test #1: 3× xhr_timeout
+**Status**: 🟡 (retrying)
+**Outcome**: First Sekinal smoke test returned 3 attempts × `xhr_timeout`. Each attempt: HTTP 200 (good), title="" (SPA not rendered), html_len=2380 (just the SPA shell), 0 itinerary XHRs captured. Camoufox + Fly egress is reaching aa.com but the SPA never fires the `/booking/api/search/itinerary` call within our 30s wait window.
+
+Diagnosis: sensor.js takes 30-60s to complete scoring; `_abck` likely hadn't reached the trusted `~0~` state by the 30s mark, so AA's SPA gated the API call. Sekinal explicitly uses 90s wait_for_function for this reason.
+
+Fix landed (commit cc84f1e):
+- XHR wait window: 30s → 90s
+- _abck cookie state logged every 10s during wait
+- On final xhr_timeout: capture html_preview + _abck cookie + cookies_count to diag
+
+Re-running smoke now (background curl b4q41se1e, ~6min wall-clock max).
+
+**Spent**: ~10 BD MB (smoke probes), ~$0.001
+**Next**: If smoke #2 returns rows, AA flips ✅ and Phase 2 starts; if still timeout, inspect diag _abck state, possibly add a click-search-button fallback, possibly try BD Residential
