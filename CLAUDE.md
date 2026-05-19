@@ -278,6 +278,24 @@ Any test data created here must be deleted before step 4.
 
 Verification is not a checkbox — it's the user's protection against bad production deploys. Treat it as first-class work, not an epilogue.
 
+### 12. Scraper Engineering Log — Read + Append Every Session
+
+There is a running log at `tasks/scraper-log.md` capturing every scraper / anti-bot / transport approach tried for PointSnap, with verdicts (what worked, what failed, why). Scraper engineering is expensive to redo, and the past dead-ends are even more expensive to rediscover.
+
+**Required at the start of any scraper-related session:**
+1. Read `tasks/scraper-log.md` BEFORE proposing any technical approach. If a tool / service / pattern appears in the "tried, failed" section, do NOT propose it again unless you can articulate what's materially different this time (e.g., the vendor added a new product, the failure mode was a fixable bug rather than a fundamental limitation).
+2. Read the "Quick reference: working state" table to know which plugins are real vs broken.
+
+**Required during every scraper-related session:**
+1. Append findings to `tasks/scraper-log.md` as you go, not at the end. Anything you learn about a target site's behavior, a tool's actual capability, a response shape, a fingerprint signal — write it down.
+2. Update the "Quick reference: working state" table whenever a plugin's status changes.
+3. Date-stamp session findings in the "Session log" section at the bottom.
+4. Move tool entries between the "tried, failed" and "working" tables when verdicts change.
+
+**Why this matters:** Earlier sessions spent hours rediscovering that ScraperAPI is broken, that IPRoyal blocks aa.com at CONNECT, that CapSolver dropped Akamai support, that Patchright fails sensor.js validation. Every one of those was a learnable fact that should have been logged the first time. The log is the memory the project doesn't otherwise have.
+
+When in doubt about whether something is worth logging: log it. A 30-second note saves a 3-hour rediscovery.
+
 
 ## Core Principles
 
