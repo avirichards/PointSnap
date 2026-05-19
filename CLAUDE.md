@@ -278,23 +278,78 @@ Any test data created here must be deleted before step 4.
 
 Verification is not a checkbox — it's the user's protection against bad production deploys. Treat it as first-class work, not an epilogue.
 
-### 12. Scraper Engineering Log — Read + Append Every Session
+### 12. Scraper Engineering Log — Auto-Logging Discipline (MANDATORY, NO REMINDERS)
 
-There is a running log at `tasks/scraper-log.md` capturing every scraper / anti-bot / transport approach tried for PointSnap, with verdicts (what worked, what failed, why). Scraper engineering is expensive to redo, and the past dead-ends are even more expensive to rediscover.
+There is a running log at `tasks/scraper-log.md` that is the project's PERSISTENT MEMORY for scraper / anti-bot / transport work. You MUST read it before any scraper task and MUST update it continuously during scraper work. **The user should never have to tell you to "take notes" or "log this" — that's the default behavior for every scraper-related session.**
 
-**Required at the start of any scraper-related session:**
-1. Read `tasks/scraper-log.md` BEFORE proposing any technical approach. If a tool / service / pattern appears in the "tried, failed" section, do NOT propose it again unless you can articulate what's materially different this time (e.g., the vendor added a new product, the failure mode was a fixable bug rather than a fundamental limitation).
-2. Read the "Quick reference: working state" table to know which plugins are real vs broken.
+#### When this rule activates (every time, without prompting)
 
-**Required during every scraper-related session:**
-1. Append findings to `tasks/scraper-log.md` as you go, not at the end. Anything you learn about a target site's behavior, a tool's actual capability, a response shape, a fingerprint signal — write it down.
-2. Update the "Quick reference: working state" table whenever a plugin's status changes.
-3. Date-stamp session findings in the "Session log" section at the bottom.
-4. Move tool entries between the "tried, failed" and "working" tables when verdicts change.
+ANY task involving: scraping, anti-bot bypass, proxies, captcha solvers, browser automation (Patchright, Camoufox, Playwright), Bright Data, ScraperAPI, IPRoyal, CapSolver, 2Captcha, Hyper Solutions, Apify, plugins under `python-workers/<program>/`, `common/browser.py`, `common/scrape_client.py`, the `/diag/*` worker endpoints, Akamai, Imperva, DataDome, Cloudflare, Kasada — or anything else airline-/scrape-/bot-defense-adjacent.
 
-**Why this matters:** Earlier sessions spent hours rediscovering that ScraperAPI is broken, that IPRoyal blocks aa.com at CONNECT, that CapSolver dropped Akamai support, that Patchright fails sensor.js validation. Every one of those was a learnable fact that should have been logged the first time. The log is the memory the project doesn't otherwise have.
+#### Step 1 — Read first (before any technical proposal)
 
-When in doubt about whether something is worth logging: log it. A 30-second note saves a 3-hour rediscovery.
+1. Open `tasks/scraper-log.md`.
+2. Read the "Quick reference: working state" table — know which plugins return real data vs which silently return `[]`.
+3. Read the "Tools / services tried" table — if a tool appears in the "failed" column, do NOT propose it again unless you can explain what's materially different this time (vendor added a new product, failure mode was a fixable bug rather than a fundamental limitation, a specific config wasn't tried, etc.).
+4. Read the most recent "Session log" entry — know what the previous session left in flight.
+5. Read the "Open angles, fully expanded" section — these are the prioritized next moves with hypothesis + steps + cost + risk for each.
+
+If you skip this and re-propose ScraperAPI, CapSolver-for-Akamai, or Patchright-against-AA, you have wasted the user's time and the log explicitly tells you why.
+
+#### Step 2 — Log as you go (not as a wrap-up)
+
+The wrong pattern: do 3 hours of work, then ask "should I update the log?" The right pattern: log incrementally as each meaningful event happens. Write a note BEFORE moving on to the next attempt.
+
+Every one of these triggers an immediate log update — without waiting for permission:
+- **Found a new endpoint, URL, or API shape** → log it with the exact URL/method/body/response shape
+- **A tool/service returned an unexpected response** → log the full error message (verbatim) + the HTTP status + body length + what request you sent
+- **A response status changed** (status code, response shape, error code) → log before/after
+- **A configuration parameter mattered** → log the exact param name + value that made the difference (`use_brightdata=True`, `wait_until="domcontentloaded"`, `headless="virtual"`, etc.)
+- **A migration moved a plugin's status** in the "Quick reference: working state" table → update the table inline
+- **A subagent returned research** → distill its findings into the log (don't just leave it in the agent output stream — that's ephemeral)
+- **An obscure flag/quirk was discovered** (BD's WU uses `body` not `data`, sensor.js path is randomized, AA's CSRF token format is `<uuid>`, etc.) → log it
+- **You wrote a one-off testing command that worked** → paste it into the "Useful testing commands" section
+- **A commit landed** → add it to the commit log table at the bottom of the chronicle
+- **An infrastructure quirk hit you** (Fly auto-stop, sandbox blocks port 9222, GitHub Actions cache miss, etc.) → log it in the "Deploy / infra learnings" section
+
+#### Step 3 — Log entries must be EXTREMELY detailed
+
+Not "tried Camoufox, didn't work." THAT IS USELESS. The kind of detail required:
+
+- **Exact verbatim error messages** (copy-paste, don't paraphrase): `'CapSolver createTask failed: {"errorCode": "ERROR_TYPE_NOT_SUPPORTED", "errorDescription": "unsupported captcha type, please check if the type is correct: AntiAkamaiBMTask", "errorId": 1}'`
+- **Sample request bodies + sample response bodies** with byte counts: "AA returned `{\"error\":\"309\",...}` (96 bytes) for any cookie/header combination; verified 6 variations, all identical."
+- **Exact config that mattered**: not "tweaked Camoufox" but `AsyncCamoufox(headless="virtual", humanize=True, block_webrtc=True, geoip=False, window=(1366, 768))`.
+- **Quantitative observations**: "page-load success rate ~33% morning of 2026-05-19 via BD Browser API with Referer trick, dropped to ~0% by evening as Akamai re-flagged BD's pool."
+- **The exact curl/Python command to reproduce** the test, copy-pasteable into the next session's terminal.
+- **What you tested vs what you DIDN'T test** (so the next session knows the negative space).
+- **Specific commit SHAs** that introduced or fixed something.
+
+A good log entry looks like a forensic post-mortem. A bad log entry looks like a tweet. Default to forensic.
+
+#### Step 4 — Specific sections to keep current
+
+- **"Quick reference: working state" table** — single source of truth for which plugins return real data. Update inline when a plugin's status flips (don't leave a plugin marked 🚧 if it's now ✅ working or vice versa).
+- **"Tools / services tried" table** — every tool/service evaluated, with verdict + date + reason. Move entries between rows when verdicts change.
+- **"Session log" (bottom)** — date-stamped chronological findings. Append a new section every meaningful session. Don't edit prior entries (they're a record of what was true at that time).
+- **Sample responses section** — verbatim HTML / JSON for each distinct response shape observed. New shape = new sample.
+- **"Useful testing commands" section** — every reusable curl/Python snippet. Future-you will paste these.
+- **"Open angles, fully expanded" section** — prioritized list of untested paths with hypothesis + steps + cost + risk. Promote to "tried" when tested; demote to "abandoned" with explanation when ruled out.
+- **"If you need to..." cookbook** — common debug scenarios with exact steps. Add a new entry whenever you figure out how to do something non-obvious.
+
+#### Step 5 — Verify your notes are detailed enough
+
+After any logging update, check: would a fresh Claude with NO conversation context, reading only `tasks/scraper-log.md`, be able to:
+- Identify which plugins are real vs broken? (yes if Quick reference table is current)
+- Avoid re-trying CapSolver for Akamai? (yes if Tools table mentions it's deprecated, with date)
+- Reproduce your last test? (yes if curl command + expected response are in the log)
+- Know what the next 3 untested angles are? (yes if Open angles section is current)
+- Understand the user's constraints (60-day cap, every-flight-every-carrier)? (yes if User constraints section is captured)
+
+If any of those is "no," your log isn't detailed enough yet. Fix it before moving on.
+
+#### Why this matters
+
+Earlier sessions spent literal hours rediscovering: ScraperAPI is broken, IPRoyal blocks aa.com at CONNECT, CapSolver dropped Akamai, Patchright fails sensor.js validation, BD WU's POST field is `body` not `data`, mobile.aa.com redirects to www.aa.com/homePage.do, AA serves three distinct Akamai response shapes by html_len, Camoufox+Fly gets behavioral challenge that doesn't clear in 40s. Every one of those is a learnable fact that should have been written down the first time. **The log is the memory the project doesn't otherwise have. Treat it as such.**
 
 
 ## Core Principles
