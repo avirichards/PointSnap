@@ -1,36 +1,45 @@
-"""American AAdvantage award search plugin — Browser API + form-fill flow.
+"""American AAdvantage award search plugin — BD Browser API + CapSolver BMP.
 
 Path determined empirically over many attempts in session 5:
   - Direct API POST (WU or page.evaluate): blocked by AA app-layer (error 309)
-    AA requires session state that only a real form submission creates.
   - Direct HTML page load (WU): blocked by Akamai (captcha/protection page)
-  - BD Browser API + Referer trick: ~20% of exit IPs load the page, but the
-    in-page fetch to /booking/api/search/itinerary returns 403.
+  - BD Browser API alone: ~0% Akamai success now. Sensor.js executes but its
+    INTERNAL bot detection (canvas/WebGL/timing) flags Patchright, leaves
+    `_abck` cookie in CHALLENGED state, reload still 403s.
 
-The remaining option is to load the booking page in BD's Browser API and
-drive the booking widget like a human would — fill form, click search,
-capture the XHR that AA's own JS fires. AA's JS handles the session/CSRF/
-cookie minting that we can't reproduce manually.
+The actual industrial solution: CapSolver's AntiAkamaiBMPTask computes
+valid sensor_data externally. We POST it to Akamai's sensor endpoint
+(URL extracted from the deny page's <script src="...">), Akamai responds
+with a VALIDATED `_abck` cookie, and the subsequent page load is allowed.
+This is the same stack AwardWiz used before it was archived.
 
-This file is currently in DIAGNOSTIC mode: it loads the page (with retry
-across sticky sessions), inspects the form structure, and prints all input
-fields it sees. Once we know the current selectors, this becomes the real
-scrape.
+Flow:
+  1. BD Browser API loads /booking/find-flights → gets 403 + sensor script URL
+  2. Extract script URL from HTML via regex
+  3. Call CapSolver createTask with website URL + UA
+  4. Poll getTaskResult until ready (~10-30s typical)
+  5. POST sensor_data to the script URL via page.evaluate (in the BD browser
+     so cookies/network context match)
+  6. Reload the page — cookie now in TRUSTED state, Akamai allows
+  7. Drive the booking form to capture the real search XHR (this part still
+     TBD until we have a successful page load to inspect)
 
-Uses print(flush=True) instead of logging.* because some log statements
-are not appearing in Fly logs (likely a Python logging config interaction
-we haven't tracked down yet).
+Uses print(flush=True) for visibility (logging.* drops on this worker).
 """
 
 from __future__ import annotations
 
 import asyncio
+import html as html_mod
 import json
 import logging
 import os
+import re
 import uuid
 from datetime import datetime, timezone
 from typing import Any
+
+import httpx
 
 from common.browser import browser_page
 from common.types import CabinPrice, NormalizedResult, ResultSegment
@@ -41,11 +50,66 @@ PROGRAM_NAME = "AAdvantage"
 
 SEARCH_PAGE = "https://www.aa.com/booking/find-flights"
 LOYALTY_REFERER = "https://www.aa.com/loyalty/login"
-MAX_ATTEMPTS = 30
-# BD lets you embed a country in the session_id ("...-country-XX"). Rotate
-# across multiple residential pools — US is heavily blacklisted by AA today;
-# other-country residentials may be less filtered.
-COUNTRY_ROTATION = ["us", "ca", "gb", "de", "jp", "au"]
+MAX_ATTEMPTS = 5  # CapSolver costs $ per solve; few attempts is the right shape.
+
+CAPSOLVER_CREATE = "https://api.capsolver.com/createTask"
+CAPSOLVER_RESULT = "https://api.capsolver.com/getTaskResult"
+
+
+async def _capsolver_solve_akamai(
+    target_url: str,
+    user_agent: str,
+    api_key: str,
+) -> str | None:
+    """Submit AntiAkamaiBMTask to CapSolver and poll for the solution.
+    Returns the sensor_data string, or None on failure/timeout."""
+    async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
+        create = await client.post(CAPSOLVER_CREATE, json={
+            "clientKey": api_key,
+            "task": {
+                "type": "AntiAkamaiBMTask",
+                "url": target_url,
+                "userAgent": user_agent,
+            },
+        })
+        cdata = create.json()
+        if cdata.get("errorId", 0) != 0:
+            print(f"AA: CapSolver createTask failed: {cdata}", flush=True)
+            return None
+        task_id = cdata.get("taskId")
+        if not task_id:
+            print(f"AA: CapSolver createTask no taskId: {cdata}", flush=True)
+            return None
+        print(f"AA: CapSolver task created {task_id}, polling…", flush=True)
+
+        for poll in range(30):
+            await asyncio.sleep(2.0)
+            r = await client.post(CAPSOLVER_RESULT, json={"clientKey": api_key, "taskId": task_id})
+            rdata = r.json()
+            status = rdata.get("status")
+            if status == "ready":
+                sol = rdata.get("solution") or {}
+                sd = sol.get("sensorData") or sol.get("sensor_data") or sol.get("deviceData")
+                print(f"AA: CapSolver returned sensor_data ({len(sd or '')} chars)", flush=True)
+                return sd
+            if rdata.get("errorId", 0) != 0:
+                print(f"AA: CapSolver poll error: {rdata}", flush=True)
+                return None
+        print(f"AA: CapSolver timed out (60s polling)", flush=True)
+        return None
+
+
+def _extract_sensor_script_url(html: str) -> str | None:
+    """Pull the Akamai sensor.js script URL out of a deny-page HTML body.
+    Akamai randomizes the path on each request; we just need ONE script src
+    that points to a same-origin obfuscated path."""
+    # Decode HTML entities first (the dump showed &lt;script&gt;)
+    decoded = html_mod.unescape(html)
+    # Same-origin <script src="..."> with a deeply-nested obfuscated path
+    m = re.search(r'<script[^>]+src="(/[A-Za-z0-9]{16,}/[A-Za-z0-9/]+\?[^"]+)"', decoded)
+    if m:
+        return m.group(1)
+    return None
 
 
 def _build_search_body(origin: str, dest: str, date: str, pax: int) -> dict[str, Any]:
@@ -184,11 +248,53 @@ async def _scrape_real(
 
                 title = await page.title()
                 if "Access Denied" in title:
-                    # Soft-challenge variant — sensor.js has now (hopefully) minted
-                    # the _abck cookie. Reload the page in the same session; cookies
-                    # carry over and Akamai should accept this second request.
-                    cookies_before = len(await page.context.cookies())
-                    print(f"AA: attempt {attempt} got challenge (cookies={cookies_before}); reloading after sensor.js", flush=True)
+                    # Akamai challenge. Patchright running sensor.js in-browser
+                    # leaves the cookie in challenged state; we need CapSolver to
+                    # compute valid sensor_data EXTERNALLY then POST it.
+                    full_html = await page.content()
+                    script_url = _extract_sensor_script_url(full_html)
+                    print(f"AA: attempt {attempt} challenged; script_url={script_url!r}", flush=True)
+
+                    capsolver_key = os.environ.get("CAPSOLVER_API_KEY")
+                    if not capsolver_key:
+                        print(f"AA: CAPSOLVER_API_KEY not set; skipping", flush=True)
+                        continue
+                    if not script_url:
+                        print(f"AA: no script URL in deny page, can't solve", flush=True)
+                        continue
+
+                    # Pull the browser UA so CapSolver computes sensor_data that matches.
+                    page_ua = await page.evaluate("() => navigator.userAgent")
+                    sensor_data = await _capsolver_solve_akamai(SEARCH_PAGE, page_ua, capsolver_key)
+                    if not sensor_data:
+                        print(f"AA: attempt {attempt} CapSolver gave no sensor_data", flush=True)
+                        continue
+
+                    # POST sensor_data to Akamai's script endpoint from within the
+                    # BD browser so cookies + Akamai's CDN-bound session match.
+                    post_url = f"https://www.aa.com{script_url}"
+                    post_result = await page.evaluate(
+                        """
+                        async ({ url, sensorData }) => {
+                            try {
+                                const r = await fetch(url, {
+                                    method: 'POST',
+                                    body: JSON.stringify({ sensor_data: sensorData }),
+                                    headers: {'Content-Type': 'text/plain;charset=UTF-8'},
+                                    credentials: 'include',
+                                });
+                                return { ok: true, status: r.status };
+                            } catch (e) {
+                                return { ok: false, error: String(e) };
+                            }
+                        }
+                        """,
+                        {"url": post_url, "sensorData": sensor_data},
+                    )
+                    print(f"AA: attempt {attempt} sensor POST result: {post_result}", flush=True)
+                    await asyncio.sleep(1.5)
+
+                    # Reload the page — _abck should now be in solved state.
                     try:
                         await page.goto(SEARCH_PAGE, wait_until="networkidle", referer=LOYALTY_REFERER, timeout=60_000)
                         await asyncio.sleep(2.5)
@@ -197,12 +303,12 @@ async def _scrape_real(
                         continue
                     title = await page.title()
                     cookies_after = len(await page.context.cookies())
-                    print(f"AA: attempt {attempt} after reload title={title!r} cookies={cookies_after}", flush=True)
+                    print(f"AA: attempt {attempt} after CapSolver+reload title={title!r} cookies={cookies_after}", flush=True)
                     if "Access Denied" in title:
-                        if attempt <= 4:
-                            html = (await page.content())[:600]
-                            print(f"AA:   still blocked body=html[:500]={html[:500]!r}", flush=True)
-                        print(f"AA: attempt {attempt} PAGE_BLOCKED_after_reload", flush=True)
+                        if attempt <= 2:
+                            stuck = (await page.content())[:500]
+                            print(f"AA:   still blocked html[:400]={stuck[:400]!r}", flush=True)
+                        print(f"AA: attempt {attempt} PAGE_BLOCKED_after_capsolver", flush=True)
                         continue
 
                 print(f"AA: attempt {attempt} PAGE_LOADED title={title!r}", flush=True)
