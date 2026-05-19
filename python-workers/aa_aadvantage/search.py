@@ -236,12 +236,17 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 print(f"AA: attempt {attempt} search page hard-blocked (title={title!r})", flush=True)
                 return ("page_blocked", [])
 
-            # Step 4: wait up to 30s for the itinerary XHR with humanized motion
+            # Step 4: wait up to 90s for the itinerary XHR with humanized motion
+            # and Akamai _abck cookie monitoring (per Sekinal's 90s wait_for_function).
+            # Sensor.js scoring can take 30-60s; SPA fires the API only after
+            # _abck reaches the trusted "~0~" state.
             t_start = asyncio.get_event_loop().time()
-            for _wait_round in range(30):
+            last_abck_log = 0.0
+            for _wait_round in range(90):
                 if captured_xhrs:
                     break
-                if asyncio.get_event_loop().time() - t_start > 30:
+                elapsed = asyncio.get_event_loop().time() - t_start
+                if elapsed > 90:
                     break
                 # Light motion to feed sensor.js (per Sekinal pattern)
                 try:
@@ -253,6 +258,22 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                     )
                 except Exception:  # noqa: BLE001
                     pass
+                # Log _abck state every 10s for diag visibility
+                if elapsed - last_abck_log >= 10.0:
+                    last_abck_log = elapsed
+                    try:
+                        cks = await asyncio.wait_for(page.context.cookies(), timeout=2.0)
+                        abck = next((c.get("value", "") for c in cks if c.get("name") == "_abck"), "")
+                        trusted = "~0~" in abck
+                        title_now = await asyncio.wait_for(page.title(), timeout=2.0)
+                        print(
+                            f"AA: attempt {attempt} +{int(elapsed)}s "
+                            f"title={title_now!r} _abck_trusted={trusted} "
+                            f"abck[:40]={abck[:40]!r} xhrs={len(captured_xhrs)}",
+                            flush=True,
+                        )
+                    except Exception:  # noqa: BLE001
+                        pass
                 await asyncio.sleep(1.0)
 
             # Final scroll nudge if still empty (Sekinal pattern step 4)
@@ -273,12 +294,33 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 html_len = len(await asyncio.wait_for(page.content(), timeout=3.0))
             except Exception:  # noqa: BLE001
                 pass
+            # On XHR timeout, capture page HTML + cookies for triage
+            html_preview = ""
+            abck_final = ""
+            cookies_count = 0
+            if not captured_xhrs:
+                try:
+                    html_full = await asyncio.wait_for(page.content(), timeout=5.0)
+                    html_preview = html_full[:2000]
+                except Exception:  # noqa: BLE001
+                    pass
+                try:
+                    cks = await asyncio.wait_for(page.context.cookies(), timeout=3.0)
+                    cookies_count = len(cks)
+                    abck_final = next((c.get("value", "") for c in cks if c.get("name") == "_abck"), "")
+                except Exception:  # noqa: BLE001
+                    pass
+
             attempt_diag = {
                 "attempt": attempt,
                 "deep_link_url": search_url[:500],
                 "final_url": page.url,
                 "title": title_now,
                 "html_len": html_len,
+                "html_preview": html_preview,
+                "cookies_count": cookies_count,
+                "abck": abck_final[:80],
+                "abck_trusted": "~0~" in abck_final,
                 "xhrs_seen": len(captured_xhrs),
                 "xhrs": [{"url": x["url"], "status": x["status"],
                           "has_slices": isinstance(x.get("json"), dict) and bool(x["json"].get("slices"))}

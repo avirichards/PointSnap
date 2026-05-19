@@ -962,3 +962,56 @@ Each writes to `/home/user/PointSnap/tasks/scraper-research/agent-{N}-{topic}.md
 - Write Phase 1 Variants B/C/D/E as separate functions in `aa_aadvantage/search_variants.py`
 - Wire `/diag/aa_va` … `/diag/aa_ve` endpoints
 - Smoke-test all 5 variants in parallel
+
+### Phase 0 outcomes (all 8 agents complete)
+
+**Big-picture strategy reset** based on 8 parallel research subagents:
+
+1. **AA is solvable with no proxy** — Sekinal/aa_contest (commit Nov 7 2025, MIT) proves Camoufox + Fly egress passes Akamai BMP for aa.com. Phase 0 smoke confirmed: `/diag/airline?use_camoufox=1&use_proxy=0&url=https://www.aa.com` returns 200 with sensor.js executing.
+
+2. **20 of 23 programs require login** (Agent 5). Aeroplan built a login wall in March 2025 specifically to stop scrapers. T5' (user-initiated auth-capture via cockpit-streamed Camoufox) is mainline, not fallback. Only 3 anonymous-OK: AS Mileage Plan, AM Aeromexico, EY Etihad Guest. AA's award search is anonymous-OK; account login is optional (email OTP only).
+
+3. **JetBlue is wide open** — Fastly Varnish only, no Akamai/Cloudflare/Imperva. T0 (httpx). API endpoint per Agent 6: `https://jbrest.jetblue.com/lfs-rwb/outboundLFS`. **Easiest Phase 2 target.**
+
+4. **Bot defense distribution** (Agent 3, 28 domains):
+   - Akamai BMP "tight" (TLS RST from sandbox): AF/KL, TK, UA, QR, BA, EY — 6
+   - Akamai BMP "single-tier" (homepage open, API blocked): AA, AC, CX, DL, NH, VS, EK, ET, AY, QF, SQ, voegol, VA, AV — 14
+   - Akamai "light" (no `_abck` on cold): AS, AM, AD — 3
+   - Cloudflare Turnstile: LH, SK — 2
+   - Imperva: CM, SV — 2
+   - Fastly Varnish only: B6 — 1
+
+5. **Apify igolaizola = closed Go source, direct API hits, 60-day cap structural** (Agent 2). $3/1k pricing confirms no browser automation overhead. To beat 60 days we need T5' authenticated sessions.
+
+6. **Commercial T7 layer effectively empty** (Agent 7). Of 11 vendors matrixed, only seats.aero returns AWARD prices in miles. User rejected at $9.99/mo retail. Resilience must come from scraping diversity, not commercial fallback.
+
+7. **Partner backdoors as cross-check only** (Agent 8). 16 hubs documented. 5 airlines have no viable cross-check: KE, DL own-metal pricing, GA, AS as operating carrier, TK. Strongest cross-check clusters: Aeroplan + (BA Avios + Asia Miles).
+
+8. **Mobile APIs sometimes softer** (Agent 4): `api.qantas.com` returns 3.9 MB JSON with no auth on /flight/refData/airport. `mobile.emirates.com` 705 KB full site. `b2c.voegol.com.br` cleanest Latin American target. But: `mobile.emirates.com` still has `_abck` + `bm_sz` on responses, so Akamai is still in the path there.
+
+**Key endpoint URLs captured (Agent 6 — verbatim from working OSS scrapers):**
+- AA: `POST /booking/api/search/itinerary` body has `clientId: "AAcom"` + `searchType: "Award"`
+- UA: `POST /api/token/anonymous` (Bearer mint) → `POST /api/flight/FetchFlights`
+- AC: `POST */loyalty/dapidynamic/{tenant}/v2/search/air-bounds` with required `marketCode=TNB`
+- AS: `GET /searchbff/V3/search?…fareView=as_awards`
+- B6: `GET https://jbrest.jetblue.com/lfs-rwb/outboundLFS` (SEPARATE host)
+- WN: `GET /api/air-booking/v1/...`
+- DL: `POST /shop/ow/search` + interstitial at `/shop/ow/flexdatesearch`
+- AV: 4 ASPX endpoints (not detailed in summary; consult Agent 6 report)
+
+**Operational caveat from Agent 6**: AC v seats.aero lawsuit alleges seats.aero hit Aeroplan 265,552 times in 2 days. **Throttle aggressively** on AC. One shopping request can fan out to 100-300 partner availability requests internally.
+
+### Sekinal-pattern code landed (commit 587d4a6)
+
+`aa_aadvantage/search.py:_try_once()` rewritten:
+- Camoufox + Fly egress (no proxy)
+- Load `aa.com/` homepage; accept cookie banner if present
+- Navigate to `https://www.aa.com/booking/search?locale=en_US&fareType=Lowest&pax=1&adult=1&type=OneWay&searchType=Award&cabin=&carriers=ALL&travelType=personal&slices=[{"orig":"JFK","origNearby":false,"dest":"LAX","destNearby":false,"date":"2026-08-15"}]`
+- `page.on("response")` captures `/booking/api/search/itinerary` JSON
+- 30s wait window with light mouse motion to feed sensor.js
+- Scroll-to-bottom nudge if XHR hasn't fired after 30s
+- Reuse existing `_parse_xhr` (response shape unchanged)
+- 7 verdict codes: ok, nav_failed, page_blocked, xhr_timeout, xhr_no_slices, no_results, crash
+- MAX_ATTEMPTS: 1 → 3
+
+Diff: -245/+147 lines. All form-fill removed (was returning challenge_unresolved from post-form Akamai wall).
