@@ -158,46 +158,50 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             # analytics XHRs so networkidle never settles within the timeout.
             await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=60_000)
 
-            # AA serves an Akamai behavioral-challenge interstitial at the
-            # initial page load (look for `sec-if-cpt-container` in HTML).
-            # Sensor.js needs ~30-90s to (a) collect behavioral signals and
-            # (b) decide we're trusted. During this window we simulate
-            # human-like motion to feed the behavioral classifier.
-            #
-            # We wait for either: title flips to a real AA page title, OR
-            # _abck cookie reaches `~0~-1~-1` (validated state).
+            # AA serves an Akamai behavioral-challenge interstitial. Wait
+            # for sensor.js to either pass (title becomes real) or fail
+            # (Access Denied), simulating motion meanwhile. Every async
+            # call is bounded by asyncio.wait_for so a hung page can't
+            # lock the whole scrape.
             import random as _rand
             cleared = False
-            for round_idx in range(36):  # 36 * 2.5s = 90s max
-                # Mouse movement + scroll signals
+            t_start = asyncio.get_event_loop().time()
+            for round_idx in range(20):  # 20 * 2s = 40s max
+                if asyncio.get_event_loop().time() - t_start > 40:
+                    break
+                # Each interactive call: 3s strict timeout, swallow all errors
                 try:
-                    await page.mouse.move(
-                        _rand.randint(100, 1200), _rand.randint(100, 600), steps=4
+                    await asyncio.wait_for(
+                        page.mouse.move(_rand.randint(100, 1200), _rand.randint(100, 600), steps=2),
+                        timeout=3.0,
                     )
-                    await page.evaluate(f"window.scrollBy(0, {_rand.randint(-30, 30)})")
                 except Exception:  # noqa: BLE001
                     pass
-
-                # Check if challenge is done
-                cur_title = await page.title()
-                cookies_obj = await page.context.cookies()
+                try:
+                    cur_title = await asyncio.wait_for(page.title(), timeout=3.0)
+                except Exception:  # noqa: BLE001
+                    cur_title = ""
+                try:
+                    cookies_obj = await asyncio.wait_for(page.context.cookies(), timeout=3.0)
+                except Exception:  # noqa: BLE001
+                    cookies_obj = []
                 abck = next((c.get("value", "") for c in cookies_obj if c.get("name") == "_abck"), "")
-                abck_trusted = "~0~" in abck  # ~-1~ = unvalidated, ~0~ = trusted
+                abck_trusted = "~0~" in abck
 
-                if cur_title and "Access Denied" not in cur_title and "Challenge" not in cur_title:
-                    print(f"AA: attempt {attempt} title cleared at round {round_idx} title={cur_title!r}", flush=True)
+                if cur_title and "Access Denied" not in cur_title:
+                    print(f"AA: attempt {attempt} title cleared @ round {round_idx} title={cur_title!r}", flush=True)
                     cleared = True
                     break
                 if abck_trusted:
-                    print(f"AA: attempt {attempt} _abck validated (~0~) at round {round_idx}", flush=True)
+                    print(f"AA: attempt {attempt} _abck=~0~ @ round {round_idx}", flush=True)
                     cleared = True
                     break
-                if round_idx in (0, 8, 20, 35):
-                    print(f"AA: attempt {attempt} round {round_idx} title={cur_title!r} abck[:50]={abck[:50]!r}", flush=True)
-                await asyncio.sleep(2.5)
+                if round_idx in (0, 8, 19):
+                    print(f"AA: attempt {attempt} round {round_idx} title={cur_title!r} abck[:40]={abck[:40]!r}", flush=True)
+                await asyncio.sleep(2.0)
 
             if not cleared:
-                print(f"AA: attempt {attempt} challenge did NOT clear after 90s", flush=True)
+                print(f"AA: attempt {attempt} challenge unresolved in 40s", flush=True)
 
             title = await page.title()
             url_now = page.url
