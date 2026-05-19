@@ -210,67 +210,50 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             except Exception:  # noqa: BLE001
                 pass
 
-            print(f"AA: attempt {attempt} form found, filling…", flush=True)
+            print(f"AA: attempt {attempt} form found, filling via real keystrokes…", flush=True)
 
-            # Fill the form. Use JS evaluate for reliability — selectors are stable
-            # in name= attribute but jQuery may also be involved.
-            fill_result = await page.evaluate(
-                """
-                ({ origin, dest, date }) => {
-                    function setVal(name, val) {
-                        const el = document.querySelector(`[name="${name}"]`);
-                        if (!el) return false;
-                        el.value = val;
-                        el.dispatchEvent(new Event('input', {bubbles:true}));
-                        el.dispatchEvent(new Event('change', {bubbles:true}));
-                        return true;
-                    }
-                    const results = {};
-                    results.tripType = setVal('tripType', 'oneWay');
-                    // tripType is a radio group; click the right radio explicitly
-                    const oneWayRadio = document.querySelector('input[name="tripType"][value="oneWay"]');
-                    if (oneWayRadio) { oneWayRadio.checked = true; oneWayRadio.click(); results.oneWayClicked = true; }
-                    const award = document.querySelector('input[name="redeemMiles"]');
-                    if (award) { award.checked = true; award.click(); results.awardClicked = true; }
-                    results.origin = setVal('originAirport', origin);
-                    results.dest = setVal('destinationAirport', dest);
-                    results.date = setVal('departDate', date);
-                    return results;
-                }
-                """,
-                {"origin": origin, "dest": dest, "date": _date_mmddyyyy(date)},
-            )
-            print(f"AA: attempt {attempt} fill result: {fill_result}", flush=True)
-            await asyncio.sleep(1.0)
+            # Use Patchright's real input methods — set_val + dispatchEvent
+            # didn't trigger AA's jQuery typeahead/datepicker; we need actual
+            # keystrokes + tabs so the widgets accept the values.
+            try:
+                # 1. Click "One way"
+                await page.click("input[name='tripType'][value='oneWay']", timeout=10_000)
+                # 2. Check "Redeem miles"
+                redeem = page.locator("input[name='redeemMiles']")
+                if await redeem.is_checked() is False:
+                    await redeem.check(timeout=10_000)
+                # 3. Origin — clear PIT default and type our airport
+                origin_field = page.locator("input[name='originAirport']")
+                await origin_field.click()
+                await origin_field.fill("")  # clear
+                await origin_field.fill(origin)
+                await asyncio.sleep(0.7)  # let typeahead surface
+                await page.keyboard.press("Tab")
+                # 4. Destination
+                dest_field = page.locator("input[name='destinationAirport']")
+                await dest_field.click()
+                await dest_field.fill(dest)
+                await asyncio.sleep(0.7)
+                await page.keyboard.press("Tab")
+                # 5. Date
+                date_field = page.locator("input[name='departDate']")
+                await date_field.click()
+                await date_field.fill(_date_mmddyyyy(date))
+                await page.keyboard.press("Tab")
+                print(f"AA: attempt {attempt} fields filled, clicking submit…", flush=True)
+            except Exception as exc:  # noqa: BLE001
+                print(f"AA: attempt {attempt} fill failed: {type(exc).__name__}: {str(exc)[:150]}", flush=True)
+                return ("fill_failed", [])
 
-            # Submit. The form's onsubmit attribute is
-            #   onsubmit="submitSearch(getCurrentSearch())"
-            # so we call that JS directly — bypasses any button-click issues
-            # (focus, visibility, JS validation that runs differently on
-            # programmatic clicks) and ensures the actual submit logic runs.
-            submit_result = await page.evaluate(
-                """
-                () => {
-                    try {
-                        if (typeof submitSearch === 'function' && typeof getCurrentSearch === 'function') {
-                            const ret = submitSearch(getCurrentSearch());
-                            return { mode: 'submitSearch_call', returned: String(ret) };
-                        }
-                        // Fall back to dispatching submit event (fires onsubmit)
-                        const f = document.querySelector('form[name="reservationFlightSearchForm"]');
-                        if (f) {
-                            const ev = new Event('submit', { bubbles: true, cancelable: true });
-                            f.dispatchEvent(ev);
-                            return { mode: 'dispatchEvent', defaultPrevented: ev.defaultPrevented };
-                        }
-                        return { mode: 'no_form_found' };
-                    } catch (e) {
-                        return { mode: 'error', error: String(e) };
-                    }
-                }
-                """
-            )
-            print(f"AA: attempt {attempt} submit result: {submit_result}", flush=True)
+            await asyncio.sleep(0.5)
+
+            # Real click on the submit input — id has dots so use attribute selector
+            try:
+                await page.click("input[type='submit'][id='flightSearchForm.button.reSubmit']", timeout=10_000)
+                print(f"AA: attempt {attempt} submit clicked", flush=True)
+            except Exception as exc:  # noqa: BLE001
+                print(f"AA: attempt {attempt} submit click failed: {exc}", flush=True)
+                return ("submit_failed", [])
 
             # Wait for either navigation or search XHR. Use load (not
             # networkidle — AA's analytics never goes idle).
