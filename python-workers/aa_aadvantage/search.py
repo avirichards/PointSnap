@@ -1,36 +1,30 @@
-"""American AAdvantage award search plugin — BD Browser API + CapSolver BMP.
+"""American AAdvantage award search plugin — mobile-redirect form-fill.
 
-Path determined empirically over many attempts in session 5:
-  - Direct API POST (WU or page.evaluate): blocked by AA app-layer (error 309)
-  - Direct HTML page load (WU): blocked by Akamai (captcha/protection page)
-  - BD Browser API alone: ~0% Akamai success now. Sensor.js executes but its
-    INTERNAL bot detection (canvas/WebGL/timing) flags Patchright, leaves
-    `_abck` cookie in CHALLENGED state, reload still 403s.
-
-The actual industrial solution: CapSolver's AntiAkamaiBMPTask computes
-valid sensor_data externally. We POST it to Akamai's sensor endpoint
-(URL extracted from the deny page's <script src="...">), Akamai responds
-with a VALIDATED `_abck` cookie, and the subsequent page load is allowed.
-This is the same stack AwardWiz used before it was archived.
+Discovery path through session 5:
+  - BD Browser API on www.aa.com/booking/find-flights: Akamai 403 across all
+    IPs/countries/sessions; sensor.js cookies never validate.
+  - BD Web Unlocker direct API POST: AA returns error 309 (no session).
+  - CapSolver Akamai BMP: CapSolver deprecated this task type.
+  - **BD Browser API on mobile.aa.com**: HTTP 200 — Akamai redirects
+    mobile.aa.com → www.aa.com/homePage.do, the latter loads cleanly with
+    full HTML. From there the legacy `reservationFlightSearchForm` is
+    available and Patchright can fill + submit it like a real user.
 
 Flow:
-  1. BD Browser API loads /booking/find-flights → gets 403 + sensor script URL
-  2. Extract script URL from HTML via regex
-  3. Call CapSolver createTask with website URL + UA
-  4. Poll getTaskResult until ready (~10-30s typical)
-  5. POST sensor_data to the script URL via page.evaluate (in the BD browser
-     so cookies/network context match)
-  6. Reload the page — cookie now in TRUSTED state, Akamai allows
-  7. Drive the booking form to capture the real search XHR (this part still
-     TBD until we have a successful page load to inspect)
-
-Uses print(flush=True) for visibility (logging.* drops on this worker).
+  1. Browser API navigates to mobile.aa.com → AA redirects → homePage.do
+     loads (200 OK, full HTML).
+  2. Wait for the booking form to render.
+  3. Fill originAirport, destinationAirport, departDate.
+  4. Toggle the "redeem miles" checkbox so AA returns award prices.
+  5. Click the search submit button.
+  6. Capture either the resulting XHR (AA fires a booking API call) or
+     the navigation to the results page.
+  7. Parse cabin prices.
 """
 
 from __future__ import annotations
 
 import asyncio
-import html as html_mod
 import json
 import logging
 import os
@@ -39,8 +33,6 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-import httpx
-
 from common.browser import browser_page
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
@@ -48,91 +40,8 @@ log = logging.getLogger(__name__)
 PROGRAM_ID = "AA_AADVANTAGE"
 PROGRAM_NAME = "AAdvantage"
 
-SEARCH_PAGE = "https://www.aa.com/booking/find-flights"
-LOYALTY_REFERER = "https://www.aa.com/loyalty/login"
-MAX_ATTEMPTS = 5  # CapSolver costs $ per solve; few attempts is the right shape.
-
-CAPSOLVER_CREATE = "https://api.capsolver.com/createTask"
-CAPSOLVER_RESULT = "https://api.capsolver.com/getTaskResult"
-
-
-async def _capsolver_solve_akamai(
-    target_url: str,
-    user_agent: str,
-    api_key: str,
-) -> str | None:
-    """Submit AntiAkamaiBMTask to CapSolver and poll for the solution.
-    Returns the sensor_data string, or None on failure/timeout."""
-    async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
-        create = await client.post(CAPSOLVER_CREATE, json={
-            "clientKey": api_key,
-            "task": {
-                "type": "AntiAkamaiBMTask",
-                "url": target_url,
-                "userAgent": user_agent,
-            },
-        })
-        cdata = create.json()
-        if cdata.get("errorId", 0) != 0:
-            print(f"AA: CapSolver createTask failed: {cdata}", flush=True)
-            return None
-        task_id = cdata.get("taskId")
-        if not task_id:
-            print(f"AA: CapSolver createTask no taskId: {cdata}", flush=True)
-            return None
-        print(f"AA: CapSolver task created {task_id}, polling…", flush=True)
-
-        for poll in range(30):
-            await asyncio.sleep(2.0)
-            r = await client.post(CAPSOLVER_RESULT, json={"clientKey": api_key, "taskId": task_id})
-            rdata = r.json()
-            status = rdata.get("status")
-            if status == "ready":
-                sol = rdata.get("solution") or {}
-                sd = sol.get("sensorData") or sol.get("sensor_data") or sol.get("deviceData")
-                print(f"AA: CapSolver returned sensor_data ({len(sd or '')} chars)", flush=True)
-                return sd
-            if rdata.get("errorId", 0) != 0:
-                print(f"AA: CapSolver poll error: {rdata}", flush=True)
-                return None
-        print(f"AA: CapSolver timed out (60s polling)", flush=True)
-        return None
-
-
-def _extract_sensor_script_url(html: str) -> str | None:
-    """Pull the Akamai sensor.js script URL out of a deny-page HTML body.
-    Akamai randomizes the path on each request; we just need ONE script src
-    that points to a same-origin obfuscated path."""
-    # Decode HTML entities first (the dump showed &lt;script&gt;)
-    decoded = html_mod.unescape(html)
-    # Same-origin <script src="..."> with a deeply-nested obfuscated path
-    m = re.search(r'<script[^>]+src="(/[A-Za-z0-9]{16,}/[A-Za-z0-9/]+\?[^"]+)"', decoded)
-    if m:
-        return m.group(1)
-    return None
-
-
-def _build_search_body(origin: str, dest: str, date: str, pax: int) -> dict[str, Any]:
-    """Kept for compatibility/reference — not used in form-fill flow."""
-    return {
-        "metadata": {"selectedProducts": [], "tripType": "OneWay", "udo": {}},
-        "passengers": [{"type": "adult", "count": pax}],
-        "queryParams": {"sliceIndex": 0, "sessionId": "", "solutionId": "", "solutionSet": ""},
-        "requestHeader": {"clientId": "AAcom"},
-        "slices": [
-            {
-                "allCarriers": True,
-                "cabin": "",
-                "departureDate": date,
-                "destination": dest,
-                "origin": origin,
-                "departureTime": "040001",
-                "includeNearbyAirports": False,
-            }
-        ],
-        "tripOptions": {"locale": "en_US", "searchType": "Award"},
-        "loyaltyInfo": None,
-    }
+ENTRY_URL = "https://mobile.aa.com/booking"  # redirects to www.aa.com/homePage.do
+MAX_ATTEMPTS = 3
 
 
 def _cabin_from_aa(product_type: str) -> str | None:
@@ -144,8 +53,9 @@ def _cabin_from_aa(product_type: str) -> str | None:
     return None
 
 
-def _parse(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[NormalizedResult]:
-    """Same parser as the previous version — slices[].segments[].flight + pricingDetail[]."""
+def _parse_xhr(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[NormalizedResult]:
+    """Parse the JSON the booking widget's search API returns.
+    Shape mirrors the AwardWiz parser; will need fixups if AA changed it."""
     results: list[NormalizedResult] = []
     slices = payload.get("slices") or []
     for sl in slices[:6]:
@@ -202,158 +112,174 @@ def _parse(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[N
     return results
 
 
+def _date_mmddyyyy(iso_date: str) -> str:
+    """Convert YYYY-MM-DD to MM/DD/YYYY (AA's form expects this format)."""
+    y, m, d = iso_date.split("-")
+    return f"{m}/{d}/{y}"
+
+
+async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[str, list[NormalizedResult]]:
+    """One attempt: load mobile.aa.com → home page → fill form → submit →
+    capture XHR. Returns (verdict, results)."""
+    try:
+        async with browser_page(
+            timeout_ms=120_000,
+            use_brightdata=True,
+        ) as page:
+            captured_xhrs: list[dict] = []
+
+            async def _on_response(resp):
+                url = resp.url
+                if any(p in url for p in ("/booking/api/", "/api/booking/", "/api/search/", "/booking/find-flights")):
+                    try:
+                        ct = (resp.headers or {}).get("content-type", "") or ""
+                        item = {"url": url, "status": resp.status, "content_type": ct}
+                        if "json" in ct.lower() and resp.status == 200:
+                            try:
+                                item["json"] = await resp.json()
+                            except Exception:
+                                pass
+                        captured_xhrs.append(item)
+                    except Exception:  # noqa: BLE001
+                        pass
+            page.on("response", _on_response)
+
+            print(f"AA: attempt {attempt} navigating to {ENTRY_URL}", flush=True)
+            await page.goto(ENTRY_URL, wait_until="networkidle", timeout=90_000)
+            await asyncio.sleep(2.0)
+
+            title = await page.title()
+            url_now = page.url
+            print(f"AA: attempt {attempt} loaded title={title!r} url={url_now}", flush=True)
+            if "Access Denied" in title:
+                return ("page_blocked", [])
+
+            # Look for the booking form. It uses field name 'originAirport' on
+            # both mobile and desktop variants.
+            try:
+                await page.wait_for_selector("input[name='originAirport']", timeout=15_000)
+            except Exception as exc:  # noqa: BLE001
+                # Form not present; capture what IS on the page for diagnosis
+                form_dump = await page.evaluate("""
+                    () => Array.from(document.querySelectorAll('input,select,button[type="submit"]')).slice(0,40).map(el => ({
+                        tag: el.tagName.toLowerCase(), name: el.getAttribute('name'),
+                        id: el.id, type: el.type || null, aria: el.getAttribute('aria-label'),
+                    })).filter(x => x.name || x.id || x.aria)
+                """)
+                print(f"AA: attempt {attempt} form not found; inputs on page: {json.dumps(form_dump)[:600]}", flush=True)
+                return ("no_form", [])
+
+            print(f"AA: attempt {attempt} form found, filling…", flush=True)
+
+            # Fill the form. Use JS evaluate for reliability — selectors are stable
+            # in name= attribute but jQuery may also be involved.
+            fill_result = await page.evaluate(
+                """
+                ({ origin, dest, date }) => {
+                    function setVal(name, val) {
+                        const el = document.querySelector(`[name="${name}"]`);
+                        if (!el) return false;
+                        el.value = val;
+                        el.dispatchEvent(new Event('input', {bubbles:true}));
+                        el.dispatchEvent(new Event('change', {bubbles:true}));
+                        return true;
+                    }
+                    const results = {};
+                    results.tripType = setVal('tripType', 'oneWay');
+                    // tripType is a radio group; click the right radio explicitly
+                    const oneWayRadio = document.querySelector('input[name="tripType"][value="oneWay"]');
+                    if (oneWayRadio) { oneWayRadio.checked = true; oneWayRadio.click(); results.oneWayClicked = true; }
+                    const award = document.querySelector('input[name="redeemMiles"]');
+                    if (award) { award.checked = true; award.click(); results.awardClicked = true; }
+                    results.origin = setVal('originAirport', origin);
+                    results.dest = setVal('destinationAirport', dest);
+                    results.date = setVal('departDate', date);
+                    return results;
+                }
+                """,
+                {"origin": origin, "dest": dest, "date": _date_mmddyyyy(date)},
+            )
+            print(f"AA: attempt {attempt} fill result: {fill_result}", flush=True)
+            await asyncio.sleep(1.0)
+
+            # Submit by clicking the search button (form's onsubmit JS will fire).
+            try:
+                # Common button selectors AA uses
+                submit_btn = await page.query_selector(
+                    "button[type='submit'][name*='Search'], "
+                    "button:has-text('Search'), "
+                    "input[name='flightSearchForm.button.reSubmit'], "
+                    "button#flightSearchSubmit"
+                )
+                if submit_btn:
+                    await submit_btn.click()
+                    print(f"AA: attempt {attempt} clicked submit button", flush=True)
+                else:
+                    # Fallback: submit form via JS
+                    await page.evaluate(
+                        "document.querySelector('form[name=\"reservationFlightSearchForm\"]')?.submit()"
+                    )
+                    print(f"AA: attempt {attempt} submitted form via JS fallback", flush=True)
+            except Exception as exc:  # noqa: BLE001
+                print(f"AA: attempt {attempt} submit failed: {exc}", flush=True)
+                return ("submit_failed", [])
+
+            # Wait for either navigation or search XHR
+            try:
+                await page.wait_for_load_state("networkidle", timeout=60_000)
+            except Exception:  # noqa: BLE001
+                pass
+            await asyncio.sleep(3.0)
+
+            print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
+            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} relevant XHRs", flush=True)
+            for x in captured_xhrs[:10]:
+                has_json = "json" in x
+                print(f"AA:   XHR {x['status']} {x['url'][:120]} json={has_json}", flush=True)
+
+            # Find a usable JSON payload in the XHRs
+            for x in captured_xhrs:
+                if "json" in x and isinstance(x["json"], dict):
+                    payload = x["json"]
+                    if payload.get("slices"):
+                        parsed = _parse_xhr(payload, origin, dest, date)
+                        if parsed:
+                            return ("ok", parsed)
+
+            # If no useful XHR, look at the page itself for award prices (HTML results page)
+            page_text = await page.locator("body").inner_text()
+            if "miles" in page_text.lower() and (origin in page_text or dest in page_text):
+                # Found a results page rendered to HTML — but we'd need a separate parser.
+                # For now, report this as a partial success so we know the form submission worked.
+                print(f"AA: attempt {attempt} got HTML results page (parser TBD); text snippet: {page_text[:600]!r}", flush=True)
+                return ("html_results_unparsed", [])
+
+            return ("no_results", [])
+
+    except Exception as exc:  # noqa: BLE001
+        print(f"AA: attempt {attempt} crash: {type(exc).__name__}: {str(exc)[:200]}", flush=True)
+        return ("crash", [])
+
+
 async def _scrape_real(
     origin: str,
     dest: str,
     date: str,
     cabin_filter: str = "Y",
 ) -> list[NormalizedResult]:
-    """Diagnostic phase: load the booking page via BD Browser API, inspect
-    the form, and report what selectors are present so we can build the
-    real form-fill flow."""
     print(f"AA: ===== search start {origin}->{dest} {date} =====", flush=True)
-
-    # Empirical from session 5: sticky sessions (brightdata_session=X) pin
-    # to a smaller subset of BD's pool and get 0% Akamai page-load success.
-    # BD's DEFAULT rotation (no session_id) samples wider — T3 of the bypass
-    # battery this morning hit a working IP that way. Try that path here:
-    # no sticky session, no country override, just raw default rotation per
-    # attempt. Each browser_page() call gets a fresh IP from BD's whole pool.
+    verdicts = []
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        print(f"AA: attempt {attempt}/{MAX_ATTEMPTS} (default BD rotation)", flush=True)
-
-        try:
-            async with browser_page(
-                timeout_ms=90_000,
-                use_brightdata=True,
-                # No brightdata_session — BD rotates randomly across pool.
-            ) as page:
-                captured: dict[str, Any] = {"xhrs": []}
-
-                async def _on_response(resp):
-                    url = resp.url
-                    if any(p in url for p in ("/booking/api/", "/api/booking/", "/aapi/", "/search/")):
-                        try:
-                            ct = (resp.headers or {}).get("content-type", "")
-                            captured["xhrs"].append({"url": url, "status": resp.status, "content_type": ct})
-                        except Exception:  # noqa: BLE001
-                            pass
-                page.on("response", _on_response)
-
-                # First request — Akamai soft-challenge will return 403 with
-                # an embedded sensor.js. networkidle waits for the script to
-                # finish minting cookies.
-                await page.goto(SEARCH_PAGE, wait_until="networkidle", referer=LOYALTY_REFERER, timeout=60_000)
-                await asyncio.sleep(4.0)  # extra margin for sensor.js to complete and Set-Cookie to apply
-
-                title = await page.title()
-                if "Access Denied" in title:
-                    # Akamai challenge. Patchright running sensor.js in-browser
-                    # leaves the cookie in challenged state; we need CapSolver to
-                    # compute valid sensor_data EXTERNALLY then POST it.
-                    full_html = await page.content()
-                    script_url = _extract_sensor_script_url(full_html)
-                    print(f"AA: attempt {attempt} challenged; script_url={script_url!r}", flush=True)
-
-                    capsolver_key = os.environ.get("CAPSOLVER_API_KEY")
-                    if not capsolver_key:
-                        print(f"AA: CAPSOLVER_API_KEY not set; skipping", flush=True)
-                        continue
-                    if not script_url:
-                        print(f"AA: no script URL in deny page, can't solve", flush=True)
-                        continue
-
-                    # Pull the browser UA so CapSolver computes sensor_data that matches.
-                    page_ua = await page.evaluate("() => navigator.userAgent")
-                    sensor_data = await _capsolver_solve_akamai(SEARCH_PAGE, page_ua, capsolver_key)
-                    if not sensor_data:
-                        print(f"AA: attempt {attempt} CapSolver gave no sensor_data", flush=True)
-                        continue
-
-                    # POST sensor_data to Akamai's script endpoint from within the
-                    # BD browser so cookies + Akamai's CDN-bound session match.
-                    post_url = f"https://www.aa.com{script_url}"
-                    post_result = await page.evaluate(
-                        """
-                        async ({ url, sensorData }) => {
-                            try {
-                                const r = await fetch(url, {
-                                    method: 'POST',
-                                    body: JSON.stringify({ sensor_data: sensorData }),
-                                    headers: {'Content-Type': 'text/plain;charset=UTF-8'},
-                                    credentials: 'include',
-                                });
-                                return { ok: true, status: r.status };
-                            } catch (e) {
-                                return { ok: false, error: String(e) };
-                            }
-                        }
-                        """,
-                        {"url": post_url, "sensorData": sensor_data},
-                    )
-                    print(f"AA: attempt {attempt} sensor POST result: {post_result}", flush=True)
-                    await asyncio.sleep(1.5)
-
-                    # Reload the page — _abck should now be in solved state.
-                    try:
-                        await page.goto(SEARCH_PAGE, wait_until="networkidle", referer=LOYALTY_REFERER, timeout=60_000)
-                        await asyncio.sleep(2.5)
-                    except Exception as exc:  # noqa: BLE001
-                        print(f"AA: attempt {attempt} reload failed: {type(exc).__name__}: {str(exc)[:120]}", flush=True)
-                        continue
-                    title = await page.title()
-                    cookies_after = len(await page.context.cookies())
-                    print(f"AA: attempt {attempt} after CapSolver+reload title={title!r} cookies={cookies_after}", flush=True)
-                    if "Access Denied" in title:
-                        if attempt <= 2:
-                            stuck = (await page.content())[:500]
-                            print(f"AA:   still blocked html[:400]={stuck[:400]!r}", flush=True)
-                        print(f"AA: attempt {attempt} PAGE_BLOCKED_after_capsolver", flush=True)
-                        continue
-
-                print(f"AA: attempt {attempt} PAGE_LOADED title={title!r}", flush=True)
-                print(f"AA:   page url after load: {page.url}", flush=True)
-
-                # Dump form structure
-                form_info = await page.evaluate("""
-                    () => {
-                        const inputs = Array.from(document.querySelectorAll('input,select,button[type="submit"]')).slice(0, 50).map(el => ({
-                            tag: el.tagName.toLowerCase(),
-                            type: el.type || null,
-                            name: el.getAttribute('name') || null,
-                            id: el.id || null,
-                            placeholder: el.placeholder || null,
-                            aria_label: el.getAttribute('aria-label') || null,
-                            data_test: el.getAttribute('data-test') || null,
-                            text: (el.innerText || el.value || '').slice(0, 40),
-                        }));
-                        const forms = Array.from(document.querySelectorAll('form')).slice(0, 5).map(f => ({
-                            action: f.action,
-                            method: f.method,
-                            id: f.id,
-                            name: f.name,
-                        }));
-                        return {
-                            inputs: inputs.filter(x => x.name || x.id || x.placeholder || x.aria_label || x.data_test || x.text),
-                            forms,
-                        };
-                    }
-                """)
-
-                print(f"AA:   form_info: {json.dumps(form_info)[:1500]}", flush=True)
-                print(f"AA:   XHRs captured during load: {len(captured['xhrs'])}", flush=True)
-                for x in captured["xhrs"][:10]:
-                    print(f"AA:     XHR {x['status']} {x['url'][:140]}", flush=True)
-
-                # Diagnostic done; return [] so the cockpit knows nothing yet
-                print(f"AA: diagnostic complete on attempt {attempt}", flush=True)
-                return []
-
-        except Exception as exc:  # noqa: BLE001
-            print(f"AA: attempt {attempt} CRASH: {type(exc).__name__}: {str(exc)[:150]}", flush=True)
-            continue
-
-    print(f"AA: all {MAX_ATTEMPTS} attempts exhausted, no successful page load", flush=True)
+        verdict, results = await _try_once(attempt, origin, dest, date)
+        verdicts.append(verdict)
+        if verdict == "ok":
+            print(f"AA: attempt {attempt} SUCCESS ({len(results)} rows, prior={verdicts[:-1]})", flush=True)
+            return results
+        if verdict in ("html_results_unparsed",):
+            # Partial success — page loaded with results but parser TBD.
+            # Continue to next attempt in case we eventually get JSON XHR.
+            pass
+    print(f"AA: exhausted {MAX_ATTEMPTS} attempts, verdicts={verdicts}", flush=True)
     return []
 
 
