@@ -146,30 +146,48 @@ def _parse(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[N
     return results
 
 
-async def _scrape_real(
+MAX_RETRIES = 8  # AA's Akamai partially blacklists BD's pool; per-IP success ~20%.
+
+# Sticky-session cache. Bright Data assigns one exit IP per session_id and
+# pins it for ~10min idle. Once we find a session that bypasses Akamai we
+# reuse it for subsequent searches — turns the ~5-attempt cost into a
+# 1-attempt cost most of the time. Worker restart resets the cache.
+_GOOD_SESSION_ID: str | None = None
+_NEXT_PROBE_INDEX: int = 1
+
+
+async def _try_once(
+    attempt: int,
+    session_id: str,
+    user: str | None,
+    pwd: str | None,
+    body: dict[str, Any],
     origin: str,
     dest: str,
     date: str,
-    cabin_filter: str = "Y",
-) -> list[NormalizedResult]:
-    user, pwd = creds_for(PROGRAM_ID)
-    body = _build_search_body(origin, dest, date, 1)
-
+) -> tuple[str, list[NormalizedResult]]:
+    """One BD-session attempt with a specific sticky session_id. Returns
+    (verdict, results). verdict ∈ {'ok','page_blocked','api_blocked','bad_json','crash'}."""
     try:
-        # AA Akamai path-blocks direct loads of /booking/* but accepts them
-        # when Referer is a valid aa.com path. Empirically confirmed against
-        # /diag/airline — pure `Referer: aa.com/loyalty/login` header bypass,
-        # no cookie warmup needed (and warmup actually *hurts*: cookies set
-        # on /loyalty/* trigger a path-mismatch block on /booking/*).
         async with browser_page(
             timeout_ms=150_000,
             use_brightdata=True,
+            brightdata_session=session_id,
         ) as page:
-            # Prime sensor.js for /booking AND present a valid same-origin
-            # referer in the same shot.
+            # Prime sensor.js for /booking AND present a same-origin referer
+            # in the same shot. Empirical: bare goto = 403; with referer the
+            # request looks like organic intra-site navigation and Akamai
+            # accepts it on ~20% of BD's exit IPs.
             await page.goto(SEARCH_PAGE, wait_until="domcontentloaded", referer=LOGIN_URL)
-            await asyncio.sleep(2.0)  # let sensor.js run on the booking page
+            await asyncio.sleep(2.0)  # sensor.js
 
+            # Fast-fail block check before spending an API call.
+            title = await page.title()
+            body_text = (await page.locator("body").inner_text())[:200]
+            if "Access Denied" in title or "Access Denied" in body_text:
+                return ("page_blocked", [])
+
+            # Optional login (anonymous works for browse; logged-in improves partner inventory).
             if user and pwd:
                 try:
                     await page.goto(LOGIN_URL, wait_until="domcontentloaded")
@@ -178,10 +196,10 @@ async def _scrape_real(
                     await page.click("button[type='submit']")
                     await page.wait_for_load_state("networkidle", timeout=15_000)
                 except Exception as exc:  # noqa: BLE001
-                    log.warning("AA login failed (continuing anonymously): %s", exc)
+                    log.warning("AA attempt %d login failed (continuing anonymously): %s", attempt, exc)
 
-            # Fire the search XHR from inside the live page so Shape per-request
-            # headers get appended automatically.
+            # Fire the search XHR from inside the live page so per-request
+            # tokens are appended automatically.
             result = await page.evaluate(
                 """async (body) => {
                     const r = await fetch('/booking/api/search/itinerary', {
@@ -195,17 +213,56 @@ async def _scrape_real(
                 body,
             )
             if result.get("status") != 200:
-                log.warning("AA itinerary POST returned %s", result.get("status"))
-                return []
+                return ("api_blocked", [])
             try:
                 payload = json.loads(result["text"])
-            except Exception as exc:  # noqa: BLE001
-                log.warning("AA response not JSON: %s", exc)
-                return []
-            return _parse(payload, origin, dest, date)
+            except Exception:  # noqa: BLE001
+                return ("bad_json", [])
+            return ("ok", _parse(payload, origin, dest, date))
     except Exception as exc:  # noqa: BLE001
-        log.warning("AA scrape failed: %s", exc)
-        return []
+        log.debug("AA attempt %d crashed: %s", attempt, exc)
+        return ("crash", [])
+
+
+async def _scrape_real(
+    origin: str,
+    dest: str,
+    date: str,
+    cabin_filter: str = "Y",
+) -> list[NormalizedResult]:
+    global _GOOD_SESSION_ID, _NEXT_PROBE_INDEX
+    user, pwd = creds_for(PROGRAM_ID)
+    body = _build_search_body(origin, dest, date, 1)
+
+    # Step 1: if we've found a working session previously, try it first.
+    # A working session typically holds for ~10min of inactivity before BD
+    # rotates the underlying IP, so most subsequent calls land 1-attempt.
+    if _GOOD_SESSION_ID:
+        verdict, results = await _try_once(1, _GOOD_SESSION_ID, user, pwd, body, origin, dest, date)
+        if verdict == "ok":
+            log.info("AA: cached session %s succeeded (%d results)", _GOOD_SESSION_ID, len(results))
+            return results
+        log.info("AA: cached session %s stopped working (verdict=%s), rotating", _GOOD_SESSION_ID, verdict)
+        _GOOD_SESSION_ID = None
+
+    # Step 2: probe new sessions until one passes Akamai. Increment the
+    # probe index globally so consecutive calls don't replay known-bad IDs.
+    verdicts: list[str] = []
+    for attempt in range(1, MAX_RETRIES + 1):
+        session_id = f"aa{_NEXT_PROBE_INDEX}"
+        _NEXT_PROBE_INDEX += 1
+        verdict, results = await _try_once(attempt, session_id, user, pwd, body, origin, dest, date)
+        verdicts.append(f"{session_id}={verdict}")
+        if verdict == "ok":
+            _GOOD_SESSION_ID = session_id
+            log.info("AA: found working session %s on probe %d/%d (%d results, prior=%s)",
+                     session_id, attempt, MAX_RETRIES, len(results), verdicts[:-1])
+            return results
+        if attempt < MAX_RETRIES:
+            await asyncio.sleep(1.0 + attempt * 0.3)
+
+    log.warning("AA: exhausted %d probes, verdicts=%s", MAX_RETRIES, verdicts)
+    return []
 
 
 search = _scrape_real

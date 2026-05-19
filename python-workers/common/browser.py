@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -100,6 +101,7 @@ async def browser_page(
     scraperapi_render: bool = True,
     scraperapi_premium: bool = False,
     use_brightdata: bool = False,
+    brightdata_session: str | None = None,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -151,6 +153,17 @@ async def browser_page(
             if not wss_url:
                 raise RuntimeError(
                     "BRIGHTDATA_WSS_URL env var not configured"
+                )
+            # Sticky-session support: inject `-session-<id>` into the
+            # `brd-customer-X-zone-Y` username so BD pins the same exit IP
+            # for the session's lifetime (~10min idle). Lets callers (e.g.,
+            # the AA plugin) reuse a known-good IP across retries.
+            if brightdata_session:
+                wss_url = re.sub(
+                    r"(brd-customer-[^:@/]+):",
+                    rf"\1-session-{brightdata_session}:",
+                    wss_url,
+                    count=1,
                 )
             browser = await pw.chromium.connect_over_cdp(
                 wss_url, timeout=timeout_ms
