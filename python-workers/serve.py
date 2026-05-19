@@ -197,6 +197,7 @@ async def diag_airline(
     http2: int = Query(0, description="1 = enable HTTP/2 (default disabled)"),
     scraperapi: int = Query(0, description="1 = route through ScraperAPI proxy port"),
     scraperapi_render: int = Query(1, description="0 = no render (saves credits)"),
+    brightdata: int = Query(0, description="1 = route through Bright Data Browser API (CDP); takes precedence over scraperapi/use_proxy"),
 ) -> JSONResponse:
     """Smoke-test Patchright reaching a specific airline URL. Returns
     page title + status + any console errors + a snippet of body html."""
@@ -204,13 +205,14 @@ async def diag_airline(
         from common.browser import browser_page
         console_errors: list[str] = []
         async with browser_page(
-            timeout_ms=120_000 if scraperapi else 45_000,
-            use_proxy=bool(use_proxy),
+            timeout_ms=120_000 if (scraperapi or brightdata) else 45_000,
+            use_proxy=bool(use_proxy) and not brightdata,
             proxy_country=country or None,
             proxy_session=session or None,
             disable_http2=not bool(http2),
-            use_scraperapi=bool(scraperapi),
+            use_scraperapi=bool(scraperapi) and not brightdata,
             scraperapi_render=bool(scraperapi_render),
+            use_brightdata=bool(brightdata),
         ) as page:
             page.on(
                 "console",
