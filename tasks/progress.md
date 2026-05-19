@@ -222,3 +222,33 @@ Phase 2 work now in priority order:
 3. **Confirm Phase 2.5 priority** — should we start the auth-capture frontend work in parallel with broken-plugin fixes, or defer until more plugins are working?
 4. **JetBlue plugin** — could be built next as the "easiest Phase 3" target while AA and others stall
 
+
+## 2026-05-19 21:30 — AS fix confirmed + 3 agents complete
+**Status**: ✅ (substantial progress)
+
+**AS_MILEAGEPLAN flipped to ✅** — /search returns 5 rows for SEA→LAX 2026-08-15. Aircraft FK violation handled via savepoint retry; 7M9 (737 MAX 9) rows now insert with aircraft_icao=NULL gracefully. Long-term: migration to drop FK queued (auto-applies on merge to main).
+
+Phase 2.5 backend + frontend BOTH landed via 3 parallel agents (commits a5f537a, c6448b3, plus WIP 6904433, d6f1dd8, 5161e66, 3f28e80):
+
+- **Agent A (BD Web Unlocker)**: `common/bd_wu.py` + `aa_aadvantage/search_wu.py` + tests. Wired as `AA_AADVANTAGE_WU` plugin + `/diag/aa_wu_last`. Waits for user to set `BRIGHTDATA_WU_TOKEN` + `BRIGHTDATA_WU_ZONE` Fly secrets.
+- **Agent B (Phase 2.5 backend)**: Vault-encrypted `program_auth_sessions` table with 5 live-tested invariants, `common/auth_session.py`, `auth/capture.py` with /start/status/finalize + 13-program registration. Live-view URL question still open — 3 candidate approaches in `tasks/scraper-research/phase-2-5-live-view-research.md`.
+- **Agent C (Phase 2.5 cockpit)**: `src/app/airlines/page.tsx` + `ConnectAirlineModal.tsx` + `src/lib/api/auth.ts` + 4 Next.js proxy routes. HIG-compliant. pnpm typecheck/lint/build/test all pass. Stack-discovery: project is Next.js 16 App Router (not Vite + React Router as CLAUDE.md preamble suggested). Adapted to actual stack.
+
+Working state summary:
+| Program | HTTP | Status |
+|---|---|---|
+| VS_FLYING_CLUB | 200 | ✅ working |
+| AS_MILEAGEPLAN | 200 | ✅ **NEW** |
+| AC_AEROPLAN | 200 | 🟡 empty (silent fail, needs investigation) |
+| DL_SKYMILES | timeout | ❌ slow/flagged (BD Browser API) |
+| UA_MP | 200 | 🟡 empty (silent fail) |
+| NH_ANA | 200 | 🟡 empty (silent fail) |
+| AA_AADVANTAGE | rows=[] | 🔴 BLOCKED on Akamai (see blockers.md) |
+| AA_AADVANTAGE_WU | — | 🚀 awaiting WU Fly secrets |
+
+User action items:
+1. Add Fly secrets `BRIGHTDATA_WU_TOKEN` + `BRIGHTDATA_WU_ZONE` for the WU variant test
+2. Decide on the live-view URL approach (see Agent B's research doc)
+3. Wire Clerk auth into the `/airlines` page (Agent C deferred — Clerk shell exists but isn't wired)
+
+Next foreground work: AC, UA, NH empty-rows investigation via /diag/run_plugin.
