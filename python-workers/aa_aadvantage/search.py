@@ -264,13 +264,23 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 return ("fill_failed", [])
             print(f"AA: attempt {attempt} fields filled ({len(step_errors)} step errors), submit clicked", flush=True)
 
-            # Wait for either navigation or search XHR. Use load (not
-            # networkidle — AA's analytics never goes idle).
+            # Wait for the post-submit navigation, then watch for the title
+            # to change away from 'Challenge Validation' (Akamai's interstitial
+            # on the results page). If sensor.js validates, title flips to the
+            # real results page. Up to 60s for that to happen.
             try:
                 await page.wait_for_load_state("load", timeout=30_000)
             except Exception:  # noqa: BLE001
                 pass
-            await asyncio.sleep(6.0)  # extra time for XHR to fire and complete
+            await asyncio.sleep(3.0)
+            for wait_round in range(12):  # 12 * 2.5s = 30s additional
+                cur_title = await page.title()
+                if "Challenge Validation" not in cur_title and "Access Denied" not in cur_title:
+                    print(f"AA: attempt {attempt} challenge cleared at wait round {wait_round} (title={cur_title!r})", flush=True)
+                    break
+                if wait_round in (0, 4, 11):
+                    print(f"AA: attempt {attempt} still on challenge page (round {wait_round}, title={cur_title!r})", flush=True)
+                await asyncio.sleep(2.5)
 
             print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
             print(f"AA: attempt {attempt} captured {len(captured_xhrs)} graphql/booking JSON XHRs", flush=True)
@@ -291,12 +301,26 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
                 })
             LAST_RUN_DIAG["attempts"].append(attempt_diag)
 
+            # Look for a GraphQL response that contains actual flight data.
+            # Heuristics: top-level data key isn't 'staticContent'/'loginInfo'
+            # AND the payload contains slice/flight/itinerary text.
             for i, x in enumerate(captured_xhrs):
                 payload = x["json"]
-                if isinstance(payload, dict) and payload.get("slices"):
+                if not isinstance(payload, dict):
+                    continue
+                # Old shape (just in case AA still serves it under some query)
+                if payload.get("slices"):
                     parsed = _parse_xhr(payload, origin, dest, date)
                     if parsed:
                         return ("ok", parsed)
+                # New shape: look for flight-y content in data
+                data = payload.get("data") or {}
+                data_keys = list(data.keys())
+                if data_keys and not all(k in ("staticContent", "loginInfo") for k in data_keys):
+                    # This is a NEW graphql query we haven't seen — could be
+                    # the search response. Mark verdict so we can write a
+                    # parser once we see the shape.
+                    return ("new_graphql_unparsed", [])
 
             return ("no_results", [])
 
