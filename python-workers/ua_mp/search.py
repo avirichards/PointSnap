@@ -194,9 +194,7 @@ async def _scrape_real(
         # premium=true (clean residential exits, 25 credits/req).
         async with browser_page(
             timeout_ms=150_000,
-            use_scraperapi=True,
-            scraperapi_premium=True,
-            proxy_country="us",
+            use_brightdata=True,
         ) as page:
             # Step 1: Land on united.com so Akamai's sensor.js mints the
             # bot-validation cookies. Without these, FetchFlights returns

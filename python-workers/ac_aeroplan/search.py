@@ -147,9 +147,7 @@ async def _scrape_real(
     try:
         async with browser_page(
             timeout_ms=150_000,
-            use_scraperapi=True,
-            scraperapi_premium=True,
-            proxy_country="ca",
+            use_brightdata=True,
         ) as page:
             captured: dict[str, Any] = {}
 

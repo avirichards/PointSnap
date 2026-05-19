@@ -130,7 +130,7 @@ async def _scrape_real(
         return []
 
     try:
-        async with browser_page(timeout_ms=150_000, use_scraperapi=True, proxy_country="jp") as page:
+        async with browser_page(timeout_ms=150_000, use_brightdata=True) as page:
             await page.goto(LOGIN_URL, wait_until="domcontentloaded")
             try:
                 await page.fill("input[name='accountNumber'], input#accountNumber", user)
