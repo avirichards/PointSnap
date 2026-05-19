@@ -127,21 +127,30 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             use_brightdata=True,
         ) as page:
             captured_xhrs: list[dict] = []
+            all_post_xhrs: list[dict] = []  # diagnostic: ALL POSTs to aa.com domains
 
             async def _on_response(resp):
-                url = resp.url
-                if any(p in url for p in ("/booking/api/", "/api/booking/", "/api/search/", "/booking/find-flights")):
-                    try:
+                try:
+                    url = resp.url
+                    method = resp.request.method if hasattr(resp, "request") else ""
+                    # Capture ALL POST responses on aa.com — we don't know
+                    # which endpoint AA's modern booking widget actually uses.
+                    if "aa.com" in url and (method == "POST" or any(
+                        p in url for p in ("api", "search", "booking", "flight", "itinerary", "shop")
+                    )):
                         ct = (resp.headers or {}).get("content-type", "") or ""
-                        item = {"url": url, "status": resp.status, "content_type": ct}
+                        item = {"url": url, "status": resp.status, "method": method, "content_type": ct}
                         if "json" in ct.lower() and resp.status == 200:
                             try:
                                 item["json"] = await resp.json()
                             except Exception:
                                 pass
-                        captured_xhrs.append(item)
-                    except Exception:  # noqa: BLE001
-                        pass
+                        all_post_xhrs.append(item)
+                        # Original strict-prefix capture remains for the parser
+                        if any(p in url for p in ("/booking/api/", "/api/booking/", "/api/search/")):
+                            captured_xhrs.append(item)
+                except Exception:  # noqa: BLE001
+                    pass
             page.on("response", _on_response)
 
             print(f"AA: attempt {attempt} navigating to {ENTRY_URL}", flush=True)
@@ -204,27 +213,34 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             print(f"AA: attempt {attempt} fill result: {fill_result}", flush=True)
             await asyncio.sleep(1.0)
 
-            # Submit by clicking the search button (form's onsubmit JS will fire).
-            try:
-                # Common button selectors AA uses
-                submit_btn = await page.query_selector(
-                    "button[type='submit'][name*='Search'], "
-                    "button:has-text('Search'), "
-                    "input[name='flightSearchForm.button.reSubmit'], "
-                    "button#flightSearchSubmit"
-                )
-                if submit_btn:
-                    await submit_btn.click()
-                    print(f"AA: attempt {attempt} clicked submit button", flush=True)
-                else:
-                    # Fallback: submit form via JS
-                    await page.evaluate(
-                        "document.querySelector('form[name=\"reservationFlightSearchForm\"]')?.submit()"
-                    )
-                    print(f"AA: attempt {attempt} submitted form via JS fallback", flush=True)
-            except Exception as exc:  # noqa: BLE001
-                print(f"AA: attempt {attempt} submit failed: {exc}", flush=True)
-                return ("submit_failed", [])
+            # Submit. The form's onsubmit attribute is
+            #   onsubmit="submitSearch(getCurrentSearch())"
+            # so we call that JS directly — bypasses any button-click issues
+            # (focus, visibility, JS validation that runs differently on
+            # programmatic clicks) and ensures the actual submit logic runs.
+            submit_result = await page.evaluate(
+                """
+                () => {
+                    try {
+                        if (typeof submitSearch === 'function' && typeof getCurrentSearch === 'function') {
+                            const ret = submitSearch(getCurrentSearch());
+                            return { mode: 'submitSearch_call', returned: String(ret) };
+                        }
+                        // Fall back to dispatching submit event (fires onsubmit)
+                        const f = document.querySelector('form[name="reservationFlightSearchForm"]');
+                        if (f) {
+                            const ev = new Event('submit', { bubbles: true, cancelable: true });
+                            f.dispatchEvent(ev);
+                            return { mode: 'dispatchEvent', defaultPrevented: ev.defaultPrevented };
+                        }
+                        return { mode: 'no_form_found' };
+                    } catch (e) {
+                        return { mode: 'error', error: String(e) };
+                    }
+                }
+                """
+            )
+            print(f"AA: attempt {attempt} submit result: {submit_result}", flush=True)
 
             # Wait for either navigation or search XHR. Use load (not
             # networkidle — AA's analytics never goes idle).
@@ -235,10 +251,11 @@ async def _try_once(attempt: int, origin: str, dest: str, date: str) -> tuple[st
             await asyncio.sleep(6.0)  # extra time for XHR to fire and complete
 
             print(f"AA: attempt {attempt} post-submit url={page.url} title={await page.title()!r}", flush=True)
-            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} relevant XHRs", flush=True)
-            for x in captured_xhrs[:10]:
+            print(f"AA: attempt {attempt} captured {len(captured_xhrs)} matching + {len(all_post_xhrs)} all aa.com XHRs", flush=True)
+            # Show ALL POST/api XHRs so we can identify what AA actually fires
+            for x in all_post_xhrs[:20]:
                 has_json = "json" in x
-                print(f"AA:   XHR {x['status']} {x['url'][:120]} json={has_json}", flush=True)
+                print(f"AA:   ALL-XHR {x.get('method','?'):5} {x['status']} ct={x.get('content_type','')[:30]:30} json={has_json} {x['url'][:140]}", flush=True)
 
             # Find a usable JSON payload in the XHRs
             for x in captured_xhrs:
