@@ -162,11 +162,12 @@ def _selectors(*lists: str) -> list[str]:
 PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
     "AC_AEROPLAN": ProgramAuthConfig(
         label="Air Canada Aeroplan",
-        login_url="https://www.aircanada.com/ca/en/ado/profile/sign-in.html",
+        login_url="https://www.aircanada.com/signin",
+        # NB: AC puts `isAuth=true` on the *pre-login* sign-in page too, so
+        # it is NOT a success marker — only genuinely post-login paths here.
         success_url_match=(
-            "isAuth=true",
-            "/customer-profile",
             "/aco/home/aeroplan/your-aeroplan",
+            "/customer-profile",
         ),
         cookie_ttl_hours=24,
         warmup_url="https://www.aircanada.com/",
