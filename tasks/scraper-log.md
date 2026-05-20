@@ -1216,3 +1216,54 @@ curl -s 'https://pointsnap-workers.fly.dev/diag/wu_probe?url=https://mobile.aa.c
 | `25b59e0` | feat(aa): WU two-step session-mint for AAdvantage award search |
 | `c07e765` | fix(aa): WU mint runs all strategies, prefers spa_session_id jar |
 | `62bcc9d` | fix(aa): WU award POST via format=json, fold AA-minted 309 cookies |
+
+### Recon playbook — transferable techniques from the working plugins (Session 13)
+
+Distilled from VS / AS / B6 successes + the AA/DL diagnostics. Apply this to any
+airline a WU-grind agent reports as "resisted" or "endpoint not found".
+
+**1. Read the airline's live JS bundle — it is ground truth.**
+The B6 JetBlue win came from this: community intel (awardwiz, 2024) gave a dead
+endpoint (`jbrest.jetblue.com/lfs-rwb/outboundLFS` → 404). The agent fetched
+JetBlue's Angular `main.*.js`, grepped it, and found the CURRENT endpoint
+referenced as `bffServiceBestFareUrl` → `jbrest.jetblue.com/bff/bff-service/bestFares/`.
+Recipe: fetch the homepage HTML (via WU) → extract `<script src>` bundle URLs
+(`main.*.js`, `app.*.js`, `runtime.*.js`, `vendor.*.js`, `chunk.*.js`) → fetch each
+bundle → grep for `Url`, `endpoint`, `/api/`, `/bff/`, `award`, `redeem`, `search`,
+`bestFare`, `availability`. The bundle constructs the real request — it reveals the
+endpoint, the param/body shape, and any token-fetch flow.
+
+**2. Probe the separate API / BFF host — the soft underbelly.**
+Heavy bot defense sits on the consumer `www.<airline>`; the API host is often far
+lighter. Confirmed: `jbrest.jetblue.com` (B6, wide open), `api.aa.com` (Phase 0:
+permissive CORS + x-api-key), `api.qantas.com` (Phase 0: 3.9 MB no-auth JSON).
+For each airline try: `api.<domain>`, `bff.<domain>`, `<iata>rest.<domain>`,
+`mobile.<domain>`, `m.<domain>`, `booking.<domain>`, `services.<domain>`.
+
+**3. WU GET ≫ WU POST. Prefer GET-able endpoints.**
+DL proved it: WU GET `/shop/ow/search` → 200; WU POST same path → Akamai-444
+edge-block. Any airline with a GET-able award endpoint (query-param search,
+calendar) sidesteps the edge-block-POST problem entirely.
+
+**4. Calendar / flexible-dates / month endpoints are gold.**
+VS and B6 both win on whole-month award-calendar endpoints: GET-able,
+lighter-defended, one cheap call returns a month of pricing. For each airline,
+hunt the flexible-dates/calendar endpoint, not just per-flight search.
+
+**5. Pattern B (WU in-page render) for edge-blocked-POST airlines.**
+If the award API is POST-only AND edge-blocks the WU POST (DL pattern), have WU
+GET the *results-page SPA URL* — the SPA fires its own POST from inside WU's
+Akamai-cleared session (not edge-blocked, same-session). Parse the rendered DOM.
+
+**6. Official airline developer APIs exist for some — 100% reliable.**
+Agent 6 found official APIs: Singapore KrisConnect, Turkish Airlines dev portal
+(`strawb3rryx7/tkapi`), AF-KL NDC. For SQ + TK, registering for the official API
+beats scraping entirely. Needs an API key/registration (user action).
+
+**7. One fix cascades.** The AS aircraft-FK savepoint patch in `common/db.py`
+already protects every plugin from DB-write crashes on unknown aircraft codes —
+no per-plugin work needed when a new plugin starts returning rows.
+
+**Consolidation-pass plan**: when the 3 WU-grind agents report, for every airline
+marked "resisted"/"endpoint not found", dispatch a focused agent armed with #1–#5
+above (JS-bundle recon → BFF-host probe → GET-preference → Pattern B fallback).
