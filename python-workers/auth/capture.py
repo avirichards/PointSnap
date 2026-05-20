@@ -695,9 +695,21 @@ async def _close_bd_browser(state: AuthSessionState) -> None:
         state.state = STATE_TORN_DOWN
 
 
+def _frames(page: Any) -> list:
+    """Every frame of a page — top document first, then any iframes.
+    Login widgets (Gigya, Auth0, etc.) are frequently rendered inside an
+    iframe, so all form interaction searches frames, not just the top
+    document. Falls back to [page] if the frame list can't be read."""
+    try:
+        return list(page.frames)
+    except Exception:  # noqa: BLE001
+        return [page]
+
+
 async def _first_visible(page: Any, selectors: list[str], timeout_ms: int):
     """Return the first locator from `selectors` that becomes visible
     within `timeout_ms` (shared budget across the whole list), or None.
+    Searches the top document AND every child frame.
 
     We poll each selector cheaply rather than `wait_for` on each (a
     `wait_for` per selector would multiply the timeout). This is the
@@ -706,43 +718,48 @@ async def _first_visible(page: Any, selectors: list[str], timeout_ms: int):
     """
     deadline = _now() + (timeout_ms / 1000.0)
     while _now() < deadline:
-        for sel in selectors:
-            try:
-                loc = page.locator(sel).first
-                if await loc.is_visible():
-                    return loc
-            except Exception:  # noqa: BLE001
-                continue
+        for frame in _frames(page):
+            for sel in selectors:
+                try:
+                    loc = frame.locator(sel).first
+                    if await loc.is_visible():
+                        return loc
+                except Exception:  # noqa: BLE001
+                    continue
         await asyncio.sleep(0.25)
     return None
 
 
 async def _any_visible_with_text(page: Any, selectors: list[str]) -> str | None:
-    """If any selector resolves to a visible element with non-empty text,
-    return that text (trimmed, collapsed). Used for error detection — an
-    empty `role=alert` container doesn't count as an error."""
-    for sel in selectors:
-        try:
-            loc = page.locator(sel).first
-            if not await loc.is_visible():
+    """If any selector resolves — on the top document or any child frame
+    — to a visible element with non-empty text, return that text (trimmed,
+    collapsed). Used for error detection — an empty `role=alert` container
+    doesn't count as an error."""
+    for frame in _frames(page):
+        for sel in selectors:
+            try:
+                loc = frame.locator(sel).first
+                if not await loc.is_visible():
+                    continue
+                txt = (await loc.inner_text()) or ""
+                txt = re.sub(r"\s+", " ", txt).strip()
+                if txt:
+                    return txt
+            except Exception:  # noqa: BLE001
                 continue
-            txt = (await loc.inner_text()) or ""
-            txt = re.sub(r"\s+", " ", txt).strip()
-            if txt:
-                return txt
-        except Exception:  # noqa: BLE001
-            continue
     return None
 
 
 async def _any_present(page: Any, selectors: list[str]) -> bool:
-    """True if any selector resolves to a visible element on the page."""
-    for sel in selectors:
-        try:
-            if await page.locator(sel).first.is_visible():
-                return True
-        except Exception:  # noqa: BLE001
-            continue
+    """True if any selector resolves to a visible element on the top
+    document or any child frame."""
+    for frame in _frames(page):
+        for sel in selectors:
+            try:
+                if await frame.locator(sel).first.is_visible():
+                    return True
+            except Exception:  # noqa: BLE001
+                continue
     return False
 
 
@@ -957,12 +974,115 @@ async def _detect_outcome(
     return "timeout"
 
 
+# Generic text-ish input selector for the username fallback — a username
+# field is text / email / tel (or untyped); never password / hidden /
+# checkbox. The password field is found separately and is the anchor.
+_TEXTISH_INPUT = (
+    "input[type='text'], input[type='email'], "
+    "input[type='tel'], input:not([type])"
+)
+
+
+async def _frame_first_visible(frame: Any, selectors: list[str]):
+    """First visible locator for `selectors` within a single frame — one
+    pass, no polling. None if nothing matches."""
+    for sel in selectors:
+        try:
+            loc = frame.locator(sel).first
+            if await loc.is_visible():
+                return loc
+        except Exception:  # noqa: BLE001
+            continue
+    return None
+
+
+async def _frame_first_textish_input(frame: Any):
+    """First visible text / email / tel / untyped input in a frame — the
+    generic username-field fallback used when no configured selector
+    matches the login form."""
+    try:
+        loc = frame.locator(_TEXTISH_INPUT)
+        count = await loc.count()
+    except Exception:  # noqa: BLE001
+        return None
+    for i in range(min(count, 12)):
+        try:
+            cand = loc.nth(i)
+            if await cand.is_visible():
+                return cand
+        except Exception:  # noqa: BLE001
+            continue
+    return None
+
+
+async def _find_credential_inputs(
+    page: Any, cfg: ProgramAuthConfig, timeout_ms: int
+):
+    """Locate (username, password, submit) for a login form, searching
+    the top document and every child frame.
+
+    The password input is the anchor: a login page has exactly one, and
+    `input[type=password]` is unambiguous regardless of framework-drifted
+    names / ids or an iframe wrapper. Once the password field's frame is
+    known, the username is a configured selector OR the first visible
+    text-ish input in that same frame, and submit is a configured
+    selector OR a generic submit control.
+
+    Returns (user_loc, pass_loc, submit_loc). submit_loc may be None —
+    the caller falls back to pressing Enter. user/pass are None only when
+    no login form surfaced within the timeout.
+    """
+    user_sels = _selectors(cfg.username_selector)
+    pass_sels = _selectors(cfg.password_selector, "input[type='password']")
+    submit_sels = _selectors(
+        cfg.submit_selector, "button[type='submit']", "input[type='submit']"
+    )
+    deadline = _now() + (timeout_ms / 1000.0)
+    while _now() < deadline:
+        for frame in _frames(page):
+            pass_loc = await _frame_first_visible(frame, pass_sels)
+            if pass_loc is None:
+                continue
+            # The password field pins the form's frame. Resolve the
+            # username from a configured hint, else the first text-ish
+            # input in this same frame.
+            user_loc = await _frame_first_visible(frame, user_sels)
+            if user_loc is None:
+                user_loc = await _frame_first_textish_input(frame)
+            if user_loc is None:
+                continue
+            submit_loc = await _frame_first_visible(frame, submit_sels)
+            return user_loc, pass_loc, submit_loc
+        await asyncio.sleep(0.3)
+    return None, None, None
+
+
+async def _dump_frame_inputs(page: Any) -> str:
+    """A short per-frame inventory of every input — recorded in the error
+    payload when no login form was found, so the next debugging pass sees
+    the real DOM (field names, and which frame they live in)."""
+    parts: list[str] = []
+    for fi, frame in enumerate(_frames(page)):
+        try:
+            inv = await frame.evaluate(
+                """() => Array.from(document.querySelectorAll('input'))
+                    .slice(0, 20)
+                    .map(el => (el.type || 'text') + ':'
+                        + (el.name || el.id || el.getAttribute('aria-label') || '?'))
+                    .join(', ')"""
+            )
+            parts.append(f"f{fi}[{inv or 'no-inputs'}]")
+        except Exception:  # noqa: BLE001
+            parts.append(f"f{fi}[eval-failed]")
+    return " ".join(parts)[:400]
+
+
 async def _fill_and_submit_credentials(
     state: AuthSessionState, cfg: ProgramAuthConfig
 ) -> bool:
-    """Fill the username + password into the login form and click submit.
-    Returns True if the form was filled and submitted, False if a required
-    field could not be found (caller transitions to a sensible state).
+    """Fill the username + password into the login form and submit.
+    Returns True if the form was filled and submitted, False if the login
+    form could not be located (caller transitions to a sensible state).
 
     The password is typed with a human-like per-character delay and is
     never logged.
@@ -971,18 +1091,23 @@ async def _fill_and_submit_credentials(
     if not page:
         return False
 
-    # Wait for the login form to render. Air-Canada-style SPAs render the
-    # form after the JS bundle boots, so give the username field a
-    # generous window.
-    user_loc = await _first_visible(
-        page, _selectors(cfg.username_selector), timeout_ms=30_000
+    # Locate the form — anchored on the password field, searching every
+    # frame. SPA login pages (Air Canada's Gigya widget included) render
+    # the form only after their JS bundle boots, so allow a generous
+    # window.
+    user_loc, pass_loc, submit_loc = await _find_credential_inputs(
+        page, cfg, timeout_ms=35_000
     )
-    if user_loc is None:
-        return False
-    pass_loc = await _first_visible(
-        page, _selectors(cfg.password_selector), timeout_ms=15_000
-    )
-    if pass_loc is None:
+    if user_loc is None or pass_loc is None:
+        # No login form surfaced. Record the real DOM inventory so the
+        # next debugging pass can see the actual field names / frames.
+        inv = await _dump_frame_inputs(page)
+        log.warning(
+            "auth_capture: login form not found for %s — inputs: %s",
+            state.program_id,
+            inv,
+        )
+        state.error = f"login_form_not_found inputs={inv}"
         return False
 
     # Fill username — clear first, then type with human jitter.
@@ -995,6 +1120,7 @@ async def _fill_and_submit_credentials(
         await user_loc.type(state.username, delay=_human_type_delay())
     except Exception as exc:  # noqa: BLE001
         log.warning("auth_capture: username fill failed (%s)", type(exc).__name__)
+        state.error = "credential_fill_failed"
         return False
 
     # Small human pause between fields.
@@ -1007,26 +1133,25 @@ async def _fill_and_submit_credentials(
         await pass_loc.type(state.password, delay=_human_type_delay())
     except Exception as exc:  # noqa: BLE001
         log.warning("auth_capture: password fill failed (%s)", type(exc).__name__)
+        state.error = "credential_fill_failed"
         return False
 
     await asyncio.sleep(_rand_int(200, 500) / 1000.0)
 
-    # Submit. Prefer a real submit-button click; fall back to pressing
-    # Enter in the password field if no button resolves.
-    submit_loc = await _first_visible(
-        page, _selectors(cfg.submit_selector), timeout_ms=8_000
-    )
+    # Submit. Prefer the resolved submit control; fall back to pressing
+    # Enter in the password field.
     try:
         if submit_loc is not None:
             await submit_loc.click()
         else:
             log.info(
-                "auth_capture: no submit button found for %s — pressing Enter",
+                "auth_capture: no submit button for %s — pressing Enter",
                 state.program_id,
             )
             await pass_loc.press("Enter")
     except Exception as exc:  # noqa: BLE001
-        log.warning("auth_capture: submit click failed: %s", exc)
+        log.warning("auth_capture: submit failed: %s", exc)
+        state.error = "credential_submit_failed"
         return False
 
     return True
@@ -1183,7 +1308,10 @@ async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
                 await _enter_mfa_required(state, cfg)
             else:
                 state.state = STATE_FAILED
-                state.error = "login_form_not_found"
+                # _fill_and_submit_credentials may have recorded a
+                # detailed error (with the real DOM inventory) — keep it.
+                if not state.error:
+                    state.error = "login_form_not_found"
             return
 
         if _expired(state):
