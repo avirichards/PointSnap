@@ -400,3 +400,18 @@ Every auth_required plugin keeps its `_parse` shape intact + records `LAST_RUN_D
 **Everything now hinges on the T5' agent** completing auth-capture end-to-end. It went with screenshot-stream live-view (commit 08657dc). AA agent also still running (Browser-API mint hedge).
 
 Working set: VS, AS, B6 (3) + UA pending. 60-day cap lifted. Phase 2.5 infra built.
+
+## 2026-05-20 21:00 — AA Browser-API finding: the breakthrough lead for AA + DL
+**Status**: 🟡 (clear path for AA + DL identified)
+
+AA Browser-API-mint agent finding (Session 14):
+- **BD Browser API renders `www.aa.com/booking/find-flights`** → HTTP 200, real SPA form, mints a 56-cookie jar incl `XSRF-TOKEN` + `spa_session_id` + `JSESSIONID`. The scraper-log's "~0% AA success" was the OLD Patchright form-fill task — a simple page-load-and-read clears Akamai. ~50% of BD's exit pool gets hard-denied → retry 3 fresh sessions.
+- **WU 2-step is architecturally dead for AA**: AA's session is **transport-bound** — Akamai `_abck` is pinned to the device+IP that minted it. A jar minted on a BD-Browser-API exit IP CANNOT be replayed through a different BD-Web-Unlocker exit IP → AA still returns error 309.
+- **The fix**: do the whole search INSIDE one BD Browser API browser context — load the deep-link, let the SPA fire `/booking/api/search/itinerary` itself, capture the XHR via `page.on("response")`. Session + `_abck` + IP + API call all share one context.
+
+**This is the breakthrough lead** — and it solves DL too. DL's WU-grind verdict was also "needs real-browser in-page XHR capture." Same pattern:
+> BD Browser API (`browser_page(use_brightdata=True)`) loads the airline's deep-link/results SPA → SPA fires its own award API → capture XHR via `page.on("response")` → parse.
+
+This is the Sekinal deep-link pattern, but routed through **BD Browser API** (which clears Akamai) instead of Camoufox+Fly-egress or Camoufox+BD-Residential (both IP-flagged, failed earlier). One agent can template this for AA + DL, then it likely extends to any anonymous-search Akamai airline.
+
+**Next**: after the T5' agent finishes, dispatch a "BD Browser API in-page XHR capture" agent for AA + DL. Then consolidated deploy + test.
