@@ -142,6 +142,18 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
     h: viewport.h,
   });
 
+  // Seed the canvas's intrinsic resolution once on mount. After this,
+  // `paint` keeps it matched to each decoded frame. Setting it here (not
+  // as a JSX width/height attr) means React re-renders never reset — and
+  // thus never blank — the canvas.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.width = viewport.w;
+      canvas.height = viewport.h;
+    }
+  }, [viewport.w, viewport.h]);
+
   /** Queue one input event for the next flush. */
   const enqueue = useCallback((ev: InputEvent) => {
     const q = queueRef.current;
@@ -440,13 +452,13 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
       className="relative flex flex-1 min-h-0 items-center justify-center bg-muted/30"
     >
       {/* The remote browser, painted onto a canvas. The canvas's intrinsic
-          width/height are kept matched to each decoded frame (see `paint`),
-          so its aspect ratio follows the real remote browser; `max-w/h-full`
-          scales it down to fit the modal without distortion. */}
+          width/height are set IMPERATIVELY (in `paint` + the mount effect),
+          never as JSX attributes — React re-applying a width/height
+          attribute on re-render clears the canvas, which would wipe the
+          frame `paint` just drew. `max-w/h-full object-contain` scales it
+          to fit the modal without distortion. */}
       <canvas
         ref={canvasRef}
-        width={viewport.w}
-        height={viewport.h}
         tabIndex={0}
         role="application"
         aria-label="Airline login — interactive remote browser. Click to focus, then type your credentials."
