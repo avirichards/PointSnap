@@ -156,7 +156,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | **Patchright + IPRoyal residential** | ✅ for VS/AS, ❌ for everyone with Akamai | Session 3 | IPRoyal blocks AA/DL/AC at CONNECT layer. Even for sites it reaches, Akamai sensor.js detects Patchright. |
 | **ScraperAPI proxy (free + premium)** | ❌ | Session 3 | Per-resource billing burned credits; "premium" still failed AA. |
 | **Bright Data Browser API (CDP)** | ✅ for non-Akamai sites, ❌ for AA | Session 5 morning | 9/11 airline homepages loaded clean (200 OK with HTML). AA returned 403 Access Denied on most IPs. Some IPs got behavioral-challenge response. |
-| **Bright Data Web Unlocker (HTTP API)** | ❌ for HTML, partial for API | Session 5 mid | HTML page fetch errors with `expect_element` waiting for `#weeklyCarousel` (BD's stale AA selector). POST to /booking/api/search/itinerary succeeds but AA returns app-level error 309 (no session state). |
+| **Bright Data Web Unlocker (HTTP API)** | ⚠️ AA blocked on a zone setting | Session 13 | WU renders `mobile.aa.com/booking` (200, jar w/ `XSRF-TOKEN`+`JSESSIONID`, NO `spa_session_id`) + reaches AA's award POST (200). Every `www.aa.com` page 502s — stale `#weeklyCarousel` `expect_element` rule. The `x-unblock-expect` override that fixes it is OFF on the `pointsnap_webunlock` zone (`feature_not_active` — "Manual expect is not enabled"). AA award POST still `error 309` without `spa_session_id`; AA mints no cookies on the 309. **Fix: enable "Manual Expect" on the WU zone — then code works unchanged.** See Session 13 + blockers.md. |
 | **CapSolver `AntiAkamaiBMTask`** | ❌ (deprecated) | Session 5 mid | CapSolver dropped Akamai support entirely — task type returns `ERROR_TYPE_NOT_SUPPORTED`. Their docs no longer list Akamai. |
 | **2Captcha** | ❌ (never supported BMP) | Session 5 mid | Public docs confirm only reCAPTCHA, AWS WAF, Cloudflare, Geetest. No Akamai. |
 | **Camoufox (Firefox-based stealth)** | 🚧 in progress | Session 5 late | Loads www.aa.com but Akamai serves the `sec-if-cpt-container` behavioral challenge interstitial. Sensor.js doesn't validate Camoufox-on-Fly-egress within 40s wait + mouse simulation. |
@@ -181,6 +181,7 @@ In order of discovery:
 10. **Direct form-fill on homePage.do via BD Browser API**: form fill SUCCEEDED, submit clicked, navigated to `/booking/choose-flights/1?sid=<uuid>` (real backend SID!), but the results page returned the Akamai "Challenge Validation" interstitial that never cleared.
 11. **WU direct POST to `/booking/api/search/itinerary`**: succeeds at network layer (200 OK with AA JSON shape) but AA app returns `error: 309` without session state. Confirmed any cookie/header variation makes no difference — AA's API requires a session validated through the browser flow.
 12. **Camoufox + Fly egress**: loads www.aa.com but Akamai serves behavioral challenge (`sec-if-cpt-container`). Sensor.js doesn't clear within 40s of mouse-simulation. Same html_len=2380 challenge response across multiple requests.
+13. **WU 2-step session-mint (Session 13)**: WU-GET `mobile.aa.com/booking` mints a 15-cookie jar (`XSRF-TOKEN`, `JSESSIONID`, Akamai `bm_*`) but NOT `spa_session_id` — it's the legacy server-rendered page, no SPA bootstrap. Award POST with that jar → still `error 309`. The www.aa.com booking SPA *would* mint `spa_session_id` but WU can't render any www.aa.com page (stale `#weeklyCarousel` `expect_element` rule), and the `x-unblock-expect` override to defeat it returns `feature_not_active` (Manual Expect disabled on the `pointsnap_webunlock` zone). AA's 309 response issues no cookies, so `spa_session_id` can't be earned from the API. **Blocked on a 1-click BD zone setting** — see Session 13 chronicle + `blockers.md`.
 
 ---
 
@@ -1122,3 +1123,96 @@ curl -s 'https://pointsnap-workers.fly.dev/diag/dl_last' | python3 -m json.tool
 | `b704888` | feat(dl): WU two-step transport for SkyMiles award search |
 | `f0e699f` | feat(dl): try WU format=json transport for award POST |
 | `2ea8caa` | docs(dl): record confirmed finding — WU 2-step is Akamai-walled for DL |
+
+---
+
+## Session 13 — 2026-05-20 — AA AAdvantage WU 2-step session-mint — CONCLUSION: blocked on a BD zone setting
+
+Goal: get AA award rows via the Bright Data Web Unlocker 2-step (`AA_AADVANTAGE_WU`).
+The award API `POST /booking/api/search/itinerary` reaches AA's backend fine
+through WU but returns `{"error":"309"}` ("no session"). Built the 2-step
+session-mint. **Result: works end-to-end except WU can only mint a `mobile.aa.com`
+jar that lacks `spa_session_id`; the `www.aa.com` SPA page that would mint it
+can't be rendered because a required BD zone feature ("Manual Expect") is off.**
+Forensic detail below so the next session doesn't re-walk it.
+
+### What was built (`python-workers/aa_aadvantage/search_wu.py`, commits below)
+- Real 2-step flow: `_mint_aa_session()` WU-GETs an aa.com page to harvest a
+  cookie jar → `search_via_wu()` WU-POSTs the award API with that jar.
+- `_wu_get_json` — local WU GET helper that can send an `x-unblock-expect`
+  header (`bd_wu.wu_request_json` can't; `bd_wu.py` not modified).
+- `_wu_post_json` — WU POST via `format=json` (vs `bd_wu.wu_post`'s
+  `format=raw`) so AA's response `Set-Cookie` headers are visible.
+- Mint strategy ladder, all run, best jar selected (prefer `spa_session_id`).
+- API POST retry loop (max 3): folds any cookies AA issues on a 309 into the
+  jar and retries; stops early if a 309 issued no new cookies.
+- Forensic `LAST_RUN_DIAG` via `/diag/aa_wu_last` — every mint strategy +
+  POST attempt recorded.
+- Only `search_wu.py` touched. serve.py / bd_wu.py / other plugins untouched.
+
+### AA endpoint facts (confirmed current, 2026-05-20)
+- `POST https://www.aa.com/booking/api/search/itinerary` — award API.
+  `searchType:"Award"`, `clientId:"AAcom"`. Reachable via WU.
+- Anonymous POST → `{"error":"309","fareBenefits":[],"products":[],
+  "responseMetadata":null,"slices":[],"utag":null}` (95 bytes). 309 = no session.
+- AA's 309 response **sets zero cookies** — the API does NOT bootstrap a
+  session on first call (tested via `format=json` POST: `set-cookie` empty).
+- `mobile.aa.com/booking` is the ONLY AA URL WU renders cleanly.
+
+### Probe results (all WU `format=json`, throttled — ~12 probes total)
+| Request | Result |
+|---|---|
+| `GET mobile.aa.com/booking` | **200**, 76 KB HTML, 15-cookie jar: `XSRF-TOKEN`,`JSESSIONID`,`bm_s`,`bm_sz`,`AKA_A2`,`KROUTEID`,`ROUTEID`,`UAC`,`dtCookie`,`sessionLocale`,`aka_*`,`al`,`akavpau_*`. NO `spa_session_id`. |
+| `GET www.aa.com/` | 502, `x-brd-error: waiting for selector "#weeklyCarousel" failed: timeout 90000ms`, `errcode: expect_element` |
+| `GET www.aa.com/booking/find-flights` | 502, same `#weeklyCarousel` `expect_element` |
+| `GET www.aa.com/booking/flights/choose-flights` | 502, same |
+| `GET www.aa.com/booking/` | 502, same |
+| `GET www.aa.com/booking/flights/start.do` | 502, same |
+| `GET www.aa.com/aileron-view/` | 502, same |
+| `GET www.aa.com/booking/find-flights` + `x-unblock-expect:{"body":true}` | 400, `x-brd-error: "Manual expect is not enabled for this zone"`, `errcode: feature_not_active` |
+| `GET www.aa.com/booking/api/search/dual/elementsConfig` | 502, `captcha or protection page found`, `errcode: reject_block` |
+| `GET www.aa.com/loyalty/login` | 502, `Unexpected Status 429 ... ext_proxy_connect_error`, `errcode: rate_limit` (transient BD throttle) |
+
+### Three deployed test runs (read from `/diag/aa_wu_last`)
+All three: mint via `mobile_booking` (15 cookies, no `spa_session_id`) →
+award POST → `wu_status:200`, `target_status:200`, AA returns `error 309`,
+`slices:[]`, `api_set_cookie_names:[]`. Verdict `no_slices`, `row_count:0`.
+The `www_findflights` mint strategy: `target_status:400 feature_not_active`.
+
+### CONCLUSION — the blocker, and the 1-click fix
+WU bypasses AA's Akamai for the **POST** (AA's API responds 200 — unlike DL,
+whose Akamai edge-rejects POST). AA's app-level **error 309** is the wall: the
+award API needs `spa_session_id` (Sekinal's #1 critical cookie). That cookie
+is minted only by the **www.aa.com booking SPA bootstrap**. WU cannot render
+**any** `www.aa.com` page — it applies a stale per-host render-readiness rule
+waiting for `#weeklyCarousel` (a dead homepage selector) → `expect_element`
+timeout. WU's override for that (`x-unblock-expect` header) is **disabled on
+the `pointsnap_webunlock` zone** → `feature_not_active`.
+
+**Fix (user, ~1 min):** enable **"Manual Expect"** / custom `expect` on the
+`pointsnap_webunlock` WU zone (BD dashboard → zone → Advanced / Custom Headers
+& Cookies). The code's `www_findflights` strategy already sends
+`x-unblock-expect:{"body":true}`; once the zone allows it, WU should render
+the SPA, mint `spa_session_id`, and the existing code folds it into the POST —
+**no code change needed**. (Caveat: enabling custom headers makes that zone
+bill 100% of requests.) If Manual Expect doesn't yield `spa_session_id` (SPA
+may set it via client-side JS, which WU's `format=json` Set-Cookie capture
+misses), fall back to BD **Browser API** (`BRIGHTDATA_WSS_URL`, zone `pointsnap`)
+for the mint step — a real browser runs the SPA JS so `spa_session_id` lands
+in the cookie jar. Full detail in `tasks/blockers.md` (2026-05-20 19:00 entry).
+
+### Useful testing commands (Session 13)
+```
+# Run the AA WU variant + inspect forensic diag
+curl -s 'https://pointsnap-workers.fly.dev/search?program=AA_AADVANTAGE_WU&origin=JFK&dest=LAX&date=2026-08-15'
+curl -s 'https://pointsnap-workers.fly.dev/diag/aa_wu_last' | python3 -m json.tool
+# Probe any URL through WU (format=json envelope: status, set-cookie, x-brd-error)
+curl -s 'https://pointsnap-workers.fly.dev/diag/wu_probe?url=https://mobile.aa.com/booking&method=GET' | python3 -m json.tool
+```
+
+### Commit log (Session 13)
+| SHA | Message |
+|---|---|
+| `25b59e0` | feat(aa): WU two-step session-mint for AAdvantage award search |
+| `c07e765` | fix(aa): WU mint runs all strategies, prefers spa_session_id jar |
+| `62bcc9d` | fix(aa): WU award POST via format=json, fold AA-minted 309 cookies |
