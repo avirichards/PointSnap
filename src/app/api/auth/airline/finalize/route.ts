@@ -1,9 +1,17 @@
 /**
  * Phase 2.5 — POST /api/auth/airline/finalize
  *
- * Tears down a worker auth session. The worker captures cookies (if it
- * has them) and stores the encrypted blob in `program_auth_sessions`;
- * `state` distinguishes user-cancelled from cockpit-detected completion.
+ * Tears down a worker auth session. The worker captures cookies (if it has
+ * them) and stores the encrypted blob in `program_auth_sessions`.
+ *
+ * The cockpit sends `{ sessionId, state }` where `state` is "completed" or
+ * "cancelled". The worker's `/auth/finalize` takes QUERY params:
+ *   - `session_id` (required)
+ *   - `force_capture` (0|1) — when the user explicitly clicks "I'm done"
+ *     but the post-login URL never matched a known success substring, we
+ *     ask the worker to capture cookies anyway. We map state==="completed"
+ *     → force_capture=1 (best-effort last-chance capture); "cancelled" →
+ *     force_capture=0 (just tear down).
  *
  * Idempotent on the worker side — safe to call from the modal's cleanup
  * hook even if the modal already finalized via the captured branch.
@@ -43,17 +51,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const url = `${base.replace(/\/$/, "")}/auth/finalize`;
+  // completed → last-chance force capture; cancelled → plain teardown.
+  const forceCapture = body.state === "completed" ? "1" : "0";
+  const url =
+    `${base.replace(/\/$/, "")}/auth/finalize?` +
+    new URLSearchParams({
+      session_id: body.sessionId,
+      force_capture: forceCapture,
+    }).toString();
+
   let res: Response;
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        session_id: body.sessionId,
-        state: body.state,
-      }),
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(20_000),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "worker fetch failed";
@@ -61,10 +72,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (res.status === 404) {
-    return Response.json(
-      { message: "worker /auth/finalize not yet deployed" },
-      { status: 501 },
-    );
+    // 404 from /auth/finalize means the session id is unknown to the
+    // worker (already torn down / never existed). That's a benign no-op
+    // for the cockpit's cleanup hook — report ok rather than an error.
+    return Response.json({ ok: true, note: "session already gone" });
   }
 
   if (!res.ok) {
@@ -74,5 +85,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return Response.json({ ok: true });
+  const json = (await res.json()) as {
+    state?: string;
+    stored_row_id?: string | null;
+  };
+  return Response.json({
+    ok: true,
+    state: json.state,
+    storedRowId: json.stored_row_id ?? null,
+  });
 }
