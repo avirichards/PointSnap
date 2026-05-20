@@ -36,6 +36,7 @@ packages = [
     "af_flyingblue",
     "as_mileageplan",
     "av_lifemiles",
+    "b6_jetblue",
     "ba_avios",
     "cx_cathay",
     "dl_skymiles",
