@@ -301,3 +301,20 @@ WU secrets: BRIGHTDATA_WU_TOKEN + BRIGHTDATA_WU_ZONE=pointsnap_webunlock set via
 
 **Spent**: ~$0.04 BD so far. WU rate $1.50/CPM, $102 balance available.
 **Next**: read AA_AADVANTAGE_WU test; if rows>0 → roll WU out to DL/NH/CX/QR/etc; delete one-shot workflow; if WU fails → Strategy B (Camoufox+BDR) for the Akamai-single-tier carriers
+
+## 2026-05-20 18:00 — Strategies C + D complete; WU diagnosis; deploy backlog
+**Status**: 🟡 (deploy catching up)
+
+**Strategy C (JetBlue) ✅** — agent found the CURRENT endpoint (awardwiz's was dead). `POST jbrest.jetblue.com/bff/bff-service/bestFares/` via plain httpx, no proxy/browser. Verified live: JFK-LAX 2026-08-15 = 16,300 pts / 6 seats / $6 tax. Per-month award calendar, Y-cabin only (no Mint, no flight-level detail — mirrors VS calendar shape). Plugin = `b6_jetblue/`, committed aa71683.
+
+**Strategy D (60-day cap) ✅** — `common/program_windows.py` registry (28 programs, window numbers cross-checked vs AwardFares/AwardWallet — 11 corrected). `/programs/meta` endpoint. Cockpit `search-form.tsx` date input now has min/max bounds. The 60-day cap is GONE — calendar allows up to 360 days. Date-sweep correctly NOT built (no plugin has a confirmed page-window cap; VS uses month-calendar, AS is single-date SSR).
+
+**Strategy A (WU) — key finding**: Web Unlocker bypasses Akamai (wu_status 200, AA's API responds) BUT AA returns `error 309` = no session. WU needs a 2-step flow: GET homepage to mint session → POST API with cookies. Added `/diag/wu_probe` + `wu_request_json()` (format=json to get Set-Cookie headers back) to design the flow.
+
+**Deploy backlog**: ~10 commits pushed in quick succession by 3 agents + parent. The deploy-workers.yml workflow has `cancel-in-progress: true`, so each push cancelled the running deploy → none completed. B6/`/programs/meta`/`/diag/wu_probe` not live yet. Pushes have now stopped; the aa71683-triggered deploy should complete. Retest in flight (bbm9f50kg).
+
+**Follow-up flagged by JetBlue agent**: VS plugin returns `flight_number="CAL"` where tests expect `"3"` — VS parser drift. VS still returns rows so non-critical, but the flight_number field mapping is wrong. Queue for a fix.
+
+Working state: VS ✅, AS ✅, B6 ✅ (pending deploy verify) = 3 plugins. AA still blocked (WU 2-step flow needed). 60-day cap lifted. Phase 2.5 backend+frontend landed.
+
+**Spent**: ~$0.05 BD + ~1 WU request (~$0.0015).
