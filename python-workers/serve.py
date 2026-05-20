@@ -375,6 +375,51 @@ async def diag_airline(
         )
 
 
+@app.get("/diag/_tmp_aa_cookie_probe")
+async def diag_tmp_aa_cookie_probe(
+    url: str = Query(
+        "https://www.aa.com/booking/find-flights",
+        description="www.aa.com booking page to load via BD Browser API",
+    ),
+    wait_ms: int = Query(25000, description="ms to wait after goto for SPA bootstrap"),
+    wait_until: str = Query("domcontentloaded", description="goto wait_until"),
+) -> JSONResponse:
+    """TEMPORARY probe — verify BD Browser API can render a www.aa.com booking
+    page far enough to mint `spa_session_id`. Dumps page.context.cookies().
+    REMOVE before finishing the BD Browser API mint-rung task."""
+    try:
+        from common.browser import browser_page
+
+        async with browser_page(
+            timeout_ms=120_000, use_brightdata=True
+        ) as page:
+            resp = await page.goto(url, wait_until=wait_until)  # type: ignore[arg-type]
+            status = resp.status if resp else None
+            title = await page.title()
+            if wait_ms:
+                await asyncio.sleep(wait_ms / 1000)
+            cks = await page.context.cookies()
+            cookie_names = sorted({c["name"] for c in cks})
+            body_text = (await page.locator("body").inner_text())[:400]
+            return JSONResponse({
+                "ok": True,
+                "status": status,
+                "title": title,
+                "final_url": page.url,
+                "cookie_count": len(cks),
+                "cookie_names": cookie_names,
+                "has_xsrf": "XSRF-TOKEN" in cookie_names,
+                "has_spa_session_id": "spa_session_id" in cookie_names,
+                "has_jsessionid": "JSESSIONID" in cookie_names,
+                "body_snippet": body_text,
+            })
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": f"{type(exc).__name__}: {str(exc)[:500]}"},
+            status_code=500,
+        )
+
+
 @app.get("/diag/warmup")
 async def diag_warmup(
     warmup_url: str = Query(..., description="First URL to load (mints Akamai cookies via sensor.js)"),
