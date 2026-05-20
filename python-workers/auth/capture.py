@@ -1236,6 +1236,56 @@ async def _fill_and_submit_mfa(
     return True
 
 
+async def _navigate_to_login(page: Any, cfg: ProgramAuthConfig) -> bool:
+    """Navigate to the login form, with retries.
+
+    Air Canada's /signin entry is flaky: a redirect race against the
+    just-loaded warmup page sometimes leaves the browser on the home /
+    flights page instead of the login form. Each attempt re-issues the
+    navigation from wherever the page currently sits — by the 2nd attempt
+    the page is settled, so there is no competing redirect — and checks
+    whether a login page was reached, by URL keyword or a visible
+    password field. Returns True once a login page is reached; False
+    after exhausting retries (the caller still falls through to the form
+    finder, which reports a useful DOM inventory on failure).
+    """
+    for attempt in range(1, 4):
+        try:
+            await page.goto(cfg.login_url, wait_until="commit", timeout=45_000)
+        except Exception as exc:  # noqa: BLE001
+            log.info(
+                "auth_capture/login: nav attempt %d raised (%s)",
+                attempt, type(exc).__name__,
+            )
+        # Let the redirect chain settle before judging where we landed.
+        try:
+            await page.wait_for_load_state("domcontentloaded", timeout=20_000)
+        except Exception:  # noqa: BLE001
+            pass
+        await asyncio.sleep(3.0)
+
+        url = ""
+        try:
+            url = (page.url or "").lower()
+        except Exception:  # noqa: BLE001
+            pass
+        on_login = any(
+            k in url for k in ("login", "signin", "sign-in")
+        ) or await _any_present(page, ["input[type='password']"])
+        if on_login:
+            log.info(
+                "auth_capture/login: reached login page on attempt %d (%s)",
+                attempt, url[:120],
+            )
+            return True
+        log.info(
+            "auth_capture/login: attempt %d landed off the login form "
+            "(%s) — retrying",
+            attempt, url[:120],
+        )
+    return False
+
+
 async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
     """Background coroutine that drives the whole login: open the browser,
     navigate, fill the form, detect the outcome, handle any MFA rounds,
@@ -1290,34 +1340,11 @@ async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
         if _expired(state):
             return
 
-        try:
-            # `commit` resolves as soon as the response is received — AC's
-            # /signin redirect-chains through heavy OIDC-style hops, and
-            # waiting for `domcontentloaded` of the final page times out
-            # intermittently. Resolve early; the form finder polls.
-            await page.goto(
-                cfg.login_url, wait_until="commit", timeout=45_000
-            )
-        except Exception as exc:  # noqa: BLE001
-            # A goto interrupted by a redirect, or slow to commit, is NOT
-            # treated as fatal — the browser is still navigating, and the
-            # error alone can't tell us whether the page is usable. Let it
-            # settle and continue: the form finder (which polls ~45s
-            # across frames) is the real arbiter — if the page genuinely
-            # never loaded it reports login_form_not_found with a DOM
-            # inventory, a far more useful signal than a bare nav timeout.
-            log.info(
-                "auth_capture/login: login-page nav raised (%s) — "
-                "continuing; the form finder will wait it out",
-                type(exc).__name__,
-            )
-            try:
-                await page.wait_for_load_state(
-                    "domcontentloaded", timeout=20_000
-                )
-            except Exception:  # noqa: BLE001
-                pass
-            await asyncio.sleep(2.0)
+        # Navigate to the login form. AC's /signin entry is flaky — a
+        # redirect race can land the browser on the home / flights page —
+        # so this retries from wherever the page settles. Either way we
+        # fall through to the form finder, the real arbiter.
+        await _navigate_to_login(page, cfg)
 
         _update_current_url(state)
         # Decision point #1 — form loaded.
