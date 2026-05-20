@@ -1,50 +1,105 @@
-"""Air Canada Aeroplan award search plugin — REAL SCRAPE ACTIVE.
+"""Air Canada Aeroplan award search plugin — auth_required (T5' path).
 
-Ported from AwardWiz aeroplan.ts (lg/awardwiz, archived Sept 2024).
-Endpoint structure unchanged as of 2026-05.
+Phase-1 transport investigation (2026-05-20). The prior transport
+(Patchright + BD Browser API) is Akamai-flagged for aircanada.com, so the
+search silently returned `[]`. This module was slated for a Bright Data
+Web Unlocker rewrite — but the investigation below shows Aeroplan award
+search is gated behind a **logged-in Aeroplan session** (Air Canada built
+this login wall in March 2025 expressly to stop award scrapers), so no
+anonymous WU transport returns rows. The plugin is left as an honest
+`auth_required` stub.
 
-Flow (Patchright-driven, no login strictly required for browse):
-  1. Navigate to aircanada.com/aeroplan/redeem/availability/outbound
-     with route/date query params.
-  2. Wait for the XHR to ../loyalty/dapidynamic/{path}/v2/search/air-bounds.
-  3. Capture the response JSON via page.on("response").
-  4. Parse data.airBoundGroups[] → segments + prices.milesConversion.
+=============================================================================
+INVESTIGATION FINDINGS (2026-05-20, all via `/diag/wu_probe`, format=json):
 
-If AEROPLAN_USER/PASS are set in Fly secrets, login first for better
-partner inventory coverage. Otherwise browse anonymously.
+  GOOD NEWS — the WU transport itself is viable for Air Canada:
+  * `GET aircanada.com/` → 200, 56 KB, full Akamai jar (`_abck`, `bm_s`).
+  * `GET .../aeroplan/redeem/availability/outbound?org0=...&dest0=...&
+       departureDate0=...&marketCode=TNB`
+      → 200, 62 KB. The real Angular redemption SPA shell
+      (`<title>AC Loyalty</title>`, `<base href="/aeroplan/redeem/">`),
+      with a full Akamai jar: `_abck`, `bm_ss`, `bm_so`, `bm_sz`, `AKA_A2`.
+      NO server-side login redirect (`x-unblocker-redirected-to` absent).
+      WU fully clears Air Canada's Akamai for the page GET.
+  * `POST .../loyalty/dapidynamic/{tenant}/v2/search/air-bounds`
+      → target_status **404** (AC's generic not-found page), NOT an
+      Akamai 444 edge-reject and NOT a BD `bad_endpoint_robots` block.
+      So WU *can* POST to the `loyalty/dapidynamic/*` API path — the 404
+      is only because the `{tenant}` path segment is a specific value
+      that could not be guessed (tried `1ASIATSAC`, `1ASIDFPAC`,
+      `loyalty`, `airbounds` — all 404). The real tenant id is baked
+      into the redeem SPA's Angular JS bundle.
 
-Returns [] if the scrape fails — no canonical fallback.
+  THE BLOCKER — auth (matches Agent 5's research, flagged CRITICAL):
+  Air Canada built a **login wall in March 2025**, explicitly to stop
+  award scrapers (it had sued seats.aero, which scraped the air-bounds
+  API anonymously). Aeroplan award search now requires a logged-in
+  Aeroplan account session. The redeem SPA *shell* still renders without
+  a session (the page GET above is 200), but the SPA's air-bounds XHR —
+  the call that actually returns award availability + miles pricing — is
+  gated behind that logged-in session. Bright Data Web Unlocker bypasses
+  Air Canada's Akamai bot defense, but it is a stateless single-shot
+  fetch and **cannot supply a logged-in Aeroplan account**.
+
+CONCLUSION — auth_required:
+  This is NOT a WU/transport bug and NOT something a code change fixes.
+  Aeroplan belongs to the **T5' user-auth-capture** path (a sibling
+  workstream is building it) — Agent 5 rates AC the #1 T5'-required
+  airline ("T5' is the ONLY way to scrape Aeroplan post-March-2025").
+  Per the scraping briefing, a broken plugin must NOT be forced — so
+  `search()` here returns `[]` with verdict `auth_required`.
+
+  HANDOFF for the T5' transport — this plugin is *close* to working:
+  the WU transport is already proven viable for Air Canada (page renders,
+  Akamai cleared, `dapidynamic/*` POST reachable). T5' needs only two
+  things to flip this plugin to a real WU 2-step:
+    1. A logged-in Aeroplan cookie jar (the T5' session capture), to be
+       forwarded as a `Cookie:` header on the air-bounds POST.
+    2. The `{tenant}` path segment + exact request-body shape, extracted
+       from the redeem SPA's Angular JS bundle (or captured from a real
+       logged-in browser's air-bounds XHR during the T5' capture).
+  `_parse_air_bounds()` below — the AwardWiz-derived response parser — is
+  kept fully intact and ready, so only the transport needs wiring.
+=============================================================================
+
+Defensive contract: `search()` never raises — it returns `[]` and records
+a verdict in `LAST_RUN_DIAG`.
 """
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Any
 
-from common.browser import browser_page, creds_for
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
 log = logging.getLogger(__name__)
 PROGRAM_ID = "AC_AEROPLAN"
 PROGRAM_NAME = "Aeroplan"
 
-SEARCH_URL_TMPL = (
+# Reference URLs / paths (kept for the T5' transport that replaces this stub).
+WARMUP_URL = "https://www.aircanada.com/"
+SEARCH_PAGE_TMPL = (
     "https://www.aircanada.com/aeroplan/redeem/availability/outbound"
     "?org0={origin}&dest0={dest}&departureDate0={date}"
     "&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB"
 )
-LOGIN_URL = "https://www.aircanada.com/aeroplan/login"
-# Hit the homepage first so Akamai's sensor.js mints `_abck` (solved-state)
-# and `bm_sz` cookies on this datacenter IP. The booking widget URL is
-# path-protected by Akamai 403 — only requests with valid cookies and
-# matching IP get past it.
-WARMUP_URL = "https://www.aircanada.com"
+# The award API; `{tenant}` is a specific path segment baked into the
+# redeem SPA's JS bundle (see docstring — must be extracted for T5').
 AIR_BOUNDS_PATH = "/v2/search/air-bounds"
+
+# Module-level diagnostic state — exposed for the parent's consolidated
+# deploy/test. Forensic-detail by design (CLAUDE.md scraper log discipline).
+LAST_RUN_DIAG: dict[str, Any] = {}
 
 
 def _cabin_from_ac(code: str) -> str | None:
+    """Map an Air Canada cabin code to our cabin enum.
+
+    AC's air-bounds response uses `eco` / `ecoPremium` / `business` /
+    `first`. Kept for the T5' transport's parse step.
+    """
     return {
         "eco": "Y",
         "ecoPremium": "W",
@@ -54,6 +109,15 @@ def _cabin_from_ac(code: str) -> str | None:
 
 
 def _parse_air_bounds(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[NormalizedResult]:
+    """Parse Air Canada's air-bounds award response into NormalizedResult[].
+
+    Shape ported from lg/awardwiz aeroplan.ts: `data.airBoundGroups[]` with
+    `boundDetails.segments` (resolved via `data.dictionaries.flight`) and
+    `airBounds[].prices.milesConversion.convertedMiles`. Kept fully intact
+    and ready for the T5' (logged-in) transport. Robust to missing keys:
+    any group that fails to parse is skipped, not fatal. Not exercised by
+    the current `auth_required` stub.
+    """
     results: list[NormalizedResult] = []
     data = payload.get("data") or {}
     groups = data.get("airBoundGroups") or []
@@ -119,7 +183,7 @@ def _parse_air_bounds(payload: dict[str, Any], origin: str, dest: str, date: str
                     num_segments=len(segments),
                     segments=segments,
                     cabin_prices=cabin_prices,
-                    confidence_score=81,  # match canonical AC confidence; differentiate by flight#
+                    confidence_score=81,
                     observed_at=now,
                     last_seen_at=now,
                 )
@@ -135,83 +199,53 @@ async def _scrape_real(
     origin: str,
     dest: str,
     date: str,
-    cabin_filter: str = "Y",
+    cabin_filter: str = "Y",  # noqa: ARG001 — keep signature parity
 ) -> list[NormalizedResult]:
-    url = SEARCH_URL_TMPL.format(origin=origin, dest=dest, date=date)
-    user, pwd = creds_for(PROGRAM_ID)
+    """Air Canada Aeroplan award search — auth_required, returns `[]`.
 
-    # AC: IPRoyal blocks aircanada.com at CONNECT, Fly direct gets Akamai
-    # 403 on the booking widget path, ScraperAPI's shared pool gets 499
-    # ("multiple users from your IP"). Premium=true uses clean residential
-    # exits (25 credits/req).
-    try:
-        async with browser_page(
-            timeout_ms=150_000,
-            use_brightdata=True,
-        ) as page:
-            captured: dict[str, Any] = {}
+    Aeroplan award search requires a logged-in Aeroplan account session
+    (Air Canada's March-2025 anti-scraper login wall — Agent 5 research +
+    the 2026-05-20 `/diag/wu_probe` investigation in this module's
+    docstring). Bright Data Web Unlocker clears Air Canada's Akamai and
+    *can* reach the `loyalty/dapidynamic/*` air-bounds API path, but
+    cannot supply a logged-in Aeroplan account, so no anonymous WU
+    transport returns real award rows. Aeroplan is routed to the T5'
+    user-auth-capture path instead.
 
-            async def on_response(resp):
-                if AIR_BOUNDS_PATH in resp.url and resp.status == 200:
-                    try:
-                        captured["json"] = await resp.json()
-                    except Exception:  # noqa: BLE001
-                        pass
-
-            page.on("response", on_response)
-
-            # Block telemetry to keep the page fast.
-            await page.route(
-                "**/*",
-                lambda route: (
-                    route.abort()
-                    if any(h in route.request.url for h in ("go-mpulse.net", "adobedtm.com"))
-                    else route.continue_()
-                ),
-            )
-
-            # Step 1: Warm-up — load homepage so Akamai sensor.js completes
-            # and mints valid `_abck` (solved-state) + `bm_sz` cookies.
-            try:
-                await page.goto(WARMUP_URL, wait_until="domcontentloaded", timeout=30_000)
-                await asyncio.sleep(4.0)  # let sensor.js finish
-            except Exception as exc:  # noqa: BLE001
-                log.warning("AC homepage warmup failed: %s", exc)
-
-            # Step 2: Optional login (better partner coverage; not required).
-            if user and pwd:
-                try:
-                    await page.goto(LOGIN_URL, wait_until="domcontentloaded")
-                    await page.fill("input[name='J_USERNAME'], input#cust", user)
-                    await page.fill("input[name='J_PASSWORD'], input#pin", pwd)
-                    await page.click("button[type='submit'], #login-btn")
-                    await page.wait_for_load_state("networkidle", timeout=15_000)
-                except Exception as exc:  # noqa: BLE001
-                    log.warning("AC login attempt failed (continuing anonymously): %s", exc)
-
-            # Step 3: Navigate to the booking widget with warmed cookies.
-            # Pass Referer=homepage so Akamai sees a believable navigation
-            # chain instead of a cold direct request to the protected URL.
-            try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=45_000, referer=WARMUP_URL)
-            except Exception as exc:  # noqa: BLE001
-                log.warning("AC booking widget goto failed: %s", exc)
-                return []
-
-            # Wait up to 45s for the air-bounds XHR.
-            for _ in range(45):
-                if captured.get("json"):
-                    break
-                await asyncio.sleep(1.0)
-
-            payload = captured.get("json")
-            if not payload:
-                log.warning("AC air-bounds XHR not captured for %s→%s", origin, dest)
-                return []
-            return _parse_air_bounds(payload, origin, dest, date)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("AC scrape failed: %s", exc)
-        return []
+    Records verdict `auth_required` in `LAST_RUN_DIAG` and returns `[]`.
+    """
+    global LAST_RUN_DIAG
+    LAST_RUN_DIAG = {
+        "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "transport": "none",
+        "origin": origin,
+        "dest": dest,
+        "date": date,
+        "last_verdict": "auth_required",
+        "row_count": 0,
+        "note": (
+            "Aeroplan award search requires a logged-in Aeroplan session "
+            "(Air Canada's March-2025 anti-scraper login wall). WU clears "
+            "Air Canada's Akamai and CAN reach the loyalty/dapidynamic/* "
+            "air-bounds API path (POST returns 404 for an unknown tenant, "
+            "not an Akamai 444 — verified via /diag/wu_probe 2026-05-20), "
+            "but cannot supply a logged-in Aeroplan account. Routed to the "
+            "T5' user-auth-capture path. T5' needs only a logged-in cookie "
+            "jar + the air-bounds tenant/body shape to flip this to a "
+            "working WU 2-step — the transport is already proven viable."
+        ),
+        "reference": {
+            "warmup_url": WARMUP_URL,
+            "search_page": SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date),
+            "air_bounds_path_suffix": AIR_BOUNDS_PATH,
+        },
+    }
+    print(
+        f"AC: ===== {origin}->{dest} {date} — auth_required, "
+        f"returning [] (T5' path) =====",
+        flush=True,
+    )
+    return []
 
 
 search = _scrape_real
