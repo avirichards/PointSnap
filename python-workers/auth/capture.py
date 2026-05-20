@@ -1117,49 +1117,53 @@ async def _fill_and_submit_credentials(
         state.error = f"login_form_not_found inputs={inv}"
         return False
 
-    # Fill username — clear first, then type with human jitter.
-    # NB: only the exception *type* is logged for the credential-fill
-    # paths — never the exception message — so a typed value can't leak
-    # into a log line even via an unusual Playwright error.
+    # Fill the fields with Locator.fill() rather than click()+type():
+    # fill() focuses, clears, sets the value and fires an `input` event
+    # WITHOUT a pointer hit-test, so a floating <label> overlapping the
+    # input (as on AC's Aeroplan form) can't intercept the interaction.
+    # fill() also re-resolves the selector on each call, tolerating a
+    # re-render between finding the field and filling it.
+    #
+    # NB: only the exception *type* is recorded for the credential-fill
+    # paths — never the message — so a typed value can't leak into a log.
     try:
-        await user_loc.click()
-        await user_loc.fill("")
-        await user_loc.type(state.username, delay=_human_type_delay())
+        await user_loc.fill(state.username)
     except Exception as exc:  # noqa: BLE001
         log.warning("auth_capture: username fill failed (%s)", type(exc).__name__)
-        state.error = "credential_fill_failed"
+        state.error = f"username_fill_failed:{type(exc).__name__}"
         return False
 
     # Small human pause between fields.
     await asyncio.sleep(_rand_int(200, 600) / 1000.0)
 
-    # Fill password — same human-typed approach. NEVER log the value.
     try:
-        await pass_loc.click()
-        await pass_loc.fill("")
-        await pass_loc.type(state.password, delay=_human_type_delay())
+        await pass_loc.fill(state.password)
     except Exception as exc:  # noqa: BLE001
         log.warning("auth_capture: password fill failed (%s)", type(exc).__name__)
-        state.error = "credential_fill_failed"
+        state.error = f"password_fill_failed:{type(exc).__name__}"
         return False
 
     await asyncio.sleep(_rand_int(200, 500) / 1000.0)
 
-    # Submit. Prefer the resolved submit control; fall back to pressing
-    # Enter in the password field.
-    try:
-        if submit_loc is not None:
+    # Submit — prefer the resolved submit control; on any failure fall
+    # back to pressing Enter in the password field.
+    submitted = False
+    if submit_loc is not None:
+        try:
             await submit_loc.click()
-        else:
-            log.info(
-                "auth_capture: no submit button for %s — pressing Enter",
-                state.program_id,
+            submitted = True
+        except Exception as exc:  # noqa: BLE001
+            log.warning(
+                "auth_capture: submit click failed (%s) — trying Enter",
+                type(exc).__name__,
             )
+    if not submitted:
+        try:
             await pass_loc.press("Enter")
-    except Exception as exc:  # noqa: BLE001
-        log.warning("auth_capture: submit failed: %s", exc)
-        state.error = "credential_submit_failed"
-        return False
+        except Exception as exc:  # noqa: BLE001
+            log.warning("auth_capture: submit via Enter failed: %s", exc)
+            state.error = f"credential_submit_failed:{type(exc).__name__}"
+            return False
 
     return True
 
@@ -1182,9 +1186,7 @@ async def _fill_and_submit_mfa(
         return False
 
     try:
-        await code_loc.click()
-        await code_loc.fill("")
-        await code_loc.type(code, delay=_human_type_delay())
+        await code_loc.fill(code)
     except Exception as exc:  # noqa: BLE001
         # Log the exception type only — never the code value.
         log.warning("auth_capture: MFA code fill failed (%s)", type(exc).__name__)
@@ -1195,14 +1197,22 @@ async def _fill_and_submit_mfa(
     submit_loc = await _first_visible(
         page, _selectors(cfg.mfa_submit_selector), timeout_ms=8_000
     )
-    try:
-        if submit_loc is not None:
+    submitted = False
+    if submit_loc is not None:
+        try:
             await submit_loc.click()
-        else:
+            submitted = True
+        except Exception as exc:  # noqa: BLE001
+            log.warning(
+                "auth_capture: MFA submit click failed (%s) — trying Enter",
+                type(exc).__name__,
+            )
+    if not submitted:
+        try:
             await code_loc.press("Enter")
-    except Exception as exc:  # noqa: BLE001
-        log.warning("auth_capture: MFA submit failed: %s", exc)
-        return False
+        except Exception as exc:  # noqa: BLE001
+            log.warning("auth_capture: MFA submit via Enter failed: %s", exc)
+            return False
 
     return True
 
