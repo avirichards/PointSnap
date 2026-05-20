@@ -72,29 +72,55 @@ log = logging.getLogger(__name__)
 AA_API_ENDPOINT = "https://www.aa.com/booking/api/search/itinerary"
 WU_ENDPOINT = "https://api.brightdata.com/request"
 
-# Session-mint strategies, tried in order until one yields a jar with
-# `XSRF-TOKEN`. Each is `(label, url, expect_override)`:
+# Session-mint strategies, ALL tried, then the best jar is selected (see
+# `_mint_aa_session`). Each is `(label, url, expect_override)`:
 #   * `url` — the aa.com page WU GETs to mint cookies.
 #   * `expect_override` — value for the `x-unblock-expect` header, or None.
 #     When None, WU uses its own (stale, for aa.com) per-site render rule.
 #     When set, we override that rule so WU stops waiting for the dead
 #     `#weeklyCarousel` selector and returns once our target is present.
 #
-# `mobile.aa.com/booking` is first because it's the only AA URL CONFIRMED
-# to render through WU with no override needed. The `www.aa.com` strategies
-# are the fallback that also picks up `spa_session_id` *if* WU honours the
-# `x-unblock-expect` override on the REST API (the BD docs are ambiguous on
-# whether REST-API `headers` carry `x-unblock-*` directives — this probes
-# it empirically; `LAST_RUN_DIAG` records which strategy actually worked).
+# Why every strategy runs instead of stopping at the first XSRF-TOKEN:
+# `mobile.aa.com/booking` reliably renders via WU and mints `XSRF-TOKEN` +
+# `JSESSIONID` + the Akamai jar — but it's the *legacy server-rendered*
+# mobile page, so it never mints `spa_session_id`. A 2026-05-20 deployed
+# run proved that jar still gets AA error 309 ("no session") on the award
+# POST: `XSRF-TOKEN` alone is not a session. Sekinal's research
+# (`agent-1-aa-oss-deep-dive.md`) names `spa_session_id` the *other*
+# critical cookie — minted only by the www.aa.com booking SPA's bootstrap.
+#
+# So the `www.aa.com` strategies (which target the booking SPA, sent with
+# an `x-unblock-expect` override so WU stops waiting for the dead
+# `#weeklyCarousel` selector) are what can mint `spa_session_id`. We run
+# them all and prefer a jar that has `spa_session_id`; `mobile.aa.com` is
+# the floor we fall back to if none of the SPA renders succeed. Note BD's
+# docs are ambiguous on whether the REST API honours an `x-unblock-expect`
+# in the `headers` field — `LAST_RUN_DIAG.mint.strategies[]` records each
+# strategy's `target_status` + `x_brd_error_code` so a run shows definitively
+# whether the override unblocked www.aa.com.
 _MINT_STRATEGIES: list[tuple[str, str, str | None]] = [
+    # Floor: confirmed-rendering legacy page. XSRF-TOKEN + Akamai jar, no SPA sid.
     ("mobile_booking", "https://mobile.aa.com/booking", None),
-    ("www_home_body", "https://www.aa.com/", '{"body": true}'),
+    # The booking SPA — what mints `spa_session_id`. find-flights is the SPA's
+    # search entry; choose-flights is its results route. Both depend on the
+    # `x-unblock-expect` override defeating WU's stale `#weeklyCarousel` wait.
     (
-        "www_findflights_body",
+        "www_findflights",
         "https://www.aa.com/booking/find-flights",
         '{"body": true}',
     ),
+    (
+        "www_choose_flights",
+        "https://www.aa.com/booking/choose-flights/1",
+        '{"body": true}',
+    ),
 ]
+
+# Cookie that proves a real booking-SPA session (vs a stateless page hit).
+# AA's award API rejects jars without it as error 309.
+_SPA_SESSION_COOKIE = "spa_session_id"
+# Cookie present on any rendered aa.com page — the floor for a usable jar.
+_BASE_SESSION_COOKIE = "XSRF-TOKEN"
 
 # Module-level diagnostic state — last scrape's request + WU response,
 # exposed via `/diag/aa_wu_last`. Forensic-detail by design (CLAUDE.md
@@ -248,18 +274,34 @@ def _read_envelope(envelope: dict[str, Any] | None) -> dict[str, Any]:
 
 
 async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
-    """Step 1 of the WU two-step flow: WU-GET an aa.com page that renders
-    and harvest its session cookies.
+    """Step 1 of the WU two-step flow: WU-GET aa.com pages that render and
+    harvest the best session cookie jar.
 
-    Walks `_MINT_STRATEGIES` in order, stopping at the first whose cookie
-    jar contains `XSRF-TOKEN` (AA's load-bearing session cookie). Each
-    strategy attempt is logged into the returned `diag["strategies"]` list
-    so `/diag/aa_wu_last` shows exactly which AA URL minted (or why each
-    failed — `#weeklyCarousel` timeout, captcha block, rate-limit, …).
+    Runs *every* `_MINT_STRATEGIES` entry (not first-match) because the only
+    AA URL that reliably renders via WU — `mobile.aa.com/booking` — mints
+    `XSRF-TOKEN` but NOT `spa_session_id`, and a 2026-05-20 deployed run
+    proved that jar still gets AA error 309 on the award POST. We must also
+    try the www.aa.com booking-SPA pages (which can mint `spa_session_id`),
+    then pick the best jar:
 
-    Returns `(cookies, diag)` — `cookies` is empty if every strategy failed.
+      1. First jar containing `spa_session_id` — a real booking-SPA session.
+      2. Else first jar containing `XSRF-TOKEN` — the `mobile.aa.com` floor;
+         lets the POST run so its error 309 is recorded as evidence rather
+         than the run dying at "mint failed".
+      3. Else empty — no AA URL rendered via WU at all.
+
+    Each strategy attempt is logged into `diag["strategies"]` so
+    `/diag/aa_wu_last` shows exactly which AA URLs rendered, which cookies
+    each minted, and why any failed (`#weeklyCarousel` timeout, captcha
+    block, rate-limit, …).
+
+    Returns `(cookies, diag)` — `cookies` empty only if every strategy
+    failed to render.
     """
     diag: dict[str, Any] = {"strategies": [], "minted_via": None}
+    # Successful jars, in strategy order: (label, cookies).
+    jars: list[tuple[str, dict[str, str]]] = []
+
     for label, url, expect_override in _MINT_STRATEGIES:
         print(
             f"AA_WU: mint attempt '{label}' → WU GET {url} "
@@ -287,32 +329,47 @@ async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
         strat["cookie_names"] = info["cookie_names"]
         strat["body_len"] = info["body_len"]
         cookies = info["cookies"]
-        strat["has_xsrf"] = "XSRF-TOKEN" in cookies
-        strat["has_spa_sid"] = "spa_session_id" in cookies
+        strat["has_xsrf"] = _BASE_SESSION_COOKIE in cookies
+        strat["has_spa_sid"] = _SPA_SESSION_COOKIE in cookies
         strat["has_jsessionid"] = "JSESSIONID" in cookies
         diag["strategies"].append(strat)
 
         print(
             f"AA_WU: mint '{label}' wu={wu_status} target={info['target_status']} "
-            f"cookies={len(cookies)} xsrf={'XSRF-TOKEN' in cookies} "
-            f"spa_sid={'spa_session_id' in cookies} "
+            f"cookies={len(cookies)} xsrf={_BASE_SESSION_COOKIE in cookies} "
+            f"spa_sid={_SPA_SESSION_COOKIE in cookies} "
             f"brd_err={info['x_brd_error_code']!r}",
             flush=True,
         )
 
-        if "XSRF-TOKEN" in cookies:
-            diag["minted_via"] = label
-            diag["cookie_names"] = sorted(cookies.keys())
-            diag["has_spa_sid"] = "spa_session_id" in cookies
-            print(
-                f"AA_WU: session minted via '{label}' "
-                f"({len(cookies)} cookies)",
-                flush=True,
-            )
-            return cookies, diag
+        if _BASE_SESSION_COOKIE in cookies:
+            jars.append((label, cookies))
 
-    print("AA_WU: all mint strategies failed — no XSRF-TOKEN obtained", flush=True)
-    return {}, diag
+    # --- select the best jar ------------------------------------------
+    chosen_label: str | None = None
+    chosen: dict[str, str] = {}
+    for label, cookies in jars:
+        if _SPA_SESSION_COOKIE in cookies:
+            chosen_label, chosen = label, cookies
+            break
+    if not chosen and jars:
+        # No SPA session anywhere — fall back to the first usable jar so the
+        # POST still runs (its error 309, if any, is the evidence we want).
+        chosen_label, chosen = jars[0]
+
+    diag["minted_via"] = chosen_label
+    diag["jar_count"] = len(jars)
+    if chosen:
+        diag["cookie_names"] = sorted(chosen.keys())
+        diag["has_spa_sid"] = _SPA_SESSION_COOKIE in chosen
+        print(
+            f"AA_WU: session minted via '{chosen_label}' "
+            f"({len(chosen)} cookies, spa_sid={_SPA_SESSION_COOKIE in chosen})",
+            flush=True,
+        )
+    else:
+        print("AA_WU: all mint strategies failed — no usable jar", flush=True)
+    return chosen, diag
 
 
 def _build_api_headers(cookies: dict[str, str]) -> dict[str, str]:
