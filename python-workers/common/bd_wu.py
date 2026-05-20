@@ -176,7 +176,7 @@ async def wu_request_json(
     method: str = "GET",
     body: dict[str, Any] | str | None = None,
     headers: dict[str, str] | None = None,
-    timeout_s: float = 90.0,
+    timeout_s: float = 210.0,
 ) -> tuple[int, dict[str, Any] | None]:
     """Make a WU request with `format: "json"` so BD wraps the target's
     response in a structured envelope — crucially including the target's
