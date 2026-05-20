@@ -162,8 +162,12 @@ def _selectors(*lists: str) -> list[str]:
 PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
     "AC_AEROPLAN": ProgramAuthConfig(
         label="Air Canada Aeroplan",
-        login_url="https://www.aircanada.com/ca/en/aco/home/aeroplan.html",
-        success_url_match=("/aco/home/aeroplan/your-aeroplan", "/account.html"),
+        login_url="https://www.aircanada.com/ca/en/ado/profile/sign-in.html",
+        success_url_match=(
+            "isAuth=true",
+            "/customer-profile",
+            "/aco/home/aeroplan/your-aeroplan",
+        ),
         cookie_ttl_hours=24,
         warmup_url="https://www.aircanada.com/",
         # NEEDS-VERIFICATION selectors — see module-level note in the
@@ -1125,11 +1129,33 @@ async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
                 cfg.login_url, wait_until="domcontentloaded", timeout=45_000
             )
         except Exception as exc:  # noqa: BLE001
-            log.exception("auth_capture/login: nav to login page failed")
-            state.state = STATE_FAILED
-            state.error = f"login_nav_failed:{exc!s}"[:200]
-            await _capture_screenshot(state)
-            return
+            # Air Canada (and peers) do client-side geo / SPA redirects that
+            # interrupt the goto Playwright started — that is NOT a real
+            # failure, the browser is still navigating to the redirect
+            # target. Let the page settle and carry on; only a genuine nav
+            # error is terminal.
+            msg = str(exc)
+            if (
+                "interrupted by another navigation" in msg
+                or "ERR_ABORTED" in msg
+            ):
+                log.info(
+                    "auth_capture/login: initial nav interrupted by a "
+                    "redirect — letting the page settle and continuing"
+                )
+                try:
+                    await page.wait_for_load_state(
+                        "domcontentloaded", timeout=30_000
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
+                await asyncio.sleep(2.0)
+            else:
+                log.exception("auth_capture/login: nav to login page failed")
+                state.state = STATE_FAILED
+                state.error = f"login_nav_failed:{exc!s}"[:200]
+                await _capture_screenshot(state)
+                return
 
         _update_current_url(state)
         # Decision point #1 — form loaded.
