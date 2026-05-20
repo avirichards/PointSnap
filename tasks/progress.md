@@ -336,3 +336,23 @@ Path forward:
 3. AA: override WU's `#weeklyCarousel` wait — try a non-homepage entry URL, or a WU request param to relax the element-wait
 
 **Spent**: ~$0.06 BD (~6 WU requests at $1.5/CPM + smoke probes)
+
+## 2026-05-20 19:00 — DL proof: WU 2-step disproven for DL; per-airline reality
+**Status**: 🟡 (strategy refined)
+
+**DL proof agent finding**: the WU 2-step (homepage GET → cookies → API POST) does NOT work for DL. Delta's Akamai BMP **edge-rejects POST** to `/shop/ow/search` (HTTP 444 Access Denied) regardless of cookies/format/body. WU clears GET (200 + real JSON error envelope) but POST is edge-blocked. Confirmed: `POST httpbin.org/post` via WU works fine → the 444 is Delta's Akamai, not WU.
+
+**Crucial nuance — airlines fail DIFFERENTLY**:
+- **DL**: award API EDGE-BLOCKS the WU POST (Akamai 444). WU 2-step dead for DL.
+- **AA**: award API ACCEPTS the WU POST — returns app-level `error 309` ("no session"), a softer failure. AA's WU 2-step is still viable IF we can mint the session.
+
+So there is no single silver bullet. Each Akamai airline's award endpoint either edge-blocks POST (needs in-page rendering) or accepts it (WU 2-step can work with the right session). Per-airline investigation required.
+
+**Refined options for the ~10 Akamai airlines**:
+1. **WU renders the RESULTS page directly** (untested) — single WU call loads the SPA results URL; the SPA fires its own award POST from INSIDE WU's Akamai-cleared browser session (not edge-blocked since it's same-session); results render to DOM; parse the HTML. Different from WU 2-step.
+2. **T5' user-auth-capture** — Phase 2.5 infra is built; reliable but needs the user to log into each airline + the live-view URL question resolved.
+3. Per-airline bespoke transport.
+
+DL plugin rewritten to WU 2-step + documented as Akamai-walled (returns [] gracefully). AA WU agent still running — its result (does AA's softer 309 failure yield to a minted session?) shapes the rollout.
+
+**Spent**: ~$0.10 BD (~10 WU requests + probes).
