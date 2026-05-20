@@ -17,10 +17,24 @@ import type { ProgramId } from "@/lib/programs";
 export interface AuthSessionStart {
   /** Opaque session id; pass to `/auth/status` + `/auth/finalize`. */
   sessionId: string;
-  /** BD Browser API live-view URL (https://). Embedded in an iframe. */
+  /**
+   * Same-origin live-view URL — an SSE screenshot stream endpoint
+   * (`/api/auth/airline/stream?sessionId=...`). Rendered by LiveSessionView
+   * onto a canvas. NOT an iframe URL: BD's hosted DevTools inspector is
+   * served with `X-Frame-Options: DENY` so it can't be framed; the worker
+   * streams screenshots + replays input instead.
+   */
   liveViewUrl: string;
+  /** False when the BD session failed to spin up — show an error state. */
+  liveViewAvailable: boolean;
+  /** Currently always "stream" (the screenshot-stream live view). */
+  liveViewKind: string;
+  /** Pixel dims the remote browser renders at — canvas maps clicks 1:1. */
+  viewport: { w: number; h: number };
   /** ISO-8601 timestamp; session is killed by the worker after this. */
   expiresAt: string;
+  /** Best-effort current page URL of the remote browser. */
+  currentUrl: string | null;
 }
 
 /** Worker-side auth-capture state machine. */
@@ -34,8 +48,10 @@ export interface AuthSessionStatus {
   state: AuthSessionState;
   /** Optional error context from the worker (rate limit, login failure, etc.). */
   error?: string;
-  /** Optional ISO-8601 expiration (only set when state === "captured"). */
-  cookiesExpireAt?: string;
+  /** Best-effort current page URL of the remote browser. */
+  currentUrl?: string | null;
+  /** program_auth_sessions row UUID — set once state === "captured". */
+  storedRowId?: string | null;
 }
 
 /** Row returned by `/api/auth/airline/connected` — one per saved session. */
