@@ -464,12 +464,15 @@ async def _mint_browser_once(try_no: int) -> tuple[dict[str, str], dict[str, Any
 
 async def _mint_via_browser_api() -> tuple[dict[str, str], dict[str, Any]]:
     """BD Browser API mint rung — retries `_mint_browser_once` with fresh
-    BD sessions until one mints `spa_session_id` (or the try budget runs out).
+    BD sessions until one mints a COMPLETE jar (both `XSRF-TOKEN` and
+    `spa_session_id`), or the try budget runs out.
 
     Each retry gets a new exit IP from BD's pool; Akamai hard-denies a chunk
     of that pool, so a retry on a denied IP often lands a clean one. We stop
-    early the moment a jar contains `spa_session_id` — that's a complete
-    booking-SPA session, the prize this whole rung exists for.
+    early the moment a jar has BOTH session cookies — that's a complete
+    booking-SPA session, what AA's award POST needs. A jar with only one of
+    the two is kept as a fallback (`best`) but does NOT end the retry loop,
+    so a later try still gets a chance at the full pair.
 
     Returns `(cookies, strat_diag)`. `strat_diag` mirrors a WU-GET strategy's
     diag shape (`label`, `cookie_names`, `has_spa_sid`, …) plus a `tries`
@@ -482,6 +485,18 @@ async def _mint_via_browser_api() -> tuple[dict[str, str], dict[str, Any]]:
         "transport": "bd_browser_api",
         "tries": [],
     }
+
+    def _jar_rank(c: dict[str, str]) -> int:
+        """Rank a jar for the `best`-so-far comparison: a complete session
+        (both cookies) beats spa_session_id-only beats XSRF-only beats the
+        rest; `len` breaks ties so a richer jar wins within a tier."""
+        score = 0
+        if _SPA_SESSION_COOKIE in c:
+            score += 1000
+        if _BASE_SESSION_COOKIE in c:
+            score += 1000
+        return score + len(c)
+
     best: dict[str, str] = {}
     for try_no in range(1, _BROWSER_MINT_MAX_TRIES + 1):
         print(
@@ -491,12 +506,16 @@ async def _mint_via_browser_api() -> tuple[dict[str, str], dict[str, Any]]:
         )
         cookies, attempt = await _mint_browser_once(try_no)
         strat["tries"].append(attempt)
-        # Keep the richest jar seen so far so a partial (XSRF-only) result
-        # still feeds the POST if no try ever mints the SPA session.
-        if len(cookies) > len(best):
+        # Keep the highest-ranked jar seen so far — a partial result (only
+        # one session cookie) still feeds the POST if no try mints both.
+        if _jar_rank(cookies) > _jar_rank(best):
             best = cookies
-        if _SPA_SESSION_COOKIE in cookies:
-            best = cookies
+        # Stop only on a COMPLETE jar; a partial keeps the loop going so a
+        # later try can still land the full XSRF-TOKEN + spa_session_id pair.
+        if (
+            _SPA_SESSION_COOKIE in cookies
+            and _BASE_SESSION_COOKIE in cookies
+        ):
             break
 
     strat["cookie_names"] = sorted(best.keys())
