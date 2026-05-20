@@ -129,9 +129,67 @@ def _serialize(query: SearchQuery, r: NormalizedResult) -> dict:
     }
 
 
+@app.get("/diag/wu_probe")
+async def diag_wu_probe(
+    url: str = Query(..., description="Target URL to fetch via BD Web Unlocker"),
+    method: str = Query("GET", description="GET or POST"),
+) -> JSONResponse:
+    """Probe BD Web Unlocker with format=json to inspect the response
+    envelope — status, header keys, Set-Cookie, body head. Used to design
+    the AA two-step flow (homepage GET to mint a session → API POST)."""
+    try:
+        from common.bd_wu import wu_request_json
+        status, envelope = await wu_request_json(url, method=method)
+        summary: dict = {"wu_http_status": status}
+        if isinstance(envelope, dict):
+            summary["envelope_keys"] = list(envelope.keys())
+            summary["target_status"] = (
+                envelope.get("status_code") or envelope.get("status")
+                or envelope.get("status_code".upper())
+            )
+            hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
+            if isinstance(hdrs, dict):
+                summary["target_header_keys"] = sorted(hdrs.keys())
+                # Set-Cookie is the prize — try several casings/shapes
+                summary["set_cookie"] = (
+                    hdrs.get("set-cookie") or hdrs.get("Set-Cookie")
+                )
+            body = envelope.get("body")
+            if isinstance(body, str):
+                summary["body_len"] = len(body)
+                summary["body_head"] = body[:800]
+                # Look for AA session cookie names embedded in the body
+                for marker in ("XSRF-TOKEN", "spa_session_id", "_abck", "ak_bmsc"):
+                    summary[f"body_has_{marker}"] = marker in body
+        else:
+            summary["envelope"] = "non-JSON response (see WU error)"
+        return JSONResponse(summary)
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:400], "tb": traceback.format_exc()[-600:]},
+            status_code=500,
+        )
+
+
 @app.get("/health")
 async def health() -> dict[str, str | bool]:
     return {"status": "ok", "dbSkipped": writeback_skipped()}
+
+
+@app.get("/programs/meta")
+async def programs_meta() -> JSONResponse:
+    """Per-program metadata for the cockpit: max booking window in days,
+    plus the registered program list. Cockpit calendar reads this to
+    disable out-of-window dates per program."""
+    from common.program_windows import PROGRAM_MAX_DAYS_OUT, DEFAULT_MAX_DAYS_OUT
+    return JSONResponse({
+        "programs": [
+            {"programId": pid, "maxDaysOut": PROGRAM_MAX_DAYS_OUT.get(pid, DEFAULT_MAX_DAYS_OUT)}
+            for pid in PLUGINS.keys()
+        ],
+        "defaultMaxDaysOut": DEFAULT_MAX_DAYS_OUT,
+    })
 
 
 @app.get("/diag/aa_last")

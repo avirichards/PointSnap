@@ -171,6 +171,58 @@ async def wu_post(
     return resp.status_code, parsed, raw_text
 
 
+async def wu_request_json(
+    url: str,
+    method: str = "GET",
+    body: dict[str, Any] | str | None = None,
+    headers: dict[str, str] | None = None,
+    timeout_s: float = 90.0,
+) -> tuple[int, dict[str, Any] | None]:
+    """Make a WU request with `format: "json"` so BD wraps the target's
+    response in a structured envelope — crucially including the target's
+    response headers (Set-Cookie etc) which `format: "raw"` discards.
+
+    Used for the AA two-step flow: GET the homepage to mint a session, read
+    the Set-Cookie headers out of the envelope, then POST the API with those
+    cookies (AA returns error 309 — "no session" — without them).
+
+    Returns `(wu_http_status, envelope_or_None)`. BD's envelope shape is
+    roughly `{"status_code": int, "headers": {...}, "body": "..."}` — but
+    key names vary by BD API version, so callers should probe defensively.
+    """
+    token, zone = _read_wu_env()
+
+    forwarded_headers = dict(headers or {})
+    for hop_header in ("Host", "Content-Length", "host", "content-length"):
+        forwarded_headers.pop(hop_header, None)
+
+    wu_envelope: dict[str, Any] = {
+        "zone": zone,
+        "url": url,
+        "method": method.upper(),
+        "format": "json",
+    }
+    if body is not None:
+        wu_envelope["body"] = json.dumps(body) if isinstance(body, dict) else body
+    if forwarded_headers:
+        wu_envelope["headers"] = forwarded_headers
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(timeout_s, connect=10.0)) as client:
+        resp = await client.post(
+            WU_ENDPOINT,
+            json=wu_envelope,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+        )
+
+    try:
+        return resp.status_code, resp.json()
+    except (json.JSONDecodeError, ValueError):
+        return resp.status_code, None
+
+
 async def wu_get(
     url: str,
     headers: dict[str, str] | None = None,
