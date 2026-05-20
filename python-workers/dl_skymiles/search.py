@@ -19,18 +19,24 @@ pattern proven for AA:
       `shopAWSError` in error envelopes) — it returns award (SkyMiles)
       pricing JSON when handed a valid body.
 
-Probe findings (2026-05-20, via `/diag/wu_probe`):
-  * `GET  /shop/ow/search` (any params) → `{"shoppingError":{...100800...},
-    "shopAWSError":"Y"}` — WU clears Akamai for this path; `100800` means
-    "no valid request payload" (it's a POST-body endpoint, not GET).
-  * `POST /shop/ow/search` with NO body → Akamai 444 "Access Denied"
-    (Akamai flags an empty-bodied POST as a bot).
-  * Homepage mint returns ~13 cookies including `_abck` + the `bm_*` set.
+Probe findings (2026-05-20):
+  * `GET  /shop/ow/search` (any params, via `/diag/wu_probe` = format=json)
+    → `{"shoppingError":{...100800...},"shopAWSError":"Y"}` — WU clears
+    Akamai for this path; `100800` means "no valid request payload" (it's
+    a POST-body endpoint, not GET).
+  * `POST /shop/ow/search` with NO body → Akamai 444 "Access Denied".
+  * Homepage mint returns 11 cookies including `_abck` (`~-1~` unvalidated)
+    + the `bm_*` set + `AKA_A2`, `Homepage`, `location`.
+  * First deployed run: `format=raw` POST to `/shop/ow/search` with the
+    minted jar → 200 but body is Akamai "Access Denied" HTML. `format=raw`
+    is a proxy pass-through; it does not run BD's unlocker engine, so
+    Akamai blocks the POST. Hence step 2 tries `format=json` (full
+    unlocker) first — that is the transport that unlocked the GET probe.
 
-So the award call is a POST with a JSON body + the minted cookies. The
-`100800`-vs-real-result distinction is captured verbatim in
-`LAST_RUN_DIAG` so the request shape can be iterated from `/diag/dl_last`
-without grepping Fly logs.
+So the award call is a POST with a JSON body + the minted cookies, sent
+through the WU `format=json` transport. The `100800`-vs-Akamai-vs-real
+distinction is captured verbatim in `LAST_RUN_DIAG` so the request shape
+can be iterated from `/diag/dl_last` without grepping Fly logs.
 
 Defensive contract: `search()` never raises — every failure path returns
 `[]` and records a verdict in `LAST_RUN_DIAG`.
@@ -47,7 +53,12 @@ from typing import Any
 
 import httpx
 
-from common.bd_wu import cookies_to_header, wu_mint_cookies, wu_post
+from common.bd_wu import (
+    cookies_to_header,
+    wu_mint_cookies,
+    wu_post,
+    wu_request_json,
+)
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
 log = logging.getLogger(__name__)
@@ -226,8 +237,13 @@ async def _scrape_real(
 ) -> list[NormalizedResult]:
     """Search Delta SkyMiles awards via the Bright Data Web Unlocker 2-step.
 
+    Step 1 mints a cookie jar from the delta.com homepage; step 2 POSTs
+    `/shop/ow/search` with that jar, trying the `format=json` and
+    `format=raw` WU transports in turn (see `_call_award_api`).
+
     Verdict codes recorded in `LAST_RUN_DIAG["last_verdict"]`:
-      ok            — WU POST returned 200 with parseable award JSON + rows
+      ok            — a WU POST returned 200 with parseable award rows
+                      (`winning_transport` names which format won)
       no_results    — WU POST returned 200 + valid JSON but 0 rows parsed
       no_itinerary  — WU POST returned 200 + JSON but no `itinerary` key
                       (e.g. the `shoppingError`/100800 envelope, or empty)
@@ -253,7 +269,7 @@ async def _scrape_real(
         flush=True,
     )
 
-    attempt: dict[str, Any] = {"attempt": 1}
+    attempt: dict[str, Any] = {"stage": "homepage_mint"}
 
     # --- Step 1: mint a session by rendering the homepage via WU ----------
     try:
@@ -300,40 +316,127 @@ async def _scrape_real(
         LAST_RUN_DIAG["row_count"] = 0
         return []
 
+    LAST_RUN_DIAG["attempts"].append(attempt)
+
     # --- Step 2: POST the award API with the minted cookie jar ------------
+    # Two WU transports are tried in order, each recorded as its own
+    # attempts[] entry, because they unlock differently:
+    #   * format=json — BD's full Web Unlocker engine; what unlocked the
+    #     homepage + the GET probe of /shop/ow/search. POST body supported.
+    #   * format=raw  — proxy pass-through. Cheaper, but a 2026-05-20 run
+    #     showed it returns Akamai "Access Denied" for the award POST.
+    # We try format=json first (most likely to unlock); format=raw second
+    # so /diag/dl_last records a definitive side-by-side for the rollout
+    # decision. The first transport that yields parseable award rows wins.
     body = _build_search_body(origin, dest, date, 1)
-    attempt["payload_keys"] = sorted(body.keys())
+    headers = _api_headers(cookies)
+
+    for transport in ("json", "raw"):
+        results, verdict = await _call_award_api(transport, body, headers, origin, dest, date)
+        if verdict == "ok":
+            LAST_RUN_DIAG["last_verdict"] = "ok"
+            LAST_RUN_DIAG["winning_transport"] = transport
+            LAST_RUN_DIAG["row_count"] = len(results)
+            print(f"DL: SUCCESS ({len(results)} rows via format={transport})", flush=True)
+            return results
+        # Keep the most informative verdict (last transport tried wins the
+        # summary, but a no_results/no_itinerary beats a hard block for
+        # diagnosis — it means the request shape needs work, not the auth).
+        LAST_RUN_DIAG["last_verdict"] = verdict
+
+    LAST_RUN_DIAG["row_count"] = 0
+    print(
+        f"DL: exhausted both WU transports — final verdict "
+        f"{LAST_RUN_DIAG.get('last_verdict')}",
+        flush=True,
+    )
+    return []
+
+
+async def _call_award_api(
+    transport: str,
+    body: dict[str, Any],
+    headers: dict[str, str],
+    origin: str,
+    dest: str,
+    date: str,
+) -> tuple[list[NormalizedResult], str]:
+    """One WU POST to `/shop/ow/search`, via either `format` transport.
+
+    `transport` is "json" (`wu_request_json`, full unlocker engine) or
+    "raw" (`wu_post`, proxy pass-through). Appends an `attempts[]` entry
+    to `LAST_RUN_DIAG` capturing the WU status, target status, raw body
+    head, parsed-JSON shape, Delta's shoppingError envelope, and itinerary
+    count. Returns `(rows, verdict)`; verdict is one of:
+      ok | no_results | no_itinerary | api_non_json | api_error
+      | http_error | crash
+    """
+    attempt: dict[str, Any] = {
+        "stage": "award_post",
+        "transport": f"format_{transport}",
+        "endpoint": SEARCH_API,
+        "payload_keys": sorted(body.keys()),
+    }
+
+    status: int = 0
+    parsed: dict[str, Any] | None = None
+    raw_text: str = ""
     try:
-        status, parsed, raw_text = await wu_post(
-            url=SEARCH_API,
-            body=body,
-            headers=_api_headers(cookies),
-            timeout_s=90.0,  # WU can be slow on cold sessions
-        )
+        if transport == "json":
+            # format=json wraps the target response in an envelope; unwrap
+            # status_code / headers / body defensively (key names vary by
+            # BD API version — same handling as wu_mint_cookies).
+            status, envelope = await wu_request_json(
+                SEARCH_API, method="POST", body=body, headers=headers, timeout_s=120.0
+            )
+            attempt["wu_http_status"] = status
+            if isinstance(envelope, dict):
+                attempt["target_status"] = (
+                    envelope.get("status_code") or envelope.get("status")
+                )
+                env_hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
+                if isinstance(env_hdrs, dict):
+                    attempt["x_brd_error"] = (
+                        env_hdrs.get("x-brd-error") or env_hdrs.get("X-Brd-Error")
+                    )
+                env_body = envelope.get("body")
+                if isinstance(env_body, str):
+                    raw_text = env_body
+                    try:
+                        loaded = httpx.Response(200, text=env_body).json()
+                        parsed = loaded if isinstance(loaded, dict) else None
+                    except Exception:  # noqa: BLE001 — body not JSON
+                        parsed = None
+                # `status` for verdict purposes = the target's status.
+                tstat = attempt.get("target_status")
+                if isinstance(tstat, int):
+                    status = tstat
+            else:
+                attempt["envelope"] = "non-JSON WU response"
+        else:  # raw
+            status, parsed, raw_text = await wu_post(
+                SEARCH_API, body=body, headers=headers, timeout_s=90.0
+            )
+            attempt["wu_status"] = status
     except httpx.HTTPError as exc:
         err = f"{type(exc).__name__}: {str(exc)[:300]}"
-        print(f"DL: award POST httpx error: {err}", flush=True)
-        attempt.update(stage="api_http_error", error=err)
+        print(f"DL: award POST ({transport}) httpx error: {err}", flush=True)
+        attempt["error"] = err
         LAST_RUN_DIAG["attempts"].append(attempt)
-        LAST_RUN_DIAG["last_verdict"] = "http_error"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        return [], "http_error"
     except Exception as exc:  # noqa: BLE001
         err = f"{type(exc).__name__}: {str(exc)[:300]}"
-        print(f"DL: award POST crash: {err}", flush=True)
-        attempt.update(stage="api_crash", error=err)
+        print(f"DL: award POST ({transport}) crash: {err}", flush=True)
+        attempt["error"] = err
         LAST_RUN_DIAG["attempts"].append(attempt)
-        LAST_RUN_DIAG["last_verdict"] = "crash"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        return [], "crash"
 
-    attempt["api_status"] = status
+    attempt["effective_status"] = status
     attempt["raw_text_len"] = len(raw_text)
     attempt["raw_text_head"] = raw_text[:600]  # forensic preview
     attempt["json_parsed"] = parsed is not None
     if parsed is not None:
         attempt["json_keys"] = sorted(parsed.keys())[:30]
-        # Delta's structured error envelope: surface the code/message.
         if "shoppingError" in parsed:
             err_obj = (
                 ((parsed.get("shoppingError") or {}).get("error") or {}).get("message")
@@ -344,53 +447,43 @@ async def _scrape_real(
         attempt["itinerary_count"] = len(parsed.get("itinerary") or [])
 
     print(
-        f"DL: award POST → status={status} len={len(raw_text)} "
+        f"DL: award POST ({transport}) → status={status} len={len(raw_text)} "
         f"parsed={parsed is not None} "
         f"itineraries={attempt.get('itinerary_count', 0)} "
         f"dl_error={attempt.get('dl_error_code')}",
         flush=True,
     )
 
-    # --- Categorize the verdict ------------------------------------------
-    if status != 200:
-        attempt["stage"] = "api_non_200"
+    # --- Categorize ------------------------------------------------------
+    if status and status != 200:
+        attempt["verdict"] = "api_error"
         LAST_RUN_DIAG["attempts"].append(attempt)
-        LAST_RUN_DIAG["last_verdict"] = "api_error"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        return [], "api_error"
 
     if parsed is None:
-        attempt["stage"] = "api_non_json"
+        attempt["verdict"] = "api_non_json"
         LAST_RUN_DIAG["attempts"].append(attempt)
-        LAST_RUN_DIAG["last_verdict"] = "api_non_json"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        return [], "api_non_json"
 
     if not parsed.get("itinerary"):
-        # Either the shoppingError/100800 envelope (request shape wrong /
-        # session rejected) or a genuinely empty award result. raw_text_head
-        # + dl_error_code in diag disambiguate.
-        attempt["stage"] = "api_no_itinerary"
+        # shoppingError/100800 envelope (request shape wrong / session
+        # rejected) or a genuinely empty award result — raw_text_head +
+        # dl_error_code disambiguate.
+        attempt["verdict"] = "no_itinerary"
         LAST_RUN_DIAG["attempts"].append(attempt)
-        LAST_RUN_DIAG["last_verdict"] = "no_itinerary"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        return [], "no_itinerary"
 
     results = _parse(parsed, origin, dest, date)
-    attempt["stage"] = "parsed"
     attempt["row_count"] = len(results)
-    LAST_RUN_DIAG["attempts"].append(attempt)
-
     if not results:
-        LAST_RUN_DIAG["last_verdict"] = "no_results"
-        LAST_RUN_DIAG["row_count"] = 0
+        attempt["verdict"] = "no_results"
+        LAST_RUN_DIAG["attempts"].append(attempt)
         print("DL: parsed JSON had itineraries but _parse returned 0 rows", flush=True)
-        return []
+        return [], "no_results"
 
-    LAST_RUN_DIAG["last_verdict"] = "ok"
-    LAST_RUN_DIAG["row_count"] = len(results)
-    print(f"DL: SUCCESS ({len(results)} rows)", flush=True)
-    return results
+    attempt["verdict"] = "ok"
+    LAST_RUN_DIAG["attempts"].append(attempt)
+    return results, "ok"
 
 
 search = _scrape_real
