@@ -976,51 +976,41 @@ async def _detect_outcome(
 
 # Generic text-ish input selector for the username fallback — a username
 # field is text / email / tel (or untyped); never password / hidden /
-# checkbox. The password field is found separately and is the anchor.
+# checkbox. `:visible` on each part so a hidden pre-rendered duplicate is
+# never matched. The password field is found separately and is the anchor.
 _TEXTISH_INPUT = (
-    "input[type='text'], input[type='email'], "
-    "input[type='tel'], input:not([type])"
+    "input[type='text']:visible, input[type='email']:visible, "
+    "input[type='tel']:visible, input:not([type]):visible"
 )
 
 
 async def _frame_first_visible(frame: Any, selectors: list[str]):
-    """First VISIBLE element matching any of `selectors` within a single
-    frame. Checks every match of each selector — not just `.first` — so a
-    hidden duplicate earlier in the DOM does not mask a visible one.
-    (Gigya and similar widgets pre-render several hidden screens, each
-    carrying its own username / password inputs.) One pass, no polling."""
+    """A locator for the first VISIBLE element matching any of `selectors`
+    in this frame. Uses Playwright's `:visible` pseudo so the returned
+    locator RE-RESOLVES to a currently-visible element on every action —
+    robust against a widget re-rendering (Gigya) between find and fill,
+    and against pre-rendered hidden duplicate screens. None if no selector
+    currently has a visible match."""
     for sel in selectors:
         try:
-            loc = frame.locator(sel)
-            n = await loc.count()
+            loc = frame.locator(f"{sel}:visible")
+            if await loc.count() > 0:
+                return loc.first
         except Exception:  # noqa: BLE001
             continue
-        for i in range(min(n, 20)):
-            try:
-                cand = loc.nth(i)
-                if await cand.is_visible():
-                    return cand
-            except Exception:  # noqa: BLE001
-                continue
     return None
 
 
 async def _frame_first_textish_input(frame: Any):
-    """First visible text / email / tel / untyped input in a frame — the
-    generic username-field fallback used when no configured selector
-    matches the login form."""
+    """A locator for the first visible text / email / tel / untyped input
+    in a frame — the generic username-field fallback used when no
+    configured selector matches the login form."""
     try:
         loc = frame.locator(_TEXTISH_INPUT)
-        count = await loc.count()
+        if await loc.count() > 0:
+            return loc.first
     except Exception:  # noqa: BLE001
         return None
-    for i in range(min(count, 12)):
-        try:
-            cand = loc.nth(i)
-            if await cand.is_visible():
-                return cand
-        except Exception:  # noqa: BLE001
-            continue
     return None
 
 
@@ -1086,6 +1076,34 @@ async def _dump_frame_inputs(page: Any) -> str:
     return " ".join(parts)[:400]
 
 
+async def _robust_fill(loc: Any, value: str) -> tuple[bool, str]:
+    """Set `value` on an input. Tries Locator.fill() first; if that times
+    out — a widget input can be briefly non-actionable, or re-render under
+    us — falls back to a direct JS value-set + input/change events, which
+    bypasses Playwright's actionability wait entirely. Returns
+    (ok, detail); detail names the method used or the failure reason. The
+    value itself is never logged."""
+    try:
+        await loc.fill(value, timeout=10_000)
+        return True, "fill"
+    except Exception as exc:  # noqa: BLE001
+        fill_err = type(exc).__name__
+    try:
+        await loc.evaluate(
+            "(el, v) => { el.focus(); el.value = v;"
+            " el.dispatchEvent(new Event('input', { bubbles: true }));"
+            " el.dispatchEvent(new Event('change', { bubbles: true })); }",
+            value,
+        )
+        log.info(
+            "auth_capture: fill() failed (%s) — JS value-set fallback used",
+            fill_err,
+        )
+        return True, f"js(after {fill_err})"
+    except Exception as exc:  # noqa: BLE001
+        return False, f"fill={fill_err},js={type(exc).__name__}"
+
+
 async def _fill_and_submit_credentials(
     state: AuthSessionState, cfg: ProgramAuthConfig
 ) -> bool:
@@ -1119,30 +1137,31 @@ async def _fill_and_submit_credentials(
         state.error = f"login_form_not_found inputs={inv}"
         return False
 
-    # Fill the fields with Locator.fill() rather than click()+type():
-    # fill() focuses, clears, sets the value and fires an `input` event
-    # WITHOUT a pointer hit-test, so a floating <label> overlapping the
-    # input (as on AC's Aeroplan form) can't intercept the interaction.
-    # fill() also re-resolves the selector on each call, tolerating a
-    # re-render between finding the field and filling it.
-    #
-    # NB: only the exception *type* is recorded for the credential-fill
-    # paths — never the message — so a typed value can't leak into a log.
-    try:
-        await user_loc.fill(state.username)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("auth_capture: username fill failed (%s)", type(exc).__name__)
-        state.error = f"username_fill_failed:{type(exc).__name__}"
+    # Fill the fields. _robust_fill() tries Locator.fill() (focus + clear
+    # + set + `input` event, no pointer hit-test so an overlapping
+    # floating label is harmless) and, if that times out — a widget input
+    # can be briefly non-actionable or re-render under us — falls back to
+    # a direct JS value-set. The username / password value is never
+    # logged.
+    ok, detail = await _robust_fill(user_loc, state.username)
+    if not ok:
+        log.warning(
+            "auth_capture: username fill failed for %s (%s)",
+            state.program_id, detail,
+        )
+        state.error = f"username_fill_failed:{detail}"
         return False
 
     # Small human pause between fields.
     await asyncio.sleep(_rand_int(200, 600) / 1000.0)
 
-    try:
-        await pass_loc.fill(state.password)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("auth_capture: password fill failed (%s)", type(exc).__name__)
-        state.error = f"password_fill_failed:{type(exc).__name__}"
+    ok, detail = await _robust_fill(pass_loc, state.password)
+    if not ok:
+        log.warning(
+            "auth_capture: password fill failed for %s (%s)",
+            state.program_id, detail,
+        )
+        state.error = f"password_fill_failed:{detail}"
         return False
 
     await asyncio.sleep(_rand_int(200, 500) / 1000.0)
@@ -1187,11 +1206,9 @@ async def _fill_and_submit_mfa(
     if code_loc is None:
         return False
 
-    try:
-        await code_loc.fill(code)
-    except Exception as exc:  # noqa: BLE001
-        # Log the exception type only — never the code value.
-        log.warning("auth_capture: MFA code fill failed (%s)", type(exc).__name__)
+    ok, _detail = await _robust_fill(code_loc, code)
+    if not ok:
+        log.warning("auth_capture: MFA code fill failed for %s", state.program_id)
         return False
 
     await asyncio.sleep(_rand_int(200, 500) / 1000.0)
