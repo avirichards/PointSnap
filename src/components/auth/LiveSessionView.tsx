@@ -102,6 +102,23 @@ function cdpButton(button: number): "left" | "middle" | "right" {
   return button === 2 ? "right" : button === 1 ? "middle" : "left";
 }
 
+/**
+ * Decode a base64 string to a JPEG Blob.
+ *
+ * We decode the bytes directly with `atob` rather than round-tripping
+ * through `fetch("data:image/jpeg;base64,...")` — a ~260 KB frame makes a
+ * ~350 KB data URL, and browsers cap data-URL length (Chrome silently
+ * truncated frames to ~10 KB, producing corrupt half-decoded images). A
+ * direct byte decode has no length limit.
+ */
+function base64ToJpegBlob(b64: string): Blob {
+  const bin = atob(b64);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: "image/jpeg" });
+}
+
 export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -116,6 +133,14 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
   // thrash the canvas.
   const pendingBitmapRef = useRef<ImageBitmap | HTMLImageElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  // Actual decoded-frame dimensions. The worker pins the remote browser to
+  // `viewport` (DPR 1) so this normally equals `viewport` — but we track
+  // the real frame size as the source of truth for click-coordinate
+  // mapping, so a viewport mismatch can never misplace clicks.
+  const frameDimsRef = useRef<{ w: number; h: number }>({
+    w: viewport.w,
+    h: viewport.h,
+  });
 
   /** Queue one input event for the next flush. */
   const enqueue = useCallback((ev: InputEvent) => {
@@ -180,6 +205,16 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
       if (!bmp || !canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+      // Track the real frame size — keep the canvas's intrinsic resolution
+      // matched to the decoded frame so it never up/down-samples, and so
+      // click-coordinate mapping uses the true dimensions.
+      const fw = bmp.width;
+      const fh = bmp.height;
+      if (fw && fh) {
+        frameDimsRef.current = { w: fw, h: fh };
+        if (canvas.width !== fw) canvas.width = fw;
+        if (canvas.height !== fh) canvas.height = fh;
+      }
       ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
       if ("close" in bmp && typeof bmp.close === "function") {
         // ImageBitmap — free it after drawing.
@@ -190,9 +225,7 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
 
     const onFrame = async (b64: string) => {
       try {
-        const blob = await (
-          await fetch(`data:image/jpeg;base64,${b64}`)
-        ).blob();
+        const blob = base64ToJpegBlob(b64);
         const bitmap =
           "createImageBitmap" in window
             ? await createImageBitmap(blob)
@@ -259,22 +292,29 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
   }, [streamUrl]);
 
   // ---- Coordinate mapping ----------------------------------------------
-  /** Map a DOM pointer event to remote-browser pixel coordinates. */
+  /** Map a DOM pointer event to remote-browser CSS-pixel coordinates.
+   *
+   * The worker pins the remote browser to DPR 1, so the decoded frame's
+   * pixels equal the remote browser's CSS pixels — which is exactly the
+   * coordinate space CDP `Input.dispatchMouseEvent` expects. We scale from
+   * the on-screen canvas rect into that frame space using the *actual*
+   * decoded frame dimensions (frameDimsRef), not the assumed viewport.
+   */
   const toRemoteCoords = useCallback(
     (e: { clientX: number; clientY: number }): { x: number; y: number } => {
       const canvas = canvasRef.current;
       if (!canvas) return { x: 0, y: 0 };
       const rect = canvas.getBoundingClientRect();
-      // Displayed size differs from the canvas's intrinsic (viewport) size;
-      // scale the click back into remote-browser space.
-      const sx = viewport.w / rect.width;
-      const sy = viewport.h / rect.height;
+      if (rect.width === 0 || rect.height === 0) return { x: 0, y: 0 };
+      const { w, h } = frameDimsRef.current;
+      const sx = w / rect.width;
+      const sy = h / rect.height;
       return {
-        x: Math.max(0, Math.min(viewport.w, (e.clientX - rect.left) * sx)),
-        y: Math.max(0, Math.min(viewport.h, (e.clientY - rect.top) * sy)),
+        x: Math.max(0, Math.min(w, (e.clientX - rect.left) * sx)),
+        y: Math.max(0, Math.min(h, (e.clientY - rect.top) * sy)),
       };
     },
-    [viewport.w, viewport.h],
+    [],
   );
 
   // ---- Mouse handlers ---------------------------------------------------
@@ -399,9 +439,10 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
       ref={wrapRef}
       className="relative flex flex-1 min-h-0 items-center justify-center bg-muted/30"
     >
-      {/* The remote browser, painted onto a canvas. Intrinsic size is the
-          remote viewport; CSS scales it down to fit while preserving the
-          aspect ratio (object-fit-style letterboxing via max-w/max-h). */}
+      {/* The remote browser, painted onto a canvas. The canvas's intrinsic
+          width/height are kept matched to each decoded frame (see `paint`),
+          so its aspect ratio follows the real remote browser; `max-w/h-full`
+          scales it down to fit the modal without distortion. */}
       <canvas
         ref={canvasRef}
         width={viewport.w}
@@ -429,7 +470,7 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
             : "ring-1 ring-border",
           connState !== "live" && "opacity-0",
         )}
-        style={{ aspectRatio: `${viewport.w} / ${viewport.h}`, cursor: "default" }}
+        style={{ cursor: "default" }}
       />
 
       {/* Connecting overlay — shown until the first frame lands. */}

@@ -424,7 +424,19 @@ async def _bd_inspector_url(page: Any) -> str | None:
 
 async def _get_stream_cdp(state: AuthSessionState) -> Any:
     """Lazily create (and cache) the CDP session used by the screenshot
-    stream + input replay. Returns None when the page is gone."""
+    stream + input replay. Returns None when the page is gone.
+
+    On first creation we pin the page's device metrics via
+    `Emulation.setDeviceMetricsOverride` to exactly STREAM_VIEWPORT_W ×
+    STREAM_VIEWPORT_H at `deviceScaleFactor: 1`. This is load-bearing:
+
+      - Bright Data's pre-warmed context renders at its own (large, often
+        HiDPI) viewport, so an un-pinned `Page.captureScreenshot` produced
+        ~3841×1948 frames — not the 1366×768 we assumed.
+      - With DPR 1 + a fixed size, screenshot pixels == CSS pixels, so the
+        cockpit's click coordinates map 1:1 onto CDP `Input.*` (which uses
+        CSS pixels). Without this, every click landed at the wrong spot.
+    """
     if state.cdp is not None:
         return state.cdp
     page = state.page
@@ -435,6 +447,23 @@ async def _get_stream_cdp(state: AuthSessionState) -> Any:
     except Exception as exc:  # noqa: BLE001
         log.warning("auth_capture: stream CDP session create failed: %s", exc)
         return None
+    # Pin a deterministic, DPR-1 viewport so capture == CSS == input space.
+    try:
+        await state.cdp.send(
+            "Emulation.setDeviceMetricsOverride",
+            {
+                "width": STREAM_VIEWPORT_W,
+                "height": STREAM_VIEWPORT_H,
+                "deviceScaleFactor": 1,
+                "mobile": False,
+            },
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning(
+            "auth_capture: setDeviceMetricsOverride failed (frames may be "
+            "off-size): %s",
+            exc,
+        )
     return state.cdp
 
 
