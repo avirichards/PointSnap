@@ -268,6 +268,57 @@ async def mark_used(session_id: str, ok: bool) -> None:
         log.warning("auth_session.mark_used: DB error: %s", exc)
 
 
+async def list_sessions(user_id: str) -> list[dict]:
+    """Return every saved auth session for a user — one row per program.
+
+    Used by the cockpit's `/airlines` page (via the worker `/auth/connected`
+    endpoint) to render each program's connection status. We never decrypt
+    here: the cockpit only needs program_id + expiry + last-use metadata,
+    all of which live in non-secret columns. Expired rows are still
+    returned so the cockpit can render an "expired — reconnect" badge.
+
+    Shape (per row):
+        {
+          "program_id":     "AC_AEROPLAN",
+          "expires_at":     "2026-06-19T...",   # ISO-8601
+          "last_used_at":   "2026-05-20T..." | None,
+          "last_search_ok": True | False | None,
+        }
+
+    Returns [] when DATABASE_URL is unset, the table is missing, or the
+    user has no saved sessions.
+    """
+    dsn = _database_url()
+    if not dsn:
+        log.warning("auth_session.list_sessions: DATABASE_URL unset")
+        return []
+    try:
+        async with await psycopg.AsyncConnection.connect(dsn) as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    """
+                    SELECT program_id, expires_at, last_used_at, last_search_ok
+                      FROM public.program_auth_sessions
+                     WHERE user_id = %s::uuid
+                     ORDER BY program_id
+                    """,
+                    (user_id,),
+                )
+                rows = await cur.fetchall()
+                return [
+                    {
+                        "program_id": program_id,
+                        "expires_at": expires_at.isoformat() if expires_at else None,
+                        "last_used_at": last_used_at.isoformat() if last_used_at else None,
+                        "last_search_ok": last_search_ok,
+                    }
+                    for (program_id, expires_at, last_used_at, last_search_ok) in rows
+                ]
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_session.list_sessions: DB error: %s", exc)
+        return []
+
+
 async def delete_session(user_id: str, program_id: str) -> bool:
     """Forget a session (user clicked Disconnect in the cockpit).
 

@@ -43,7 +43,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
-from common.auth_session import cookies_meta, save_session
+from common.auth_session import cookies_meta, list_sessions, save_session
 
 log = logging.getLogger(__name__)
 
@@ -816,3 +816,28 @@ async def auth_finalize(
             "force_capture": force_result,
         }
     )
+
+
+@router.get("/connected")
+async def auth_connected(
+    user_id: str = Query(
+        ...,
+        description=(
+            "Authenticated user UUID from the cockpit SSR session. The "
+            "cockpit's /api/auth/airline/connected proxy forwards this."
+        ),
+    ),
+) -> JSONResponse:
+    """List the user's saved auth sessions — one row per connected program.
+
+    The cockpit `/airlines` page renders each program's status (connected /
+    expiring / expired) from this. We never decrypt cookies here; only
+    non-secret metadata (program_id, expiry, last-use) leaves the DB.
+    """
+    try:
+        uuid.UUID(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="user_id must be a valid UUID")
+
+    rows = await list_sessions(user_id)
+    return JSONResponse({"rows": rows})
