@@ -137,7 +137,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | AS_MILEAGEPLAN | ✅ live | httpx + IPRoyal | SvelteKit SSR, light protection |
 | AA_AADVANTAGE | 🚧 stuck | Camoufox (debugging) | Akamai BMP wall; see "AA: what's been tried" |
 | AC_AEROPLAN | ❌ broken | BD Browser API (migrated, untested) | Parsers likely drifted |
-| DL_SKYMILES | ❌ broken | BD Browser API (migrated, untested) | Parsers likely drifted |
+| DL_SKYMILES | ❌ broken | WU 2-step (Akamai-walled on POST) | Homepage mint OK; `POST /shop/ow/search` → Akamai 444 for both WU formats. Award POST needs validated `_abck`. See Session 12. |
 | UA_MP | ❌ broken | BD Browser API (migrated, untested) | Imperva — needs investigation |
 | BA_AVIOS | ❌ broken | BD Browser API (migrated, untested) | Akamai + queue interstitial |
 | AF_FLYINGBLUE | ❌ broken | BD Browser API (migrated, untested) | Parsers likely drifted |
@@ -1015,3 +1015,110 @@ Each writes to `/home/user/PointSnap/tasks/scraper-research/agent-{N}-{topic}.md
 - MAX_ATTEMPTS: 1 → 3
 
 Diff: -245/+147 lines. All form-fill removed (was returning challenge_unresolved from post-form Akamai wall).
+
+---
+
+## Session 12 — 2026-05-20 — DL SkyMiles WU 2-step (proof airline) — CONCLUSION: Akamai-walled on POST
+
+Goal: prove the Bright Data **Web Unlocker two-step** transport for DL SkyMiles
+award search. DL was the designated proof airline — if WU 2-step worked it would
+roll out to 8 sibling plugins. **It does not work for DL.** The award POST is
+Akamai-walled. Forensic detail below so the next session doesn't re-walk this.
+
+### What was done
+- Rewrote `python-workers/dl_skymiles/search.py` from the (broken) Patchright/BD
+  Browser API transport to the WU 2-step: `wu_mint_cookies("https://www.delta.com/")`
+  → cookie jar → WU POST `/shop/ow/search` with the jar forwarded as a `Cookie:`
+  header. Plugin tries both WU transports (`format=json` then `format=raw`),
+  records each as a separate `attempts[]` entry, returns `[]` defensively.
+- Added `/diag/dl_last` to `serve.py` (mirrors `/diag/aa_wu_last`) — exposes
+  `dl_skymiles.search.LAST_RUN_DIAG`. Only serve.py change made.
+- Commits on `claude/review-scraper-strategy-CXHmM`: `b704888` (initial WU 2-step),
+  `f0e699f` (add format=json transport), `2ea8caa` (record finding).
+
+### DL award endpoint (confirmed current, 2026-05-20)
+- **`POST https://www.delta.com/shop/ow/search`** is the award-search endpoint.
+  AWS API Gateway / Lambda backed — error envelopes carry `x-amzn-requestid`,
+  `x-amz-apigw-id`, `"shopAWSError":"Y"`.
+- `/flight-search/book-a-flight` is the entry page — an Angular SPA
+  (`<base href="/flightsearch">`, `data-critters-container`).
+- `/shop/ow/flexdatesearch` is a sibling POST-body endpoint (flex-date variant).
+- `/prefill/retrieveSearch?searchType=RecentSearchesJSON` → `[]` (saved searches;
+  works, not useful for a cold search).
+- `/api/graphql` GET → 358 KB SPA HTML shell, NOT a real GraphQL data endpoint.
+
+### Probe results (all via `/diag/wu_probe`, which uses WU `format=json`)
+| Request | Result |
+|---|---|
+| `GET https://www.delta.com/` | 200, 8.5 KB, ~10-11 Set-Cookie (the `bm_*` set + `AKA_A2`,`Homepage`,`location`,`akaalb_www_alb_homepage`; `_abck` inconsistent — present `~-1~` once, absent next run) |
+| `GET /shop/ow/search` (any param shape — tried 4) | 200, `{"shoppingError":{"error":{"message":{"code":"100800","message":"...there was a problem processing your request..."}}},"shopAWSError":"Y"}` (225 bytes). `100800` = no valid request payload. WU clears Akamai for GET. |
+| `POST /shop/ow/search` no body | **444**, `<TITLE>Access Denied</TITLE>` Akamai edge reject (189 bytes, has `Reference#`) |
+| `GET /shop/ow/flexdatesearch` | same `100800` JSON |
+| `GET /api/graphql` | 200, 358 KB SPA HTML shell (not real GraphQL) |
+| `POST https://httpbin.org/post` via WU | 200, echoes request — **proves WU POST capability is fine** |
+
+### Two deployed runs read from `/diag/dl_last` (the decisive evidence)
+Run 1 (`format=raw` only, commit b704888): mint → 11 cookies (incl `_abck` `~-1~`);
+`POST /shop/ow/search` `format=raw` → WU 200 but body = Akamai "Access Denied"
+HTML (189 b). Verdict `api_non_json`.
+
+Run 2 (both transports, commit f0e699f): mint → 10 cookies (NO `_abck` this time);
+- `format=json` POST → `wu_http_status:200`, **`target_status:444`**, body Akamai
+  "Access Denied" HTML. Verdict `api_error`.
+- `format=raw` POST → WU 200, body Akamai "Access Denied" HTML. Verdict `api_non_json`.
+
+### CONCLUSION (the answer for the 8-airline rollout)
+**The WU homepage cookie jar does NOT authenticate DL's award API**, and more
+fundamentally **the award call can't even be made** — Delta's Akamai policy
+**rejects POST to `/shop/ow/*` at the edge (444 Access Denied)** while permitting
+GET. This is independent of:
+  - WU format (`json` and `raw` both 444)
+  - request body (no body / full JSON body both 444)
+  - the minted cookie jar (forwarded or not — still 444)
+
+`httpbin POST` via WU works, so this is **Delta's Akamai, not a WU limitation**.
+WU's unlocker does not solve Akamai for the Delta POST — it passes it through and
+Akamai's edge kills it. The endpoint needs a **sensor.js-validated `_abck`**
+(advanced to `~0~`) issued to the same client/IP that sends the POST. A single
+stateless WU homepage GET cannot produce that — WU's mint didn't even reliably
+return an unvalidated `_abck`.
+
+**Rollout implication:** the WU 2-step as designed (homepage GET → cookies →
+API POST) is **insufficient for any airline whose award endpoint is a POST behind
+Akamai BMP** — which per Agent 3 is the 14-airline "Akamai single-tier" cluster
+(AA, AC, CX, DL, NH, VS, EK, ET, AY, QF, SQ, voegol, VA, AV). It only stands a
+chance where the award endpoint accepts GET, or the carrier's bot policy doesn't
+edge-reject POSTs. **Do NOT roll WU 2-step to the 8 siblings on the DL proof —
+DL disproved it.** (The AA WU variant `AA_AADVANTAGE_WU` got app-level error 309,
+a different failure — AA's API at least accepts the POST. DL's doesn't even do
+that.)
+
+### Untested next angles for DL (not built this session)
+1. **Render+POST in one WU session.** If BD exposes a WU mode that runs the page
+   render and the award POST in the SAME unlock session, sensor.js telemetry
+   could validate `_abck` before the POST. Needs a BD product/param the current
+   `bd_wu.py` helper doesn't expose — check BD WU docs for a browser/session mode.
+2. **In-page POST via Camoufox/Patchright** (the AA deep-link XHR-capture pattern,
+   NOT the WU 2-step): load the `flightsearch` SPA, let it fire the award POST
+   from inside the page so `_abck` is validated + DataDome/Akamai intent ML sees
+   real navigation, then `page.on("response")` captures the JSON. This is the
+   transport the OLD dl plugin attempted; it failed via BD Browser API but may
+   work via Camoufox + BD Residential (the AA Variant-A path).
+3. **GET-based award data** — none found. Every `/shop/ow/*` GET returns `100800`.
+
+### Useful testing commands (DL)
+```bash
+# Probe any delta.com URL through WU (format=json) — status, headers, body head
+curl -s 'https://pointsnap-workers.fly.dev/diag/wu_probe?url=<URL-encoded>&method=GET'
+
+# Run the DL plugin + read its forensic trace
+curl -s 'https://pointsnap-workers.fly.dev/search?program=DL_SKYMILES&origin=JFK&dest=LAX&date=2026-08-15'
+curl -s 'https://pointsnap-workers.fly.dev/diag/dl_last' | python3 -m json.tool
+```
+
+### Commit log (Session 12)
+| SHA | Message |
+|---|---|
+| `b704888` | feat(dl): WU two-step transport for SkyMiles award search |
+| `f0e699f` | feat(dl): try WU format=json transport for award POST |
+| `2ea8caa` | docs(dl): record confirmed finding — WU 2-step is Akamai-walled for DL |
