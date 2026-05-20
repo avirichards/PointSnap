@@ -356,3 +356,20 @@ So there is no single silver bullet. Each Akamai airline's award endpoint either
 DL plugin rewritten to WU 2-step + documented as Akamai-walled (returns [] gracefully). AA WU agent still running — its result (does AA's softer 309 failure yield to a minted session?) shapes the rollout.
 
 **Spent**: ~$0.10 BD (~10 WU requests + probes).
+
+## 2026-05-20 19:20 — "Both in parallel": 5 agents dispatched
+**Status**: 🚀 (5 streams running)
+User chose to run the WU per-airline grind AND T5' auth-capture simultaneously.
+
+Agents in flight:
+- **AA** (`a2f51830`) — BD Browser API mint hedge for AA_AADVANTAGE_WU (mints spa_session_id via a real browser, sidesteps the WU zone Manual-Expect block)
+- **WU W1** (`a38a6875`) — DL, CX, NH WU transport
+- **WU W2** (`ae769d0c`) — UA, BA, AC WU transport
+- **WU W3** (`a2edc65c`) — AF, LH, TK WU transport
+- **T5'** (`ac4be0e7`) — resolve live-view URL, complete auth-capture end-to-end, AC proof
+
+Coordination: each agent owns disjoint files (its own `python-workers/<plugin>/` dirs, or the `auth/`+cockpit subsystem). WU-grind agents investigate via `/diag/wu_probe` (no deploy) and commit code without deploy-testing — parent does one consolidated deploy + test.
+
+Per-airline classification each WU agent produces: Pattern A (WU 2-step, API accepts POST), Pattern B (WU in-page render, API edge-blocks POST), or auth_required (login-gated → routes to T5').
+
+**Spent so far**: ~$0.12 BD. 3 plugins live (VS/AS/B6), 60-day cap lifted, Phase 2.5 infra built.
