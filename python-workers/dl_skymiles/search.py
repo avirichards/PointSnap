@@ -3,40 +3,60 @@
 Phase 1 transport rewrite (2026-05-20). The prior transport (Patchright /
 Camoufox + BD Browser API) is Akamai-flagged for delta.com, so the search
 silently returned `[]`. This module replaces it with the **WU two-step**
-pattern proven for AA:
+pattern:
 
   Step 1 — mint a session:
       `wu_mint_cookies("https://www.delta.com/")` GETs the homepage via
       Bright Data Web Unlocker. WU renders the page (solving Akamai BMP),
       and the returned Set-Cookie jar carries Delta's Akamai cookies
-      (`_abck`, `bm_ss`, `bm_mi`, `bm_s`, `bm_so`, `bm_sz`) plus app
-      cookies (`AKA_A2`, `Homepage`, `location`, `akaalb_www_alb_homepage`).
+      (`bm_ss`, `bm_mi`, `bm_s`, `bm_so`, `bm_sz`, sometimes `_abck`) plus
+      app cookies (`AKA_A2`, `Homepage`, `location`, `akaalb_www_alb_*`).
 
   Step 2 — call the award API:
       WU POSTs `https://www.delta.com/shop/ow/search` with that cookie jar
       forwarded as a `Cookie:` header + browser-shaped request headers.
       The endpoint is an AWS API Gateway / Lambda (`x-amzn-requestid`,
-      `shopAWSError` in error envelopes) — it returns award (SkyMiles)
-      pricing JSON when handed a valid body.
+      `shopAWSError` in error envelopes).
 
-Probe findings (2026-05-20):
-  * `GET  /shop/ow/search` (any params, via `/diag/wu_probe` = format=json)
-    → `{"shoppingError":{...100800...},"shopAWSError":"Y"}` — WU clears
-    Akamai for this path; `100800` means "no valid request payload" (it's
-    a POST-body endpoint, not GET).
-  * `POST /shop/ow/search` with NO body → Akamai 444 "Access Denied".
-  * Homepage mint returns 11 cookies including `_abck` (`~-1~` unvalidated)
-    + the `bm_*` set + `AKA_A2`, `Homepage`, `location`.
-  * First deployed run: `format=raw` POST to `/shop/ow/search` with the
-    minted jar → 200 but body is Akamai "Access Denied" HTML. `format=raw`
-    is a proxy pass-through; it does not run BD's unlocker engine, so
-    Akamai blocks the POST. Hence step 2 tries `format=json` (full
-    unlocker) first — that is the transport that unlocked the GET probe.
+=============================================================================
+STATUS (2026-05-20): the WU 2-step DOES NOT currently work for DL. The award
+POST is Akamai-walled. Findings, verified via `/diag/wu_probe` + two deployed
+runs read from `/diag/dl_last`:
 
-So the award call is a POST with a JSON body + the minted cookies, sent
-through the WU `format=json` transport. The `100800`-vs-Akamai-vs-real
-distinction is captured verbatim in `LAST_RUN_DIAG` so the request shape
-can be iterated from `/diag/dl_last` without grepping Fly logs.
+  * Homepage mint succeeds — WU returns 10-11 cookies (the `bm_*` set +
+    `AKA_A2`/`Homepage`/`location`). `_abck` is inconsistent: one run
+    returned it as `~-1~` (unvalidated), the next omitted it entirely.
+  * `GET /shop/ow/search` (any params) → `{"shoppingError":{...100800...},
+    "shopAWSError":"Y"}` — WU clears Akamai for GET; `100800` = "no valid
+    request payload" (it is a POST-body endpoint, GET can't carry one).
+  * `POST /shop/ow/search` → **Akamai 444 "Access Denied"** (edge reject
+    with a `Reference#`). Confirmed identical for:
+      - no body / with the full JSON body
+      - WU `format=raw` AND `format=json`
+      - with / without the minted cookie jar forwarded
+  * `POST https://httpbin.org/post` via WU → 200 (echoes request) — proves
+    WU's POST capability is fine; the 444 is Delta's Akamai, not WU.
+
+CONCLUSION: Delta's Akamai policy rejects POST to `/shop/ow/*` award
+endpoints at the edge, while permitting GET. A homepage-render cookie jar
+does not satisfy it (and WU's mint doesn't reliably yield even an
+unvalidated `_abck`). The award POST needs a sensor.js-VALIDATED browser
+session (`_abck` advanced to `~0~`) on the SAME IP that issues the POST —
+which a single stateless WU homepage GET cannot produce.
+
+Next angles (NOT yet built — for the next session):
+  * WU "unlocker" with a render+POST in ONE session (if BD exposes it) so
+    sensor.js telemetry validates `_abck` before the POST fires.
+  * Camoufox/Patchright that loads the booking SPA and lets it fire the
+    award POST from inside the page (intent ML + validated `_abck`), à la
+    the AA deep-link XHR-capture pattern — i.e. NOT the WU 2-step.
+  * A Delta endpoint that accepts GET for award data (none found so far;
+    `/api/graphql` GET returns the SPA HTML shell, not data).
+
+The plugin is left wired so `/diag/dl_last` captures a full forensic trace
+on every run. It returns `[]` (verdict `api_error`/`api_non_json`) cleanly
+until the transport problem above is solved.
+=============================================================================
 
 Defensive contract: `search()` never raises — every failure path returns
 `[]` and records a verdict in `LAST_RUN_DIAG`.
@@ -408,9 +428,13 @@ async def _call_award_api(
                     except Exception:  # noqa: BLE001 — body not JSON
                         parsed = None
                 # `status` for verdict purposes = the target's status.
+                # WU returns it as an int, but coerce a stringified status
+                # defensively so an Akamai 444 isn't silently treated as 200.
                 tstat = attempt.get("target_status")
                 if isinstance(tstat, int):
                     status = tstat
+                elif isinstance(tstat, str) and tstat.isdigit():
+                    status = int(tstat)
             else:
                 attempt["envelope"] = "non-JSON WU response"
         else:  # raw
