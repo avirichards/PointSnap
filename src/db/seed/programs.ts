@@ -16,4 +16,5 @@ export const PROGRAMS = [
   { id: "AV_LIFEMILES", sponsorAirlineIata: "AV", name: "Avianca LifeMiles", pricingModel: "chart", fuelSurchargePassthrough: 0, expiryMonths: 12, notes: "Star Alliance partner sweet spot; no YQ ever." },
   { id: "TK_MILES_SMILES", sponsorAirlineIata: "TK", name: "Turkish Miles&Smiles", pricingModel: "dynamic", fuelSurchargePassthrough: 1, expiryMonths: 36, notes: "Recently moved to per-segment dynamic. Phantom-availability prone." },
   { id: "VS_FLYING_CLUB", sponsorAirlineIata: "VS", name: "Virgin Atlantic Flying Club", pricingModel: "chart", fuelSurchargePassthrough: 2, expiryMonths: 18, notes: "Delta and ANA partner sweet spots. YQ on VS-operated and AF/KL." },
+  { id: "B6_TRUEBLUE", sponsorAirlineIata: "B6", name: "JetBlue TrueBlue", pricingModel: "dynamic", fuelSurchargePassthrough: 0, expiryMonths: null, notes: "Revenue-based; points price tracks cash fare. No YQ, points don't expire. JetBlue-operated only." },
 ] as const;

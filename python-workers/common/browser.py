@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -48,6 +49,40 @@ def _proxy_kwargs(country: str | None = None, session: str | None = None) -> dic
             "username": user,
             "password": pwd_suffixed,
         }
+    }
+
+
+def _brightdata_residential_proxy(
+    country: str | None = None,
+    session: str | None = None,
+) -> dict | None:
+    """Parse BRIGHTDATA_RESIDENTIAL_URL env var into Camoufox/Playwright proxy kwargs.
+
+    Expected env format:
+      http://brd-customer-hl_XXX-zone-<zone>:PASSWORD@brd.superproxy.io:33335
+
+    BD encodes per-request modifiers as username segments:
+      -country-XX  → routes through that country's residential pool
+      -session-YY  → sticky IP for ~10min idle (cookie continuity across retries)
+
+    Returns None when BRIGHTDATA_RESIDENTIAL_URL is unset (callers should
+    raise rather than silently fall through).
+    """
+    from urllib.parse import urlparse
+
+    url = os.environ.get("BRIGHTDATA_RESIDENTIAL_URL")
+    if not url:
+        return None
+    parsed = urlparse(url)
+    username = parsed.username or ""
+    if country and "-country-" not in username:
+        username = f"{username}-country-{country.lower()}"
+    if session and "-session-" not in username:
+        username = f"{username}-session-{session}"
+    return {
+        "server": f"http://{parsed.hostname}:{parsed.port}",
+        "username": username,
+        "password": parsed.password or "",
     }
 
 
@@ -99,6 +134,11 @@ async def browser_page(
     use_scraperapi: bool = False,
     scraperapi_render: bool = True,
     scraperapi_premium: bool = False,
+    use_brightdata: bool = False,
+    brightdata_session: str | None = None,
+    use_brightdata_residential: bool = False,
+    brightdata_country: str | None = None,
+    use_camoufox: bool = False,
 ) -> AsyncIterator:
     """Yield a Patchright `page` ready to navigate. Closes browser on exit.
 
@@ -113,6 +153,74 @@ async def browser_page(
     on launch_persistent_context directly, since there's no separate
     context construction step).
     """
+    # Camoufox path — Firefox-based stealth with fingerprints injected at
+    # the C++ level before any JS can observe them. Defeats Akamai BMP's
+    # sensor.js where Patchright fails (proven by Sekinal/aa_contest).
+    # Uses headless="virtual" which spawns Xvfb internally so the session
+    # looks headful to Akamai but doesn't need a real display.
+    if use_camoufox:
+        from camoufox.async_api import AsyncCamoufox
+
+        camoufox_kwargs: dict = {
+            "headless": "virtual",
+            "humanize": True,
+            "locale": "en-US",
+            "window": (1366, 768),
+            "block_webrtc": True,
+            "geoip": False,  # only enable when using a residential proxy
+        }
+        # Proxy selection (in priority order): BD Residential > IPRoyal > none.
+        # BD Residential is the 2026-canonical Akamai/Imperva bypass when paired
+        # with Camoufox (per Sekinal/aa_contest + asadfix). IPRoyal is the
+        # cheaper fallback for sites that don't have BMP-grade defenses.
+        if use_brightdata_residential:
+            bd_proxy = _brightdata_residential_proxy(
+                country=brightdata_country or proxy_country,
+                session=brightdata_session or proxy_session,
+            )
+            if not bd_proxy:
+                raise RuntimeError(
+                    "use_brightdata_residential=True but BRIGHTDATA_RESIDENTIAL_URL not set"
+                )
+            camoufox_kwargs["proxy"] = bd_proxy
+            camoufox_kwargs["geoip"] = True
+        elif use_proxy:
+            ip_proxy = _proxy_kwargs(country=proxy_country, session=proxy_session).get("proxy")
+            if ip_proxy:
+                camoufox_kwargs["proxy"] = ip_proxy
+                camoufox_kwargs["geoip"] = True  # auto-derive TZ/lat/long from exit IP
+
+        async with AsyncCamoufox(**camoufox_kwargs) as browser:
+            # Use explicit new_context so we can pass ignore_https_errors when
+            # BD Residential MITMs HTTPS (BD intercepts TLS and presents its
+            # own cert; Firefox throws SEC_ERROR_UNKNOWN_ISSUER without this).
+            context_kwargs: dict = {}
+            if use_brightdata_residential:
+                context_kwargs["ignore_https_errors"] = True
+            context = await browser.new_context(**context_kwargs)
+            page = await context.new_page()
+            page.set_default_timeout(timeout_ms)
+            # NOTE: deliberately NOT blocking stylesheets/fonts in the Camoufox
+            # branch — Firefox treats `display:none` differently than Chromium
+            # when CSS isn't loaded, and elements can fail `offsetParent !==
+            # null` visibility checks even though they're in the DOM. We pay
+            # a small bandwidth cost in exchange for the page actually
+            # rendering. Only block heavy media to keep load times sane.
+            async def _block_heavy_camou(route):
+                if route.request.resource_type in ("image", "media"):
+                    await route.abort()
+                else:
+                    await route.continue_()
+            await page.route("**/*", _block_heavy_camou)
+            try:
+                yield page
+            finally:
+                try:
+                    await context.close()
+                except Exception:  # noqa: BLE001
+                    pass
+        return
+
     # Lazy import — Patchright is heavy. Avoid loading at module import
     # time so the worker boots even if Chromium isn't installed yet.
     from patchright.async_api import async_playwright
@@ -139,6 +247,60 @@ async def browser_page(
         launch_args.append("--disable-http2")
 
     async with async_playwright() as pw:
+        if use_brightdata:
+            # Bright Data Browser API: hosted Chromium reached over CDP.
+            # BD handles the proxy + Akamai/Imperva/DataDome bypass on their
+            # side. Bandwidth-billed (~$8/GB) so we block heavy resources by
+            # default to keep monthly cost in the ~$5-15 range at personal
+            # search volume. Leave the UA at whatever BD's curated Chromium
+            # reports — overriding it would defeat their stealth tuning.
+            wss_url = os.environ.get("BRIGHTDATA_WSS_URL")
+            if not wss_url:
+                raise RuntimeError(
+                    "BRIGHTDATA_WSS_URL env var not configured"
+                )
+            # Sticky-session support: inject `-session-<id>` into the
+            # `brd-customer-X-zone-Y` username so BD pins the same exit IP
+            # for the session's lifetime (~10min idle). Lets callers (e.g.,
+            # the AA plugin) reuse a known-good IP across retries.
+            if brightdata_session:
+                wss_url = re.sub(
+                    r"(brd-customer-[^:@/]+):",
+                    rf"\1-session-{brightdata_session}:",
+                    wss_url,
+                    count=1,
+                )
+            browser = await pw.chromium.connect_over_cdp(
+                wss_url, timeout=timeout_ms
+            )
+            ctx = await browser.new_context(
+                viewport={"width": 1366, "height": 768},
+                locale="en-US",
+            )
+            page = await ctx.new_page()
+            page.set_default_timeout(timeout_ms)
+
+            async def _block_heavy_brd(route):
+                if route.request.resource_type in (
+                    "image", "stylesheet", "font", "media", "manifest"
+                ):
+                    await route.abort()
+                else:
+                    await route.continue_()
+            await page.route("**/*", _block_heavy_brd)
+
+            try:
+                yield page
+            finally:
+                try:
+                    await ctx.close()
+                except Exception:  # noqa: BLE001
+                    pass
+                try:
+                    await browser.close()
+                except Exception:  # noqa: BLE001
+                    pass
+            return
         if user_data_dir:
             # Persistent-context path: proxy goes directly on the call.
             ctx = await pw.chromium.launch_persistent_context(

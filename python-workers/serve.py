@@ -29,10 +29,12 @@ from common.types import NormalizedResult, SearchQuery
 # implementations land in each module's `_scrape_real()` function across
 # Sessions 5-10.
 from aa_aadvantage import search as aa_search
+from aa_aadvantage import search_wu as aa_search_wu
 from ac_aeroplan import search as ac_search
 from af_flyingblue import search as af_search
 from as_mileageplan import search as as_search
 from av_lifemiles import search as av_search
+from b6_jetblue import search as b6_search
 from ba_avios import search as ba_search
 from cx_cathay import search as cx_search
 from dl_skymiles import search as dl_search
@@ -47,6 +49,11 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(title="pointsnap-workers", version="0.1.0")
 
+# Phase 2.5 user-initiated auth-capture routes (T5' tier).
+# /auth/start, /auth/status, /auth/finalize — see auth/capture.py.
+from auth.capture import router as auth_router
+app.include_router(auth_router, prefix="/auth")
+
 
 PluginCallable = Callable[..., Coroutine[None, None, list[NormalizedResult]]]
 PLUGINS: dict[str, PluginCallable] = {
@@ -59,10 +66,12 @@ PLUGINS: dict[str, PluginCallable] = {
     "TK_MILES_SMILES": tk_search.search,
     "NH_ANA": nh_search.search,
     "AA_AADVANTAGE": aa_search.search,
+    "AA_AADVANTAGE_WU": aa_search_wu.search,
     "DL_SKYMILES": dl_search.search,
     "CX_CATHAY": cx_search.search,
     "AC_AEROPLAN": ac_search.search,
     "LH_MILES_MORE": lh_search.search,
+    "B6_TRUEBLUE": b6_search.search,
 }
 
 
@@ -122,9 +131,108 @@ def _serialize(query: SearchQuery, r: NormalizedResult) -> dict:
     }
 
 
+@app.get("/diag/wu_probe")
+async def diag_wu_probe(
+    url: str = Query(..., description="Target URL to fetch via BD Web Unlocker"),
+    method: str = Query("GET", description="GET or POST"),
+) -> JSONResponse:
+    """Probe BD Web Unlocker with format=json to inspect the response
+    envelope — status, header keys, Set-Cookie, body head. Used to design
+    the AA two-step flow (homepage GET to mint a session → API POST)."""
+    try:
+        from common.bd_wu import wu_request_json
+        status, envelope = await wu_request_json(url, method=method)
+        summary: dict = {"wu_http_status": status}
+        if isinstance(envelope, dict):
+            summary["envelope_keys"] = list(envelope.keys())
+            summary["target_status"] = (
+                envelope.get("status_code") or envelope.get("status")
+                or envelope.get("status_code".upper())
+            )
+            hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
+            if isinstance(hdrs, dict):
+                summary["target_header_keys"] = sorted(hdrs.keys())
+                # Set-Cookie is the prize — try several casings/shapes
+                summary["set_cookie"] = (
+                    hdrs.get("set-cookie") or hdrs.get("Set-Cookie")
+                )
+                # BD's own error signalling — tells us WHY a fetch failed
+                summary["x_brd_error"] = (
+                    hdrs.get("x-brd-error") or hdrs.get("X-Brd-Error")
+                )
+                summary["x_brd_error_code"] = (
+                    hdrs.get("x-brd-error-code") or hdrs.get("X-Brd-Error-Code")
+                )
+            body = envelope.get("body")
+            if isinstance(body, str):
+                summary["body_len"] = len(body)
+                summary["body_head"] = body[:800]
+                # Look for AA session cookie names embedded in the body
+                for marker in ("XSRF-TOKEN", "spa_session_id", "_abck", "ak_bmsc"):
+                    summary[f"body_has_{marker}"] = marker in body
+        else:
+            summary["envelope"] = "non-JSON response (see WU error)"
+        return JSONResponse(summary)
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:400], "tb": traceback.format_exc()[-600:]},
+            status_code=500,
+        )
+
+
 @app.get("/health")
 async def health() -> dict[str, str | bool]:
     return {"status": "ok", "dbSkipped": writeback_skipped()}
+
+
+@app.get("/programs/meta")
+async def programs_meta() -> JSONResponse:
+    """Per-program metadata for the cockpit: max booking window in days,
+    plus the registered program list. Cockpit calendar reads this to
+    disable out-of-window dates per program."""
+    from common.program_windows import PROGRAM_MAX_DAYS_OUT, DEFAULT_MAX_DAYS_OUT
+    return JSONResponse({
+        "programs": [
+            {"programId": pid, "maxDaysOut": PROGRAM_MAX_DAYS_OUT.get(pid, DEFAULT_MAX_DAYS_OUT)}
+            for pid in PLUGINS.keys()
+        ],
+        "defaultMaxDaysOut": DEFAULT_MAX_DAYS_OUT,
+    })
+
+
+@app.get("/diag/aa_last")
+async def diag_aa_last() -> JSONResponse:
+    """Return the last AA scrape's captured XHRs + diagnostic info.
+    Workaround for not having fly-logs access right now."""
+    try:
+        from aa_aadvantage.search import LAST_RUN_DIAG
+        return JSONResponse(LAST_RUN_DIAG)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.get("/diag/aa_wu_last")
+async def diag_aa_wu_last() -> JSONResponse:
+    """Last AA Web Unlocker variant run — captures WU status, raw_text head,
+    parsed JSON keys, AA error envelope, slice count."""
+    try:
+        from aa_aadvantage.search_wu import LAST_RUN_DIAG as WU_DIAG
+        return JSONResponse(WU_DIAG)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.get("/diag/dl_last")
+async def diag_dl_last() -> JSONResponse:
+    """Last DL SkyMiles run (WU 2-step transport) — captures the homepage
+    cookie-mint diag, the `/shop/ow/search` POST status, raw_text head,
+    parsed JSON keys, Delta's shoppingError envelope, and itinerary count."""
+    try:
+        from dl_skymiles.search import LAST_RUN_DIAG as DL_DIAG
+        return JSONResponse(DL_DIAG)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
 
 
 @app.get("/diag/proxy")
@@ -188,7 +296,7 @@ async def diag_inputs(
 
 @app.get("/diag/airline")
 async def diag_airline(
-    url: str = Query(..., description="Full URL to load via Patchright"),
+    url: str = Query(..., description="Full URL to load via Patchright/Camoufox"),
     use_proxy: int = Query(1, description="0 = bypass proxy (use Fly egress)"),
     wait_ms: int = Query(0, description="ms to wait after domcontentloaded"),
     wait_until: str = Query("domcontentloaded", description="domcontentloaded|load|commit|networkidle"),
@@ -197,27 +305,57 @@ async def diag_airline(
     http2: int = Query(0, description="1 = enable HTTP/2 (default disabled)"),
     scraperapi: int = Query(0, description="1 = route through ScraperAPI proxy port"),
     scraperapi_render: int = Query(1, description="0 = no render (saves credits)"),
+    brightdata: int = Query(0, description="1 = route through Bright Data Browser API (CDP); takes precedence over scraperapi/use_proxy"),
+    use_camoufox: int = Query(0, description="1 = use Camoufox (Firefox stealth) instead of Patchright"),
+    brightdata_residential: int = Query(0, description="1 = use BD Residential proxy (requires use_camoufox=1; sets BD as the egress)"),
+    brightdata_country: str = Query("", description="BD Residential country code (us, gb, de, jp, etc.) — used when brightdata_residential=1"),
+    brightdata_session: str = Query("", description="BD sticky session id (~10min IP pinning); used by both brightdata=1 and brightdata_residential=1"),
+    referer: str = Query("", description="optional Referer header for the navigation"),
+    user_agent: str = Query("", description="optional User-Agent override (e.g., mobile UA for sites that route mobile traffic differently)"),
 ) -> JSONResponse:
-    """Smoke-test Patchright reaching a specific airline URL. Returns
-    page title + status + any console errors + a snippet of body html."""
+    """Smoke-test reaching a specific airline URL. Returns page title +
+    status + any console errors + a snippet of body html.
+
+    Transport selection:
+      brightdata_residential=1 + use_camoufox=1  → T3 (canonical Akamai bypass)
+      use_camoufox=1                              → Camoufox + Fly egress
+      brightdata=1                                → BD Browser API (legacy CDP path)
+      scraperapi=1                                → ScraperAPI (deprecated)
+      default                                     → Patchright + IPRoyal
+    """
     try:
         from common.browser import browser_page
         console_errors: list[str] = []
+        # Higher timeout for stealth browsers (Camoufox first-startup + BD
+        # residential CONNECT can each take 30+s).
+        timeout_ms = 120_000 if (scraperapi or brightdata or use_camoufox or brightdata_residential) else 45_000
         async with browser_page(
-            timeout_ms=120_000 if scraperapi else 45_000,
-            use_proxy=bool(use_proxy),
+            timeout_ms=timeout_ms,
+            use_proxy=bool(use_proxy) and not (brightdata or brightdata_residential),
             proxy_country=country or None,
             proxy_session=session or None,
             disable_http2=not bool(http2),
-            use_scraperapi=bool(scraperapi),
+            use_scraperapi=bool(scraperapi) and not (brightdata or brightdata_residential),
             scraperapi_render=bool(scraperapi_render),
+            use_brightdata=bool(brightdata) and not brightdata_residential,
+            use_camoufox=bool(use_camoufox),
+            use_brightdata_residential=bool(brightdata_residential),
+            brightdata_country=brightdata_country or None,
+            brightdata_session=brightdata_session or None,
         ) as page:
+            if user_agent:
+                # Override UA at the context level so subsequent requests
+                # inherit it. Useful for probing AA mobile-vs-desktop routing.
+                await page.set_extra_http_headers({"User-Agent": user_agent})
             page.on(
                 "console",
                 lambda msg: console_errors.append(f"{msg.type}: {msg.text}")
                 if msg.type in ("error", "warning") else None,
             )
-            resp = await page.goto(url, wait_until=wait_until)  # type: ignore[arg-type]
+            goto_kwargs: dict = {"wait_until": wait_until}
+            if referer:
+                goto_kwargs["referer"] = referer
+            resp = await page.goto(url, **goto_kwargs)  # type: ignore[arg-type]
             if wait_ms:
                 await asyncio.sleep(wait_ms / 1000)
             title = await page.title()
@@ -230,6 +368,84 @@ async def diag_airline(
                 "body_snippet": body_text,
                 "console_errors": console_errors[-10:],
             })
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500]},
+            status_code=500,
+        )
+
+
+@app.get("/diag/warmup")
+async def diag_warmup(
+    warmup_url: str = Query(..., description="First URL to load (mints Akamai cookies via sensor.js)"),
+    target_url: str = Query(..., description="Second URL — loaded in the same browser session after warmup"),
+    warmup_wait_ms: int = Query(5000, description="ms to wait after warmup page loads (sensor.js completion)"),
+    target_wait_ms: int = Query(2000, description="ms to wait after target page loads"),
+    brightdata: int = Query(1, description="route via Bright Data (default 1 for this endpoint)"),
+    capture_xhr: str = Query("", description="optional substring; capture first matching XHR response body"),
+) -> JSONResponse:
+    """Two-step navigation: load warmup_url first to mint Akamai/Imperva
+    cookies in the BD browser session, then load target_url in the same
+    session. Returns both responses' status + title + cookies count. Use
+    this to bypass Akamai path-protection on sites like aa.com where the
+    homepage 403s but specific paths (loyalty, aadvantage) succeed."""
+    try:
+        from common.browser import browser_page
+        result: dict = {"warmup": {}, "target": {}, "captured": None}
+        captured_body: dict = {}
+        async with browser_page(
+            timeout_ms=120_000,
+            use_brightdata=bool(brightdata),
+        ) as page:
+            if capture_xhr:
+                async def _on_response(resp):
+                    if capture_xhr in resp.url and resp.status == 200 and "captured" not in captured_body:
+                        try:
+                            captured_body["captured"] = {
+                                "url": resp.url,
+                                "status": resp.status,
+                                "body": (await resp.text())[:2000],
+                            }
+                        except Exception:  # noqa: BLE001
+                            pass
+                page.on("response", _on_response)
+
+            # Step 1: warmup
+            try:
+                r1 = await page.goto(warmup_url, wait_until="domcontentloaded", timeout=60_000)
+                await asyncio.sleep(warmup_wait_ms / 1000)
+                result["warmup"] = {
+                    "status": r1.status if r1 else None,
+                    "title": (await page.title())[:80],
+                    "url": page.url,
+                    "cookies": len(await page.context.cookies()),
+                }
+            except Exception as exc:  # noqa: BLE001
+                result["warmup"] = {"error": str(exc)[:200]}
+                return JSONResponse({"ok": False, **result})
+
+            # Step 2: target (same session, cookies carry over)
+            try:
+                r2 = await page.goto(target_url, wait_until="domcontentloaded", timeout=60_000, referer=warmup_url)
+                await asyncio.sleep(target_wait_ms / 1000)
+                body = (await page.locator("body").inner_text())[:400]
+                result["target"] = {
+                    "status": r2.status if r2 else None,
+                    "title": (await page.title())[:80],
+                    "url": page.url,
+                    "cookies": len(await page.context.cookies()),
+                    "body_snippet": body,
+                }
+            except Exception as exc:  # noqa: BLE001
+                result["target"] = {"error": str(exc)[:200]}
+
+            if captured_body:
+                result["captured"] = captured_body.get("captured")
+
+            target_status = result["target"].get("status")
+            target_body = result["target"].get("body_snippet", "")
+            ok = (target_status == 200 and "Access Denied" not in target_body)
+            return JSONResponse({"ok": ok, **result})
     except Exception as exc:  # noqa: BLE001
         return JSONResponse(
             {"ok": False, "error": str(exc)[:500]},
@@ -389,6 +605,67 @@ async def diag_ua_scrape(
         )
 
 
+@app.get("/diag/run_plugin")
+async def diag_run_plugin(
+    program: str = Query(...),
+    origin: str = Query(..., min_length=3, max_length=3),
+    dest: str = Query(..., min_length=3, max_length=3),
+    date: str = Query(...),
+) -> JSONResponse:
+    """Run a plugin in isolation with traceback capture. Surfaces the
+    actual exception for plugins that 500 in production /search.
+
+    Calls plugin → captures any raise. Calls _serialize → captures separately.
+    Skips write_results (DB write). This lets us see if the failure is in
+    the scrape or in serialization."""
+    import traceback
+    plugin = PLUGINS.get(program)
+    if plugin is None:
+        return JSONResponse({"ok": False, "error": f"Unknown program: {program}"}, status_code=404)
+
+    origin_u = origin.upper()
+    dest_u = dest.upper()
+
+    plugin_err: dict | None = None
+    rows: list[NormalizedResult] = []
+    try:
+        rows = await plugin(origin_u, dest_u, date, "Y")
+    except Exception as exc:  # noqa: BLE001
+        plugin_err = {
+            "type": type(exc).__name__,
+            "msg": str(exc)[:500],
+            "traceback": traceback.format_exc()[-2000:],
+        }
+
+    if plugin_err:
+        return JSONResponse({"ok": False, "stage": "plugin", **plugin_err})
+
+    # Try to serialize each row individually so we can see which one breaks
+    query = SearchQuery(origin=origin_u, dest=dest_u, depart_date=date, pax=1, min_cabin="Y")  # type: ignore[arg-type]
+    serialized: list[dict] = []
+    serialize_err: dict | None = None
+    for i, r in enumerate(rows):
+        try:
+            serialized.append(_serialize(query, r))
+        except Exception as exc:  # noqa: BLE001
+            serialize_err = {
+                "row_index": i,
+                "type": type(exc).__name__,
+                "msg": str(exc)[:500],
+                "traceback": traceback.format_exc()[-2000:],
+                "row_repr": repr(r)[:1000],
+            }
+            break
+
+    return JSONResponse({
+        "ok": serialize_err is None,
+        "row_count": len(rows),
+        "serialized_count": len(serialized),
+        "serialize_err": serialize_err,
+        "sample": serialized[:1],
+    })
+
+
 @app.get("/search")
 async def search(
     program: str = Query(..., description="Program ID, e.g. VS_FLYING_CLUB"),
@@ -397,6 +674,15 @@ async def search(
     date: str = Query(..., description="Depart date YYYY-MM-DD"),
     pax: int = Query(1, ge=1, le=9),
     minCabin: str = Query("Y", pattern="^[YWJF]$"),
+    user_id: str | None = Query(
+        None,
+        description=(
+            "Phase 2.5 (T5'): authenticated user UUID. When present, "
+            "auth-required plugins (e.g. AC_AEROPLAN) look up the user's "
+            "stored program_auth_sessions cookies and replay them. Ignored "
+            "by plugins that don't need a login."
+        ),
+    ),
 ) -> JSONResponse:
     plugin = PLUGINS.get(program)
     if plugin is None:
@@ -408,14 +694,44 @@ async def search(
         origin=origin_u, dest=dest_u, depart_date=date, pax=pax, min_cabin=minCabin  # type: ignore[arg-type]
     )
 
+    # Pass user_id ONLY to plugins whose signature accepts it (T5'
+    # auth-capture plugins like AC_AEROPLAN). The other 14 plugins keep the
+    # positional 4-arg signature untouched — `inspect.signature` lets us
+    # dispatch tolerantly without editing every plugin.
+    import inspect
+
+    plugin_kwargs: dict = {}
     try:
-        results = await plugin(origin_u, dest_u, date, minCabin)
+        if "user_id" in inspect.signature(plugin).parameters:
+            plugin_kwargs["user_id"] = user_id
+    except (ValueError, TypeError):
+        pass
+
+    try:
+        results = await plugin(origin_u, dest_u, date, minCabin, **plugin_kwargs)
     except Exception as exc:  # noqa: BLE001 — surface scraper errors to caller
         log.exception("Plugin %s raised", program)
         raise HTTPException(status_code=502, detail=f"Plugin error: {exc}") from exc
 
-    db_summary = await write_results(query, results)
-    rows = [_serialize(query, r) for r in results]
+    try:
+        db_summary = await write_results(query, results)
+    except Exception as exc:  # noqa: BLE001 — surface DB errors with detail
+        log.exception("write_results failed for %s", program)
+        import traceback
+        raise HTTPException(
+            status_code=503,
+            detail=f"DB write error ({type(exc).__name__}): {str(exc)[:500]} | tb: {traceback.format_exc()[-500:]}",
+        ) from exc
+
+    try:
+        rows = [_serialize(query, r) for r in results]
+    except Exception as exc:  # noqa: BLE001
+        log.exception("_serialize failed for %s", program)
+        import traceback
+        raise HTTPException(
+            status_code=503,
+            detail=f"Serialize error ({type(exc).__name__}): {str(exc)[:500]} | tb: {traceback.format_exc()[-500:]}",
+        ) from exc
     return JSONResponse(
         {
             "program": program,

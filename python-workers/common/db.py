@@ -120,41 +120,94 @@ async def write_results(
                     op_key = operating_flight_key(
                         seg.operating_airline_iata, seg.flight_number, seg.depart_at
                     )
-                    await cur.execute(
-                        """
-                        INSERT INTO result_segments (
-                            search_result_id, segment_order,
-                            operating_airline_iata, marketing_airline_iata,
-                            flight_number, origin_iata, dest_iata,
-                            depart_at, arrive_at,
-                            aircraft_icao, fare_class, segment_cabin,
-                            operating_flight_key
+                    # Aircraft codes drift faster than our aircraft_types
+                    # seed (Alaska's 7M9 = 737 MAX 9 broke AS_MILEAGEPLAN
+                    # 2026-05-19). Use a savepoint so an FK violation on the
+                    # aircraft FK doesn't abort the whole transaction —
+                    # retry with NULL on conflict.
+                    await cur.execute("SAVEPOINT seg_insert")
+                    try:
+                        await cur.execute(
+                            """
+                            INSERT INTO result_segments (
+                                search_result_id, segment_order,
+                                operating_airline_iata, marketing_airline_iata,
+                                flight_number, origin_iata, dest_iata,
+                                depart_at, arrive_at,
+                                aircraft_icao, fare_class, segment_cabin,
+                                operating_flight_key
+                            )
+                            VALUES (
+                                %s, %s,
+                                %s, %s,
+                                %s, %s, %s,
+                                %s::timestamptz, %s::timestamptz,
+                                %s, %s, %s::cabin,
+                                %s
+                            )
+                            """,
+                            (
+                                search_result_id,
+                                seg.segment_order,
+                                seg.operating_airline_iata,
+                                seg.marketing_airline_iata,
+                                seg.flight_number,
+                                seg.origin_iata,
+                                seg.dest_iata,
+                                seg.depart_at,
+                                seg.arrive_at,
+                                seg.aircraft_icao,
+                                seg.fare_class,
+                                seg.segment_cabin,
+                                op_key,
+                            ),
                         )
-                        VALUES (
-                            %s, %s,
-                            %s, %s,
-                            %s, %s, %s,
-                            %s::timestamptz, %s::timestamptz,
-                            %s, %s, %s::cabin,
-                            %s
+                        await cur.execute("RELEASE SAVEPOINT seg_insert")
+                    except psycopg.errors.ForeignKeyViolation as exc:
+                        # Specifically retry with NULL aircraft_icao if the
+                        # FK was the cause. Other FK violations bubble up.
+                        if "aircraft_types" not in str(exc):
+                            raise
+                        log.warning(
+                            "Aircraft FK violation for %s (icao=%r); retrying with NULL",
+                            r.program_id, seg.aircraft_icao,
                         )
-                        """,
-                        (
-                            search_result_id,
-                            seg.segment_order,
-                            seg.operating_airline_iata,
-                            seg.marketing_airline_iata,
-                            seg.flight_number,
-                            seg.origin_iata,
-                            seg.dest_iata,
-                            seg.depart_at,
-                            seg.arrive_at,
-                            seg.aircraft_icao,
-                            seg.fare_class,
-                            seg.segment_cabin,
-                            op_key,
-                        ),
-                    )
+                        await cur.execute("ROLLBACK TO SAVEPOINT seg_insert")
+                        await cur.execute(
+                            """
+                            INSERT INTO result_segments (
+                                search_result_id, segment_order,
+                                operating_airline_iata, marketing_airline_iata,
+                                flight_number, origin_iata, dest_iata,
+                                depart_at, arrive_at,
+                                aircraft_icao, fare_class, segment_cabin,
+                                operating_flight_key
+                            )
+                            VALUES (
+                                %s, %s,
+                                %s, %s,
+                                %s, %s, %s,
+                                %s::timestamptz, %s::timestamptz,
+                                NULL, %s, %s::cabin,
+                                %s
+                            )
+                            """,
+                            (
+                                search_result_id,
+                                seg.segment_order,
+                                seg.operating_airline_iata,
+                                seg.marketing_airline_iata,
+                                seg.flight_number,
+                                seg.origin_iata,
+                                seg.dest_iata,
+                                seg.depart_at,
+                                seg.arrive_at,
+                                seg.fare_class,
+                                seg.segment_cabin,
+                                op_key,
+                            ),
+                        )
+                        await cur.execute("RELEASE SAVEPOINT seg_insert")
 
                 for cp in r.cabin_prices:
                     await cur.execute(

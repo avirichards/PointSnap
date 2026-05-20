@@ -200,3 +200,375 @@ Real Patchright scrape, IPRoyal proxies, CapSolver, BullMQ queue, shadow-confirm
 3. Award chart full seeds for BA + ANA + CX + VS so the "Chart-only" confidence badge has real chart data to fall back to.
 4. `/wallet` page so the wallet-aware sort gets a UI surface to test.
 5. Clerk sign-in / sign-up + `/admin` shell with the audit log feed.
+
+---
+
+## Session 5 — Render-service migration (Bright Data CDP)
+
+**Branch:** `claude/review-scraper-strategy-CXHmM`
+
+**Supersedes** the speculative "Session 5: real Patchright scrape for VS, needs IPRoyal + CapSolver" guidance from Session 4. VS already works on httpx+IPRoyal. The actual Session 5 problem is the **other 11 plugins** stuck behind Akamai.
+
+### Goal
+Replace the failing `IPRoyal + ScraperAPI` transport for the 11 currently-blocked plugins with **Bright Data Scraping Browser** (CDP-compatible hosted Chromium). Unblock AA, AC, UA, DL, BA, AF, LH, TK, NH, CX, AV. Keep VS, AS unchanged (httpx + IPRoyal works).
+
+### Architecture decision
+Bright Data Scraping Browser is a hosted Chromium speaking CDP. Patchright's existing `async_playwright().chromium.connect_over_cdp(WSS_URL)` connects to it instead of launching local Chromium. Bright Data handles proxy + Akamai/Imperva/DataDome bypass server-side.
+
+**The plugin contract doesn't change** — `browser_page()` still yields a `page` object; downstream code (warmup → login → goto → XHR capture) is identical because the CDP-attached browser behaves like a local one. This is a transport swap, not a refactor.
+
+**Why Bright Data over ZenRows** (market research, 2026-05-18):
+- ZenRows: $69/mo minimum, 70% success rate on independent benchmarks, no pay-as-you-go.
+- Bright Data Scraping Browser: $8/GB pay-as-you-go, no minimum, CDP-compatible, documented Akamai/Imperva/Cloudflare bypass, $500 deposit-match on new accounts.
+- Fallback if BD fails on AA/DL/UA: **Scrapfly** ($30/mo hard-capped, 97% Akamai bypass in Scrapeway benchmark, also CDP-compatible, failed requests free).
+
+### Cost model
+~$8/GB pay-as-you-go. With heavy-resource blocking (images/css/fonts/media), each search costs ~1-3 MB → $0.008-0.024/search. Personal volume 100-500 searches/mo → $1-12/mo. Set $25/mo soft cap in Bright Data dashboard.
+
+### Tech stack
+Patchright `connect_over_cdp()`, Bright Data Scraping Browser (WSS), env-driven config (`BRIGHTDATA_WSS_URL`), pytest for smoke tests, existing per-plugin `search()` unchanged.
+
+### Files to create / modify
+- **Modify:** `python-workers/common/browser.py` — add `use_brightdata` branch in `browser_page()`
+- **Modify:** `python-workers/serve.py` — add `?provider=brightdata` to `/diag/airline` endpoint
+- **Modify:** `python-workers/.env.example` — add `BRIGHTDATA_WSS_URL`
+- **Modify:** each blocked plugin's `search.py` (11 files) — swap `use_scraperapi=True` → `use_brightdata=True`
+- **Create:** `python-workers/tests/test_browser_brightdata.py` — smoke test for CDP path
+- **Create:** `tasks/captured-responses/` — directory for raw XHR samples per plugin
+- **Create:** `tasks/kb-drafts/all-11-programs-live.md` — KB draft (per CLAUDE.md rule 10)
+
+---
+
+### Phase 0 — Account setup (USER ACTION REQUIRED — gates Phase 1)
+
+- [ ] **0.1** User signs up for Bright Data: https://brightdata.com → create Scraping Browser zone → copy WSS URL (format `wss://brd-customer-<ID>-zone-<ZONE>:<PASSWORD>@brd.superproxy.io:9222`).
+- [ ] **0.2** User adds to `.env.local`: `BRIGHTDATA_WSS_URL="wss://..."`
+- [ ] **0.3** User pastes WSS URL into chat so Claude can mirror it into Fly secrets when worker is redeployed: `fly secrets set BRIGHTDATA_WSS_URL="wss://..." -a pointsnap-worker`
+- [ ] **0.4** User sets Bright Data soft cap at $25/mo (Account → Billing → Spending limits) to protect against runaway searches.
+- [ ] **0.5** User confirms ready → Claude proceeds to Phase 1.
+
+### Phase 1 — Add CDP path to `browser_page()`
+
+- [ ] **1.1 Write failing smoke test**
+
+Create `python-workers/tests/test_browser_brightdata.py`:
+
+```python
+"""Smoke test that browser_page(use_brightdata=True) connects to Bright Data
+Scraping Browser via CDP and returns a usable page. Skips if BRIGHTDATA_WSS_URL
+is not configured."""
+import os
+import pytest
+from common.browser import browser_page
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(
+    not os.environ.get("BRIGHTDATA_WSS_URL"),
+    reason="BRIGHTDATA_WSS_URL not configured",
+)
+async def test_brightdata_loads_httpbin():
+    async with browser_page(use_brightdata=True, timeout_ms=30_000) as page:
+        await page.goto("https://httpbin.org/headers", wait_until="domcontentloaded")
+        body = await page.content()
+        assert '"User-Agent"' in body, "httpbin.org/headers should return JSON with UA"
+
+
+@pytest.mark.asyncio
+async def test_brightdata_requires_env_var(monkeypatch):
+    monkeypatch.delenv("BRIGHTDATA_WSS_URL", raising=False)
+    with pytest.raises(RuntimeError, match="BRIGHTDATA_WSS_URL"):
+        async with browser_page(use_brightdata=True):
+            pass
+```
+
+- [ ] **1.2 Run test, expect failure**
+
+```bash
+cd python-workers && pytest tests/test_browser_brightdata.py -v
+```
+
+Expected: both tests fail/error because `use_brightdata` kwarg doesn't exist on `browser_page()`.
+
+- [ ] **1.3 Implement `use_brightdata` branch**
+
+Edit `python-workers/common/browser.py`. Add `use_brightdata: bool = False` to the kwargs of `browser_page()` (around line 102). Inside `async with async_playwright() as pw:` (line 141), add an early-return branch BEFORE the existing local-Chromium logic:
+
+```python
+async with async_playwright() as pw:
+    if use_brightdata:
+        wss_url = os.environ.get("BRIGHTDATA_WSS_URL")
+        if not wss_url:
+            raise RuntimeError("BRIGHTDATA_WSS_URL env var not configured")
+        # Connect to Bright Data Scraping Browser via CDP. They handle the
+        # proxy + Akamai/Imperva/DataDome bypass server-side. Bandwidth-
+        # billed (~$8/GB); always block heavy resources to keep ~$5-15/mo
+        # at personal volume.
+        browser = await pw.chromium.connect_over_cdp(wss_url)
+        ctx = await browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/131.0.0.0 Safari/537.36"
+            ),
+            viewport={"width": 1366, "height": 768},
+            locale="en-US",
+        )
+        page = await ctx.new_page()
+        page.set_default_timeout(timeout_ms)
+
+        async def _block_heavy(route):
+            if route.request.resource_type in (
+                "image", "stylesheet", "font", "media", "manifest"
+            ):
+                await route.abort()
+            else:
+                await route.continue_()
+        await page.route("**/*", _block_heavy)
+
+        try:
+            yield page
+        finally:
+            try:
+                await ctx.close()
+            except Exception:  # noqa: BLE001
+                pass
+            try:
+                await browser.close()
+            except Exception:  # noqa: BLE001
+                pass
+        return
+    # existing local-Chromium logic unchanged from here
+```
+
+- [ ] **1.4 Run tests, expect pass**
+
+```bash
+cd python-workers && pytest tests/test_browser_brightdata.py -v
+```
+
+Expected (with WSS env var set in `.env.local`): both tests pass. The httpbin test takes 5-15s.
+Expected (without WSS env var): `test_brightdata_requires_env_var` passes, `test_brightdata_loads_httpbin` skipped.
+
+- [ ] **1.5 Commit**
+
+```bash
+git add python-workers/common/browser.py python-workers/tests/test_browser_brightdata.py
+git commit -m "feat(scraper): add Bright Data CDP path to browser_page()"
+```
+
+### Phase 2 — Diag endpoint support for ad-hoc provider testing
+
+- [ ] **2.1 Add `?provider=` param to `/diag/airline`**
+
+Edit `python-workers/serve.py` (handler at ~line 199-237). Replace the body with:
+
+```python
+@app.get("/diag/airline")
+async def diag_airline(
+    url: str,
+    provider: str = "iproyal",  # iproyal | scraperapi | brightdata
+    timeout_ms: int = 30_000,
+):
+    kwargs: dict = {"timeout_ms": timeout_ms}
+    if provider == "scraperapi":
+        kwargs["use_scraperapi"] = True
+        kwargs["scraperapi_premium"] = True
+    elif provider == "brightdata":
+        kwargs["use_brightdata"] = True
+    elif provider == "iproyal":
+        pass  # default
+    else:
+        raise HTTPException(400, f"unknown provider: {provider}")
+
+    try:
+        async with browser_page(**kwargs) as page:
+            resp = await page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            return {
+                "ok": True,
+                "status": resp.status if resp else None,
+                "url": page.url,
+                "title": await page.title(),
+                "provider": provider,
+            }
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc), "provider": provider}
+```
+
+- [ ] **2.2 Local smoke test**
+
+```bash
+cd python-workers && uvicorn serve:app --port 8080 &
+sleep 2
+curl "http://localhost:8080/diag/airline?url=https://httpbin.org/headers&provider=brightdata"
+```
+
+Expected: `{"ok": true, "status": 200, "url": "https://httpbin.org/headers", "title": "", "provider": "brightdata"}`
+
+- [ ] **2.3 Commit**
+
+```bash
+git add python-workers/serve.py
+git commit -m "feat(diag): add provider=brightdata to /diag/airline endpoint"
+```
+
+### Phase 3 — Pilot Bright Data on AA AAdvantage (DECISION GATE)
+
+**This phase decides whether Bright Data is our primary or we fall back to Scrapfly.** Do not proceed to Phase 4-5 until AA passes.
+
+- [ ] **3.1 Diag test against aa.com (the canary)**
+
+```bash
+curl "http://localhost:8080/diag/airline?url=https://www.aa.com/booking/find-flights&provider=brightdata&timeout_ms=60000"
+```
+
+Expected (success): `{"ok": true, "status": 200, "title": "Book your flight...", ...}`
+Expected (failure): timeout, 403, or title contains "Access Denied" / "Pardon Our Interruption" → **STOP**, switch to Phase 3-Fallback below.
+
+- [ ] **3.2 Switch AA plugin to Bright Data**
+
+Edit `python-workers/aa_aadvantage/search.py`. Find the `async with browser_page(...)` call. Replace the kwargs:
+
+```python
+# OLD:
+async with browser_page(
+    timeout_ms=150_000,
+    use_scraperapi=True,
+    scraperapi_premium=True,
+    proxy_country="us",
+) as page:
+
+# NEW:
+async with browser_page(
+    timeout_ms=150_000,
+    use_brightdata=True,
+) as page:
+```
+
+- [ ] **3.3 Run AA search end-to-end**
+
+```bash
+curl "http://localhost:8080/search?program=AA_AADVANTAGE&origin=JFK&dest=LAX&date=2026-08-15"
+```
+
+Expected: HTTP 200 with either:
+- `[]` → network unblocked but parser doesn't match the live response (Phase 6 will fix), or
+- `[{"programId": "AA_AADVANTAGE", ...}, ...]` → full success.
+
+Failure signal: HTTP 500, ETIMEDOUT, or worker log shows "Access Denied" / Akamai 403 → **STOP**, switch to Phase 3-Fallback.
+
+- [ ] **3.4 Capture raw XHR response for Phase 6**
+
+Add a temporary `import json; print(json.dumps(captured["json"], indent=2))` in `aa_aadvantage/search.py` after the XHR is captured (just before `_parse_*`). Re-run the search, copy stdout JSON into `tasks/captured-responses/aa-jfk-lax-2026-08-15.json`. Remove the print. This is the reference shape for Phase 6 parser repair.
+
+- [ ] **3.5 Commit**
+
+```bash
+mkdir -p tasks/captured-responses
+git add python-workers/aa_aadvantage/search.py tasks/captured-responses/aa-jfk-lax-2026-08-15.json
+git commit -m "feat(aa): route via Bright Data Scraping Browser (CDP)"
+```
+
+### Phase 3-Fallback — Switch to Scrapfly (only if Phase 3 fails)
+
+If AA fails through Bright Data, escalate before continuing.
+
+- [ ] User signs up for Scrapfly: https://scrapfly.io → Discovery plan (1000 free credits to pilot) → copy API key.
+- [ ] Add `SCRAPFLY_API_KEY` env var. Construct WSS URL as `wss://browser.scrapfly.io?key={KEY}&asp=true&proxy_pool=public_residential_pool`.
+- [ ] Add `use_scrapfly` branch to `browser_page()` mirroring `use_brightdata` (use the same `connect_over_cdp` path, just different WSS URL builder + different env var name).
+- [ ] Re-run Phase 3 with `use_scrapfly=True`. If AA passes, swap the recommendation: Scrapfly becomes primary, Bright Data fallback. Adjust all later phases.
+
+(Detailed sub-steps deferred until/unless triggered — same shape as Phase 1-3.)
+
+### Phase 4 — Pilot DL + UA (parallel gates)
+
+Apply the Phase 3 cycle (diag → swap → live search → capture → commit) to:
+
+- [ ] **4.1** **DL SkyMiles**: `python-workers/dl_skymiles/search.py`, diag URL `https://www.delta.com/flight-search/search`
+- [ ] **4.2** **UA MileagePlus**: `python-workers/ua_mp/search.py`, diag URL `https://www.united.com/en/us/fsr/choose-flights`
+
+For each: diag through `provider=brightdata` → if 200, swap the plugin → run live search → capture response → commit.
+
+**Combined decision gate:** If AA+DL+UA all pass on Bright Data → continue Phase 5. If 2+ of the 3 fail → trigger Phase 3-Fallback. If only 1 fails → mark that plugin as "needs custom approach" and proceed.
+
+### Phase 5 — Roll out to remaining 8 plugins
+
+For each plugin below, apply the Phase 3 cycle (diag URL → swap `browser_page` kwargs → live search → capture response → commit). One commit per plugin. ~30 min/each, ~4 hrs total.
+
+- [ ] **5.1** **AC Aeroplan** — `python-workers/ac_aeroplan/search.py`. **Special concern:** preserves the homepage warmup → Akamai cookie mint → search URL flow (lines 175-198). Verify warmup cookies persist into the search goto when using CDP-attached session. If not, may need to skip warmup or move it to a single page navigation.
+- [ ] **5.2** **BA Avios** — `python-workers/ba_avios/search.py`. **Special concern:** login flow inside browser context. Verify the post-login session token persists across goto calls in the same `browser_page()` yield.
+- [ ] **5.3** **AF Flying Blue** — `python-workers/af_flyingblue/search.py`
+- [ ] **5.4** **LH Miles & More** — `python-workers/lh_miles_more/search.py`
+- [ ] **5.5** **TK Miles & Smiles** — `python-workers/tk_miles_smiles/search.py`
+- [ ] **5.6** **NH ANA** — `python-workers/nh_ana/search.py`
+- [ ] **5.7** **CX Asia Miles** — `python-workers/cx_cathay/search.py`
+- [ ] **5.8** **AV LifeMiles** — `python-workers/av_lifemiles/search.py`
+
+If a plugin's auth/cookie flow breaks because CDP sessions don't behave like local ones, record the failure in `tasks/lessons.md` and move on. We'll cluster those for a follow-up session.
+
+### Phase 6 — Parser validation per plugin (the real work)
+
+Per `tasks/lessons.md` Session 3: *"the parsers were written speculatively against AwardWiz references and never tested against live responses."* Even with Bright Data unblocking the network, plugins will likely return `[]` until parsers match real response shapes.
+
+For each of the 11 unblocked plugins (repeat the pattern):
+
+- [ ] **6.N.1** Open captured response in `tasks/captured-responses/<plugin>-*.json`.
+- [ ] **6.N.2** Diff against the parser's assumed shape (e.g. for AC: `_parse_air_bounds()` at `ac_aeroplan/search.py:56`). Common drift: field renamed, nested under a wrapper, list↔dict swap, missing type coercion, currency in cents vs dollars.
+- [ ] **6.N.3** Update parser to match real shape.
+- [ ] **6.N.4** Add unit test `python-workers/<plugin>/tests/test_parse.py` that feeds the captured JSON through the parser and asserts ≥1 result row with ≥1 cabin price with non-zero `miles_per_pax`.
+- [ ] **6.N.5** Run integration: `curl "http://localhost:8080/search?program=<ID>&origin=JFK&dest=LHR&date=2026-08-15"`. Assert HTTP 200 + non-empty array.
+- [ ] **6.N.6** Commit: `git commit -m "fix(<plugin>): align parser with live response shape"`.
+
+Estimated 30-60 min per plugin × 11 plugins = **~10-12 hrs of real iteration work**. This is the longest phase.
+
+### Phase 7 — Cleanup + cost monitoring
+
+- [ ] **7.1 Retire unused ScraperAPI code.** If all 11 plugins now use `use_brightdata=True` and no caller passes `use_scraperapi=True`:
+  - Delete `_scraperapi_proxy()` (`browser.py:54-87`).
+  - Delete `use_scraperapi`, `scraperapi_render`, `scraperapi_premium` kwargs from `browser_page()`.
+  - Delete the `if use_scraperapi:` branch (`browser.py:120-125`) and related cookie/route logic (`browser.py:174-178, 182-193`).
+  - Remove `SCRAPERAPI_KEY` from `.env.example`; ask user to delete from Fly secrets.
+- [ ] **7.2 Add bandwidth-tracking log line.** In the brightdata branch, after `await page.goto(...)` in plugins, log: `log.info("brightdata_session program=%s url=%s", PROGRAM_ID, page.url)` — gives a grep-able cross-reference between Fly logs and Bright Data dashboard.
+- [ ] **7.3 Update `README.md` and `docs/planning/HANDOFF.md`:** "Scraper transport: Bright Data Scraping Browser (CDP). Local dev needs `BRIGHTDATA_WSS_URL` in `.env.local`. VS/AS still use httpx+IPRoyal."
+- [ ] **7.4 Update `tasks/lessons.md`** with what we learned: which plugins worked first-try, which needed parser repair, which had cookie/session issues on CDP, cost per search measured vs estimated.
+- [ ] **7.5 Commit**
+
+```bash
+git add python-workers/common/browser.py python-workers/.env.example README.md docs/planning/HANDOFF.md tasks/lessons.md
+git commit -m "chore(scraper): retire ScraperAPI; document Bright Data CDP transport"
+```
+
+### Phase 8 — Verification (per CLAUDE.md rule 11)
+
+**8.1 Fresh-eyes code audit.**
+- [ ] Re-read `python-workers/common/browser.py` end-to-end. Check: dead code, symmetric error handling between local/CDP branches, resource-block route doesn't conflict with per-plugin route handlers, `BRIGHTDATA_WSS_URL` not logged (credentials in URL).
+- [ ] Re-read each modified plugin's `search.py`. Check: imports still correct, removed scraperapi kwargs cleanly, no orphan `proxy_country` args.
+- [ ] Re-read `serve.py` diag endpoint. Check: unknown providers rejected (400 not 500), `provider=` round-trips into response.
+- [ ] Fix anything found inline before moving on.
+
+**8.2 Backend end-to-end tests.**
+- [ ] For each of 13 programs: `curl "http://localhost:8080/search?program=<ID>&origin=JFK&dest=LHR&date=2026-08-15"`. Assert HTTP 200 + record whether non-empty.
+- [ ] Failure path: with `BRIGHTDATA_WSS_URL=wss://bogus:bad@brd.superproxy.io:9222`, search returns `[]` + error logged, not 500.
+- [ ] Idempotency: run the same search twice via curl, then in Supabase query `SELECT count(*) FROM search_results WHERE origin_iata='JFK' AND dest_iata='LHR' AND depart_date='2026-08-15';` — expect identical row count (ON CONFLICT upsert is correct).
+- [ ] Cleanup: `DELETE FROM search_results WHERE origin_iata='JFK' AND dest_iata='LHR' AND depart_date='2026-08-15';` (and cascade tables) once verified.
+
+**8.3 Frontend end-to-end test.**
+- [ ] Bring up dev: `pnpm dev`. Open `/search`. Submit JFK→LHR upcoming date. Verify all 13 program columns populate (some may be Chart-only if parser is incomplete), freshness/confidence badges render, no console errors, mobile sticky-column layout works at 375px width, dark mode default holds.
+- [ ] Reload — URL-persisted query state survives.
+
+**8.4 Cleanup + report.**
+- [ ] Delete test rows from 8.2-8.3.
+- [ ] Report to user: which of 11 programs unblocked AND returning rows, which unblocked but still `[]` (parser in Phase 6 needed), which still blocked (Bright Data failed), any regressions found, total cost so far per Bright Data dashboard.
+
+### Phase 9 — KB draft (per CLAUDE.md rule 10)
+
+- [ ] Create `tasks/kb-drafts/all-11-programs-live.md`. Write for a non-engineer user. Cover: what changed (11 more programs now live), what to expect (5-30s per program for results), known limitations (still subject to airline ToS, occasional empty results when carrier is throttled), cost transparency (paid Bright Data trial → ongoing ~$5-15/mo at current search volume). Don't publish — list as a draft in session summary for user editorial review.
+
+---
+
+### Notes & deferrals
+- **Scrapfly fallback** (Phase 3-Fallback) only fleshed out if Bright Data fails Phase 3. Plan structure mirrors Phase 1-3 with `use_scrapfly` instead of `use_brightdata`.
+- **VS / AS intentionally unchanged.** httpx+IPRoyal works for them; no need to spend bandwidth $.
+- **Per-account login pools** (BA, AC, AA — see `creds_for()` in `browser.py:208-239`) untested with CDP session model. If login flows fail in Phase 5, may need a per-plugin workaround (login + token-extract → re-attach to subsequent goto).
+- **Parser repair (Phase 6) is the dominant cost** of this migration in human-hours. Don't underestimate.
+- **Eventual VS/AS migration to Bright Data** can happen later if IPRoyal breaks. Not needed now.
