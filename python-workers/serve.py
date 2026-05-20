@@ -223,6 +223,18 @@ async def diag_aa_wu_last() -> JSONResponse:
         return JSONResponse({"error": str(exc)}, status_code=500)
 
 
+@app.get("/diag/dl_last")
+async def diag_dl_last() -> JSONResponse:
+    """Last DL SkyMiles run (WU 2-step transport) — captures the homepage
+    cookie-mint diag, the `/shop/ow/search` POST status, raw_text head,
+    parsed JSON keys, Delta's shoppingError envelope, and itinerary count."""
+    try:
+        from dl_skymiles.search import LAST_RUN_DIAG as DL_DIAG
+        return JSONResponse(DL_DIAG)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 @app.get("/diag/proxy")
 async def diag_proxy() -> JSONResponse:
     """Smoke-test Patchright + IPRoyal proxy. Loads httpbin.org/ip via
