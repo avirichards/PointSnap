@@ -152,6 +152,14 @@ export default function AirlinesPage() {
     void refresh();
   }, [refresh]);
 
+  // Stable identity — passed to ConnectAirlineModal, whose session effect
+  // keys partly off this callback. An inline arrow here would change every
+  // render (the 1-min `nowMs` tick alone re-renders the page) and restart
+  // the user's in-progress login.
+  const handleModalOpenChange = useCallback((next: boolean) => {
+    if (!next) setActiveProgram(null);
+  }, []);
+
   const counts = useMemo(() => {
     const acc = { all: cards.length, connected: 0, needs_action: 0, anonymous_ok: 0 };
     for (const c of cards) {
@@ -270,9 +278,7 @@ export default function AirlinesPage() {
       <ConnectAirlineModal
         programId={activeProgram}
         open={activeProgram !== null}
-        onOpenChange={(next) => {
-          if (!next) setActiveProgram(null);
-        }}
+        onOpenChange={handleModalOpenChange}
         onCaptured={handleCaptured}
       />
     </div>

@@ -81,6 +81,18 @@ export function ConnectAirlineModal({
   const abortRef = useRef<AbortController | null>(null);
   const finalizedRef = useRef<boolean>(false);
 
+  // The parent's callbacks held in refs so the session effect below can
+  // call the latest version WITHOUT listing them as deps. Listing them
+  // would restart the whole BD session every time the parent re-renders
+  // with a fresh callback identity (the /airlines page re-renders on its
+  // 1-min clock tick) — which would abort the user's in-progress login.
+  const onOpenChangeRef = useRef(onOpenChange);
+  const onCapturedRef = useRef(onCaptured);
+  useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+    onCapturedRef.current = onCaptured;
+  });
+
   /**
    * Best-effort finalize. Always called on unmount or close — the worker
    * is idempotent for already-finalized sessions per the plan §"Worker
@@ -166,9 +178,9 @@ export function ConnectAirlineModal({
         if (state === "captured") {
           finalize(session, "completed");
           setPhase({ kind: "captured" });
-          onCaptured?.();
+          onCapturedRef.current?.();
           setTimeout(() => {
-            if (!cancelled) onOpenChange(false);
+            if (!cancelled) onOpenChangeRef.current(false);
           }, SUCCESS_LINGER_MS);
           return;
         }
@@ -204,7 +216,9 @@ export function ConnectAirlineModal({
       // If the user closed mid-flow we cancel the worker session.
       finalize(activeSession, "cancelled");
     };
-  }, [open, programId, onOpenChange, onCaptured, finalize]);
+    // onOpenChange / onCaptured intentionally excluded — accessed via refs
+    // so a parent re-render can't restart the BD session mid-login.
+  }, [open, programId, finalize]);
 
   // Countdown ticker — drives the "session expires in N s" badge.
   // secsLeft is reset to SESSION_BUDGET_SECS by the open/programId

@@ -119,6 +119,37 @@ function base64ToJpegBlob(b64: string): Blob {
   return new Blob([bytes], { type: "image/jpeg" });
 }
 
+/**
+ * Cheap heuristic: does the painted canvas show real page content, or is
+ * it still a uniform loading screen? Samples a horizontal strip across the
+ * vertical middle and reports whether the luminance range exceeds a small
+ * threshold. Used to keep the "connecting" overlay up until the airline's
+ * page has actually rendered (it streams white-while-loading for several
+ * seconds). Best-effort — returns true on any sampling error so a frame is
+ * never wrongly suppressed.
+ */
+function frameHasContent(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+): boolean {
+  if (!w || !h) return false;
+  try {
+    const y = Math.floor(h / 2);
+    const { data } = ctx.getImageData(0, y, w, 1);
+    let min = 255;
+    let max = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const v = data[i];
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    return max - min > 12;
+  } catch {
+    return true;
+  }
+}
+
 export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -141,6 +172,10 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
     w: viewport.w,
     h: viewport.h,
   });
+  // Latches true once a content-bearing frame has painted — gates the
+  // connecting→live transition so the overlay covers the airline page's
+  // white-while-loading window.
+  const liveShownRef = useRef(false);
 
   // Seed the canvas's intrinsic resolution once on mount. After this,
   // `paint` keeps it matched to each decoded frame. Setting it here (not
@@ -207,8 +242,13 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
     // mount is a no-op (useState already starts at "connecting").
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setConnState("connecting");
+    liveShownRef.current = false;
     const es = new EventSource(streamUrl);
     let closed = false;
+    // Timestamp of the first frame painted — used as a safety net so the
+    // "connecting" overlay is never stuck if the page stays near-uniform
+    // longer than expected (content heuristic keeps failing).
+    let firstFrameAt = 0;
 
     const paint = () => {
       rafRef.current = null;
@@ -233,6 +273,21 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
         (bmp as ImageBitmap).close();
       }
       pendingBitmapRef.current = null;
+      // Clear the "connecting" overlay only once a frame with real content
+      // is on the canvas. The airline's page streams white-while-loading
+      // for several seconds before content appears — dismissing the overlay
+      // on the first (blank) frame would show an unexplained empty canvas.
+      // A cheap center-strip variance sample distinguishes a loaded page
+      // from a uniform loading screen. Safety net: after 8s of frames we
+      // reveal regardless, so the overlay can never get permanently stuck.
+      if (!liveShownRef.current) {
+        if (firstFrameAt === 0) firstFrameAt = Date.now();
+        const hasContent = frameHasContent(ctx, canvas.width, canvas.height);
+        if (hasContent || Date.now() - firstFrameAt > 8_000) {
+          liveShownRef.current = true;
+          setConnState("live");
+        }
+      }
     };
 
     const onFrame = async (b64: string) => {
@@ -252,7 +307,6 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
           return;
         }
         pendingBitmapRef.current = bitmap;
-        if (connState !== "live") setConnState("live");
         if (rafRef.current == null) {
           rafRef.current = requestAnimationFrame(paint);
         }
@@ -298,9 +352,6 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
       }
       pendingBitmapRef.current = null;
     };
-    // connState intentionally omitted — including it would re-open the
-    // EventSource on every connecting→live transition.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streamUrl]);
 
   // ---- Coordinate mapping ----------------------------------------------
