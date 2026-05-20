@@ -1,61 +1,59 @@
-"""Delta SkyMiles award search plugin — Bright Data Web Unlocker 2-step.
-
-Phase 1 transport rewrite (2026-05-20). The prior transport (Patchright /
-Camoufox + BD Browser API) is Akamai-flagged for delta.com, so the search
-silently returned `[]`. This module replaces it with the **WU two-step**
-pattern:
-
-  Step 1 — mint a session:
-      `wu_mint_cookies("https://www.delta.com/")` GETs the homepage via
-      Bright Data Web Unlocker. WU renders the page (solving Akamai BMP),
-      and the returned Set-Cookie jar carries Delta's Akamai cookies
-      (`bm_ss`, `bm_mi`, `bm_s`, `bm_so`, `bm_sz`, sometimes `_abck`) plus
-      app cookies (`AKA_A2`, `Homepage`, `location`, `akaalb_www_alb_*`).
-
-  Step 2 — call the award API:
-      WU POSTs `https://www.delta.com/shop/ow/search` with that cookie jar
-      forwarded as a `Cookie:` header + browser-shaped request headers.
-      The endpoint is an AWS API Gateway / Lambda (`x-amzn-requestid`,
-      `shopAWSError` in error envelopes).
+"""Delta SkyMiles award search plugin — Bright Data Web Unlocker transport.
 
 =============================================================================
-STATUS (2026-05-20): the WU 2-step DOES NOT currently work for DL. The award
-POST is Akamai-walled. Findings, verified via `/diag/wu_probe` + two deployed
-runs read from `/diag/dl_last`:
+STATUS (2026-05-21): NO WORKING WU TRANSPORT FOR DELTA. Both WU patterns were
+characterized and both fail. The plugin returns `[]` cleanly and records a
+full forensic trace in `LAST_RUN_DIAG` (exposed via `/diag/dl_last`).
 
-  * Homepage mint succeeds — WU returns 10-11 cookies (the `bm_*` set +
-    `AKA_A2`/`Homepage`/`location`). `_abck` is inconsistent: one run
-    returned it as `~-1~` (unvalidated), the next omitted it entirely.
-  * `GET /shop/ow/search` (any params) → `{"shoppingError":{...100800...},
-    "shopAWSError":"Y"}` — WU clears Akamai for GET; `100800` = "no valid
-    request payload" (it is a POST-body endpoint, GET can't carry one).
-  * `POST /shop/ow/search` → **Akamai 444 "Access Denied"** (edge reject
-    with a `Reference#`). Confirmed identical for:
-      - no body / with the full JSON body
-      - WU `format=raw` AND `format=json`
-      - with / without the minted cookie jar forwarded
-  * `POST https://httpbin.org/post` via WU → 200 (echoes request) — proves
-    WU's POST capability is fine; the 444 is Delta's Akamai, not WU.
+This is NOT a login problem — Delta award search has an anonymous path. It is
+a *transport* wall: Delta's Akamai BMP policy defeats every WU shape we can
+send. Findings, all verified via `/diag/wu_probe` (Session 12 + re-confirmed
+2026-05-21):
 
-CONCLUSION: Delta's Akamai policy rejects POST to `/shop/ow/*` award
-endpoints at the edge, while permitting GET. A homepage-render cookie jar
-does not satisfy it (and WU's mint doesn't reliably yield even an
-unvalidated `_abck`). The award POST needs a sensor.js-VALIDATED browser
-session (`_abck` advanced to `~0~`) on the SAME IP that issues the POST —
-which a single stateless WU homepage GET cannot produce.
+  PATTERN A — WU 2-step (mint homepage cookies, POST the award API):
+    * `GET https://www.delta.com/` via WU → 200, ~10-11 Set-Cookie (the `bm_*`
+      set + `AKA_A2`/`Homepage`/`location`/`akaalb_*`). `_abck` comes back
+      *unvalidated* (`~-1~`) or absent — WU's stateless homepage GET never
+      advances `_abck` to `~0~`.
+    * `POST https://www.delta.com/shop/ow/search` via WU → **Akamai 444
+      "Access Denied"** (188-byte edge-reject HTML with a `Reference#`).
+      Re-confirmed 2026-05-21: `target_status:444`. Identical for:
+        - no body / full JSON body
+        - WU `format=raw` AND `format=json`
+        - with / without the minted cookie jar forwarded
+    * `POST https://httpbin.org/post` via WU → 200 (echoes request) — proves
+      WU's POST capability is fine; the 444 is Delta's Akamai edge, not WU.
+    Delta's Akamai policy rejects POST to `/shop/ow/*` at the edge while
+    permitting GET. A homepage-render cookie jar does not satisfy it; the
+    award POST needs a sensor.js-VALIDATED `_abck` (`~0~`) issued to the same
+    IP that sends the POST, which a stateless WU GET cannot produce.
 
-Next angles (NOT yet built — for the next session):
-  * WU "unlocker" with a render+POST in ONE session (if BD exposes it) so
-    sensor.js telemetry validates `_abck` before the POST fires.
-  * Camoufox/Patchright that loads the booking SPA and lets it fire the
-    award POST from inside the page (intent ML + validated `_abck`), à la
-    the AA deep-link XHR-capture pattern — i.e. NOT the WU 2-step.
-  * A Delta endpoint that accepts GET for award data (none found so far;
-    `/api/graphql` GET returns the SPA HTML shell, not data).
+  PATTERN B — WU in-page render (GET the search-results SPA URL, let the SPA
+  fire its own award POST from inside WU's Akamai-cleared session):
+    * `GET https://www.delta.com/flight-search/book-a-flight` via WU → 200 but
+      only a **15 KB static Angular shell** (`<base href="/flightsearch">`,
+      `data-critters-container`). No award data — WU's HTTP API returns the
+      server's HTML response; it does NOT run the Angular SPA to completion
+      and serialize the post-XHR DOM.
+    * `GET https://www.delta.com/flightsearch/search-results` (bare) via WU →
+      `x-brd-error: captcha or protection page found` / `reject_block`.
+    * `GET .../flightsearch/search-results?<full award params>` via WU →
+      `x-brd-error: response is shorter than expected` / `min_size`.
+    WU's per-domain render-readiness rules (`expect_element` / `min_size`)
+    are not tuned for Delta's search-results path, so WU either rejects it as
+    a protection page or as too-short. Even when a Delta page DOES render, WU
+    returns the empty Angular shell — WU is a single-shot unlocker, not a
+    hydrating headless browser that waits for SPA data XHRs.
 
-The plugin is left wired so `/diag/dl_last` captures a full forensic trace
-on every run. It returns `[]` (verdict `api_error`/`api_non_json`) cleanly
-until the transport problem above is solved.
+CONCLUSION: neither WU pattern yields Delta award rows. Delta needs a real
+browser that (a) loads the booking SPA, (b) lets sensor.js validate `_abck`
+to `~0~`, and (c) lets the SPA fire `/shop/ow/search` from inside the page —
+i.e. the Camoufox / BD Browser API in-page XHR-capture transport (the T5/T6
+path), NOT WU. That is out of scope for this WU-grind plugin.
+
+The plugin is left wired so `/diag/dl_last` captures a live forensic trace on
+every run (the WU 2-step is still executed — its 444 is the evidence). It
+returns `[]` (verdict `api_error`) cleanly until the transport above is built.
 =============================================================================
 
 Defensive contract: `search()` never raises — every failure path returns
@@ -76,7 +74,6 @@ import httpx
 from common.bd_wu import (
     cookies_to_header,
     wu_mint_cookies,
-    wu_post,
     wu_request_json,
 )
 from common.types import CabinPrice, NormalizedResult, ResultSegment
@@ -110,15 +107,9 @@ def _build_search_body(origin: str, dest: str, date: str, pax: int) -> dict[str,
     """Construct the JSON body Delta's `/shop/ow/search` award endpoint accepts.
 
     Shape mirrors the modern delta.com `flightsearch` SPA's POST payload for
-    a one-way SkyMiles (award) search:
-      * `shopType: "MILES"` + `awardTravel: True` → award (SkyMiles) pricing
-      * `cabinFareClass: "BE"` → "Best Experience" (all cabins; we filter
-        cabins ourselves in `_parse` rather than constraining the search)
-      * `searchByCabin: True` so the response carries per-cabin fare offers
-
-    If Delta has renamed fields, the endpoint replies with the structured
-    `{"shoppingError":{...100800...}}` envelope — `LAST_RUN_DIAG` captures
-    that verbatim so the shape can be corrected from `/diag/dl_last`.
+    a one-way SkyMiles (award) search. The body shape is only exercised if
+    Delta's Akamai edge ever stops 444-rejecting the POST — until then the
+    request never reaches the AWS API Gateway behind it.
     """
     return {
         "selectTripType": "OW",
@@ -148,6 +139,9 @@ def _parse(payload: dict[str, Any], origin: str, dest: str, date: str) -> list[N
     Each itinerary's `trip[].flightSegment[]` are the legs; `fareOffer[]`
     carries per-cabin miles + cash pricing. Robust to missing keys: any
     itinerary that fails to parse is skipped, not fatal.
+
+    Kept intact and correct so that the moment a working transport is wired,
+    real responses parse without further work.
     """
     results: list[NormalizedResult] = []
     for it in (payload.get("itinerary") or [])[:6]:
@@ -241,7 +235,7 @@ def _api_headers(cookies: dict[str, str]) -> dict[str, str]:
         "Accept-Language": "en-US,en;q=0.9",
         "Content-Type": "application/json",
         "Origin": "https://www.delta.com",
-        "Referer": "https://www.delta.com/flight-search/book-a-flight",
+        "Referer": "https://www.delta.com/flightsearch/book-a-flight",
         "Sec-Fetch-Dest": "empty",
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-origin",
@@ -257,18 +251,18 @@ async def _scrape_real(
 ) -> list[NormalizedResult]:
     """Search Delta SkyMiles awards via the Bright Data Web Unlocker 2-step.
 
-    Step 1 mints a cookie jar from the delta.com homepage; step 2 POSTs
-    `/shop/ow/search` with that jar, trying the `format=json` and
-    `format=raw` WU transports in turn (see `_call_award_api`).
+    Executes the WU 2-step (mint homepage cookies → POST the award API) so
+    `/diag/dl_last` records a live forensic trace. The award POST is known to
+    return Akamai 444 (see module docstring) — the run will end with verdict
+    `api_error` and `[]`. The function never raises.
 
     Verdict codes recorded in `LAST_RUN_DIAG["last_verdict"]`:
-      ok            — a WU POST returned 200 with parseable award rows
-                      (`winning_transport` names which format won)
+      ok            — WU POST returned 200 with parseable award rows
       no_results    — WU POST returned 200 + valid JSON but 0 rows parsed
       no_itinerary  — WU POST returned 200 + JSON but no `itinerary` key
-                      (e.g. the `shoppingError`/100800 envelope, or empty)
       api_non_json  — WU POST returned 200 but body is not JSON (HTML block)
-      api_error     — WU POST returned non-200 (target rejected, e.g. 444)
+      api_error     — WU POST returned non-200 (Akamai 444 edge-reject — the
+                      expected, currently-unavoidable outcome for Delta)
       no_cookies    — homepage mint returned an empty cookie jar
       http_error    — network/timeout error reaching api.brightdata.com
       crash         — unhandled exception (programmer error)
@@ -277,6 +271,7 @@ async def _scrape_real(
     LAST_RUN_DIAG = {
         "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "transport": "bd_web_unlocker_2step",
+        "pattern": "A (2-step) — disproven; award POST is Akamai 444-walled",
         "origin": origin,
         "dest": dest,
         "date": date,
@@ -321,7 +316,7 @@ async def _scrape_real(
     attempt["has_bm_cookies"] = any(k.startswith("bm_") for k in cookies)
 
     print(
-        f"DL: mint → {len(cookies)} cookies "
+        f"DL: mint -> {len(cookies)} cookies "
         f"(_abck={'y' if abck else 'n'}, validated={'~0~' in abck}, "
         f"bm_*={any(k.startswith('bm_') for k in cookies)}) "
         f"target_status={mint_diag.get('target_status')}",
@@ -339,61 +334,43 @@ async def _scrape_real(
     LAST_RUN_DIAG["attempts"].append(attempt)
 
     # --- Step 2: POST the award API with the minted cookie jar ------------
-    # Two WU transports are tried in order, each recorded as its own
-    # attempts[] entry, because they unlock differently:
-    #   * format=json — BD's full Web Unlocker engine; what unlocked the
-    #     homepage + the GET probe of /shop/ow/search. POST body supported.
-    #   * format=raw  — proxy pass-through. Cheaper, but a 2026-05-20 run
-    #     showed it returns Akamai "Access Denied" for the award POST.
-    # We try format=json first (most likely to unlock); format=raw second
-    # so /diag/dl_last records a definitive side-by-side for the rollout
-    # decision. The first transport that yields parseable award rows wins.
+    # WU `format=json` carries the target's status + headers in the envelope
+    # (vs `format=raw` which discards them). The award POST is known to come
+    # back Akamai 444; we still fire it so /diag/dl_last has the live trace.
     body = _build_search_body(origin, dest, date, 1)
     headers = _api_headers(cookies)
+    results, verdict = await _call_award_api(body, headers, origin, dest, date)
+    LAST_RUN_DIAG["last_verdict"] = verdict
+    LAST_RUN_DIAG["row_count"] = len(results)
+    if verdict == "ok":
+        print(f"DL: SUCCESS ({len(results)} rows)", flush=True)
+        return results
 
-    for transport in ("json", "raw"):
-        results, verdict = await _call_award_api(transport, body, headers, origin, dest, date)
-        if verdict == "ok":
-            LAST_RUN_DIAG["last_verdict"] = "ok"
-            LAST_RUN_DIAG["winning_transport"] = transport
-            LAST_RUN_DIAG["row_count"] = len(results)
-            print(f"DL: SUCCESS ({len(results)} rows via format={transport})", flush=True)
-            return results
-        # Keep the most informative verdict (last transport tried wins the
-        # summary, but a no_results/no_itinerary beats a hard block for
-        # diagnosis — it means the request shape needs work, not the auth).
-        LAST_RUN_DIAG["last_verdict"] = verdict
-
-    LAST_RUN_DIAG["row_count"] = 0
     print(
-        f"DL: exhausted both WU transports — final verdict "
-        f"{LAST_RUN_DIAG.get('last_verdict')}",
+        f"DL: WU 2-step did not yield rows — verdict {verdict} "
+        f"(Delta award POST is Akamai-walled; see module docstring)",
         flush=True,
     )
-    return []
+    return results if verdict == "ok" else []
 
 
 async def _call_award_api(
-    transport: str,
     body: dict[str, Any],
     headers: dict[str, str],
     origin: str,
     dest: str,
     date: str,
 ) -> tuple[list[NormalizedResult], str]:
-    """One WU POST to `/shop/ow/search`, via either `format` transport.
+    """One WU `format=json` POST to `/shop/ow/search`.
 
-    `transport` is "json" (`wu_request_json`, full unlocker engine) or
-    "raw" (`wu_post`, proxy pass-through). Appends an `attempts[]` entry
-    to `LAST_RUN_DIAG` capturing the WU status, target status, raw body
-    head, parsed-JSON shape, Delta's shoppingError envelope, and itinerary
-    count. Returns `(rows, verdict)`; verdict is one of:
-      ok | no_results | no_itinerary | api_non_json | api_error
-      | http_error | crash
+    Appends an `attempts[]` entry to `LAST_RUN_DIAG` capturing the WU status,
+    the target status (Akamai 444 expected), raw body head, parsed-JSON
+    shape, Delta's `shoppingError` envelope if present, and itinerary count.
+    Returns `(rows, verdict)`.
     """
     attempt: dict[str, Any] = {
         "stage": "award_post",
-        "transport": f"format_{transport}",
+        "transport": "format_json",
         "endpoint": SEARCH_API,
         "payload_keys": sorted(body.keys()),
     }
@@ -402,55 +379,45 @@ async def _call_award_api(
     parsed: dict[str, Any] | None = None
     raw_text: str = ""
     try:
-        if transport == "json":
-            # format=json wraps the target response in an envelope; unwrap
-            # status_code / headers / body defensively (key names vary by
-            # BD API version — same handling as wu_mint_cookies).
-            status, envelope = await wu_request_json(
-                SEARCH_API, method="POST", body=body, headers=headers, timeout_s=120.0
+        wu_status, envelope = await wu_request_json(
+            SEARCH_API, method="POST", body=body, headers=headers, timeout_s=120.0
+        )
+        attempt["wu_http_status"] = wu_status
+        if isinstance(envelope, dict):
+            attempt["target_status"] = (
+                envelope.get("status_code") or envelope.get("status")
             )
-            attempt["wu_http_status"] = status
-            if isinstance(envelope, dict):
-                attempt["target_status"] = (
-                    envelope.get("status_code") or envelope.get("status")
+            env_hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
+            if isinstance(env_hdrs, dict):
+                attempt["x_brd_error"] = (
+                    env_hdrs.get("x-brd-error") or env_hdrs.get("X-Brd-Error")
                 )
-                env_hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
-                if isinstance(env_hdrs, dict):
-                    attempt["x_brd_error"] = (
-                        env_hdrs.get("x-brd-error") or env_hdrs.get("X-Brd-Error")
-                    )
-                env_body = envelope.get("body")
-                if isinstance(env_body, str):
-                    raw_text = env_body
-                    try:
-                        loaded = httpx.Response(200, text=env_body).json()
-                        parsed = loaded if isinstance(loaded, dict) else None
-                    except Exception:  # noqa: BLE001 — body not JSON
-                        parsed = None
-                # `status` for verdict purposes = the target's status.
-                # WU returns it as an int, but coerce a stringified status
-                # defensively so an Akamai 444 isn't silently treated as 200.
-                tstat = attempt.get("target_status")
-                if isinstance(tstat, int):
-                    status = tstat
-                elif isinstance(tstat, str) and tstat.isdigit():
-                    status = int(tstat)
-            else:
-                attempt["envelope"] = "non-JSON WU response"
-        else:  # raw
-            status, parsed, raw_text = await wu_post(
-                SEARCH_API, body=body, headers=headers, timeout_s=90.0
-            )
-            attempt["wu_status"] = status
+            env_body = envelope.get("body")
+            if isinstance(env_body, str):
+                raw_text = env_body
+                try:
+                    loaded = httpx.Response(200, text=env_body).json()
+                    parsed = loaded if isinstance(loaded, dict) else None
+                except Exception:  # noqa: BLE001 — body not JSON (Akamai HTML)
+                    parsed = None
+            # Verdict status = the target's status. Coerce a stringified
+            # status defensively so an Akamai 444 isn't treated as 200.
+            tstat = attempt.get("target_status")
+            if isinstance(tstat, int):
+                status = tstat
+            elif isinstance(tstat, str) and tstat.isdigit():
+                status = int(tstat)
+        else:
+            attempt["envelope"] = "non-JSON WU response"
     except httpx.HTTPError as exc:
         err = f"{type(exc).__name__}: {str(exc)[:300]}"
-        print(f"DL: award POST ({transport}) httpx error: {err}", flush=True)
+        print(f"DL: award POST httpx error: {err}", flush=True)
         attempt["error"] = err
         LAST_RUN_DIAG["attempts"].append(attempt)
         return [], "http_error"
     except Exception as exc:  # noqa: BLE001
         err = f"{type(exc).__name__}: {str(exc)[:300]}"
-        print(f"DL: award POST ({transport}) crash: {err}", flush=True)
+        print(f"DL: award POST crash: {err}", flush=True)
         attempt["error"] = err
         LAST_RUN_DIAG["attempts"].append(attempt)
         return [], "crash"
@@ -471,7 +438,7 @@ async def _call_award_api(
         attempt["itinerary_count"] = len(parsed.get("itinerary") or [])
 
     print(
-        f"DL: award POST ({transport}) → status={status} len={len(raw_text)} "
+        f"DL: award POST -> status={status} len={len(raw_text)} "
         f"parsed={parsed is not None} "
         f"itineraries={attempt.get('itinerary_count', 0)} "
         f"dl_error={attempt.get('dl_error_code')}",
@@ -480,6 +447,7 @@ async def _call_award_api(
 
     # --- Categorize ------------------------------------------------------
     if status and status != 200:
+        # The expected outcome for Delta: Akamai 444 "Access Denied".
         attempt["verdict"] = "api_error"
         LAST_RUN_DIAG["attempts"].append(attempt)
         return [], "api_error"
@@ -490,9 +458,6 @@ async def _call_award_api(
         return [], "api_non_json"
 
     if not parsed.get("itinerary"):
-        # shoppingError/100800 envelope (request shape wrong / session
-        # rejected) or a genuinely empty award result — raw_text_head +
-        # dl_error_code disambiguate.
         attempt["verdict"] = "no_itinerary"
         LAST_RUN_DIAG["attempts"].append(attempt)
         return [], "no_itinerary"
