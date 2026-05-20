@@ -3,34 +3,57 @@
 The Sekinal cookie-mint + curl_cffi pattern in `search.py` failed Phase 1
 because BD Residential US IPs are Akamai-flagged for aa.com (`_abck` never
 reaches `~0~`). WU is the lowest-friction next experiment: instead of
-trying to mint a valid browser session and replay, we just hand the entire
+trying to mint a valid browser session and replay, we hand the entire
 request to BD's WU API and let them handle the bot defense.
 
-Session 5 Phase C (scraper-log.md L289-305) already confirmed:
-  * WU POST to `/booking/api/search/itinerary` succeeds at the network
-    layer — HTTP 200, AA's response JSON shape returned.
-  * Whether AA's *app* layer accepts the request is a separate matter. In
-    Session 5, anonymous WU POSTs got `{"error":"309", ...}` (session
-    state missing). This variant exists to see whether the answer has
-    changed in 2026-05 — and to provide a clean substrate if/when we
-    figure out how to forge a session that AA accepts.
+Session 5 Phase C (scraper-log.md L289-305) confirmed WU POST to AA's
+`/booking/api/search/itinerary` succeeds at the network layer (HTTP 200,
+AA's JSON shape) but AA's app returns `{"error":"309", ...}` — error 309
+means "no session": AA's API needs a valid *application* session
+(`XSRF-TOKEN`, optionally `spa_session_id`/`JSESSIONID`).
 
-Architecture:
-  * Build the exact AA payload `search.py:_search_via_curl_cffi` uses.
-  * Hand it to `bd_wu.wu_post`; let BD handle proxy + sensor.js.
-  * Capture status + parsed body + raw text into `LAST_RUN_DIAG` (mirrors
-    `search.py:LAST_RUN_DIAG` so the existing `/diag/aa_last` style
-    surface works once the parent wires `/diag/aa_wu_last`).
-  * Parse via the existing `_parse_xhr` from `aa_aadvantage.search` —
-    response shape is identical regardless of how we got it.
+Two-step flow this module implements
+------------------------------------
+Step 1 — mint a session. WU GET an aa.com page that renders, then read the
+`Set-Cookie` headers off WU's `format=json` envelope. The catch: WU applies
+a stale per-site render-readiness rule to `www.aa.com/*` — it waits for a
+`#weeklyCarousel` selector that AA's Akamai challenge prevents rendering,
+so every `www.aa.com` GET 502s with `x-brd-error-code: expect_element`.
 
-No new env vars beyond `BRIGHTDATA_WU_TOKEN` and `BRIGHTDATA_WU_ZONE`
-(both read by `common/bd_wu.py`).
+We work around that two ways, tried in order (`_MINT_STRATEGIES`):
+  1. `mobile.aa.com/booking` — confirmed (scraper-log L309, re-confirmed
+     2026-05-20) to render cleanly via WU: HTTP 200, full cookie jar with
+     `XSRF-TOKEN` + `JSESSIONID` + Akamai `bm_*` cookies. mobile.aa.com is
+     the same `.aa.com` cookie domain. It's a legacy server-rendered page
+     so it does NOT mint `spa_session_id`.
+  2. `www.aa.com/*` SPA pages with an `x-unblock-expect` *override* header
+     — we send our own expect target so WU stops waiting for the dead
+     `#weeklyCarousel` selector. If WU honours the override and renders,
+     the SPA bootstrap mints `spa_session_id` too.
+
+We stop at the first strategy whose jar has `XSRF-TOKEN` (AA's load-bearing
+session cookie per Sekinal).
+
+Step 2 — POST the award API. `wu_post` hands the request to WU again (WU
+re-solves Akamai for the POST, so the jar's `_abck` is not needed here);
+we forward the minted session cookies plus `X-XSRF-TOKEN` + `X-CID`
+headers AA's API derives from them (Sekinal recipe — see
+`tasks/scraper-research/agent-1-aa-oss-deep-dive.md` and
+`search.py:_search_via_curl_cffi`).
+
+`_parse_xhr` from `aa_aadvantage.search` parses the response — shape is
+identical regardless of how the request was made.
+
+Env vars: `BRIGHTDATA_WU_TOKEN` + `BRIGHTDATA_WU_ZONE` (both read here and
+by `common/bd_wu.py`). Set as Fly secrets — never commit a value.
 """
 
 from __future__ import annotations
 
+import json
 import logging
+import os
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -41,18 +64,41 @@ from aa_aadvantage.search import (
     PROGRAM_NAME,
     _parse_xhr,
 )
-from common.bd_wu import wu_post
+from common.bd_wu import cookies_to_header, parse_set_cookie, wu_post
 from common.types import NormalizedResult
 
 log = logging.getLogger(__name__)
 
 AA_API_ENDPOINT = "https://www.aa.com/booking/api/search/itinerary"
+WU_ENDPOINT = "https://api.brightdata.com/request"
+
+# Session-mint strategies, tried in order until one yields a jar with
+# `XSRF-TOKEN`. Each is `(label, url, expect_override)`:
+#   * `url` — the aa.com page WU GETs to mint cookies.
+#   * `expect_override` — value for the `x-unblock-expect` header, or None.
+#     When None, WU uses its own (stale, for aa.com) per-site render rule.
+#     When set, we override that rule so WU stops waiting for the dead
+#     `#weeklyCarousel` selector and returns once our target is present.
+#
+# `mobile.aa.com/booking` is first because it's the only AA URL CONFIRMED
+# to render through WU with no override needed. The `www.aa.com` strategies
+# are the fallback that also picks up `spa_session_id` *if* WU honours the
+# `x-unblock-expect` override on the REST API (the BD docs are ambiguous on
+# whether REST-API `headers` carry `x-unblock-*` directives — this probes
+# it empirically; `LAST_RUN_DIAG` records which strategy actually worked).
+_MINT_STRATEGIES: list[tuple[str, str, str | None]] = [
+    ("mobile_booking", "https://mobile.aa.com/booking", None),
+    ("www_home_body", "https://www.aa.com/", '{"body": true}'),
+    (
+        "www_findflights_body",
+        "https://www.aa.com/booking/find-flights",
+        '{"body": true}',
+    ),
+]
 
 # Module-level diagnostic state — last scrape's request + WU response,
-# exposed via `/diag/aa_wu_last` (the parent wires the route after this
-# module lands). Forensic-detail by design (per CLAUDE.md scraper log
-# discipline): callers should never have to grep Fly logs for what
-# happened — `LAST_RUN_DIAG` should answer it.
+# exposed via `/diag/aa_wu_last`. Forensic-detail by design (CLAUDE.md
+# scraper-log discipline): callers should never have to grep Fly logs.
 LAST_RUN_DIAG: dict[str, Any] = {"attempts": []}
 
 
@@ -60,8 +106,8 @@ def _build_aa_payload(origin: str, dest: str, date: str) -> dict[str, Any]:
     """Construct the JSON body AA's `/booking/api/search/itinerary` accepts.
 
     Shape mirrors `search.py:_search_via_curl_cffi` verbatim — see Phase 0
-    Agent 6 community-intel report for confirmation that this is the
-    exact shape Sekinal/aa_contest and other working OSS scrapers submit.
+    Agent 6 community-intel report for confirmation that this is the exact
+    shape Sekinal/aa_contest and other working OSS scrapers submit.
 
     Tweaking any field here without verifying against a known-good capture
     will silently regress to AA returning `error: 309` (session/payload
@@ -103,27 +149,232 @@ def _build_aa_payload(origin: str, dest: str, date: str) -> dict[str, Any]:
     }
 
 
+async def _wu_get_json(
+    url: str,
+    expect_override: str | None = None,
+    timeout_s: float = 210.0,
+) -> tuple[int, dict[str, Any] | None]:
+    """WU GET `url` with `format=json` so BD wraps the target's response in
+    an envelope that includes the response headers (`set-cookie` etc).
+
+    This is a local sibling of `bd_wu.wu_request_json`. We can't use that
+    helper because it has no way to pass an `x-unblock-expect` override —
+    and overriding WU's stale `#weeklyCarousel` per-site wait for aa.com is
+    the whole point of this function. `bd_wu.py` is shared infrastructure
+    we deliberately don't modify for an AA-specific need.
+
+    `x-unblock-expect` is placed in the WU envelope's `headers` object —
+    BD's REST API reads `x-unblock-*` / `x-brd-*` prefixed headers there as
+    control directives rather than forwarding them to the target (per BD's
+    own `brightdata/skills` web-unlocker reference). If a given BD API
+    version forwards it to AA instead, AA simply ignores an unknown header
+    and we fall through to the next mint strategy — no harm.
+
+    Returns `(wu_http_status, envelope_or_None)`. WU's envelope is roughly
+    `{"status_code": int, "headers": {...}, "body": "..."}` — key names
+    vary by BD API version so callers probe defensively.
+    """
+    token = os.environ.get("BRIGHTDATA_WU_TOKEN")
+    zone = os.environ.get("BRIGHTDATA_WU_ZONE")
+    if not token or not zone:
+        raise RuntimeError(
+            "BRIGHTDATA_WU_TOKEN and BRIGHTDATA_WU_ZONE env vars are "
+            "required for the AA WU variant. Set them as Fly secrets."
+        )
+
+    wu_envelope: dict[str, Any] = {
+        "zone": zone,
+        "url": url,
+        "method": "GET",
+        "format": "json",
+    }
+    if expect_override:
+        # WU control directive — see docstring. Kept out of the request when
+        # None so WU's default behaviour is unchanged for strategies that
+        # don't need the override.
+        wu_envelope["headers"] = {"x-unblock-expect": expect_override}
+
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(timeout_s, connect=10.0)
+    ) as client:
+        resp = await client.post(
+            WU_ENDPOINT,
+            json=wu_envelope,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+        )
+
+    try:
+        return resp.status_code, resp.json()
+    except (json.JSONDecodeError, ValueError):
+        return resp.status_code, None
+
+
+def _read_envelope(envelope: dict[str, Any] | None) -> dict[str, Any]:
+    """Pull cookies + diagnostics out of a WU `format=json` envelope.
+
+    Returns a dict: `{cookies, target_status, x_brd_error, x_brd_error_code,
+    cookie_names, body_len}`. `cookies` is a `{name: value}` jar (empty if
+    WU failed). Shape-tolerant — BD varies envelope key casing by version.
+    """
+    out: dict[str, Any] = {
+        "cookies": {},
+        "target_status": None,
+        "x_brd_error": None,
+        "x_brd_error_code": None,
+        "cookie_names": [],
+        "body_len": 0,
+    }
+    if not isinstance(envelope, dict):
+        return out
+    out["target_status"] = envelope.get("status_code") or envelope.get("status")
+    hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
+    if isinstance(hdrs, dict):
+        out["x_brd_error"] = hdrs.get("x-brd-error") or hdrs.get("X-Brd-Error")
+        out["x_brd_error_code"] = hdrs.get("x-brd-error-code") or hdrs.get(
+            "X-Brd-Error-Code"
+        )
+        cookies = parse_set_cookie(
+            hdrs.get("set-cookie") or hdrs.get("Set-Cookie")
+        )
+        out["cookies"] = cookies
+        out["cookie_names"] = sorted(cookies.keys())
+    body = envelope.get("body")
+    if isinstance(body, str):
+        out["body_len"] = len(body)
+    return out
+
+
+async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
+    """Step 1 of the WU two-step flow: WU-GET an aa.com page that renders
+    and harvest its session cookies.
+
+    Walks `_MINT_STRATEGIES` in order, stopping at the first whose cookie
+    jar contains `XSRF-TOKEN` (AA's load-bearing session cookie). Each
+    strategy attempt is logged into the returned `diag["strategies"]` list
+    so `/diag/aa_wu_last` shows exactly which AA URL minted (or why each
+    failed — `#weeklyCarousel` timeout, captcha block, rate-limit, …).
+
+    Returns `(cookies, diag)` — `cookies` is empty if every strategy failed.
+    """
+    diag: dict[str, Any] = {"strategies": [], "minted_via": None}
+    for label, url, expect_override in _MINT_STRATEGIES:
+        print(
+            f"AA_WU: mint attempt '{label}' → WU GET {url} "
+            f"(expect_override={expect_override!r})",
+            flush=True,
+        )
+        strat: dict[str, Any] = {
+            "label": label,
+            "url": url,
+            "expect_override": expect_override,
+        }
+        try:
+            wu_status, envelope = await _wu_get_json(url, expect_override)
+        except httpx.HTTPError as exc:
+            strat["error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
+            diag["strategies"].append(strat)
+            print(f"AA_WU: mint '{label}' httpx error: {strat['error']}", flush=True)
+            continue
+
+        info = _read_envelope(envelope)
+        strat["wu_http_status"] = wu_status
+        strat["target_status"] = info["target_status"]
+        strat["x_brd_error"] = info["x_brd_error"]
+        strat["x_brd_error_code"] = info["x_brd_error_code"]
+        strat["cookie_names"] = info["cookie_names"]
+        strat["body_len"] = info["body_len"]
+        cookies = info["cookies"]
+        strat["has_xsrf"] = "XSRF-TOKEN" in cookies
+        strat["has_spa_sid"] = "spa_session_id" in cookies
+        strat["has_jsessionid"] = "JSESSIONID" in cookies
+        diag["strategies"].append(strat)
+
+        print(
+            f"AA_WU: mint '{label}' wu={wu_status} target={info['target_status']} "
+            f"cookies={len(cookies)} xsrf={'XSRF-TOKEN' in cookies} "
+            f"spa_sid={'spa_session_id' in cookies} "
+            f"brd_err={info['x_brd_error_code']!r}",
+            flush=True,
+        )
+
+        if "XSRF-TOKEN" in cookies:
+            diag["minted_via"] = label
+            diag["cookie_names"] = sorted(cookies.keys())
+            diag["has_spa_sid"] = "spa_session_id" in cookies
+            print(
+                f"AA_WU: session minted via '{label}' "
+                f"({len(cookies)} cookies)",
+                flush=True,
+            )
+            return cookies, diag
+
+    print("AA_WU: all mint strategies failed — no XSRF-TOKEN obtained", flush=True)
+    return {}, diag
+
+
+def _build_api_headers(cookies: dict[str, str]) -> dict[str, str]:
+    """Headers WU forwards to AA's API on the award-search POST.
+
+    Beyond a browser-shaped `Accept`/`Referer`/`Origin` set, AA's API wants
+    two headers derived from the session (Sekinal recipe, verified in
+    `search.py:_search_via_curl_cffi`):
+      * `X-XSRF-TOKEN` ← the `XSRF-TOKEN` cookie (CSRF double-submit).
+      * `X-CID`        ← the `spa_session_id` cookie. The legacy
+        `mobile.aa.com` mint path doesn't set `spa_session_id`, so when
+        it's absent we fall back to a fresh UUID — `X-CID` reads as a
+        client-generated correlation id, so a syntactically valid UUID
+        keeps AA's API from rejecting the request for a missing header.
+        (If AA strictly validates `X-CID` against server state, the
+        `www.aa.com` mint strategies — which DO mint `spa_session_id` —
+        are the path that satisfies it; `LAST_RUN_DIAG` shows which mint
+        strategy a given run used.)
+    """
+    headers: dict[str, str] = {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Content-Type": "application/json",
+        "Referer": "https://www.aa.com/booking/choose-flights/1",
+        "Origin": "https://www.aa.com",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Cookie": cookies_to_header(cookies),
+    }
+    xsrf = cookies.get("XSRF-TOKEN")
+    if xsrf:
+        headers["X-XSRF-TOKEN"] = xsrf
+    headers["X-CID"] = cookies.get("spa_session_id") or str(uuid.uuid4())
+    return headers
+
+
 async def search_via_wu(
     origin: str,
     dest: str,
     date: str,
     cabin_filter: str = "Y",  # noqa: ARG001 — keep signature parity with search.search
 ) -> list[NormalizedResult]:
-    """Search AA awards via Bright Data Web Unlocker.
+    """Search AA awards via Bright Data Web Unlocker, two-step.
+
+    Step 1 mints an AA session (`_mint_aa_session`); Step 2 POSTs the award
+    API through WU with that session.
 
     Verdict codes captured in LAST_RUN_DIAG.last_verdict:
-      ok          — WU returned 200 with parseable AA response containing slices
-      no_results  — WU returned 200 with valid JSON but zero rows parsed
-      no_slices   — WU returned 200 with JSON but no `slices` key (likely error 309)
-      api_error   — WU returned 200 but body is not JSON (HTML / blank / unexpected)
-      wu_error    — WU itself returned non-200 (BD validation error, no credit, …)
-      http_error  — Network / timeout error reaching `api.brightdata.com`
-      crash       — Unhandled exception inside the variant (programmer error)
+      ok           — WU 200 with parseable AA response containing slices
+      no_results   — WU 200, valid JSON, but zero rows parsed
+      no_slices    — WU 200, JSON, no `slices` key (still error 309 / empty)
+      api_error    — WU 200 but body is not JSON (HTML / blank / unexpected)
+      wu_error     — WU itself returned non-200 (BD validation, no credit, …)
+      mint_failed  — Step 1 minted no session (no AA URL rendered via WU)
+      http_error   — Network / timeout error reaching `api.brightdata.com`
+      crash        — Unhandled exception inside the variant (programmer error)
     """
     global LAST_RUN_DIAG
     LAST_RUN_DIAG = {
         "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "transport": "bd_web_unlocker",
+        "transport": "bd_web_unlocker_2step",
         "origin": origin,
         "dest": dest,
         "date": date,
@@ -131,34 +382,55 @@ async def search_via_wu(
         "attempts": [],
     }
 
-    payload = _build_aa_payload(origin, dest, date)
-    attempt_diag: dict[str, Any] = {
-        "attempt": 1,
-        "endpoint": AA_API_ENDPOINT,
-        "payload_size": len(str(payload)),
-    }
-
     print(
         f"AA_WU: ===== search start {origin}->{dest} {date} via Web Unlocker =====",
         flush=True,
     )
 
+    # --- Step 1: mint an AA session -----------------------------------
+    try:
+        cookies, mint_diag = await _mint_aa_session()
+    except httpx.HTTPError as exc:
+        err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+        print(f"AA_WU: httpx error during session mint: {err_str}", flush=True)
+        LAST_RUN_DIAG["mint"] = {"error": err_str}
+        LAST_RUN_DIAG["last_verdict"] = "http_error"
+        LAST_RUN_DIAG["row_count"] = 0
+        return []
+    except Exception as exc:  # noqa: BLE001 — defensive; surface anything else
+        err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+        print(f"AA_WU: crash during session mint: {err_str}", flush=True)
+        LAST_RUN_DIAG["mint"] = {"error": err_str}
+        LAST_RUN_DIAG["last_verdict"] = "crash"
+        LAST_RUN_DIAG["row_count"] = 0
+        return []
+
+    LAST_RUN_DIAG["mint"] = mint_diag
+
+    if not cookies:
+        print("AA_WU: session mint failed — cannot POST AA API", flush=True)
+        LAST_RUN_DIAG["last_verdict"] = "mint_failed"
+        LAST_RUN_DIAG["row_count"] = 0
+        return []
+
+    # --- Step 2: POST the award API with the minted session -----------
+    payload = _build_aa_payload(origin, dest, date)
+    api_headers = _build_api_headers(cookies)
+    attempt_diag: dict[str, Any] = {
+        "attempt": 1,
+        "endpoint": AA_API_ENDPOINT,
+        "payload_size": len(str(payload)),
+        "minted_via": mint_diag.get("minted_via"),
+        "cookie_count": len(cookies),
+        "sent_xsrf": "X-XSRF-TOKEN" in api_headers,
+        "spa_sid_present": "spa_session_id" in cookies,
+    }
+
     try:
         status, parsed, raw_text = await wu_post(
             url=AA_API_ENDPOINT,
             body=payload,
-            headers={
-                # Forwarded to AA. Match what a browser session would send so
-                # AA's API doesn't reject for missing Origin / Referer. (These
-                # don't fix session state — `error: 309` from Session 5 came
-                # back the same with and without them — but they're cheap
-                # and won't hurt.)
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Language": "en-US,en;q=0.5",
-                "Content-Type": "application/json",
-                "Referer": "https://www.aa.com/",
-                "Origin": "https://www.aa.com",
-            },
+            headers=api_headers,
             timeout_s=90.0,  # WU can be slow on cold sessions (30-60s typical)
         )
     except httpx.HTTPError as exc:
@@ -197,6 +469,7 @@ async def search_via_wu(
     print(
         f"AA_WU: wu_post returned status={status} len={len(raw_text)} "
         f"parsed={parsed is not None} "
+        f"aa_error={attempt_diag.get('aa_error')!r} "
         f"slices={attempt_diag.get('slice_count', 0)}",
         flush=True,
     )
@@ -218,9 +491,9 @@ async def search_via_wu(
         return []
 
     if not parsed.get("slices"):
-        # Either the `error: 309` shape (session missing) or a different
-        # empty-result shape AA invented since. raw_text_head + json_keys
-        # in diag will tell us which.
+        # Either the `error: 309` shape (session still rejected) or a
+        # different empty-result shape. raw_text_head + aa_error + json_keys
+        # in diag tell us which.
         attempt_diag["stage"] = "api_no_slices"
         LAST_RUN_DIAG["attempts"].append(attempt_diag)
         LAST_RUN_DIAG["last_verdict"] = "no_slices"
@@ -235,7 +508,7 @@ async def search_via_wu(
     if not results:
         LAST_RUN_DIAG["last_verdict"] = "no_results"
         LAST_RUN_DIAG["row_count"] = 0
-        print(f"AA_WU: parsed JSON had slices but _parse_xhr returned 0 rows", flush=True)
+        print("AA_WU: parsed JSON had slices but _parse_xhr returned 0 rows", flush=True)
         return []
 
     LAST_RUN_DIAG["last_verdict"] = "ok"
