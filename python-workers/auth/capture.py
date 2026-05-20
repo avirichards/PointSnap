@@ -719,13 +719,9 @@ async def _first_visible(page: Any, selectors: list[str], timeout_ms: int):
     deadline = _now() + (timeout_ms / 1000.0)
     while _now() < deadline:
         for frame in _frames(page):
-            for sel in selectors:
-                try:
-                    loc = frame.locator(sel).first
-                    if await loc.is_visible():
-                        return loc
-                except Exception:  # noqa: BLE001
-                    continue
+            loc = await _frame_first_visible(frame, selectors)
+            if loc is not None:
+                return loc
         await asyncio.sleep(0.25)
     return None
 
@@ -738,15 +734,21 @@ async def _any_visible_with_text(page: Any, selectors: list[str]) -> str | None:
     for frame in _frames(page):
         for sel in selectors:
             try:
-                loc = frame.locator(sel).first
-                if not await loc.is_visible():
-                    continue
-                txt = (await loc.inner_text()) or ""
-                txt = re.sub(r"\s+", " ", txt).strip()
-                if txt:
-                    return txt
+                loc = frame.locator(sel)
+                n = await loc.count()
             except Exception:  # noqa: BLE001
                 continue
+            for i in range(min(n, 20)):
+                try:
+                    cand = loc.nth(i)
+                    if not await cand.is_visible():
+                        continue
+                    txt = (await cand.inner_text()) or ""
+                    txt = re.sub(r"\s+", " ", txt).strip()
+                    if txt:
+                        return txt
+                except Exception:  # noqa: BLE001
+                    continue
     return None
 
 
@@ -754,12 +756,8 @@ async def _any_present(page: Any, selectors: list[str]) -> bool:
     """True if any selector resolves to a visible element on the top
     document or any child frame."""
     for frame in _frames(page):
-        for sel in selectors:
-            try:
-                if await frame.locator(sel).first.is_visible():
-                    return True
-            except Exception:  # noqa: BLE001
-                continue
+        if await _frame_first_visible(frame, selectors) is not None:
+            return True
     return False
 
 
@@ -984,15 +982,24 @@ _TEXTISH_INPUT = (
 
 
 async def _frame_first_visible(frame: Any, selectors: list[str]):
-    """First visible locator for `selectors` within a single frame — one
-    pass, no polling. None if nothing matches."""
+    """First VISIBLE element matching any of `selectors` within a single
+    frame. Checks every match of each selector — not just `.first` — so a
+    hidden duplicate earlier in the DOM does not mask a visible one.
+    (Gigya and similar widgets pre-render several hidden screens, each
+    carrying its own username / password inputs.) One pass, no polling."""
     for sel in selectors:
         try:
-            loc = frame.locator(sel).first
-            if await loc.is_visible():
-                return loc
+            loc = frame.locator(sel)
+            n = await loc.count()
         except Exception:  # noqa: BLE001
             continue
+        for i in range(min(n, 20)):
+            try:
+                cand = loc.nth(i)
+                if await cand.is_visible():
+                    return cand
+            except Exception:  # noqa: BLE001
+                continue
     return None
 
 
