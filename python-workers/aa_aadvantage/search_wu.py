@@ -409,9 +409,13 @@ async def _mint_browser_once(try_no: int) -> tuple[dict[str, str], dict[str, Any
             )
             attempt["http_status"] = resp.status if resp else None
 
-            # Poll `page.context.cookies()` for `spa_session_id` — the SPA
-            # bootstrap sets it a few seconds after DOMContentLoaded. Polling
-            # (vs a flat sleep) lets a fast mint return early.
+            # Poll `page.context.cookies()` until BOTH `XSRF-TOKEN` and
+            # `spa_session_id` are present — the SPA bootstrap sets them a
+            # few seconds after DOMContentLoaded, and NOT necessarily at the
+            # same instant. Breaking the moment only `spa_session_id` lands
+            # would export a jar missing `XSRF-TOKEN` (AA's award POST needs
+            # both — the CSRF double-submit AND the session id). Polling for
+            # both lets a fast mint return early without losing a cookie.
             deadline = asyncio.get_event_loop().time() + _BROWSER_MINT_SETTLE_S
             while asyncio.get_event_loop().time() < deadline:
                 try:
@@ -421,7 +425,10 @@ async def _mint_browser_once(try_no: int) -> tuple[dict[str, str], dict[str, Any
                     cookies = {c["name"]: c["value"] for c in cks}
                 except Exception:  # noqa: BLE001 — transient CDP hiccup; retry
                     cookies = {}
-                if _SPA_SESSION_COOKIE in cookies:
+                if (
+                    _SPA_SESSION_COOKIE in cookies
+                    and _BASE_SESSION_COOKIE in cookies
+                ):
                     break
                 await asyncio.sleep(2.0)
 
@@ -606,7 +613,14 @@ async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
             }
             print(f"AA_WU: browser_api mint rung crashed: {br_strat['error']}", flush=True)
         diag["strategies"].append(br_strat)
-        if _BASE_SESSION_COOKIE in br_cookies:
+        # Accept the Browser API jar if it carries EITHER session cookie.
+        # `spa_session_id` is the cookie this rung exists to mint, so a jar
+        # with it is usable even if the bootstrap hadn't set `XSRF-TOKEN`
+        # yet — unlike a WU-GET jar, which is only floored on `XSRF-TOKEN`.
+        if (
+            _SPA_SESSION_COOKIE in br_cookies
+            or _BASE_SESSION_COOKIE in br_cookies
+        ):
             jars.append(("browser_api_findflights", br_cookies))
     else:
         print(
