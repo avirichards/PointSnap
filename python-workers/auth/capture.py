@@ -571,7 +571,9 @@ class AuthSessionState:
 ACTIVE_SESSIONS: dict[str, AuthSessionState] = {}
 
 # How long to leave a `/auth/start` session alive before auto-expiring.
-SESSION_MAX_TTL_SEC = 5 * 60
+# Generous enough to cover a slow BD-browser open + a real login + the
+# user fetching an MFA code from their phone or email.
+SESSION_MAX_TTL_SEC = 10 * 60
 
 # Fallback cookie freshness when a program omits an override.
 DEFAULT_COOKIE_TTL_HOURS = 24
@@ -1103,7 +1105,7 @@ async def _fill_and_submit_credentials(
     # the form only after their JS bundle boots, so allow a generous
     # window.
     user_loc, pass_loc, submit_loc = await _find_credential_inputs(
-        page, cfg, timeout_ms=35_000
+        page, cfg, timeout_ms=45_000
     )
     if user_loc is None or pass_loc is None:
         # No login form surfaced. Record the real DOM inventory so the
@@ -1252,12 +1254,16 @@ async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
         # --- Optional warmup, then navigate to the login page ------------
         if cfg.warmup_url:
             try:
+                # `commit` (not domcontentloaded) — the warmup only needs
+                # to reach the origin so Akamai's sensor.js starts; the
+                # heavy page need not be fully parsed. The sleep gives
+                # sensor.js room to mint cookies.
                 await page.goto(
                     cfg.warmup_url,
-                    wait_until="domcontentloaded",
+                    wait_until="commit",
                     timeout=30_000,
                 )
-                await asyncio.sleep(2.0)
+                await asyncio.sleep(3.0)
             except Exception as exc:  # noqa: BLE001
                 log.warning(
                     "auth_capture/login: warmup nav failed (continuing): %s",
@@ -1268,37 +1274,33 @@ async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
             return
 
         try:
+            # `commit` resolves as soon as the response is received — AC's
+            # /signin redirect-chains through heavy OIDC-style hops, and
+            # waiting for `domcontentloaded` of the final page times out
+            # intermittently. Resolve early; the form finder polls.
             await page.goto(
-                cfg.login_url, wait_until="domcontentloaded", timeout=45_000
+                cfg.login_url, wait_until="commit", timeout=45_000
             )
         except Exception as exc:  # noqa: BLE001
-            # Air Canada (and peers) do client-side geo / SPA redirects that
-            # interrupt the goto Playwright started — that is NOT a real
-            # failure, the browser is still navigating to the redirect
-            # target. Let the page settle and carry on; only a genuine nav
-            # error is terminal.
-            msg = str(exc)
-            if (
-                "interrupted by another navigation" in msg
-                or "ERR_ABORTED" in msg
-            ):
-                log.info(
-                    "auth_capture/login: initial nav interrupted by a "
-                    "redirect — letting the page settle and continuing"
+            # A goto interrupted by a redirect, or slow to commit, is NOT
+            # treated as fatal — the browser is still navigating, and the
+            # error alone can't tell us whether the page is usable. Let it
+            # settle and continue: the form finder (which polls ~45s
+            # across frames) is the real arbiter — if the page genuinely
+            # never loaded it reports login_form_not_found with a DOM
+            # inventory, a far more useful signal than a bare nav timeout.
+            log.info(
+                "auth_capture/login: login-page nav raised (%s) — "
+                "continuing; the form finder will wait it out",
+                type(exc).__name__,
+            )
+            try:
+                await page.wait_for_load_state(
+                    "domcontentloaded", timeout=20_000
                 )
-                try:
-                    await page.wait_for_load_state(
-                        "domcontentloaded", timeout=30_000
-                    )
-                except Exception:  # noqa: BLE001
-                    pass
-                await asyncio.sleep(2.0)
-            else:
-                log.exception("auth_capture/login: nav to login page failed")
-                state.state = STATE_FAILED
-                state.error = f"login_nav_failed:{exc!s}"[:200]
-                await _capture_screenshot(state)
-                return
+            except Exception:  # noqa: BLE001
+                pass
+            await asyncio.sleep(2.0)
 
         _update_current_url(state)
         # Decision point #1 — form loaded.
