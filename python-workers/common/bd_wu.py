@@ -223,6 +223,82 @@ async def wu_request_json(
         return resp.status_code, None
 
 
+def parse_set_cookie(set_cookie: Any) -> dict[str, str]:
+    """Parse WU's `set-cookie` envelope field into a `{name: value}` dict.
+
+    BD returns set-cookie either as a list of full Set-Cookie header values
+    or (rarely) a single newline-joined string. We take only the `name=value`
+    pair before the first `;` of each entry — attributes (Path, Domain,
+    Secure, HttpOnly, Max-Age) are dropped since we only need the jar.
+    """
+    cookies: dict[str, str] = {}
+    if not set_cookie:
+        return cookies
+    if isinstance(set_cookie, str):
+        entries = set_cookie.split("\n")
+    elif isinstance(set_cookie, list):
+        entries = set_cookie
+    else:
+        return cookies
+    for entry in entries:
+        if not isinstance(entry, str):
+            continue
+        first = entry.split(";", 1)[0].strip()
+        if "=" in first:
+            name, _, value = first.partition("=")
+            name = name.strip()
+            if name:
+                cookies[name] = value.strip()
+    return cookies
+
+
+def cookies_to_header(cookies: dict[str, str]) -> str:
+    """Serialize a cookie dict into a `Cookie:` header value."""
+    return "; ".join(f"{k}={v}" for k, v in cookies.items() if k)
+
+
+async def wu_mint_cookies(
+    homepage_url: str,
+    timeout_s: float = 210.0,
+) -> tuple[dict[str, str], dict[str, Any]]:
+    """Step 1 of the WU two-step flow: GET an airline homepage via WU and
+    extract the cookie jar from the rendered response.
+
+    WU renders the page (solving Akamai), so the returned `set-cookie`
+    includes cookies minted *during* the challenge solve + SPA bootstrap —
+    not just the initial HTTP response. That's the session an airline's
+    award API needs (AA returns error 309 "no session" without it).
+
+    Returns `(cookies, diag)`:
+      * `cookies` — `{name: value}` dict, empty if WU failed
+      * `diag` — `{wu_http_status, target_status, x_brd_error, cookie_count}`
+        for troubleshooting (some airline homepages choke WU's render-wait,
+        e.g. aa.com's `#weeklyCarousel` selector).
+    """
+    status, envelope = await wu_request_json(
+        homepage_url, method="GET", timeout_s=timeout_s
+    )
+    diag: dict[str, Any] = {
+        "wu_http_status": status,
+        "target_status": None,
+        "x_brd_error": None,
+        "cookie_count": 0,
+    }
+    cookies: dict[str, str] = {}
+    if isinstance(envelope, dict):
+        diag["target_status"] = (
+            envelope.get("status_code") or envelope.get("status")
+        )
+        hdrs = envelope.get("headers") or envelope.get("response_headers") or {}
+        if isinstance(hdrs, dict):
+            diag["x_brd_error"] = hdrs.get("x-brd-error") or hdrs.get("X-Brd-Error")
+            cookies = parse_set_cookie(
+                hdrs.get("set-cookie") or hdrs.get("Set-Cookie")
+            )
+    diag["cookie_count"] = len(cookies)
+    return cookies, diag
+
+
 async def wu_get(
     url: str,
     headers: dict[str, str] | None = None,
