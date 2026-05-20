@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LiveSessionView } from "@/components/auth/LiveSessionView";
 import {
   finalizeAuthSession,
   pollAuthStatus,
@@ -359,24 +360,27 @@ function ModalBody({ phase, secsLeft, onRetry }: BodyProps) {
     );
   }
 
-  // Live phase — iframe + status strip.
+  // Live phase — screenshot-stream live view + status strip.
   const showCountdown = secsLeft <= COUNTDOWN_THRESHOLD_SECS;
+
+  // The worker couldn't spin up the BD browser — no live view to show.
+  if (!phase.session.liveViewAvailable) {
+    return (
+      <CenteredState
+        icon={<XCircle className="size-6 text-[color:var(--color-stale-critical-fg)]" aria-hidden />}
+        title="Couldn't open the secure browser"
+        description="The login session didn't start. Please try again in a moment."
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="relative flex-1 min-h-0 bg-muted/20">
-        <iframe
-          src={phase.session.liveViewUrl}
-          title="Airline login (secure isolated session)"
-          className="absolute inset-0 w-full h-full border-0"
-          // BD's live-view session needs network + scripts. We allow
-          // forms (login submit) and same-origin (BD's relay handles
-          // cookies), and DO NOT pass `allow-top-navigation` so a
-          // hostile script in the iframe can't redirect the cockpit.
-          sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-pointer-lock"
-          allow="clipboard-write; clipboard-read"
-        />
-      </div>
+      <LiveSessionView
+        streamUrl={phase.session.liveViewUrl}
+        sessionId={phase.session.sessionId}
+        viewport={phase.session.viewport}
+      />
       <StatusStrip status={phase.status} secsLeft={secsLeft} showCountdown={showCountdown} />
     </div>
   );

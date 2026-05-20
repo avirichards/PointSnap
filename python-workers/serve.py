@@ -674,6 +674,15 @@ async def search(
     date: str = Query(..., description="Depart date YYYY-MM-DD"),
     pax: int = Query(1, ge=1, le=9),
     minCabin: str = Query("Y", pattern="^[YWJF]$"),
+    user_id: str | None = Query(
+        None,
+        description=(
+            "Phase 2.5 (T5'): authenticated user UUID. When present, "
+            "auth-required plugins (e.g. AC_AEROPLAN) look up the user's "
+            "stored program_auth_sessions cookies and replay them. Ignored "
+            "by plugins that don't need a login."
+        ),
+    ),
 ) -> JSONResponse:
     plugin = PLUGINS.get(program)
     if plugin is None:
@@ -685,8 +694,21 @@ async def search(
         origin=origin_u, dest=dest_u, depart_date=date, pax=pax, min_cabin=minCabin  # type: ignore[arg-type]
     )
 
+    # Pass user_id ONLY to plugins whose signature accepts it (T5'
+    # auth-capture plugins like AC_AEROPLAN). The other 14 plugins keep the
+    # positional 4-arg signature untouched — `inspect.signature` lets us
+    # dispatch tolerantly without editing every plugin.
+    import inspect
+
+    plugin_kwargs: dict = {}
     try:
-        results = await plugin(origin_u, dest_u, date, minCabin)
+        if "user_id" in inspect.signature(plugin).parameters:
+            plugin_kwargs["user_id"] = user_id
+    except (ValueError, TypeError):
+        pass
+
+    try:
+        results = await plugin(origin_u, dest_u, date, minCabin, **plugin_kwargs)
     except Exception as exc:  # noqa: BLE001 — surface scraper errors to caller
         log.exception("Plugin %s raised", program)
         raise HTTPException(status_code=502, detail=f"Plugin error: {exc}") from exc

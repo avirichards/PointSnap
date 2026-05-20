@@ -72,6 +72,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
+from common.auth_session import get_active_session, mark_used
 from common.types import CabinPrice, NormalizedResult, ResultSegment
 
 log = logging.getLogger(__name__)
@@ -195,26 +196,204 @@ def _parse_air_bounds(payload: dict[str, Any], origin: str, dest: str, date: str
     return results
 
 
+def _cookie_header(cookies: list[dict]) -> str:
+    """Build a `Cookie:` header value from stored Playwright-shape cookies.
+
+    The T5' capture stores cookies in Playwright's shape (name/value/domain/
+    path/...). For a WU `Cookie:` header we only need `name=value` pairs;
+    we keep every cookie (domain scoping is the target's problem, and AC's
+    jar is all `aircanada.com`).
+    """
+    parts = [
+        f"{c['name']}={c['value']}"
+        for c in cookies
+        if c.get("name") and c.get("value") is not None
+    ]
+    return "; ".join(parts)
+
+
+async def _auth_search(
+    user_id: str,
+    origin: str,
+    dest: str,
+    date: str,
+) -> list[NormalizedResult]:
+    """T5' auth path — Aeroplan award search with the user's captured
+    logged-in session.
+
+    This is the hook the Phase 2.5 user-auth-capture flow feeds. Steps:
+
+      1. Look up the user's stored Aeroplan session (the encrypted cookie
+         jar captured when they logged in via the cockpit `/airlines`
+         flow) via `get_active_session`.
+      2. If no session (or it expired): fall through to the `auth_required`
+         verdict — the cockpit shows a "Connect Air Canada" prompt.
+      3. If a session exists: replay the logged-in cookie jar as a
+         `Cookie:` header on the air-bounds API call (Web Unlocker clears
+         Air Canada's Akamai; the cookie jar supplies the logged-in
+         Aeroplan account that the March-2025 login wall demands).
+
+    TRANSPORT SEAM — the air-bounds POST needs two facts the T5' capture
+    does not yet hand us (see this module's header docstring): the
+    `{tenant}` path segment baked into the redeem SPA's Angular bundle, and
+    the exact request-body shape. Until those are captured, the POST 404s
+    on the unknown tenant. The cookie-injection hook itself is real and
+    correct: when a future session capture records the tenant + body, this
+    function flips to a working WU 2-step with no structural change —
+    `_parse_air_bounds` is already wired to consume the response.
+
+    Records a verdict in `LAST_RUN_DIAG` and never raises.
+    """
+    global LAST_RUN_DIAG
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    session = await get_active_session(user_id, PROGRAM_ID)
+    if not session:
+        # No captured session — honest auth_required (same as anon path).
+        LAST_RUN_DIAG = {
+            "started_at": now_iso,
+            "transport": "auth_lookup",
+            "origin": origin,
+            "dest": dest,
+            "date": date,
+            "user_id": user_id,
+            "last_verdict": "auth_required",
+            "row_count": 0,
+            "note": (
+                "No active program_auth_sessions row for this user — the "
+                "user has not connected Air Canada (or the session "
+                "expired). Cockpit shows the Connect Air Canada prompt."
+            ),
+        }
+        print(
+            f"AC: ===== {origin}->{dest} {date} — auth_required "
+            f"(no session for user {user_id}) =====",
+            flush=True,
+        )
+        return []
+
+    cookies = session.get("cookies") or []
+    cookie_header = _cookie_header(cookies)
+    session_id = session.get("session_id")
+
+    # We have the user's logged-in jar. Attempt the air-bounds call.
+    rows: list[NormalizedResult] = []
+    transport_ok = False
+    target_status: int | None = None
+    try:
+        from common.bd_wu import wu_post
+
+        # The redeem-SPA air-bounds API. `{tenant}` is the unresolved seam
+        # (see docstring) — kept as a clearly-flagged placeholder so a
+        # future capture only edits this one constant.
+        air_bounds_url = (
+            "https://www.aircanada.com/loyalty/dapidynamic/"
+            "1ASIATSAC/v2/search/air-bounds"
+        )
+        # Minimal AwardWiz-derived body. The real shape is captured during
+        # a logged-in air-bounds XHR — this is the documented skeleton.
+        body = {
+            "origin": origin,
+            "destination": dest,
+            "date": date,
+            "cabinClass": "eco",
+            "passengers": {"adults": 1, "youth": 0, "children": 0, "infants": 0},
+        }
+        status, parsed, raw = await wu_post(
+            air_bounds_url,
+            body,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Cookie": cookie_header,
+                "Referer": SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date),
+            },
+            timeout_s=60.0,
+        )
+        target_status = status
+        if status == 200 and isinstance(parsed, dict):
+            rows = _parse_air_bounds(parsed, origin, dest, date)
+            transport_ok = True
+    except Exception as exc:  # noqa: BLE001 — never raise out of a plugin
+        log.warning("AC auth-search transport error: %s", exc)
+
+    # Record the outcome against the session so the cockpit can surface a
+    # "reconnect" hint if the cookies stopped working.
+    if session_id:
+        try:
+            await mark_used(session_id, ok=bool(rows))
+        except Exception as exc:  # noqa: BLE001
+            log.debug("AC mark_used failed: %s", exc)
+
+    verdict = (
+        "ok"
+        if rows
+        else ("auth_session_present_transport_pending" if transport_ok or target_status else "auth_failed")
+    )
+    LAST_RUN_DIAG = {
+        "started_at": now_iso,
+        "transport": "wu_2step_auth",
+        "origin": origin,
+        "dest": dest,
+        "date": date,
+        "user_id": user_id,
+        "auth_session_id": session_id,
+        "cookie_count": len(cookies),
+        "air_bounds_target_status": target_status,
+        "last_verdict": verdict,
+        "row_count": len(rows),
+        "note": (
+            "Captured Aeroplan session found and replayed. "
+            + (
+                f"Parsed {len(rows)} award itineraries."
+                if rows
+                else (
+                    "Air-bounds POST reached but returned no parseable "
+                    "award data — the {tenant} path segment + request-body "
+                    "shape still need to be captured from a logged-in "
+                    "air-bounds XHR (see module docstring). The "
+                    "cookie-injection hook is wired and correct; only the "
+                    "transport's tenant/body constants remain."
+                )
+            )
+        ),
+    }
+    print(
+        f"AC: ===== {origin}->{dest} {date} — auth path, verdict={verdict}, "
+        f"rows={len(rows)} =====",
+        flush=True,
+    )
+    return rows
+
+
 async def _scrape_real(
     origin: str,
     dest: str,
     date: str,
     cabin_filter: str = "Y",  # noqa: ARG001 — keep signature parity
+    user_id: str | None = None,
 ) -> list[NormalizedResult]:
-    """Air Canada Aeroplan award search — auth_required, returns `[]`.
+    """Air Canada Aeroplan award search.
 
     Aeroplan award search requires a logged-in Aeroplan account session
     (Air Canada's March-2025 anti-scraper login wall — Agent 5 research +
     the 2026-05-20 `/diag/wu_probe` investigation in this module's
-    docstring). Bright Data Web Unlocker clears Air Canada's Akamai and
-    *can* reach the `loyalty/dapidynamic/*` air-bounds API path, but
-    cannot supply a logged-in Aeroplan account, so no anonymous WU
-    transport returns real award rows. Aeroplan is routed to the T5'
-    user-auth-capture path instead.
+    docstring). There is no anonymous transport that returns real rows.
 
-    Records verdict `auth_required` in `LAST_RUN_DIAG` and returns `[]`.
+    Dispatch:
+      * `user_id` present → `_auth_search`: look up the user's captured
+        T5' session and replay the logged-in cookie jar (Phase 2.5).
+      * `user_id` absent  → no session to use; records verdict
+        `auth_required` in `LAST_RUN_DIAG` and returns `[]`. The cockpit
+        surfaces a "Connect Air Canada" prompt via `/airlines`.
+
+    Never raises — always returns a list.
     """
     global LAST_RUN_DIAG
+
+    if user_id:
+        return await _auth_search(user_id, origin, dest, date)
+
     LAST_RUN_DIAG = {
         "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "transport": "none",
@@ -225,14 +404,12 @@ async def _scrape_real(
         "row_count": 0,
         "note": (
             "Aeroplan award search requires a logged-in Aeroplan session "
-            "(Air Canada's March-2025 anti-scraper login wall). WU clears "
-            "Air Canada's Akamai and CAN reach the loyalty/dapidynamic/* "
-            "air-bounds API path (POST returns 404 for an unknown tenant, "
-            "not an Akamai 444 — verified via /diag/wu_probe 2026-05-20), "
-            "but cannot supply a logged-in Aeroplan account. Routed to the "
-            "T5' user-auth-capture path. T5' needs only a logged-in cookie "
-            "jar + the air-bounds tenant/body shape to flip this to a "
-            "working WU 2-step — the transport is already proven viable."
+            "(Air Canada's March-2025 anti-scraper login wall). No user_id "
+            "was supplied, so there is no captured T5' session to replay. "
+            "WU clears Air Canada's Akamai and CAN reach the "
+            "loyalty/dapidynamic/* air-bounds API path, but cannot supply "
+            "a logged-in Aeroplan account on its own. Connect Air Canada "
+            "via the cockpit /airlines page to enable this search."
         ),
         "reference": {
             "warmup_url": WARMUP_URL,
@@ -242,7 +419,7 @@ async def _scrape_real(
     }
     print(
         f"AC: ===== {origin}->{dest} {date} — auth_required, "
-        f"returning [] (T5' path) =====",
+        f"returning [] (no user_id; T5' path) =====",
         flush=True,
     )
     return []

@@ -163,6 +163,12 @@ export function LiveSessionView({ streamUrl, sessionId, viewport }: Props) {
 
   // ---- Frame stream (SSE) ----------------------------------------------
   useEffect(() => {
+    // Reset to "connecting" whenever the stream target changes (a re-open
+    // with a fresh session). Done inside the effect body so it stays
+    // paired with the EventSource lifecycle below — same sanctioned
+    // pattern as ConnectAirlineModal's open/programId reset. The initial
+    // mount is a no-op (useState already starts at "connecting").
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConnState("connecting");
     const es = new EventSource(streamUrl);
     let closed = false;
