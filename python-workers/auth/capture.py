@@ -4,9 +4,10 @@ User journey (cockpit-side, owned by another agent — see plan §"Phase 2.5"):
   1. User clicks **Connect <Airline>** in `/airlines`.
   2. Cockpit POSTs `/auth/start?program=AC_AEROPLAN` to this worker.
   3. Worker spins up a fresh Bright Data Browser API session, navigates
-     to the airline's login page, returns `{ session_id, live_view_url }`.
-  4. Cockpit iframes `live_view_url`. User types creds + MFA with their
-     own keyboard.
+     to the airline's login page, returns `{ session_id, live_view_url }`
+     where live_view_url points at the `/auth/stream` screenshot stream.
+  4. Cockpit renders the `/auth/stream` frames onto a canvas and replays
+     the user's mouse/keyboard to `/auth/input`. User types creds + MFA.
   5. Cockpit polls `/auth/status?session_id=...` every 2s.
   6. Worker watches the page for a "logged in" signal (URL substring +
      positive DOM marker). On detection, captures cookies, stores
@@ -688,76 +689,6 @@ async def _watcher(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
 # ----------------------------------------------------------------------
 # Endpoints
 # ----------------------------------------------------------------------
-@router.get("/_diag/live_view_probe")
-async def auth_diag_live_view_probe() -> JSONResponse:
-    """TEMPORARY diagnostic — open a BD browser, navigate to a trivial page,
-    and dump exactly what BD's CDP returns for the live-view methods so we
-    can wire the right call. Tries:
-      1. Page.getFrameTree -> Page.inspect{frameId}
-      2. Page.inspect with no args
-      3. Target.getTargetInfo (raw wss)
-    REMOVE once the live-view approach is finalized."""
-    import traceback
-
-    out: dict = {}
-    state = AuthSessionState(
-        session_id=_gen_session_id(),
-        user_id="00000000-0000-0000-0000-000000000000",
-        program_id="_diag",
-        state="awaiting_login",
-        started_at=_now(),
-        expires_at_unix=_now() + 120,
-    )
-    try:
-        pw, browser, context, page = await _open_bd_browser(
-            session_label=state.session_id, timeout_ms=60_000
-        )
-        state.pw, state.browser, state.context, state.page = pw, browser, context, page
-        try:
-            await page.goto("https://example.com", wait_until="domcontentloaded", timeout=30_000)
-        except Exception as exc:  # noqa: BLE001
-            out["goto_error"] = str(exc)[:200]
-
-        # Method A: getFrameTree -> inspect{frameId}
-        try:
-            cdp = await context.new_cdp_session(page)
-            ftree = await cdp.send("Page.getFrameTree")
-            frame = ((ftree or {}).get("frameTree") or {}).get("frame") or {}
-            frame_id = frame.get("id")
-            out["frame_id"] = frame_id
-            insp = await cdp.send("Page.inspect", {"frameId": frame_id})
-            out["inspect_with_frameid"] = {
-                "keys": list(insp.keys()) if isinstance(insp, dict) else None,
-                "raw": insp,
-            }
-        except Exception as exc:  # noqa: BLE001
-            out["inspect_with_frameid_error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
-
-        # Method B: inspect with no args
-        try:
-            cdp2 = await context.new_cdp_session(page)
-            insp2 = await cdp2.send("Page.inspect")
-            out["inspect_no_args"] = insp2
-        except Exception as exc:  # noqa: BLE001
-            out["inspect_no_args_error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
-
-        # Method C: Target.getTargetInfo (raw wss)
-        try:
-            cdp3 = await context.new_cdp_session(page)
-            tinfo = await cdp3.send("Target.getTargetInfo")
-            ti = (tinfo or {}).get("targetInfo") or {}
-            out["target_info_keys"] = list(ti.keys())
-            out["target_ws_url_present"] = bool(ti.get("webSocketDebuggerUrl"))
-        except Exception as exc:  # noqa: BLE001
-            out["target_info_error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
-    except Exception as exc:  # noqa: BLE001
-        out["fatal"] = f"{type(exc).__name__}: {str(exc)[:300]}"
-        out["tb"] = traceback.format_exc()[-800:]
-    finally:
-        await _close_bd_browser(state)
-    return JSONResponse(out)
-
-
 @router.post("/start")
 async def auth_start(
     program: str = Query(..., description="Program ID, e.g. AC_AEROPLAN"),
@@ -771,8 +702,9 @@ async def auth_start(
     ),
 ) -> JSONResponse:
     """Open a fresh Bright Data Browser API session for the user to log
-    in. Returns the opaque session_id + live-view URL for the cockpit to
-    iframe.
+    in. Returns the opaque session_id + a same-origin live-view URL (the
+    `/auth/stream` screenshot-stream endpoint) for the cockpit to render
+    onto a canvas.
     """
     cfg = PROGRAM_AUTH.get(program)
     if not cfg:
