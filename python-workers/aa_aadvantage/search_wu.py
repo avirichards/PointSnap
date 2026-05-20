@@ -58,6 +58,7 @@ by `common/bd_wu.py`). Set as Fly secrets — never commit a value.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -73,6 +74,7 @@ from aa_aadvantage.search import (
     _parse_xhr,
 )
 from common.bd_wu import cookies_to_header, parse_set_cookie
+from common.browser import browser_page
 from common.types import NormalizedResult
 
 log = logging.getLogger(__name__)
@@ -129,6 +131,25 @@ _MINT_STRATEGIES: list[tuple[str, str, str | None]] = [
 _SPA_SESSION_COOKIE = "spa_session_id"
 # Cookie present on any rendered aa.com page — the floor for a usable jar.
 _BASE_SESSION_COOKIE = "XSRF-TOKEN"
+
+# --- BD Browser API mint rung ----------------------------------------------
+# The www.aa.com booking-SPA URL a real browser loads to mint the full
+# session jar. The 2026-05-20 probe proved this page (a) clears Akamai on a
+# meaningful share of BD's rotating exit pool, returning HTTP 200 with the
+# real "Book flights" form (not "Access Denied"), and (b) the SPA's bootstrap
+# sets `spa_session_id` into `page.context.cookies()`. AA redirects it to
+# `/booking/search/find-flights`; the jar is identical either way.
+_BROWSER_MINT_URL = "https://www.aa.com/booking/find-flights"
+# Per-attempt seconds to wait for the SPA bootstrap after navigation settles.
+# The probe saw `spa_session_id` land within ~30 s; we poll so a fast mint
+# returns early instead of always paying the full wait.
+_BROWSER_MINT_SETTLE_S = 40.0
+# How many fresh BD Browser API sessions to try. Each `browser_page(
+# use_brightdata=True)` context gets a new exit IP from BD's pool; Akamai
+# hard-denies a chunk of that pool (the BMP taxonomy in scraper-log.md), so a
+# retry on a denied IP often lands a clean one. Capped low — BD Browser API
+# is bandwidth-billed and a successful mint usually lands on attempt 1-2.
+_BROWSER_MINT_MAX_TRIES = 3
 
 # Max award-API POSTs per search. The first POST may get error 309 but
 # *issue* the session AA was missing; a retry with that folded-in jar can
@@ -363,30 +384,155 @@ def _read_envelope(envelope: dict[str, Any] | None) -> dict[str, Any]:
     return out
 
 
-async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
-    """Step 1 of the WU two-step flow: WU-GET aa.com pages that render and
-    harvest the best session cookie jar.
+async def _mint_browser_once(try_no: int) -> tuple[dict[str, str], dict[str, Any]]:
+    """One BD Browser API mint attempt: open a real headless Chromium on BD's
+    farm, load the AA booking SPA, poll for `spa_session_id`, export the jar.
 
-    Runs *every* `_MINT_STRATEGIES` entry (not first-match) because the only
-    AA URL that reliably renders via WU — `mobile.aa.com/booking` — mints
-    `XSRF-TOKEN` but NOT `spa_session_id`, and a 2026-05-20 deployed run
-    proved that jar still gets AA error 309 on the award POST. We must also
-    try the www.aa.com booking-SPA pages (which can mint `spa_session_id`),
-    then pick the best jar:
+    A real browser (vs WU's `format=json` Set-Cookie capture) runs the SPA's
+    bootstrap JS, so a client-side-set `spa_session_id` lands in
+    `page.context.cookies()`. Akamai hard-denies a share of BD's exit pool,
+    so the caller retries this with fresh sessions.
+
+    Returns `(cookies, attempt_diag)` — `cookies` empty if this attempt was
+    Akamai-blocked or the SPA never minted the session. `attempt_diag` is
+    forensic: it records the HTTP status, final URL, full cookie-name list,
+    and a body snippet so `/diag/aa_wu_last` shows exactly what happened.
+    """
+    attempt: dict[str, Any] = {"try": try_no, "url": _BROWSER_MINT_URL}
+    cookies: dict[str, str] = {}
+    try:
+        async with browser_page(
+            timeout_ms=120_000, use_brightdata=True
+        ) as page:
+            resp = await page.goto(
+                _BROWSER_MINT_URL, wait_until="domcontentloaded"
+            )
+            attempt["http_status"] = resp.status if resp else None
+
+            # Poll `page.context.cookies()` for `spa_session_id` — the SPA
+            # bootstrap sets it a few seconds after DOMContentLoaded. Polling
+            # (vs a flat sleep) lets a fast mint return early.
+            deadline = asyncio.get_event_loop().time() + _BROWSER_MINT_SETTLE_S
+            while asyncio.get_event_loop().time() < deadline:
+                try:
+                    cks = await asyncio.wait_for(
+                        page.context.cookies(), timeout=5.0
+                    )
+                    cookies = {c["name"]: c["value"] for c in cks}
+                except Exception:  # noqa: BLE001 — transient CDP hiccup; retry
+                    cookies = {}
+                if _SPA_SESSION_COOKIE in cookies:
+                    break
+                await asyncio.sleep(2.0)
+
+            attempt["final_url"] = page.url
+            attempt["cookie_names"] = sorted(cookies.keys())
+            attempt["has_xsrf"] = _BASE_SESSION_COOKIE in cookies
+            attempt["has_spa_sid"] = _SPA_SESSION_COOKIE in cookies
+            attempt["has_jsessionid"] = "JSESSIONID" in cookies
+            try:
+                body_text = await asyncio.wait_for(
+                    page.locator("body").inner_text(), timeout=5.0
+                )
+            except Exception:  # noqa: BLE001
+                body_text = ""
+            # "Access Denied" is Akamai's hard-deny page — record it so a
+            # run's diag distinguishes "blocked" from "rendered, no sid".
+            attempt["body_head"] = body_text[:200]
+            attempt["akamai_denied"] = "Access Denied" in body_text
+    except Exception as exc:  # noqa: BLE001 — surface CDP/connect failures
+        attempt["error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
+        cookies = {}
+
+    print(
+        f"AA_WU: browser_api mint try #{try_no} "
+        f"status={attempt.get('http_status')} cookies={len(cookies)} "
+        f"xsrf={_BASE_SESSION_COOKIE in cookies} "
+        f"spa_sid={_SPA_SESSION_COOKIE in cookies} "
+        f"denied={attempt.get('akamai_denied')} err={attempt.get('error')!r}",
+        flush=True,
+    )
+    return cookies, attempt
+
+
+async def _mint_via_browser_api() -> tuple[dict[str, str], dict[str, Any]]:
+    """BD Browser API mint rung — retries `_mint_browser_once` with fresh
+    BD sessions until one mints `spa_session_id` (or the try budget runs out).
+
+    Each retry gets a new exit IP from BD's pool; Akamai hard-denies a chunk
+    of that pool, so a retry on a denied IP often lands a clean one. We stop
+    early the moment a jar contains `spa_session_id` — that's a complete
+    booking-SPA session, the prize this whole rung exists for.
+
+    Returns `(cookies, strat_diag)`. `strat_diag` mirrors a WU-GET strategy's
+    diag shape (`label`, `cookie_names`, `has_spa_sid`, …) plus a `tries`
+    list of per-attempt forensics, so `_mint_aa_session` can append it to
+    `diag["strategies"]` uniformly.
+    """
+    strat: dict[str, Any] = {
+        "label": "browser_api_findflights",
+        "url": _BROWSER_MINT_URL,
+        "transport": "bd_browser_api",
+        "tries": [],
+    }
+    best: dict[str, str] = {}
+    for try_no in range(1, _BROWSER_MINT_MAX_TRIES + 1):
+        print(
+            f"AA_WU: mint attempt 'browser_api_findflights' try {try_no}/"
+            f"{_BROWSER_MINT_MAX_TRIES} → BD Browser API {_BROWSER_MINT_URL}",
+            flush=True,
+        )
+        cookies, attempt = await _mint_browser_once(try_no)
+        strat["tries"].append(attempt)
+        # Keep the richest jar seen so far so a partial (XSRF-only) result
+        # still feeds the POST if no try ever mints the SPA session.
+        if len(cookies) > len(best):
+            best = cookies
+        if _SPA_SESSION_COOKIE in cookies:
+            best = cookies
+            break
+
+    strat["cookie_names"] = sorted(best.keys())
+    strat["has_xsrf"] = _BASE_SESSION_COOKIE in best
+    strat["has_spa_sid"] = _SPA_SESSION_COOKIE in best
+    strat["has_jsessionid"] = "JSESSIONID" in best
+    strat["tries_used"] = len(strat["tries"])
+    return best, strat
+
+
+async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
+    """Step 1 of the WU two-step flow: mint the best AA session cookie jar.
+
+    The mint ladder, tried in order:
+
+      A. Every `_MINT_STRATEGIES` entry (WU-GET, not first-match). The only
+         AA URL that reliably renders via WU — `mobile.aa.com/booking` —
+         mints `XSRF-TOKEN` but NOT `spa_session_id`, and a 2026-05-20
+         deployed run proved that jar still gets AA error 309 on the award
+         POST. The `www.aa.com` WU-GET strategy *could* mint `spa_session_id`
+         but is blocked on a disabled WU zone feature (Manual Expect).
+      B. BD Browser API rung (`_mint_via_browser_api`). Run ONLY when rung A
+         minted no `spa_session_id` — a real headless Chromium runs the
+         booking SPA's bootstrap JS, so `spa_session_id` lands in the jar.
+         The 2026-05-20 probe confirmed BD Browser API renders
+         `www.aa.com/booking/find-flights` and mints the full session jar.
+         Gated behind rung A to avoid burning BD Browser API bandwidth when
+         WU already produced a complete session.
+
+    After both rungs, pick the best jar:
 
       1. First jar containing `spa_session_id` — a real booking-SPA session.
       2. Else first jar containing `XSRF-TOKEN` — the `mobile.aa.com` floor;
          lets the POST run so its error 309 is recorded as evidence rather
          than the run dying at "mint failed".
-      3. Else empty — no AA URL rendered via WU at all.
+      3. Else empty — no rung minted a usable jar at all.
 
-    Each strategy attempt is logged into `diag["strategies"]` so
+    Each rung's attempt is logged into `diag["strategies"]` so
     `/diag/aa_wu_last` shows exactly which AA URLs rendered, which cookies
     each minted, and why any failed (`#weeklyCarousel` timeout, captcha
-    block, rate-limit, …).
+    block, Akamai Access Denied, …).
 
-    Returns `(cookies, diag)` — `cookies` empty only if every strategy
-    failed to render.
+    Returns `(cookies, diag)` — `cookies` empty only if every rung failed.
     """
     diag: dict[str, Any] = {"strategies": [], "minted_via": None}
     # Successful jars, in strategy order: (label, cookies).
@@ -434,6 +580,40 @@ async def _mint_aa_session() -> tuple[dict[str, str], dict[str, Any]]:
 
         if _BASE_SESSION_COOKIE in cookies:
             jars.append((label, cookies))
+
+    # --- rung B: BD Browser API mint ----------------------------------
+    # Run only when no WU-GET jar minted `spa_session_id` — a real headless
+    # Chromium runs the booking SPA's bootstrap, which is the only way to
+    # mint the SPA session (WU's `format=json` Set-Cookie capture misses a
+    # client-side-set cookie, and the `www.aa.com` WU-GET strategy is blocked
+    # on a disabled zone feature). Gated so a complete WU jar — if one ever
+    # appears — skips the bandwidth-billed Browser API call.
+    wu_has_spa = any(_SPA_SESSION_COOKIE in c for _, c in jars)
+    if not wu_has_spa:
+        print(
+            "AA_WU: no WU-GET jar has spa_session_id — "
+            "trying BD Browser API mint rung",
+            flush=True,
+        )
+        try:
+            br_cookies, br_strat = await _mint_via_browser_api()
+        except Exception as exc:  # noqa: BLE001 — never let the rung crash mint
+            br_cookies = {}
+            br_strat = {
+                "label": "browser_api_findflights",
+                "transport": "bd_browser_api",
+                "error": f"{type(exc).__name__}: {str(exc)[:200]}",
+            }
+            print(f"AA_WU: browser_api mint rung crashed: {br_strat['error']}", flush=True)
+        diag["strategies"].append(br_strat)
+        if _BASE_SESSION_COOKIE in br_cookies:
+            jars.append(("browser_api_findflights", br_cookies))
+    else:
+        print(
+            "AA_WU: WU-GET already minted spa_session_id — "
+            "skipping BD Browser API rung",
+            flush=True,
+        )
 
     # --- select the best jar ------------------------------------------
     chosen_label: str | None = None
