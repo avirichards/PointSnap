@@ -1,17 +1,27 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search } from "lucide-react";
 import type { Cabin, SearchQuery } from "@/lib/types";
 import { AirportCombobox } from "./airport-combobox";
+import { useProgramWindows } from "@/hooks/use-program-windows";
 
 interface SearchFormProps {
   initialQuery: SearchQuery;
   onSubmit: (q: SearchQuery) => void;
   isStreaming?: boolean;
+}
+
+/** Local `YYYY-MM-DD` for today — the earliest a search can depart. */
+function todayIso(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormProps) {
@@ -20,6 +30,20 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
   const [departDate, setDepartDate] = useState(initialQuery.departDate);
   const [pax, setPax] = useState(initialQuery.pax);
   const [minCabin, setMinCabin] = useState<Cabin>(initialQuery.minCabin);
+
+  // Phase 4 — the search fans out to every program at once, so the
+  // calendar allows any date in-window for at least one program: the MAX
+  // of all per-program booking windows. `maxDate` is null until the
+  // worker metadata loads (or if the worker is unreachable), in which
+  // case the picker stays unbounded.
+  const { maxDate, maxDaysOut } = useProgramWindows();
+  const minDate = useMemo(() => todayIso(), []);
+  const departMax = maxDate();
+  const windowDays = maxDaysOut();
+  // A previously-saved query (URL param, back/forward) can sit past the
+  // window. Flag it so the hint explains why a search might return empty
+  // rather than silently failing.
+  const departOutOfWindow = departMax !== null && departDate > departMax;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -68,9 +92,26 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
           type="date"
           value={departDate}
           onChange={(e) => setDepartDate(e.target.value)}
+          min={minDate}
+          max={departMax ?? undefined}
+          aria-describedby={windowDays !== null ? "depart-hint" : undefined}
           className="tabular-nums text-base"
           required
         />
+        {departOutOfWindow ? (
+          <p
+            id="depart-hint"
+            role="status"
+            className="text-xs text-amber-600 dark:text-amber-500"
+          >
+            Past every airline’s booking window — most programs won’t
+            return results this far out.
+          </p>
+        ) : windowDays !== null ? (
+          <p id="depart-hint" className="text-xs text-muted-foreground">
+            Airlines open awards up to ~{windowDays} days out.
+          </p>
+        ) : null}
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="pax" className="text-xs text-muted-foreground uppercase tracking-wider">
