@@ -1,24 +1,34 @@
 /**
- * Phase 2.5 — GET /api/auth/airline/status?sessionId=...
+ * GET /api/auth/airline/status?sessionId=...
  *
- * Short-poll wrapper around the worker's `/auth/status`. Polled every 2s by
- * ConnectAirlineModal. Returns 501 if the worker endpoint doesn't exist yet
- * so the UI can render "service unavailable" cleanly.
+ * Short-poll wrapper around the worker's `/auth/status`. Polled every ~2s
+ * by ConnectAirlineModal. Returns 501 if the worker endpoint doesn't exist
+ * yet so the UI can render "service unavailable" cleanly.
  *
  * The worker takes `session_id` as a query param and returns snake_case;
- * we translate to camelCase for the cockpit.
+ * we translate to camelCase for the cockpit, including the MFA prompt text
+ * and the context screenshot.
  */
 import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
 interface WorkerStatusResponse {
-  state: "awaiting_login" | "captured" | "expired" | "failed" | "torn_down";
-  error?: string;
+  session_id?: string;
+  program_id?: string;
+  state:
+    | "working"
+    | "mfa_required"
+    | "captured"
+    | "invalid_credentials"
+    | "failed"
+    | "expired";
   current_url?: string | null;
-  live_view_url?: string | null;
-  bd_inspector_url?: string | null;
-  stored_row_id?: string;
+  mfa_prompt?: string | null;
+  screenshot_b64?: string | null;
+  stored_row_id?: string | null;
+  error?: string | null;
+  expires_at_unix?: number;
 }
 
 export async function GET(req: NextRequest) {
@@ -48,14 +58,14 @@ export async function GET(req: NextRequest) {
   }
 
   if (res.status === 404) {
-    // Worker returns 404 both when the endpoint is missing AND when the
-    // session id is unknown. Inspect the body to tell them apart: an
-    // unknown session yields `{"state":"unknown",...}`; a missing route
-    // yields FastAPI's `{"detail":"Not Found"}`.
+    // Worker returns 404 both when the route is missing AND when the
+    // session id is unknown. Tell them apart by body shape: the worker's
+    // unknown-session 404 carries an `error` field; FastAPI's missing-route
+    // 404 carries `detail`.
     let unknownSession = false;
     try {
-      const j = (await res.json()) as { state?: string };
-      unknownSession = j?.state === "unknown";
+      const j = (await res.json()) as { error?: string };
+      unknownSession = typeof j?.error === "string";
     } catch {
       // not JSON — treat as route-missing
     }
@@ -82,8 +92,10 @@ export async function GET(req: NextRequest) {
   const json = (await res.json()) as WorkerStatusResponse;
   return Response.json({
     state: json.state,
-    error: json.error,
     currentUrl: json.current_url ?? null,
+    mfaPrompt: json.mfa_prompt ?? null,
+    screenshotB64: json.screenshot_b64 ?? null,
     storedRowId: json.stored_row_id ?? null,
+    error: json.error ?? null,
   });
 }

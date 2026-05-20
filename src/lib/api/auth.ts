@@ -1,9 +1,15 @@
 /**
- * Phase 2.5 — User-initiated auth capture client.
+ * User-initiated airline auth-capture client.
  *
  * These helpers wrap the worker's `/auth/*` endpoints. The Next.js API
  * routes at `/api/auth/airline/*` proxy through to the worker so the
  * worker URL stays server-side only (same pattern as `/api/search`).
+ *
+ * The flow: the user types their airline email/member number + password
+ * into the connect modal; the worker drives the airline's own login form
+ * itself. If the airline challenges with MFA, the worker reports
+ * `mfa_required` and the cockpit collects the code. On success the worker
+ * harvests the session cookies and stores them encrypted.
  *
  * The endpoints might not be deployed yet (the worker auth module is being
  * built in parallel). Each helper handles 404 / network errors with a
@@ -13,45 +19,48 @@
 "use client";
 import type { ProgramId } from "@/lib/programs";
 
-/** A single worker auth session. */
+/**
+ * Worker-side auth-capture state machine.
+ *
+ *  - "working"             → the worker is driving the airline login form.
+ *  - "mfa_required"        → the airline asked for an MFA code; `mfaPrompt`
+ *                            carries the human text from the airline page.
+ *  - "captured"            → login succeeded, cookies stored.
+ *  - "invalid_credentials" → the email/password was rejected.
+ *  - "failed"              → login failed for some other reason.
+ *  - "expired"             → the session ran past its budget.
+ */
+export type AuthSessionState =
+  | "working"
+  | "mfa_required"
+  | "captured"
+  | "invalid_credentials"
+  | "failed"
+  | "expired";
+
+/** Result of `POST /auth/start` — a freshly created worker auth session. */
 export interface AuthSessionStart {
-  /** Opaque session id; pass to `/auth/status` + `/auth/finalize`. */
+  /** Opaque session id; pass to `/auth/status`, `/auth/mfa`, `/auth/finalize`. */
   sessionId: string;
-  /**
-   * Same-origin live-view URL — an SSE screenshot stream endpoint
-   * (`/api/auth/airline/stream?sessionId=...`). Rendered by LiveSessionView
-   * onto a canvas. NOT an iframe URL: BD's hosted DevTools inspector is
-   * served with `X-Frame-Options: DENY` so it can't be framed; the worker
-   * streams screenshots + replays input instead.
-   */
-  liveViewUrl: string;
-  /** False when the BD session failed to spin up — show an error state. */
-  liveViewAvailable: boolean;
-  /** Currently always "stream" (the screenshot-stream live view). */
-  liveViewKind: string;
-  /** Pixel dims the remote browser renders at — canvas maps clicks 1:1. */
-  viewport: { w: number; h: number };
-  /** ISO-8601 timestamp; session is killed by the worker after this. */
+  /** Initial state — always "working" when a session is first created. */
+  state: AuthSessionState;
+  /** ISO-8601 timestamp; the session is killed by the worker after this. */
   expiresAt: string;
-  /** Best-effort current page URL of the remote browser. */
-  currentUrl: string | null;
 }
 
-/** Worker-side auth-capture state machine. */
-export type AuthSessionState =
-  | "awaiting_login"
-  | "captured"
-  | "expired"
-  | "failed";
-
+/** Snapshot of a worker auth session from `GET /auth/status`. */
 export interface AuthSessionStatus {
   state: AuthSessionState;
-  /** Optional error context from the worker (rate limit, login failure, etc.). */
-  error?: string;
-  /** Best-effort current page URL of the remote browser. */
+  /** Best-effort current page URL of the worker's browser. */
   currentUrl?: string | null;
+  /** Human text from the airline's MFA page, or null when not at MFA. */
+  mfaPrompt?: string | null;
+  /** A single base64 JPEG still (no `data:` prefix) for context, or null. */
+  screenshotB64?: string | null;
   /** program_auth_sessions row UUID — set once state === "captured". */
   storedRowId?: string | null;
+  /** Optional error context from the worker (login failure, rate limit, etc.). */
+  error?: string | null;
 }
 
 /** Row returned by `/api/auth/airline/connected` — one per saved session. */
@@ -97,7 +106,7 @@ async function request<T>(
         ok: false,
         kind: "service_unavailable",
         message:
-          "Auth-capture isn't deployed yet. Check back soon — we're wiring this up across all 23 programs.",
+          "Auth-capture isn't deployed yet. Check back soon — we're wiring this up across all programs.",
       };
     }
 
@@ -122,22 +131,29 @@ async function request<T>(
   }
 }
 
-/** Spin up a worker auth session. Returns the iframe URL. */
+/**
+ * Spin up a worker auth session and hand off the user's credentials.
+ *
+ * The password is sent in the POST body only — never in a query string,
+ * never logged. The proxy route resolves the acting user server-side.
+ */
 export function startAuthSession(
   programId: ProgramId,
+  username: string,
+  password: string,
   signal?: AbortSignal,
 ): Promise<AuthApiResult<AuthSessionStart>> {
   return request<AuthSessionStart>("/start", {
     method: "POST",
-    body: JSON.stringify({ programId }),
+    body: JSON.stringify({ programId, username, password }),
     signal,
   });
 }
 
 /**
- * One poll. Caller decides cadence (2s is standard per the plan). We
- * deliberately *don't* use long-polling here — short polling lets the
- * browser cancel via AbortController on modal-close.
+ * One poll. Caller decides cadence (2s is standard). We deliberately
+ * *don't* use long-polling — short polling lets the browser cancel via
+ * AbortController on modal-close.
  */
 export function pollAuthStatus(
   sessionId: string,
@@ -150,18 +166,33 @@ export function pollAuthStatus(
 }
 
 /**
- * Tell the worker the cockpit is done with the session. `state` lets us
- * distinguish a successful capture from a user-cancelled modal — the
- * worker tears down the session in either case but logs the outcome.
+ * Submit the MFA code the airline asked for. The worker types it into the
+ * airline's MFA form and resumes the login. The code goes in the POST body.
+ */
+export function submitMfaCode(
+  sessionId: string,
+  code: string,
+  signal?: AbortSignal,
+): Promise<AuthApiResult<{ ok: true }>> {
+  return request<{ ok: true }>("/mfa", {
+    method: "POST",
+    body: JSON.stringify({ sessionId, code }),
+    signal,
+  });
+}
+
+/**
+ * Tell the worker the cockpit is done with the session so it can tear down
+ * the browser. Idempotent on the worker side — safe to call from the
+ * modal's cleanup hook even if the session already finished.
  */
 export function finalizeAuthSession(
   sessionId: string,
-  state: "cancelled" | "completed",
   signal?: AbortSignal,
 ): Promise<AuthApiResult<{ ok: true }>> {
   return request<{ ok: true }>("/finalize", {
     method: "POST",
-    body: JSON.stringify({ sessionId, state }),
+    body: JSON.stringify({ sessionId }),
     signal,
   });
 }

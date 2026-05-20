@@ -185,9 +185,9 @@ export default function AirlinesPage() {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
             Connect your loyalty accounts so PointSnap can search award space on
-            programs that require login. Credentials never reach our servers —
-            only the resulting session cookies are saved, encrypted at rest, and
-            decrypted just-in-time when you run a search.
+            programs that require login. You enter your airline email and
+            password; we sign in on your behalf. Your password is encrypted and
+            stored securely, and you can disconnect anytime to delete it.
           </p>
         </header>
 
@@ -265,12 +265,12 @@ export default function AirlinesPage() {
         <footer className="rounded-lg border bg-muted/40 px-4 py-3 flex items-start gap-3 max-w-prose">
           <ShieldCheck className="size-4 mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            How it works: clicking <strong>Connect</strong> opens a sandboxed
-            browser hosted by our worker. You log in with your normal
-            credentials and MFA; the session cookies are captured and stored
-            encrypted, scoped to your account. PointSnap never sees your
-            password or MFA codes. Disconnect anytime to delete the saved
-            session.
+            How it works: clicking <strong>Connect</strong> opens a short form
+            where you enter your airline email and password. PointSnap signs in
+            for you — and prompts you for a verification code if your airline
+            asks for one. Your password and the resulting session are encrypted
+            and stored securely, scoped to your account. Disconnect anytime to
+            delete them.
           </p>
         </footer>
       </main>

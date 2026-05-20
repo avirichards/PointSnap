@@ -1,28 +1,42 @@
 /**
- * Phase 2.5 — ConnectAirlineModal
+ * ConnectAirlineModal
  *
- * Hosts a BD Browser API live-view session inside an iframe. Polls the
- * worker every 2s for status, animates state transitions, and tears down
- * the worker session on close.
+ * Connects an airline loyalty account. The user types their airline email
+ * (or member number) + password into a plain form; the worker drives the
+ * airline's own login page itself. If the airline challenges with MFA, the
+ * modal collects the code. On success the worker harvests the session
+ * cookies and stores them encrypted.
+ *
+ * Flow / `phase` state:
+ *   form    → credential form (email/member-number + password)
+ *   working → worker is signing in; poll `/auth/status` every ~2s
+ *   mfa     → airline asked for an MFA code; collect + submit it
+ *   captured→ success; brief flash, then auto-close
+ *   error   → failed / expired; show context screenshot, offer retry
+ *
+ * `invalid_credentials` from the worker drops back to `form` with an inline
+ * error rather than a separate phase — the fix is "re-enter and resubmit".
  *
  * HIG choices (per `apple-hig` skill):
- *  - Modality: used because the auth-capture flow MUST hold the user's
- *    focus until cookies land — partial completion is worse than no flow.
- *  - Backdrop: blurred, semi-opaque (defers to the modal content; HIG
- *    "Materials & Surfaces").
- *  - Hierarchy: airline name big, "secure isolated browser" copy reads
- *    as supporting metadata, iframe is the visual anchor, status is a
- *    persistent strip that changes color only — never moves position
- *    (HIG "consistency in controls").
- *  - Always-dismissible: ESC + close button + cancel button. If
- *    mid-capture, we confirm with the user before tearing down.
- *  - Reduced motion: status transitions are color + opacity; we don't
- *    rely on animation to convey progress.
+ *  - Modality: justified — the connect flow must hold focus until cookies
+ *    land; partial completion is worse than no flow. ESC + close + cancel
+ *    always dismiss.
+ *  - Hierarchy: airline name is the title; the explainer reads as
+ *    supporting metadata; the form fields are the visual anchor.
+ *  - Data entry: labeled fields, correct input types (`password`,
+ *    `inputMode="numeric"` + `autoComplete="one-time-code"` for the code),
+ *    smart autocomplete hints, inline validation, the submit button shows a
+ *    disabled + spinner state while the request is in flight.
+ *  - Feedback: distinct success and error states; errors say what happened
+ *    and what to do; `aria-live` announces state changes.
+ *  - Color independence: every state pairs an icon + copy with its color.
+ *  - Reduced motion: the only animation is the shared `animate-spin`
+ *    spinner; nothing relies on motion to convey progress.
  */
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import { CheckCircle2, KeyRound, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,15 +46,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { LiveSessionView } from "@/components/auth/LiveSessionView";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   finalizeAuthSession,
   pollAuthStatus,
   startAuthSession,
+  submitMfaCode,
   type AuthApiResult,
   type AuthSessionStart,
-  type AuthSessionState,
+  type AuthSessionStatus,
 } from "@/lib/api/auth";
 import { getProgram, type ProgramId } from "@/lib/programs";
 import { cn } from "@/lib/utils";
@@ -54,19 +69,20 @@ interface Props {
 }
 
 type Phase =
-  | { kind: "starting" }
-  | { kind: "live"; session: AuthSessionStart; status: AuthSessionState }
+  | { kind: "form" }
+  | { kind: "working" }
+  | { kind: "mfa"; prompt: string | null; screenshotB64: string | null }
   | { kind: "captured" }
-  | { kind: "error"; message: string; canRetry: boolean }
-  | { kind: "unavailable"; message: string };
+  | {
+      kind: "error";
+      message: string;
+      screenshotB64: string | null;
+      canRetry: boolean;
+    };
 
-/** Poll cadence per the Phase 2.5 plan §"User flow" step 6. */
+/** Poll cadence while the worker is signing in. */
 const POLL_MS = 2_000;
-/** Total session budget — worker kills the BD session at this point too. */
-const SESSION_BUDGET_SECS = 5 * 60;
-/** When the remaining time crosses this, we show the countdown. */
-const COUNTDOWN_THRESHOLD_SECS = 60;
-/** Brief flash so the user sees the "Captured!" state before close. */
+/** Brief flash so the user sees the "Connected!" state before close. */
 const SUCCESS_LINGER_MS = 1_200;
 
 export function ConnectAirlineModal({
@@ -76,16 +92,37 @@ export function ConnectAirlineModal({
   onCaptured,
 }: Props) {
   const program = programId ? getProgram(programId) : undefined;
-  const [phase, setPhase] = useState<Phase>({ kind: "starting" });
-  const [secsLeft, setSecsLeft] = useState<number>(SESSION_BUDGET_SECS);
-  const abortRef = useRef<AbortController | null>(null);
-  const finalizedRef = useRef<boolean>(false);
 
-  // The parent's callbacks held in refs so the session effect below can
-  // call the latest version WITHOUT listing them as deps. Listing them
-  // would restart the whole BD session every time the parent re-renders
-  // with a fresh callback identity (the /airlines page re-renders on its
-  // 1-min clock tick) — which would abort the user's in-progress login.
+  const [phase, setPhase] = useState<Phase>({ kind: "form" });
+  // Credential form fields. Lifted to the modal so a re-render of the
+  // inner body (e.g. an error coming back) doesn't lose what the user
+  // typed — the worker rejects nothing client-side, so on
+  // invalid_credentials we keep the email and just clear the password.
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  /** Inline error shown under the form's password field. */
+  const [formError, setFormError] = useState<string | null>(null);
+  /** Inline error shown under the MFA code field. */
+  const [mfaError, setMfaError] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  /** True while a start / MFA request is in flight — drives the spinner. */
+  const [submitting, setSubmitting] = useState(false);
+
+  // The live worker session. Held in a ref (not state) because the poll
+  // loop and the finalize-on-close cleanup both need the *latest* value
+  // without re-subscribing — and a session id changing should not, on its
+  // own, restart any effect.
+  const sessionRef = useRef<AuthSessionStart | null>(null);
+  const finalizedRef = useRef(false);
+  // Drives the poll loop. Bumped to (re)start polling; the loop reads the
+  // session from sessionRef. A ref-counter avoids putting the loop's
+  // restart trigger in component state (which would re-render the form).
+  const pollGenRef = useRef(0);
+
+  // Parent callbacks held in refs so the poll effect can call the latest
+  // version WITHOUT listing them as deps — the /airlines page re-renders
+  // on its 1-min clock tick with fresh callback identities, and a restart
+  // of the poll loop mid-login would abort the user's connect.
   const onOpenChangeRef = useRef(onOpenChange);
   const onCapturedRef = useRef(onCaptured);
   useEffect(() => {
@@ -94,170 +131,250 @@ export function ConnectAirlineModal({
   });
 
   /**
-   * Best-effort finalize. Always called on unmount or close — the worker
-   * is idempotent for already-finalized sessions per the plan §"Worker
-   * flow" step 3. We don't await it for close: the modal should close
-   * immediately and the cleanup runs in the background.
+   * Best-effort finalize — tears the worker session down. Always called on
+   * unmount / close. Idempotent on the worker side; we don't await it so
+   * the modal closes immediately and cleanup runs in the background.
    */
-  const finalize = useCallback(
-    (
-      session: AuthSessionStart | undefined,
-      state: "cancelled" | "completed",
-    ) => {
-      if (!session || finalizedRef.current) return;
-      finalizedRef.current = true;
-      void finalizeAuthSession(session.sessionId, state).catch(() => {
-        // Swallow — finalize failure is non-fatal; the worker will
-        // garbage-collect dead sessions on the SESSION_BUDGET_SECS timer.
-      });
-    },
-    [],
-  );
+  const finalize = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session || finalizedRef.current) return;
+    finalizedRef.current = true;
+    void finalizeAuthSession(session.sessionId).catch(() => {
+      // Swallow — finalize failure is non-fatal; the worker garbage-
+      // collects dead sessions on its own session-budget timer.
+    });
+  }, []);
 
-  // Kick off the worker session + start polling. Resets state on every
-  // (open, programId) change so a re-open after error/cancel starts
-  // fresh. The reset has to happen via dispatch inside the effect body
-  // because (a) it must be paired with the abort-controller cleanup and
-  // (b) it depends on the same trigger conditions as the fetch — moving
-  // it outside would race with cleanup and leave stale phases.
+  // Reset everything whenever the modal (re)opens for a program. Putting
+  // the reset here keeps it paired with the cleanup below, so a fast
+  // open→close→open cycle can't leave stale phase / field state.
   useEffect(() => {
     if (!open || !programId) return;
-
-    // Phase + countdown reset. Doing this inside the effect (rather than
-    // a separate setState-in-effect block) keeps the resets paired with
-    // the cleanup function, so a fast open→close→open cycle can't leave
-    // stale phase state from the previous open.
-    finalizedRef.current = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPhase({ kind: "starting" });
-    setSecsLeft(SESSION_BUDGET_SECS);
+    setPhase({ kind: "form" });
+    setUsername("");
+    setPassword("");
+    setMfaCode("");
+    setFormError(null);
+    setMfaError(null);
+    setSubmitting(false);
+    sessionRef.current = null;
+    finalizedRef.current = false;
+    pollGenRef.current += 1;
 
-    const ac = new AbortController();
-    abortRef.current = ac;
-    let cancelled = false;
-    let pollTimer: ReturnType<typeof setTimeout> | null = null;
-    let activeSession: AuthSessionStart | undefined;
-
-    const handleResult = (
-      result: AuthApiResult<AuthSessionStart>,
-    ): AuthSessionStart | undefined => {
-      if (!result.ok) {
-        if (cancelled) return undefined;
-        setPhase({
-          kind: result.kind === "service_unavailable" ? "unavailable" : "error",
-          message: result.message,
-          canRetry: result.kind !== "service_unavailable",
-        });
-        return undefined;
-      }
-      return result.data;
+    return () => {
+      // Modal closed (or program changed) — tear down any live session.
+      pollGenRef.current += 1;
+      finalize();
     };
+  }, [open, programId, finalize]);
 
-    const loop = async () => {
-      const startRes = await startAuthSession(programId, ac.signal);
-      const session = handleResult(startRes);
-      if (!session || cancelled) return;
-      activeSession = session;
-      setPhase({ kind: "live", session, status: "awaiting_login" });
+  /**
+   * Apply one status snapshot to the phase machine. Shared by the poll
+   * loop so the captured / error / mfa transitions live in one place.
+   */
+  const applyStatus = useCallback((status: AuthSessionStatus) => {
+    switch (status.state) {
+      case "captured":
+        finalize();
+        setPhase({ kind: "captured" });
+        onCapturedRef.current?.();
+        setTimeout(() => {
+          onOpenChangeRef.current(false);
+        }, SUCCESS_LINGER_MS);
+        return;
+      case "mfa_required":
+        setPhase({
+          kind: "mfa",
+          prompt: status.mfaPrompt ?? null,
+          screenshotB64: status.screenshotB64 ?? null,
+        });
+        return;
+      case "invalid_credentials":
+        // Back to the form. Keep the email, clear the password, surface
+        // the rejection inline. The worker session is spent — finalize it.
+        finalize();
+        sessionRef.current = null;
+        setPassword("");
+        setFormError(
+          "That email or password didn't work — try again.",
+        );
+        setPhase({ kind: "form" });
+        return;
+      case "failed":
+      case "expired":
+        finalize();
+        setPhase({
+          kind: "error",
+          message:
+            status.error ??
+            (status.state === "expired"
+              ? "The sign-in timed out before it finished. You can try again."
+              : "We couldn't sign in to your account. You can try again."),
+          screenshotB64: status.screenshotB64 ?? null,
+          canRetry: true,
+        });
+        return;
+      case "working":
+      default:
+        // Still signing in — keep polling. Don't clobber the mfa phase if
+        // the worker briefly reports "working" while it processes a code;
+        // applyStatus only moves us off mfa on a terminal/explicit state.
+        setPhase((prev) => (prev.kind === "mfa" ? prev : { kind: "working" }));
+        return;
+    }
+  }, [finalize]);
 
-      // Poll status. Each tick fetches once; if we see "captured" we close.
-      const tick = async () => {
-        if (cancelled) return;
-        const statusRes = await pollAuthStatus(session.sessionId, ac.signal);
-        if (cancelled) return;
+  /**
+   * Start the status poll loop for the current session. Each invocation
+   * bumps `pollGenRef` and captures the new generation; any stale loop
+   * (from a previous session, a retry, or a closed modal) sees the
+   * generation has moved and stops itself — that's the whole cancellation
+   * mechanism. The loop also stops on its own once a terminal state
+   * (captured / failed / expired / invalid_credentials) is observed.
+   */
+  const startPolling = useCallback(() => {
+    pollGenRef.current += 1;
+    const gen = pollGenRef.current;
 
-        if (!statusRes.ok) {
-          // Single transient error → keep polling. Persistent errors
-          // surface via the countdown timeout below.
-          pollTimer = setTimeout(tick, POLL_MS);
-          return;
-        }
+    const tick = async () => {
+      if (gen !== pollGenRef.current) return;
+      const session = sessionRef.current;
+      if (!session) return;
 
-        const { state, error } = statusRes.data;
+      const res = await pollAuthStatus(session.sessionId);
+      if (gen !== pollGenRef.current) return;
 
-        if (state === "captured") {
-          finalize(session, "completed");
-          setPhase({ kind: "captured" });
-          onCapturedRef.current?.();
-          setTimeout(() => {
-            if (!cancelled) onOpenChangeRef.current(false);
-          }, SUCCESS_LINGER_MS);
-          return;
-        }
-
-        if (state === "failed" || state === "expired") {
-          finalize(session, "cancelled");
+      if (!res.ok) {
+        if (res.kind === "service_unavailable") {
+          finalize();
           setPhase({
             kind: "error",
-            message:
-              error ??
-              (state === "expired"
-                ? "Login timed out. You can try again."
-                : "Login failed. Please try again."),
-            canRetry: true,
+            message: res.message,
+            screenshotB64: null,
+            canRetry: false,
           });
           return;
         }
+        // A single transient error — keep polling.
+        window.setTimeout(tick, POLL_MS);
+        return;
+      }
 
-        // Otherwise still awaiting login — schedule next tick.
-        setPhase({ kind: "live", session, status: state });
-        pollTimer = setTimeout(tick, POLL_MS);
-      };
+      applyStatus(res.data);
 
-      pollTimer = setTimeout(tick, POLL_MS);
+      // Only "working" and "mfa_required" are non-terminal — keep polling
+      // for those; every other state is terminal and applyStatus has
+      // already moved the modal to its final phase.
+      const s = res.data.state;
+      if (s === "working" || s === "mfa_required") {
+        window.setTimeout(tick, POLL_MS);
+      }
     };
 
-    void loop();
+    window.setTimeout(tick, POLL_MS);
+  }, [applyStatus, finalize]);
 
-    return () => {
-      cancelled = true;
-      if (pollTimer) clearTimeout(pollTimer);
-      ac.abort();
-      // If the user closed mid-flow we cancel the worker session.
-      finalize(activeSession, "cancelled");
-    };
-    // onOpenChange / onCaptured intentionally excluded — accessed via refs
-    // so a parent re-render can't restart the BD session mid-login.
-  }, [open, programId, finalize]);
+  // Submit the credential form — start a worker session, then poll.
+  const handleConnect = useCallback(async () => {
+    if (!programId) return;
+    const u = username.trim();
+    if (!u || !password) return;
 
-  // Countdown ticker — drives the "session expires in N s" badge.
-  // secsLeft is reset to SESSION_BUDGET_SECS by the open/programId
-  // effect above; this effect only owns the 1-Hz decrement loop.
-  useEffect(() => {
-    if (!open || phase.kind !== "live") return;
-    const interval = setInterval(() => {
-      setSecsLeft((s) => Math.max(0, s - 1));
-    }, 1_000);
-    return () => clearInterval(interval);
-  }, [open, phase.kind]);
+    setFormError(null);
+    setSubmitting(true);
+    setPhase({ kind: "working" });
 
-  const handleRetry = () => {
-    // Re-trigger the open effect by resetting phase. The effect's
-    // [open, programId] deps don't change so we need to manually reset.
-    finalizedRef.current = false;
-    setPhase({ kind: "starting" });
-    setSecsLeft(SESSION_BUDGET_SECS);
-    // Force the effect to re-run by toggling open via parent.
-    // Simpler: the parent's "Retry" wiring re-opens; we just expose a
-    // local retry button that does the same thing inline.
-    onOpenChange(false);
-    setTimeout(() => onOpenChange(true), 50);
-  };
+    const result: AuthApiResult<AuthSessionStart> = await startAuthSession(
+      programId,
+      u,
+      password,
+    );
 
-  // If user tries to close while live (mid-capture), warn them.
-  const handleOpenChange = (next: boolean) => {
-    if (!next && phase.kind === "live" && phase.status === "awaiting_login") {
-      const ok = window.confirm(
-        "Close before finishing login? You'll need to start over to connect this airline.",
-      );
-      if (!ok) return;
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setPhase({
+        kind: "error",
+        message: result.message,
+        screenshotB64: null,
+        canRetry: result.kind !== "service_unavailable",
+      });
+      return;
     }
-    onOpenChange(next);
-  };
+
+    sessionRef.current = result.data;
+    finalizedRef.current = false;
+    // The worker may already be past "working" by the next poll; the loop
+    // and applyStatus handle every state from here.
+    applyStatus({ state: result.data.state });
+    startPolling();
+  }, [programId, username, password, applyStatus, startPolling]);
+
+  // Submit the MFA code — hand it to the worker, then resume polling.
+  const handleSubmitMfa = useCallback(async () => {
+    const session = sessionRef.current;
+    const code = mfaCode.trim();
+    if (!session || !code) return;
+
+    setMfaError(null);
+    setSubmitting(true);
+
+    const result = await submitMfaCode(session.sessionId, code);
+
+    setSubmitting(false);
+
+    if (!result.ok) {
+      // Stay on the MFA phase, show the worker's reason inline. The poll
+      // loop is still running, so if the worker advanced on its own the
+      // modal will follow regardless.
+      setMfaError(
+        result.message ||
+          "That code didn't work — check it and try again.",
+      );
+      return;
+    }
+
+    // Code accepted. Show the working spinner; the still-running poll loop
+    // picks up the next state (captured / failed / another mfa prompt).
+    setMfaCode("");
+    setPhase({ kind: "working" });
+  }, [mfaCode]);
+
+  // Retry from an error state — reset back to a fresh form.
+  const handleRetry = useCallback(() => {
+    finalize();
+    sessionRef.current = null;
+    finalizedRef.current = false;
+    pollGenRef.current += 1;
+    setPassword("");
+    setMfaCode("");
+    setFormError(null);
+    setMfaError(null);
+    setSubmitting(false);
+    setPhase({ kind: "form" });
+  }, [finalize]);
+
+  // Warn before closing mid-sign-in so an accidental ESC doesn't waste a
+  // half-finished login.
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (
+        !next &&
+        (phase.kind === "working" || phase.kind === "mfa") &&
+        !window.confirm(
+          "Close before finishing? You'll need to start over to connect this airline.",
+        )
+      ) {
+        return;
+      }
+      onOpenChange(next);
+    },
+    [phase.kind, onOpenChange],
+  );
 
   if (!program) {
-    // Defensive: parent shouldn't open with a null programId, but if it
-    // does we render an empty closed dialog rather than crashing.
+    // Defensive: parent shouldn't open with a null programId.
     return null;
   }
 
@@ -265,18 +382,15 @@ export function ConnectAirlineModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          // Override the shadcn default (which is grid + p-6 + gap-4 +
-          // max-w-lg). We need flex column + zero padding so the iframe
-          // can stretch edge-to-edge.
-          "max-w-3xl w-[min(100vw-2rem,820px)] p-0 gap-0 grid-rows-none flex flex-col",
-          // Full-screen sheet on small viewports (HIG mobile pattern)
+          "max-w-md w-[min(100vw-2rem,460px)] p-0 gap-0 grid-rows-none flex flex-col",
+          // Full-screen sheet on small viewports (HIG mobile pattern).
           "sm:rounded-xl rounded-none sm:h-auto h-[100dvh] max-h-[100dvh] sm:max-h-[92dvh]",
         )}
       >
-        <DialogHeader className="px-5 py-4 border-b">
+        <DialogHeader className="px-5 py-4 border-b text-left">
           <div className="flex items-center gap-3">
             <span
-              className="inline-flex size-9 items-center justify-center rounded-md text-sm font-semibold tracking-tight text-background"
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold tracking-tight text-background"
               style={{ background: "var(--color-primary)" }}
               aria-hidden
             >
@@ -287,31 +401,44 @@ export function ConnectAirlineModal({
                 Connect {program.name}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground leading-tight mt-0.5">
-                We&rsquo;ll open a secure isolated browser. Sign in normally —
-                your password never reaches PointSnap, only the resulting
-                session cookies are saved (encrypted).
+                Sign in with your {program.name} account so PointSnap can
+                search award space for you.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
           <ModalBody
             phase={phase}
-            secsLeft={secsLeft}
+            programName={program.name}
+            username={username}
+            password={password}
+            formError={formError}
+            mfaCode={mfaCode}
+            mfaError={mfaError}
+            submitting={submitting}
+            onUsernameChange={setUsername}
+            onPasswordChange={setPassword}
+            onMfaCodeChange={setMfaCode}
+            onConnect={handleConnect}
+            onSubmitMfa={handleSubmitMfa}
             onRetry={handleRetry}
           />
         </div>
 
         <DialogFooter className="px-5 py-3 border-t bg-muted/30 flex flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-3.5" aria-hidden />
-            <span>Cookies are AES-encrypted server-side. Never sent to your browser.</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <ShieldCheck className="size-3.5 shrink-0" aria-hidden />
+            <span className="truncate">
+              Your password is encrypted and stored securely.
+            </span>
           </div>
           <Button
             type="button"
             variant="ghost"
             size="sm"
+            className="shrink-0"
             onClick={() => handleOpenChange(false)}
           >
             {phase.kind === "captured" ? "Done" : "Cancel"}
@@ -324,42 +451,78 @@ export function ConnectAirlineModal({
 
 interface BodyProps {
   phase: Phase;
-  secsLeft: number;
+  programName: string;
+  username: string;
+  password: string;
+  formError: string | null;
+  mfaCode: string;
+  mfaError: string | null;
+  submitting: boolean;
+  onUsernameChange: (v: string) => void;
+  onPasswordChange: (v: string) => void;
+  onMfaCodeChange: (v: string) => void;
+  onConnect: () => void;
+  onSubmitMfa: () => void;
   onRetry: () => void;
 }
 
-function ModalBody({ phase, secsLeft, onRetry }: BodyProps) {
-  if (phase.kind === "starting") {
+function ModalBody({
+  phase,
+  programName,
+  username,
+  password,
+  formError,
+  mfaCode,
+  mfaError,
+  submitting,
+  onUsernameChange,
+  onPasswordChange,
+  onMfaCodeChange,
+  onConnect,
+  onSubmitMfa,
+  onRetry,
+}: BodyProps) {
+  if (phase.kind === "form") {
     return (
-      <CenteredState
-        icon={<Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />}
-        title="Spinning up a secure browser…"
-        description="One moment. The login window will appear here once the session is ready."
+      <CredentialForm
+        programName={programName}
+        username={username}
+        password={password}
+        error={formError}
+        submitting={submitting}
+        onUsernameChange={onUsernameChange}
+        onPasswordChange={onPasswordChange}
+        onSubmit={onConnect}
       />
     );
   }
 
-  if (phase.kind === "unavailable") {
+  if (phase.kind === "working") {
     return (
       <CenteredState
-        icon={<ShieldCheck className="size-6 text-muted-foreground" aria-hidden />}
-        title="Auth capture isn't deployed yet"
-        description={phase.message}
-      />
-    );
-  }
-
-  if (phase.kind === "error") {
-    return (
-      <CenteredState
-        icon={<XCircle className="size-6 text-[color:var(--color-stale-critical-fg)]" aria-hidden />}
-        title="Something went wrong"
-        description={phase.message}
-        action={
-          phase.canRetry ? (
-            <Button onClick={onRetry} size="sm">Try again</Button>
-          ) : null
+        icon={
+          <Loader2
+            className="size-6 animate-spin text-muted-foreground"
+            aria-hidden
+          />
         }
+        title={`Signing in to ${programName}…`}
+        description="This usually takes a few seconds. We'll let you know if your account needs a verification code."
+      />
+    );
+  }
+
+  if (phase.kind === "mfa") {
+    return (
+      <MfaForm
+        programName={programName}
+        prompt={phase.prompt}
+        screenshotB64={phase.screenshotB64}
+        code={mfaCode}
+        error={mfaError}
+        submitting={submitting}
+        onCodeChange={onMfaCodeChange}
+        onSubmit={onSubmitMfa}
       />
     );
   }
@@ -367,91 +530,257 @@ function ModalBody({ phase, secsLeft, onRetry }: BodyProps) {
   if (phase.kind === "captured") {
     return (
       <CenteredState
-        icon={<CheckCircle2 className="size-7 text-[color:var(--color-fresh-fg)]" aria-hidden />}
+        icon={
+          <CheckCircle2
+            className="size-7 text-[color:var(--color-fresh-fg)]"
+            aria-hidden
+          />
+        }
         title="Connected!"
-        description="Your session is saved. PointSnap can now search award space on this program."
+        description={`PointSnap can now search award space on ${programName}.`}
       />
     );
   }
 
-  // Live phase — screenshot-stream live view + status strip.
-  const showCountdown = secsLeft <= COUNTDOWN_THRESHOLD_SECS;
-
-  // The worker couldn't spin up the BD browser — no live view to show.
-  if (!phase.session.liveViewAvailable) {
-    return (
-      <CenteredState
-        icon={<XCircle className="size-6 text-[color:var(--color-stale-critical-fg)]" aria-hidden />}
-        title="Couldn't open the secure browser"
-        description="The login session didn't start. Please try again in a moment."
-      />
-    );
-  }
-
+  // phase.kind === "error"
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      <LiveSessionView
-        streamUrl={phase.session.liveViewUrl}
-        sessionId={phase.session.sessionId}
-        viewport={phase.session.viewport}
-      />
-      <StatusStrip status={phase.status} secsLeft={secsLeft} showCountdown={showCountdown} />
-    </div>
+    <CenteredState
+      icon={
+        <XCircle
+          className="size-6 text-[color:var(--color-stale-critical-fg)]"
+          aria-hidden
+        />
+      }
+      title="Sign-in didn't finish"
+      description={phase.message}
+      screenshotB64={phase.screenshotB64}
+      action={
+        phase.canRetry ? (
+          <Button onClick={onRetry} size="sm">
+            Try again
+          </Button>
+        ) : null
+      }
+    />
   );
 }
 
-interface StatusStripProps {
-  status: AuthSessionState;
-  secsLeft: number;
-  showCountdown: boolean;
+interface CredentialFormProps {
+  programName: string;
+  username: string;
+  password: string;
+  error: string | null;
+  submitting: boolean;
+  onUsernameChange: (v: string) => void;
+  onPasswordChange: (v: string) => void;
+  onSubmit: () => void;
 }
 
-function StatusStrip({ status, secsLeft, showCountdown }: StatusStripProps) {
-  // Status strip variants — HIG "color independence": each variant also
-  // has a distinct icon + copy, so colorblind users get the same signal.
+function CredentialForm({
+  programName,
+  username,
+  password,
+  error,
+  submitting,
+  onUsernameChange,
+  onPasswordChange,
+  onSubmit,
+}: CredentialFormProps) {
+  const canSubmit = username.trim().length > 0 && password.length > 0;
+
   return (
-    <div
-      className="flex items-center justify-between gap-3 px-5 py-3 border-t bg-card text-sm"
-      aria-live="polite"
+    <form
+      className="flex flex-col gap-4 px-5 py-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (canSubmit && !submitting) onSubmit();
+      }}
     >
-      <div className="flex items-center gap-2 min-w-0">
-        {status === "awaiting_login" && (
-          <>
-            <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-            <span className="text-muted-foreground truncate">
-              Awaiting your login…
-            </span>
-          </>
-        )}
-        {status === "captured" && (
-          <>
-            <CheckCircle2
-              className="size-4 text-[color:var(--color-fresh-fg)]"
-              aria-hidden
-            />
-            <span className="font-medium text-foreground truncate">
-              Login detected! Capturing session…
-            </span>
-          </>
-        )}
-        {(status === "expired" || status === "failed") && (
-          <>
-            <XCircle
-              className="size-4 text-[color:var(--color-stale-critical-fg)]"
-              aria-hidden
-            />
-            <span className="font-medium text-[color:var(--color-stale-critical-fg)] truncate">
-              {status === "expired" ? "Session expired" : "Login failed"}
-            </span>
-          </>
-        )}
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Enter the email or member number and password you use to sign in at{" "}
+        {programName}. PointSnap signs in on your behalf to read award
+        availability.
+      </p>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="airline-username">Email or member number</Label>
+        <Input
+          id="airline-username"
+          name="username"
+          type="text"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          inputMode="email"
+          required
+          disabled={submitting}
+          value={username}
+          onChange={(e) => onUsernameChange(e.target.value)}
+          placeholder="you@example.com"
+          // Autofocus the first field so keyboard users land in the form.
+          autoFocus
+        />
       </div>
-      {showCountdown && status === "awaiting_login" && (
-        <Badge variant="stale" className="font-mono tabular-nums shrink-0">
-          {secsLeft}s left
-        </Badge>
-      )}
-    </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="airline-password">Password</Label>
+        <Input
+          id="airline-password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          disabled={submitting}
+          value={password}
+          onChange={(e) => onPasswordChange(e.target.value)}
+          placeholder="Your airline password"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "airline-cred-error" : undefined}
+        />
+        {error ? (
+          <p
+            id="airline-cred-error"
+            role="alert"
+            className="text-xs text-[color:var(--color-stale-critical-fg)] leading-snug pt-0.5"
+          >
+            {error}
+          </p>
+        ) : null}
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full gap-2"
+        disabled={!canSubmit || submitting}
+      >
+        {submitting ? (
+          <>
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+            Connecting…
+          </>
+        ) : (
+          <>
+            <KeyRound className="size-4" aria-hidden />
+            Connect
+          </>
+        )}
+      </Button>
+
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Your password is encrypted and stored securely so PointSnap can sign
+        in for you. Disconnect anytime to delete it.
+      </p>
+    </form>
+  );
+}
+
+interface MfaFormProps {
+  programName: string;
+  prompt: string | null;
+  screenshotB64: string | null;
+  code: string;
+  error: string | null;
+  submitting: boolean;
+  onCodeChange: (v: string) => void;
+  onSubmit: () => void;
+}
+
+function MfaForm({
+  programName,
+  prompt,
+  screenshotB64,
+  code,
+  error,
+  submitting,
+  onCodeChange,
+  onSubmit,
+}: MfaFormProps) {
+  const canSubmit = code.trim().length > 0;
+
+  return (
+    <form
+      className="flex flex-col gap-4 px-5 py-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (canSubmit && !submitting) onSubmit();
+      }}
+    >
+      <div className="flex items-start gap-2.5">
+        <ShieldCheck
+          className="size-5 shrink-0 text-[color:var(--color-primary)] mt-0.5"
+          aria-hidden
+        />
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold tracking-tight">
+            {programName} needs a verification code
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {prompt ??
+              "Enter the verification code your airline just sent to finish signing in."}
+          </p>
+        </div>
+      </div>
+
+      {screenshotB64 ? (
+        // A still from the airline's MFA page for context — decorative,
+        // labeled for screen readers, never the primary signal. A plain
+        // <img> is correct here: the source is an inline base64 data URI,
+        // which next/image's optimizer can't process anyway.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`data:image/jpeg;base64,${screenshotB64}`}
+          alt={`Screenshot of the ${programName} verification page`}
+          className="w-full rounded-md border bg-muted object-contain max-h-44"
+        />
+      ) : null}
+
+      <div className="space-y-1.5">
+        <Label htmlFor="airline-mfa-code">Verification code</Label>
+        <Input
+          id="airline-mfa-code"
+          name="one-time-code"
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          autoCorrect="off"
+          spellCheck={false}
+          required
+          disabled={submitting}
+          value={code}
+          onChange={(e) => onCodeChange(e.target.value)}
+          placeholder="123456"
+          className="tracking-[0.3em] font-mono text-center"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "airline-mfa-error" : undefined}
+          autoFocus
+        />
+        {error ? (
+          <p
+            id="airline-mfa-error"
+            role="alert"
+            className="text-xs text-[color:var(--color-stale-critical-fg)] leading-snug pt-0.5"
+          >
+            {error}
+          </p>
+        ) : null}
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full gap-2"
+        disabled={!canSubmit || submitting}
+      >
+        {submitting ? (
+          <>
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+            Submitting…
+          </>
+        ) : (
+          "Submit code"
+        )}
+      </Button>
+    </form>
   );
 }
 
@@ -459,17 +788,36 @@ interface CenteredStateProps {
   icon: React.ReactNode;
   title: string;
   description: string;
+  screenshotB64?: string | null;
   action?: React.ReactNode;
 }
 
-function CenteredState({ icon, title, description, action }: CenteredStateProps) {
+function CenteredState({
+  icon,
+  title,
+  description,
+  screenshotB64,
+  action,
+}: CenteredStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-8 py-16 gap-3 min-h-[280px]">
+    <div
+      className="flex flex-col items-center justify-center text-center px-8 py-12 gap-3 min-h-[260px]"
+      aria-live="polite"
+    >
       {icon}
       <h3 className="text-base font-semibold tracking-tight">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+      <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
         {description}
       </p>
+      {screenshotB64 ? (
+        // Plain <img>: inline base64 data URI, not optimizable by next/image.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`data:image/jpeg;base64,${screenshotB64}`}
+          alt="Screenshot of what the airline showed"
+          className="mt-1 w-full max-w-xs rounded-md border bg-muted object-contain max-h-44"
+        />
+      ) : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );

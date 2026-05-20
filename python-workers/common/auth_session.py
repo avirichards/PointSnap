@@ -145,6 +145,7 @@ async def save_session(
     cookies: list[dict],
     expires_at: str,
     meta: dict | None = None,
+    password: str | None = None,
 ) -> str | None:
     """Encrypt the cookie blob and upsert the session row.
 
@@ -155,6 +156,15 @@ async def save_session(
         expires_at: ISO-8601 timestamp string in UTC.
         meta:       non-secret hint blob (cookie names, domains, login URL,
                     last-known balance) — stored in cookies_meta jsonb.
+        password:   the user's airline login password. When provided it is
+                    encrypted into Supabase Vault via `encrypt_password()`
+                    (same SECURITY-DEFINER wrapper pattern as cookies) and
+                    only the resulting secret pointer (`password_secret_id`)
+                    is stored on the table row — never the plaintext. The
+                    T5' worker-side login flow (`auth/capture.py`) saves the
+                    password on a successful capture so a future cookie
+                    expiry can be re-logged-in headlessly. When None, the
+                    existing `password_secret_id` is left untouched.
 
     Returns the program_auth_sessions.id (UUID string) on success, None on
     failure. Idempotent: a second call with the same (user_id, program_id)
@@ -182,55 +192,129 @@ async def save_session(
                 # round-trip and atomic. The CTE computes the resolved
                 # secret_id by calling encrypt_cookies with whatever
                 # existing_secret_id we found (NULL on first connect).
-                await cur.execute(
-                    """
-                    WITH existing AS (
-                      SELECT cookies_secret_id
-                        FROM public.program_auth_sessions
-                       WHERE user_id = %s::uuid
-                         AND program_id = %s
-                    ),
-                    enc AS (
-                      SELECT public.encrypt_cookies(
-                               %s,
-                               %s::uuid,
-                               %s,
-                               (SELECT cookies_secret_id FROM existing)
-                             ) AS secret_id
+                #
+                # When `password` is supplied we add a parallel `encp` CTE
+                # that calls encrypt_password() with the existing
+                # password_secret_id (so the Vault row is updated in place,
+                # not orphaned). When `password` is None we skip the CTE and
+                # write COALESCE(<existing>, NULL) — i.e. leave the column
+                # exactly as it was for the ON CONFLICT path, and NULL on a
+                # first insert.
+                if password is not None:
+                    await cur.execute(
+                        """
+                        WITH existing AS (
+                          SELECT cookies_secret_id, password_secret_id
+                            FROM public.program_auth_sessions
+                           WHERE user_id = %s::uuid
+                             AND program_id = %s
+                        ),
+                        enc AS (
+                          SELECT public.encrypt_cookies(
+                                   %s,
+                                   %s::uuid,
+                                   %s,
+                                   (SELECT cookies_secret_id FROM existing)
+                                 ) AS secret_id
+                        ),
+                        encp AS (
+                          SELECT public.encrypt_password(
+                                   %s,
+                                   %s::uuid,
+                                   %s,
+                                   (SELECT password_secret_id FROM existing)
+                                 ) AS secret_id
+                        )
+                        INSERT INTO public.program_auth_sessions (
+                          user_id,
+                          program_id,
+                          cookies_secret_id,
+                          password_secret_id,
+                          cookies_meta,
+                          expires_at
+                        )
+                        SELECT
+                          %s::uuid,
+                          %s,
+                          enc.secret_id,
+                          encp.secret_id,
+                          %s::jsonb,
+                          %s::timestamptz
+                        FROM enc, encp
+                        ON CONFLICT (user_id, program_id)
+                        DO UPDATE SET
+                          cookies_secret_id  = EXCLUDED.cookies_secret_id,
+                          password_secret_id = EXCLUDED.password_secret_id,
+                          cookies_meta       = EXCLUDED.cookies_meta,
+                          expires_at         = EXCLUDED.expires_at,
+                          last_used_at       = NULL,
+                          last_search_ok     = NULL,
+                          updated_at         = now()
+                        RETURNING id
+                        """,
+                        (
+                            # existing CTE — lookup keys
+                            user_id, program_id,
+                            # enc CTE — encrypt cookie args
+                            cookies_json, user_id, program_id,
+                            # encp CTE — encrypt password args
+                            password, user_id, program_id,
+                            # INSERT values
+                            user_id, program_id, meta_json, expires_at,
+                        ),
                     )
-                    INSERT INTO public.program_auth_sessions (
-                      user_id,
-                      program_id,
-                      cookies_secret_id,
-                      cookies_meta,
-                      expires_at
+                else:
+                    await cur.execute(
+                        """
+                        WITH existing AS (
+                          SELECT cookies_secret_id, password_secret_id
+                            FROM public.program_auth_sessions
+                           WHERE user_id = %s::uuid
+                             AND program_id = %s
+                        ),
+                        enc AS (
+                          SELECT public.encrypt_cookies(
+                                   %s,
+                                   %s::uuid,
+                                   %s,
+                                   (SELECT cookies_secret_id FROM existing)
+                                 ) AS secret_id
+                        )
+                        INSERT INTO public.program_auth_sessions (
+                          user_id,
+                          program_id,
+                          cookies_secret_id,
+                          password_secret_id,
+                          cookies_meta,
+                          expires_at
+                        )
+                        SELECT
+                          %s::uuid,
+                          %s,
+                          enc.secret_id,
+                          (SELECT password_secret_id FROM existing),
+                          %s::jsonb,
+                          %s::timestamptz
+                        FROM enc
+                        ON CONFLICT (user_id, program_id)
+                        DO UPDATE SET
+                          cookies_secret_id = EXCLUDED.cookies_secret_id,
+                          cookies_meta      = EXCLUDED.cookies_meta,
+                          expires_at        = EXCLUDED.expires_at,
+                          last_used_at      = NULL,
+                          last_search_ok    = NULL,
+                          updated_at         = now()
+                        RETURNING id
+                        """,
+                        (
+                            # existing CTE — lookup keys
+                            user_id, program_id,
+                            # enc CTE — encrypt cookie args
+                            cookies_json, user_id, program_id,
+                            # INSERT values (password_secret_id left as-is)
+                            user_id, program_id, meta_json, expires_at,
+                        ),
                     )
-                    SELECT
-                      %s::uuid,
-                      %s,
-                      enc.secret_id,
-                      %s::jsonb,
-                      %s::timestamptz
-                    FROM enc
-                    ON CONFLICT (user_id, program_id)
-                    DO UPDATE SET
-                      cookies_secret_id = EXCLUDED.cookies_secret_id,
-                      cookies_meta      = EXCLUDED.cookies_meta,
-                      expires_at        = EXCLUDED.expires_at,
-                      last_used_at      = NULL,
-                      last_search_ok    = NULL,
-                      updated_at        = now()
-                    RETURNING id
-                    """,
-                    (
-                        # existing CTE — lookup keys
-                        user_id, program_id,
-                        # enc CTE — encrypt args
-                        cookies_json, user_id, program_id,
-                        # INSERT values
-                        user_id, program_id, meta_json, expires_at,
-                    ),
-                )
                 row = await cur.fetchone()
                 await conn.commit()
                 if row:
@@ -238,6 +322,63 @@ async def save_session(
                 return None
     except Exception as exc:  # noqa: BLE001
         log.warning("auth_session.save_session: DB error: %s", exc)
+        return None
+
+
+async def get_stored_password(user_id: str, program_id: str) -> str | None:
+    """Return the decrypted airline login password for (user, program).
+
+    Mirrors the read path of `get_active_session()` but for the password
+    Vault pointer. The decrypt happens in-database via the SECURITY-DEFINER
+    `decrypt_password()` wrapper, which verifies the secret's metadata name
+    matches the row's (user_id, program_id) before returning cleartext —
+    same swapped-pointer defense as `decrypt_cookies()`.
+
+    Returns None when:
+      - DATABASE_URL is unset / connect fails
+      - No row exists for (user_id, program_id)
+      - The row has no `password_secret_id` (password was never captured)
+      - decrypt_password returned NULL (stale row / pointer mismatch)
+
+    The caller MUST treat the result as a secret — never log it.
+    """
+    dsn = _database_url()
+    if not dsn:
+        log.warning("auth_session.get_stored_password: DATABASE_URL unset")
+        return None
+
+    try:
+        async with await psycopg.AsyncConnection.connect(dsn) as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    """
+                    SELECT
+                      public.decrypt_password(password_secret_id, user_id, program_id)
+                        AS password_plain
+                    FROM public.program_auth_sessions
+                    WHERE user_id = %s::uuid
+                      AND program_id = %s
+                      AND password_secret_id IS NOT NULL
+                    LIMIT 1
+                    """,
+                    (user_id, program_id),
+                )
+                row = await cur.fetchone()
+                if not row:
+                    return None
+                (password_plain,) = row
+                if password_plain is None:
+                    log.warning(
+                        "auth_session.get_stored_password: decrypt returned "
+                        "NULL for (user=%s, program=%s) — stale row or "
+                        "pointer mismatch",
+                        user_id,
+                        program_id,
+                    )
+                    return None
+                return password_plain
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_session.get_stored_password: DB error: %s", exc)
         return None
 
 

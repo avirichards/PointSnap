@@ -1,14 +1,16 @@
 /**
- * Phase 2.5 — POST /api/auth/airline/start
+ * POST /api/auth/airline/start
  *
  * Proxies to the worker's `/auth/start` endpoint. The worker spins up a
- * fresh BD Browser API session, navigates to the airline's login page, and
- * returns the session id + a same-origin live-view URL the cockpit renders
- * as a screenshot stream (see ConnectAirlineModal / LiveSessionView).
+ * fresh browser session, navigates to the airline's login page, and fills
+ * in the credentials the cockpit forwarded. It returns the session id +
+ * the initial state; the cockpit then polls `/auth/status`.
  *
- * The worker URL stays server-side (env-only). The worker takes its params
- * as QUERY params (`program`, `user_id`) — not a JSON body — so this route
- * translates the cockpit's JSON body into the worker's query string.
+ * The worker URL stays server-side (env-only). The worker takes `program`
+ * and `user_id` as QUERY params and the credentials as a JSON body — so
+ * this route resolves the user, builds the query string, and forwards
+ * `{username,password}` as the request body. The password is never placed
+ * in a URL and never logged.
  *
  * If `PYTHON_WORKER_URL` isn't set, or the worker doesn't yet expose
  * `/auth/start`, we return 501 so the client renders a friendly "not yet
@@ -21,17 +23,17 @@ export const runtime = "nodejs";
 
 interface StartBody {
   programId?: string;
+  username?: string;
+  password?: string;
   userId?: string;
 }
 
 interface WorkerStartResponse {
   session_id: string;
-  live_view_url: string;
-  live_view_available?: boolean;
-  live_view_kind?: string;
-  viewport?: { w: number; h: number };
+  program_id?: string;
+  program_label?: string;
+  state?: string;
   expires_at: string;
-  current_url?: string | null;
 }
 
 export async function POST(req: NextRequest) {
@@ -53,11 +55,17 @@ export async function POST(req: NextRequest) {
   if (typeof body.programId !== "string" || body.programId.length === 0) {
     return Response.json({ message: "programId required" }, { status: 400 });
   }
+  if (typeof body.username !== "string" || body.username.length === 0) {
+    return Response.json({ message: "username required" }, { status: 400 });
+  }
+  if (typeof body.password !== "string" || body.password.length === 0) {
+    return Response.json({ message: "password required" }, { status: 400 });
+  }
 
   const userId = resolveUserId(req, body.userId);
   if (!userId) return noUserResponse();
 
-  // Worker takes program + user_id as QUERY params.
+  // Worker takes program + user_id as QUERY params; credentials in the body.
   const url =
     `${base.replace(/\/$/, "")}/auth/start?` +
     new URLSearchParams({ program: body.programId, user_id: userId }).toString();
@@ -66,7 +74,12 @@ export async function POST(req: NextRequest) {
   try {
     res = await fetch(url, {
       method: "POST",
-      // /auth/start spins up a BD browser context — slow on cold start.
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: body.username,
+        password: body.password,
+      }),
+      // /auth/start spins up a browser context — slow on cold start.
       signal: AbortSignal.timeout(90_000),
     });
   } catch (err) {
@@ -95,11 +108,7 @@ export async function POST(req: NextRequest) {
   const json = (await res.json()) as WorkerStartResponse;
   return Response.json({
     sessionId: json.session_id,
-    liveViewUrl: json.live_view_url,
-    liveViewAvailable: json.live_view_available ?? false,
-    liveViewKind: json.live_view_kind ?? "stream",
-    viewport: json.viewport ?? { w: 1366, h: 768 },
+    state: json.state ?? "working",
     expiresAt: json.expires_at,
-    currentUrl: json.current_url ?? null,
   });
 }

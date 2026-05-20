@@ -1,43 +1,56 @@
-"""Worker endpoints for the Phase 2.5 user-initiated auth-capture flow.
+"""Worker endpoints for the user-initiated auth-capture flow.
 
-User journey (cockpit-side, owned by another agent — see plan §"Phase 2.5"):
+User journey (cockpit-side, owned by another agent — built against the
+SAME contract documented below):
   1. User clicks **Connect <Airline>** in `/airlines`.
-  2. Cockpit POSTs `/auth/start?program=AC_AEROPLAN` to this worker.
-  3. Worker spins up a fresh Bright Data Browser API session, navigates
-     to the airline's login page, returns `{ session_id, live_view_url }`
-     where live_view_url points at the `/auth/stream` screenshot stream.
-  4. Cockpit renders the `/auth/stream` frames onto a canvas and replays
-     the user's mouse/keyboard to `/auth/input`. User types creds + MFA.
-  5. Cockpit polls `/auth/status?session_id=...` every 2s.
-  6. Worker watches the page for a "logged in" signal (URL substring +
-     positive DOM marker). On detection, captures cookies, stores
-     encrypted in `program_auth_sessions`, transitions state to `captured`.
-  7. Cockpit closes the modal and POSTs `/auth/finalize?session_id=...`
-     (also called on timeout / explicit cancel) — tears down the BD
-     session.
+  2. Cockpit collects the user's airline email + password in PointSnap's
+     own form and POSTs `/auth/start?program=AC_AEROPLAN&user_id=...`
+     with `{"username","password"}` in the JSON body.
+  3. Worker creates an in-memory session and launches a background task
+     that opens a Bright Data Browser API session, navigates to the
+     airline login page, and **fills the login form itself** (typing the
+     credentials with a human-like per-character delay). It returns the
+     opaque `session_id` immediately, state `working`.
+  4. Cockpit polls `/auth/status?session_id=...` every ~2s. The status
+     payload carries the current state plus a SINGLE JPEG still
+     (`screenshot_b64`) refreshed at each decision point — NOT a video
+     stream. The user never types into a remote browser.
+  5. If the airline challenges MFA, the worker pauses at state
+     `mfa_required` and scrapes any human prompt text. The cockpit shows
+     the still + prompt, collects a code, and POSTs `/auth/mfa`.
+  6. The worker fills the code, submits, and resumes outcome detection.
+  7. On a verified login the worker captures all cookies, stores them
+     encrypted in `program_auth_sessions` (along with the password,
+     encrypted into Vault), and transitions to `captured`.
+  8. Cockpit closes the modal and POSTs `/auth/finalize?session_id=...`
+     (also on timeout / explicit cancel) — tears down the BD session.
 
-The live-view question is RESOLVED — see `_bd_inspector_url()` and the
-big comment block above it. BD's hosted DevTools inspector is not
-iframe-embeddable (`X-Frame-Options: DENY`), so the cockpit live view is
-a worker-side screenshot stream: `/auth/stream` (SSE of base64 JPEG
-frames) + `/auth/input` (CDP input replay).
+State machine:
+    working -> (mfa_required -> working)* -> captured
+                                          |  invalid_credentials
+                                          |  failed
+                                          |  expired
 
 This module holds live BD browser handles in process memory across HTTP
 requests. **Do not run multiple worker replicas without sticky routing**
-— `/auth/start` and `/auth/status`/`/auth/finalize` for the same
-session_id MUST land on the same instance. For Fly.io: pin via session-
-affinity headers or run a single machine for the auth router. (Phase 2.5
+— `/auth/start`, `/auth/status`, `/auth/mfa`, `/auth/finalize` for the
+same session_id MUST land on the same instance. For Fly.io: pin via
+session-affinity or run a single machine for the auth router. (This flow
 only needs one user at a time per program; this is fine.)
+
+SECURITY: the user's password lives ONLY in the in-memory session state
+for the lifetime of the login attempt. It is encrypted into Supabase
+Vault on a successful capture and is NEVER written to logs or to any
+non-Vault column. The username is likewise never logged.
 """
 
 from __future__ import annotations
 
 import asyncio
-import json
+import base64
 import logging
 import os
 import re
-import secrets
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -45,7 +58,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 
 from common.auth_session import cookies_meta, list_sessions, save_session
 
@@ -57,20 +70,30 @@ router = APIRouter()
 # ----------------------------------------------------------------------
 # Per-program config
 #
-# Sourced from Phase 0 Agent 5's `agent-5-auth-viability.md`. For each
-# airline we record:
-#   - login_url:          where to land the user (post-warmup)
-#   - success_url_match:  substring that, when present in page URL,
-#                          indicates a successful login
+# For each airline we record:
+#   - login_url:          where the worker navigates to log in
+#   - success_url_match:  substrings that, when present in page URL,
+#                          indicate a successful login
 #   - success_dom_check:  optional CSS selector to confirm via DOM
-#                          (positive marker: account-summary widget,
-#                          sign-out link, etc.)
+#                          (positive marker: account widget, sign-out
+#                          link, etc.)
 #   - cookie_ttl_hours:   how long to consider the captured cookies
 #                          "fresh" — feeds program_auth_sessions.expires_at
+#   - warmup_url:         optional warmup before login_url to mint sensor
+#                          cookies (Akamai-fronted programs)
+#   - *_selector:         the form selectors the worker fills. The worker
+#                          tries each selector in the (comma-joined) list
+#                          and uses the first that resolves to a visible
+#                          element — robustness against framework-
+#                          generated IDs that drift between deploys.
+#   - error_selector:     selectors whose visible presence (with text)
+#                          means an authentication error (wrong password).
+#   - mfa_marker_selector: selectors whose presence means the page is on
+#                          an MFA / one-time-code step.
+#   - mfa_prompt_selector: selectors to scrape human MFA prompt text from.
 #
-# Programs marked anon-OK in the agent report are intentionally excluded
-# (AS Mileage Plan, AM Aeromexico, EY Etihad Guest) — they don't need
-# T5'. The user shouldn't see Connect buttons for those.
+# Programs marked anon-OK upstream are intentionally excluded — they
+# don't need a login and the cockpit shouldn't show Connect buttons.
 # ----------------------------------------------------------------------
 @dataclass(frozen=True)
 class ProgramAuthConfig:
@@ -82,6 +105,58 @@ class ProgramAuthConfig:
     # Optional warmup before login_url to mint sensor cookies (Akamai
     # programs).
     warmup_url: str | None = None
+    # --- Login-form selectors (comma-joined fallback lists) -----------
+    username_selector: str = ""
+    password_selector: str = ""
+    submit_selector: str = ""
+    # --- Outcome-detection selectors ----------------------------------
+    error_selector: str = ""
+    mfa_marker_selector: str = ""
+    mfa_prompt_selector: str = ""
+    # --- MFA verification-page selectors ------------------------------
+    mfa_code_selector: str = ""
+    mfa_submit_selector: str = ""
+
+
+# Generic auth-error selectors appended to every program's error_selector.
+# Most airline login forms render a role="alert" / aria-live region on a
+# bad password; these catch the common shapes so a per-program list only
+# needs the airline-specific extras.
+_GENERIC_ERROR_SELECTORS = (
+    '[role="alert"]',
+    '[aria-live="assertive"]',
+    ".error-message",
+    ".form-error",
+    ".alert-danger",
+    ".validation-error",
+)
+
+# Generic MFA-page markers — inputs/labels that strongly indicate a
+# one-time-code step. Appended to every program's mfa_marker_selector.
+_GENERIC_MFA_MARKERS = (
+    'input[autocomplete="one-time-code"]',
+    'input[name*="otp" i]',
+    'input[name*="verification" i]',
+    'input[id*="otp" i]',
+    'input[id*="verification" i]',
+    'input[name*="securityCode" i]',
+)
+
+
+def _selectors(*lists: str) -> list[str]:
+    """Flatten one or more comma-joined selector strings into a de-duped,
+    order-preserving list. Empty pieces are dropped."""
+    out: list[str] = []
+    seen: set[str] = set()
+    for piece in lists:
+        if not piece:
+            continue
+        for sel in piece.split(","):
+            sel = sel.strip()
+            if sel and sel not in seen:
+                seen.add(sel)
+                out.append(sel)
+    return out
 
 
 PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
@@ -91,6 +166,72 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
         success_url_match=("/aco/home/aeroplan/your-aeroplan", "/account.html"),
         cookie_ttl_hours=24,
         warmup_url="https://www.aircanada.com/",
+        # NEEDS-VERIFICATION selectors — see module-level note in the
+        # accompanying report. Air Canada's sign-in is a JS-rendered
+        # Angular widget; the available /diag/inputs harness snapshots the
+        # page before that widget renders, so these were inferred from Air
+        # Canada's known login-form structure ("Aeroplan number or email"
+        # text field, "Password" field, "Sign in" button). They are
+        # deliberately broad — robust label/placeholder/autocomplete-based
+        # locators plus likely id/name fallbacks — and the fill logic
+        # tries each in turn and uses the first visible match.
+        username_selector=(
+            "input#enrollmentNumber,"
+            "input[name='enrollmentNumber'],"
+            "input#emailAddress,"
+            "input[name='emailAddress'],"
+            "input[name='username'],"
+            "input[autocomplete='username'],"
+            "input[placeholder*='Aeroplan' i],"
+            "input[placeholder*='email' i],"
+            "input[aria-label*='Aeroplan' i],"
+            "input[aria-label*='email' i]"
+        ),
+        password_selector=(
+            "input#password,"
+            "input[name='password'],"
+            "input[type='password'],"
+            "input[autocomplete='current-password'],"
+            "input[aria-label*='password' i]"
+        ),
+        submit_selector=(
+            "button#login-button,"
+            "button[name='signin'],"
+            "button[type='submit'],"
+            "button[aria-label*='Sign in' i],"
+            "input[type='submit']"
+        ),
+        error_selector=(
+            ".acsi-error,"
+            ".signin-error,"
+            "[class*='error'][class*='message']"
+        ),
+        mfa_marker_selector=(
+            "input[name*='code' i],"
+            "input[id*='code' i],"
+            "input[name*='otp' i]"
+        ),
+        mfa_prompt_selector=(
+            "[class*='verification'],"
+            "[class*='mfa'],"
+            "main h1,"
+            "main h2,"
+            "[role='dialog'] h1,"
+            "[role='dialog'] h2"
+        ),
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],"
+            "input[name*='code' i],"
+            "input[id*='code' i],"
+            "input[name*='otp' i],"
+            "input[type='tel']"
+        ),
+        mfa_submit_selector=(
+            "button[type='submit'],"
+            "button[aria-label*='Verify' i],"
+            "button[aria-label*='Submit' i],"
+            "input[type='submit']"
+        ),
     ),
     "UA_MP": ProgramAuthConfig(
         label="United MileagePlus",
@@ -98,6 +239,22 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
         success_url_match=("/en/us/mileageplus/account-summary", "/account-page"),
         cookie_ttl_hours=24,
         warmup_url="https://www.united.com/",
+        username_selector=(
+            "input#username,input[name='username'],"
+            "input[autocomplete='username'],input[type='email']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],"
+            "input[type='password'],input[autocomplete='current-password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "LH_MILES_MORE": ProgramAuthConfig(
         label="Lufthansa Miles & More",
@@ -105,12 +262,41 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
         success_url_match=("/row/en/profile.html", "/account.html"),
         cookie_ttl_hours=24,
         warmup_url="https://www.miles-and-more.com/",
+        username_selector=(
+            "input#username,input[name='username'],"
+            "input[autocomplete='username'],input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "SK_EUROBONUS": ProgramAuthConfig(
         label="SAS EuroBonus",
         login_url="https://www.flysas.com/en/eurobonus/account/",
         success_url_match=("/en/eurobonus/account",),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='email']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "BA_AVIOS": ProgramAuthConfig(
         label="British Airways Executive Club",
@@ -118,48 +304,162 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
         success_url_match=("/travel/loggedinhome/execclub", "/executive-club"),
         cookie_ttl_hours=24,
         warmup_url="https://www.britishairways.com/",
+        username_selector=(
+            "input#membership-number,input[name='membershipNumber'],"
+            "input[name='username'],input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "AF_FLYINGBLUE": ProgramAuthConfig(
         label="Air France / KLM Flying Blue",
         login_url="https://www.flyingblue.com/en/account.html",
         success_url_match=("/account.html", "/account/dashboard"),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='email']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "DL_SKYMILES": ProgramAuthConfig(
         label="Delta SkyMiles",
         login_url="https://www.delta.com/login",
         success_url_match=("/skymiles/profile", "/login-redirect"),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='userId'],input[name='username'],"
+            "input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "CX_CATHAY": ProgramAuthConfig(
         label="Cathay Pacific Asia Miles",
         login_url="https://www.cathaypacific.com/cx/en_US/sign-in.html",
         success_url_match=("/membership.html", "/cx/en_US/cathay-account"),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='email']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "TK_MILES_SMILES": ProgramAuthConfig(
         label="Turkish Miles&Smiles",
         login_url="https://www.turkishairlines.com/en-us/miles-and-smiles/",
         success_url_match=("/miles-and-smiles/",),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "NH_ANA": ProgramAuthConfig(
         label="ANA Mileage Club",
         login_url="https://www.ana.co.jp/en/us/amc/",
         success_url_match=("/asw/", "/amc/"),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "AV_LIFEMILES": ProgramAuthConfig(
         label="Avianca LifeMiles",
         login_url="https://www.lifemiles.com/Account/Login",
         success_url_match=("/Plan/MyAccount", "/Account/"),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "VS_FLYING_CLUB": ProgramAuthConfig(
         label="Virgin Atlantic Flying Club",
         login_url="https://flywith.virginatlantic.com/account/",
         success_url_match=("/flying-club/dashboard", "/account/"),
         cookie_ttl_hours=24,
+        username_selector=(
+            "input#username,input[name='username'],input[type='email']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
     "AA_AADVANTAGE": ProgramAuthConfig(
         label="American AAdvantage",
@@ -167,58 +467,99 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
         success_url_match=("/aadvantage-program/profile/", "/account-summary"),
         cookie_ttl_hours=24,
         warmup_url="https://www.aa.com/",
+        username_selector=(
+            "input#cidEnrollment,input[name='loginId'],"
+            "input[name='username'],input[type='text']"
+        ),
+        password_selector=(
+            "input#password,input[name='password'],input[type='password']"
+        ),
+        submit_selector="button[type='submit'],input[type='submit']",
+        mfa_marker_selector="input[name*='code' i],input[id*='code' i]",
+        mfa_prompt_selector="main h1,main h2,[role='dialog'] h1,[role='dialog'] h2",
+        mfa_code_selector=(
+            "input[autocomplete='one-time-code'],input[name*='code' i],"
+            "input[id*='code' i],input[type='tel']"
+        ),
+        mfa_submit_selector="button[type='submit'],input[type='submit']",
     ),
 }
 
 
 # ----------------------------------------------------------------------
-# In-memory session registry
-#
-# `ACTIVE_SESSIONS[session_id]` keeps the live Patchright/Camoufox handles
-# alive across HTTP requests. Keyed by a server-generated UUID; the
-# session_id is opaque to the cockpit (it's just a token to correlate
-# /start ↔ /status ↔ /finalize).
-#
-# State machine:
-#   awaiting_login -> captured     (good outcome)
-#   awaiting_login -> failed       (per-program signal not seen)
-#   awaiting_login -> expired      (TTL elapsed; user walked away)
-#   *              -> torn_down    (after /auth/finalize cleanup)
-#
-# We don't garbage-collect dead sessions on a timer (the watcher coroutine
-# transitions to `expired`); /auth/finalize is responsible for the actual
-# browser teardown so we don't accidentally pay for BD bandwidth on
-# orphaned sessions.
+# Session state
 # ----------------------------------------------------------------------
+# Public state values surfaced to the cockpit (see contract):
+#   working              login in progress / resuming after MFA
+#   mfa_required         airline asked for a one-time code; awaiting /auth/mfa
+#   captured             verified login; cookies + password stored
+#   invalid_credentials  airline rejected the username/password
+#   failed               an error prevented capture (error field set)
+#   expired              session TTL elapsed before completion
+#
+# Internal-only: `torn_down` after /auth/finalize cleanup. /auth/status
+# maps `torn_down` back to the last meaningful public state where it can,
+# but a finalize that runs after `captured` keeps reporting `captured`.
+STATE_WORKING = "working"
+STATE_MFA_REQUIRED = "mfa_required"
+STATE_CAPTURED = "captured"
+STATE_INVALID = "invalid_credentials"
+STATE_FAILED = "failed"
+STATE_EXPIRED = "expired"
+STATE_TORN_DOWN = "torn_down"
+
+# Terminal states — the login task has finished, nothing more will change
+# the outcome.
+_TERMINAL_STATES = frozenset(
+    {STATE_CAPTURED, STATE_INVALID, STATE_FAILED, STATE_EXPIRED}
+)
+
+
 @dataclass
 class AuthSessionState:
+    """In-memory record for one auth-capture attempt.
+
+    Keyed by a server-generated UUID in `ACTIVE_SESSIONS`. Holds the live
+    Patchright/Bright-Data handles plus the public-facing state the
+    cockpit polls. The user's `password` lives here and ONLY here until it
+    is encrypted into Vault on a successful capture — it is never logged
+    and never written to a non-Vault column.
+    """
+
     session_id: str
     user_id: str
     program_id: str
-    state: str  # "awaiting_login" | "captured" | "failed" | "expired" | "torn_down"
+    state: str
     started_at: float
     expires_at_unix: float
-    live_view_url: str | None = None
-    # BD's hosted DevTools inspector URL — operator debug escape hatch
-    # only (NOT iframe-embeddable; see _bd_inspector_url docstring).
-    bd_inspector_url: str | None = None
+    # Credentials supplied by the user. Secret — never log these.
+    username: str = ""
+    password: str = ""
+    # Human MFA prompt text scraped from the airline page, when available.
+    mfa_prompt: str | None = None
+    # Single JPEG still (base64, no data: prefix) of the current page,
+    # refreshed at each decision point. NOT a stream.
+    screenshot_b64: str | None = None
+    # Best-effort current page URL for cockpit display.
+    current_url: str | None = None
+    # Error string when state == "failed".
     error: str | None = None
-    # Live browser objects (Patchright/Camoufox). None after torn_down.
-    # `pw` is the playwright handle returned by `async_playwright().start()`;
-    # we call `pw.stop()` during teardown.
+    # Live browser objects (Patchright over Bright Data). None after
+    # teardown. `pw` is the playwright handle from
+    # `async_playwright().start()`; we call `pw.stop()` during teardown.
     pw: Any = None
     browser: Any = None
     context: Any = None
     page: Any = None
-    # CDP session reused by the screenshot stream + input replay. Lazily
-    # created on the first /auth/stream or /auth/input call.
-    cdp: Any = None
-    # Serializes CDP access so a screenshot capture and an input dispatch
-    # don't interleave on the same CDP session.
-    cdp_lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
-    # Background coroutine that watches the page for login signal.
-    watcher_task: asyncio.Task | None = field(default=None, repr=False)
-    # On success, populated with the row id in program_auth_sessions.
+    # Background coroutine running the login + outcome-detection flow.
+    login_task: asyncio.Task | None = field(default=None, repr=False)
+    # Set by /auth/mfa: the code the user submitted. The login task picks
+    # this up, fills it, and clears the event for any subsequent round.
+    mfa_code: str | None = field(default=None, repr=False)
+    mfa_code_event: asyncio.Event = field(
+        default_factory=asyncio.Event, repr=False
+    )
+    # On success, the row id in program_auth_sessions.
     stored_row_id: str | None = None
 
 
@@ -227,9 +568,19 @@ ACTIVE_SESSIONS: dict[str, AuthSessionState] = {}
 # How long to leave a `/auth/start` session alive before auto-expiring.
 SESSION_MAX_TTL_SEC = 5 * 60
 
-# How long the captured cookies are considered "fresh" before we ask the
-# user to reconnect. Per-program override via ProgramAuthConfig.
+# Fallback cookie freshness when a program omits an override.
 DEFAULT_COOKIE_TTL_HOURS = 24
+
+# Screenshot tuning — a single still captured at each decision point.
+SCREENSHOT_WIDTH = 1280
+SCREENSHOT_JPEG_QUALITY = 70
+
+# Outcome-detection polling.
+_DETECT_POLL_SEC = 1.0
+# How long to watch for an outcome after submitting credentials before
+# giving up. Bounded by SESSION_MAX_TTL_SEC anyway; this just caps a
+# single detection round.
+_DETECT_TIMEOUT_SEC = 75.0
 
 
 # ----------------------------------------------------------------------
@@ -242,14 +593,6 @@ def _now() -> float:
 def _gen_session_id() -> str:
     """Server-side opaque ID. UUID4 for collision resistance."""
     return str(uuid.uuid4())
-
-
-def _redact_for_log(d: dict) -> dict:
-    """Hide cookie values when logging — names are fine, values aren't."""
-    out = dict(d)
-    if "cookies" in out:
-        out["cookies"] = f"<{len(out['cookies'])} cookies redacted>"
-    return out
 
 
 async def _open_bd_browser(session_label: str, timeout_ms: int = 60_000):
@@ -299,32 +642,24 @@ async def _open_bd_browser(session_label: str, timeout_ms: int = 60_000):
 
     page.set_default_timeout(timeout_ms)
 
-    # For auth-capture we do NOT block stylesheets/images. The login form
-    # needs the full CSS layout for the user to see what they're typing
-    # into. Bandwidth cost is acceptable — one search-equivalent per
-    # session at most.
+    # For auth-capture we do NOT block stylesheets/images — the login form
+    # needs full CSS layout so the screenshot still is legible to the user
+    # if we need to surface it. Bandwidth cost is acceptable: one
+    # search-equivalent per session at most.
 
     return pw, browser, context, page
 
 
 async def _close_bd_browser(state: AuthSessionState) -> None:
     """Tear down the BD browser handles in `state`. Safe to call twice."""
-    # Cancel watcher first so it doesn't fire after teardown.
-    if state.watcher_task and not state.watcher_task.done():
-        state.watcher_task.cancel()
+    # Cancel the login task first so it doesn't fire after teardown.
+    if state.login_task and not state.login_task.done():
+        state.login_task.cancel()
         try:
-            await state.watcher_task
+            await state.login_task
         except (asyncio.CancelledError, Exception):  # noqa: BLE001
             pass
-    state.watcher_task = None
-
-    # Detach the streaming CDP session before closing the context.
-    try:
-        if state.cdp:
-            await state.cdp.detach()
-    except Exception:  # noqa: BLE001
-        pass
-    state.cdp = None
+    state.login_task = None
 
     try:
         if state.context:
@@ -348,421 +683,426 @@ async def _close_bd_browser(state: AuthSessionState) -> None:
     state.pw = None
 
     state.page = None
-    state.state = "torn_down"
+    # Preserve a meaningful terminal state — once captured/failed/etc. the
+    # finalize teardown shouldn't erase the outcome the cockpit may still
+    # poll for. Only a session torn down mid-flight reports `torn_down`.
+    if state.state not in _TERMINAL_STATES:
+        state.state = STATE_TORN_DOWN
 
 
-# ----------------------------------------------------------------------
-# Live-view — RESOLVED (see phase-2-5-live-view-research.md, Session 11+)
-#
-# We probed all three candidate approaches against the live BD WSS:
-#
-#   1. BD's `Page.inspect` CDP method. RESULT: it works, but ONLY with the
-#      required `{frameId}` arg (the no-arg form returns `{url: null}`).
-#      The returned URL is BD's hosted Chrome DevTools inspector at
-#      `https://cdn.brightdata.com/static/devtools/<rev>/inspector.html`.
-#      FATAL for embedding: that page responds with `X-Frame-Options: DENY`
-#      and `Content-Security-Policy: frame-ancestors 'self'` — it CANNOT
-#      be embedded in a cross-origin iframe from the cockpit. Verified via
-#      `curl -IL https://cdn.brightdata.com/static/devtools/146/inspector.html`.
-#   2. Raw wss via `Target.getTargetInfo` → Google's hosted DevTools.
-#      RESULT: BD does not expose `webSocketDebuggerUrl` on
-#      `Target.getTargetInfo` at all (`target_ws_url_present: false`), so
-#      this approach has no input to work with.
-#   3. Worker-side screenshot streaming + input replay. BUILT — see
-#      `/auth/stream` (SSE of base64 JPEG frames captured via CDP
-#      `Page.captureScreenshot`) and `/auth/input` (mouse/keyboard events
-#      dispatched via CDP `Input.*`). Same-origin, full UX control, zero
-#      dependency on BD's framing policy.
-#
-# So the cockpit live view uses approach 3. `/auth/start` no longer
-# returns a BD URL — `live_view_available` is True whenever the BD page
-# spun up, and the cockpit builds its own (same-origin) stream URL from
-# the session_id.
-# ----------------------------------------------------------------------
+async def _first_visible(page: Any, selectors: list[str], timeout_ms: int):
+    """Return the first locator from `selectors` that becomes visible
+    within `timeout_ms` (shared budget across the whole list), or None.
 
-# Screenshot stream tuning. ~3 fps is enough for a login form (the user
-# is reading + typing, not watching video); JPEG q55 keeps each frame
-# ~40-90 KB at 1366×768, so ~120-270 KB/s — acceptable for a single
-# one-at-a-time auth session.
-STREAM_FPS = 3.0
-STREAM_JPEG_QUALITY = 55
-# Viewport the BD context renders at — see common/browser.py (1366×768).
-# The cockpit canvas uses these to map click coordinates 1:1.
-STREAM_VIEWPORT_W = 1366
-STREAM_VIEWPORT_H = 768
-
-
-async def _bd_inspector_url(page: Any) -> str | None:
-    """Resolve Bright Data's hosted Chrome DevTools inspector URL for this
-    page via the `Page.inspect` CDP method.
-
-    NOTE: this URL is NOT iframe-embeddable (BD serves the inspector with
-    `X-Frame-Options: DENY`). We keep this helper because the URL is still
-    useful as a developer-debug escape hatch — surfaced in `/auth/status`
-    as `bd_inspector_url` so an operator can open the raw BD DevTools in a
-    browser tab to debug a stuck session. The user-facing flow uses the
-    `/auth/stream` screenshot stream instead.
-
-    BD's API requires the `frameId` arg — the no-arg form returns
-    `{url: null}`. We fetch it via `Page.getFrameTree` first.
+    We poll each selector cheaply rather than `wait_for` on each (a
+    `wait_for` per selector would multiply the timeout). This is the
+    robustness primitive behind every form interaction: framework-
+    generated IDs drift, so we always carry a fallback list.
     """
-    try:
-        cdp = await page.context.new_cdp_session(page)
-        ftree = await cdp.send("Page.getFrameTree")
-        frame = ((ftree or {}).get("frameTree") or {}).get("frame") or {}
-        frame_id = frame.get("id")
-        if not frame_id:
-            return None
-        result = await cdp.send("Page.inspect", {"frameId": frame_id})
-        if isinstance(result, dict):
-            url = result.get("url") or result.get("inspectorUrl")
-            if url and isinstance(url, str) and url.startswith("http"):
-                return url
-    except Exception as exc:  # noqa: BLE001
-        log.info("auth_capture: BD Page.inspect lookup failed: %s", exc)
+    deadline = _now() + (timeout_ms / 1000.0)
+    while _now() < deadline:
+        for sel in selectors:
+            try:
+                loc = page.locator(sel).first
+                if await loc.is_visible():
+                    return loc
+            except Exception:  # noqa: BLE001
+                continue
+        await asyncio.sleep(0.25)
     return None
 
 
-async def _get_stream_cdp(state: AuthSessionState) -> Any:
-    """Lazily create (and cache) the CDP session used by the screenshot
-    stream + input replay. Returns None when the page is gone.
-
-    On first creation we pin the page's device metrics via
-    `Emulation.setDeviceMetricsOverride` to exactly STREAM_VIEWPORT_W ×
-    STREAM_VIEWPORT_H at `deviceScaleFactor: 1`. This is load-bearing:
-
-      - Bright Data's pre-warmed context renders at its own (large, often
-        HiDPI) viewport, so an un-pinned `Page.captureScreenshot` produced
-        ~3841×1948 frames — not the 1366×768 we assumed.
-      - With DPR 1 + a fixed size, screenshot pixels == CSS pixels, so the
-        cockpit's click coordinates map 1:1 onto CDP `Input.*` (which uses
-        CSS pixels). Without this, every click landed at the wrong spot.
-    """
-    if state.cdp is not None:
-        return state.cdp
-    page = state.page
-    if not page:
-        return None
-    try:
-        state.cdp = await page.context.new_cdp_session(page)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("auth_capture: stream CDP session create failed: %s", exc)
-        return None
-    # Pin a deterministic, DPR-1 viewport so capture == CSS == input space.
-    try:
-        await state.cdp.send(
-            "Emulation.setDeviceMetricsOverride",
-            {
-                "width": STREAM_VIEWPORT_W,
-                "height": STREAM_VIEWPORT_H,
-                "deviceScaleFactor": 1,
-                "mobile": False,
-            },
-        )
-    except Exception as exc:  # noqa: BLE001
-        log.warning(
-            "auth_capture: setDeviceMetricsOverride failed (frames may be "
-            "off-size): %s",
-            exc,
-        )
-    return state.cdp
+async def _any_visible_with_text(page: Any, selectors: list[str]) -> str | None:
+    """If any selector resolves to a visible element with non-empty text,
+    return that text (trimmed, collapsed). Used for error detection — an
+    empty `role=alert` container doesn't count as an error."""
+    for sel in selectors:
+        try:
+            loc = page.locator(sel).first
+            if not await loc.is_visible():
+                continue
+            txt = (await loc.inner_text()) or ""
+            txt = re.sub(r"\s+", " ", txt).strip()
+            if txt:
+                return txt
+        except Exception:  # noqa: BLE001
+            continue
+    return None
 
 
-async def _capture_frame(state: AuthSessionState) -> str | None:
-    """Capture one JPEG screenshot of the live page, base64-encoded.
-
-    Uses CDP `Page.captureScreenshot` rather than Playwright's
-    `page.screenshot()` because the BD page is reached over CDP and the
-    raw CDP call is lower-overhead for a tight ~3 fps loop. Returns the
-    base64 string (no data-URI prefix) or None on failure.
-    """
-    cdp = await _get_stream_cdp(state)
-    if cdp is None:
-        return None
-    try:
-        async with state.cdp_lock:
-            result = await cdp.send(
-                "Page.captureScreenshot",
-                {
-                    "format": "jpeg",
-                    "quality": STREAM_JPEG_QUALITY,
-                    "captureBeyondViewport": False,
-                },
-            )
-        data = result.get("data") if isinstance(result, dict) else None
-        return data if isinstance(data, str) and data else None
-    except Exception as exc:  # noqa: BLE001
-        log.debug("auth_capture: frame capture failed: %s", exc)
-        return None
-
-
-# Cockpit input-event "type" → CDP dispatch. Mouse buttons follow the CDP
-# enum ("none"|"left"|"middle"|"right").
-_KEY_EVENT_TYPES = {"keyDown", "keyUp", "rawKeyDown", "char"}
-_MOUSE_EVENT_TYPES = {"mousePressed", "mouseReleased", "mouseMoved", "mouseWheel"}
-
-
-async def _dispatch_input(state: AuthSessionState, ev: dict) -> bool:
-    """Forward one cockpit input event to the BD page via CDP `Input.*`.
-
-    Event shapes the cockpit sends (see LiveSessionView):
-      mouse:  {kind:"mouse", type:"mousePressed"|"mouseReleased"|
-               "mouseMoved"|"mouseWheel", x, y, button?, deltaX?, deltaY?,
-               clickCount?, modifiers?}
-      key:    {kind:"key", type:"keyDown"|"keyUp"|"char", key?, code?,
-               text?, keyCode?, modifiers?}
-      text:   {kind:"text", text:"..."}  — bulk paste / IME commit
-
-    Returns True if the event dispatched cleanly.
-    """
-    cdp = await _get_stream_cdp(state)
-    if cdp is None:
-        return False
-    kind = ev.get("kind")
-    try:
-        async with state.cdp_lock:
-            if kind == "mouse":
-                etype = ev.get("type")
-                if etype not in _MOUSE_EVENT_TYPES:
-                    return False
-                params: dict = {
-                    "type": etype,
-                    "x": float(ev.get("x") or 0),
-                    "y": float(ev.get("y") or 0),
-                    "modifiers": int(ev.get("modifiers") or 0),
-                }
-                if etype == "mouseWheel":
-                    params["deltaX"] = float(ev.get("deltaX") or 0)
-                    params["deltaY"] = float(ev.get("deltaY") or 0)
-                else:
-                    params["button"] = ev.get("button") or "left"
-                    params["clickCount"] = int(ev.get("clickCount") or 1)
-                await cdp.send("Input.dispatchMouseEvent", params)
+async def _any_present(page: Any, selectors: list[str]) -> bool:
+    """True if any selector resolves to a visible element on the page."""
+    for sel in selectors:
+        try:
+            if await page.locator(sel).first.is_visible():
                 return True
-            if kind == "key":
-                etype = ev.get("type")
-                if etype not in _KEY_EVENT_TYPES:
-                    return False
-                params = {
-                    "type": etype,
-                    "modifiers": int(ev.get("modifiers") or 0),
-                }
-                if ev.get("key"):
-                    params["key"] = str(ev["key"])
-                if ev.get("code"):
-                    params["code"] = str(ev["code"])
-                if ev.get("keyCode") is not None:
-                    kc = int(ev["keyCode"])
-                    params["windowsVirtualKeyCode"] = kc
-                    params["nativeVirtualKeyCode"] = kc
-                if ev.get("text"):
-                    params["text"] = str(ev["text"])
-                await cdp.send("Input.dispatchKeyEvent", params)
-                return True
-            if kind == "text":
-                text = ev.get("text")
-                if not text:
-                    return False
-                await cdp.send("Input.insertText", {"text": str(text)})
-                return True
-    except Exception as exc:  # noqa: BLE001
-        log.debug("auth_capture: input dispatch failed (%s): %s", kind, exc)
-        return False
+        except Exception:  # noqa: BLE001
+            continue
     return False
 
 
-def _sse(obj: dict) -> str:
-    """Format one dict as an SSE `data:` frame."""
-    return f"data: {json.dumps(obj, separators=(',', ':'))}\n\n"
-
-
-async def _watcher(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
-    """Background coroutine: poll the page URL every 1s for a success
-    match. On detection, dump cookies, save to DB, transition state to
-    `captured`. On overall TTL expiry, transition to `expired`.
-
-    Runs until either:
-      - the page is torn down (page becomes None / closed)
-      - the session_id is dropped from ACTIVE_SESSIONS (defensive)
-      - state.state moves out of `awaiting_login`
-    """
-    POLL_INTERVAL_SEC = 1.0
-    try:
-        while True:
-            await asyncio.sleep(POLL_INTERVAL_SEC)
-
-            if state.session_id not in ACTIVE_SESSIONS:
-                log.info(
-                    "auth_capture watcher: session %s gone from registry, exiting",
-                    state.session_id,
-                )
-                return
-
-            if state.state != "awaiting_login":
-                return  # someone else moved us out of the watch state
-
-            # TTL check
-            if _now() >= state.expires_at_unix:
-                state.state = "expired"
-                state.error = "session_max_ttl"
-                log.info(
-                    "auth_capture watcher: session %s expired (ttl=%ds) — "
-                    "tearing down BD browser to stop bandwidth burn",
-                    state.session_id,
-                    SESSION_MAX_TTL_SEC,
-                )
-                # Tear down the BD browser ourselves rather than waiting for
-                # /auth/finalize — if the cockpit modal closed uncleanly
-                # (crash / network drop) finalize never fires and the BD
-                # session would burn bandwidth for its full idle life.
-                # Schedule it as a separate task: _close_bd_browser cancels
-                # + awaits THIS watcher, so calling it inline would deadlock.
-                asyncio.create_task(_close_bd_browser(state))
-                return
-
-            page = state.page
-            if not page:
-                return
-
-            try:
-                cur_url = page.url or ""
-            except Exception:  # noqa: BLE001
-                # Page closed under us — treat as failure.
-                state.state = "failed"
-                state.error = "page_closed"
-                return
-
-            # Match any of the success substrings.
-            if any(sub in cur_url for sub in cfg.success_url_match):
-                # Optional positive DOM check.
-                if cfg.success_dom_check:
-                    try:
-                        loc = page.locator(cfg.success_dom_check)
-                        await loc.first.wait_for(state="visible", timeout=5_000)
-                    except Exception:  # noqa: BLE001
-                        # Selector miss — not yet logged in despite URL
-                        # match (e.g. session-timeout intermediate page).
-                        continue
-
-                # Capture cookies.
-                try:
-                    raw_cookies = await page.context.cookies()
-                except Exception as exc:  # noqa: BLE001
-                    log.warning(
-                        "auth_capture watcher: cookie dump failed: %s",
-                        exc,
-                    )
-                    state.state = "failed"
-                    state.error = f"cookie_dump:{exc}"
-                    return
-
-                expires_dt = datetime.now(timezone.utc) + timedelta(
-                    hours=cfg.cookie_ttl_hours or DEFAULT_COOKIE_TTL_HOURS
-                )
-                meta = cookies_meta(raw_cookies)
-                meta["login_url_seen"] = cur_url
-                meta["program_label"] = cfg.label
-
-                row_id = await save_session(
-                    user_id=state.user_id,
-                    program_id=state.program_id,
-                    cookies=raw_cookies,
-                    expires_at=expires_dt.isoformat(),
-                    meta=meta,
-                )
-                if not row_id:
-                    state.state = "failed"
-                    state.error = "db_save_failed"
-                    return
-
-                state.stored_row_id = row_id
-                state.state = "captured"
-                log.info(
-                    "auth_capture watcher: session %s captured (program=%s, "
-                    "cookies=%d, row=%s)",
-                    state.session_id,
-                    state.program_id,
-                    len(raw_cookies),
-                    row_id,
-                )
-                return
-    except asyncio.CancelledError:
-        raise
-    except Exception as exc:  # noqa: BLE001
-        log.exception("auth_capture watcher: unexpected error: %s", exc)
-        state.state = "failed"
-        state.error = f"watcher_crash:{exc!r}"
-
-
-# ----------------------------------------------------------------------
-# Endpoints
-# ----------------------------------------------------------------------
-@router.post("/start")
-async def auth_start(
-    program: str = Query(..., description="Program ID, e.g. AC_AEROPLAN"),
-    user_id: str = Query(
-        ...,
-        description=(
-            "Authenticated user UUID from the cockpit SSR session. The "
-            "cockpit MUST pass this — the worker has no auth context of "
-            "its own. We rely on the cockpit's network being internal."
-        ),
-    ),
-) -> JSONResponse:
-    """Open a fresh Bright Data Browser API session for the user to log
-    in. Returns the opaque session_id + a same-origin live-view URL (the
-    `/auth/stream` screenshot-stream endpoint) for the cockpit to render
-    onto a canvas.
-    """
-    cfg = PROGRAM_AUTH.get(program)
-    if not cfg:
-        raise HTTPException(
-            status_code=400,
-            detail=f"program={program!r} is not registered for auth capture",
-        )
-
-    try:
-        uuid.UUID(user_id)
-    except (ValueError, TypeError):
-        raise HTTPException(
-            status_code=400,
-            detail="user_id must be a valid UUID",
-        )
-
-    session_id = _gen_session_id()
-    state = AuthSessionState(
-        session_id=session_id,
-        user_id=user_id,
-        program_id=program,
-        state="awaiting_login",
-        started_at=_now(),
-        expires_at_unix=_now() + SESSION_MAX_TTL_SEC,
+def _looks_like_auth_error(text: str) -> bool:
+    """Heuristic: does this alert/banner text describe a credential
+    rejection (as opposed to an unrelated cookie/marketing banner)?"""
+    t = text.lower()
+    needles = (
+        "incorrect",
+        "invalid",
+        "not recognized",
+        "not recognised",
+        "wrong",
+        "does not match",
+        "doesn't match",
+        "no account",
+        "could not sign",
+        "couldn't sign",
+        "unable to sign",
+        "try again",
+        "password",
+        "credentials",
+        "locked",
     )
+    return any(n in t for n in needles)
 
+
+async def _capture_screenshot(state: AuthSessionState) -> None:
+    """Capture a single JPEG still of the current page into
+    `state.screenshot_b64` (base64, no data: prefix). Best-effort —
+    failures are swallowed (the cockpit just shows no still).
+
+    Called at every decision point: after the form loads, after submit,
+    when MFA is detected, on terminal outcomes.
+    """
+    page = state.page
+    if not page:
+        return
     try:
-        pw, browser, context, page = await _open_bd_browser(
-            session_label=session_id,
-            timeout_ms=60_000,
-        )
-        state.pw = pw
-        state.browser = browser
-        state.context = context
-        state.page = page
+        raw = await page.screenshot(type="jpeg", quality=SCREENSHOT_JPEG_QUALITY)
+        state.screenshot_b64 = base64.b64encode(raw).decode("ascii")
     except Exception as exc:  # noqa: BLE001
-        log.exception("auth_capture/start: BD browser open failed")
-        raise HTTPException(
-            status_code=502,
-            detail=f"bd_browser_open_failed: {exc!s}"[:300],
-        ) from exc
+        log.debug("auth_capture: screenshot capture failed: %s", exc)
 
-    ACTIVE_SESSIONS[session_id] = state
 
-    # Optional warmup before the login page — Akamai-fronted sites need
-    # the homepage to mint sensor cookies before the login form will
-    # render correctly. We deliberately don't await long here so the
-    # cockpit gets the live_view_url quickly.
-    nav_url = cfg.login_url
+def _update_current_url(state: AuthSessionState) -> None:
+    """Refresh `state.current_url` from the live page (best-effort)."""
+    page = state.page
+    if not page:
+        return
     try:
+        state.current_url = page.url or state.current_url
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _rand_int(lo: int, hi: int) -> int:
+    """Inclusive uniform int in [lo, hi] using the `secrets` module —
+    avoids importing `random` just for human-interaction jitter."""
+    import secrets as _secrets
+
+    return lo + _secrets.randbelow(hi - lo + 1)
+
+
+def _human_type_delay() -> float:
+    """A per-character typing delay in ms — humans don't type at a fixed
+    rate. ~60-140ms range; passed to Patchright `locator.type(delay=)`."""
+    return float(_rand_int(60, 140))
+
+
+async def _is_success(page: Any, cfg: ProgramAuthConfig) -> bool:
+    """True if the page is at a verified post-login state: URL matches one
+    of `success_url_match` AND (if set) the `success_dom_check` selector is
+    visible."""
+    try:
+        cur_url = page.url or ""
+    except Exception:  # noqa: BLE001
+        return False
+    if not any(sub in cur_url for sub in cfg.success_url_match):
+        return False
+    if cfg.success_dom_check:
+        try:
+            loc = page.locator(cfg.success_dom_check).first
+            await loc.wait_for(state="visible", timeout=5_000)
+        except Exception:  # noqa: BLE001
+            return False
+    return True
+
+
+async def _save_capture(
+    state: AuthSessionState, cfg: ProgramAuthConfig, cur_url: str
+) -> bool:
+    """Dump cookies, persist the encrypted session (cookies + password),
+    and move `state` to `captured`. Returns True on success; on failure
+    sets `state` to `failed` and returns False.
+    """
+    page = state.page
+    if not page:
+        state.state = STATE_FAILED
+        state.error = "page_gone_before_capture"
+        return False
+
+    try:
+        raw_cookies = await page.context.cookies()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_capture: cookie dump failed: %s", exc)
+        state.state = STATE_FAILED
+        state.error = f"cookie_dump:{exc}"
+        return False
+
+    expires_dt = datetime.now(timezone.utc) + timedelta(
+        hours=cfg.cookie_ttl_hours or DEFAULT_COOKIE_TTL_HOURS
+    )
+    meta = cookies_meta(raw_cookies)
+    meta["login_url_seen"] = cur_url
+    meta["program_label"] = cfg.label
+
+    # Persist cookies AND the password (encrypted into Vault). The password
+    # is passed straight through to save_session — it never touches a log
+    # line or a non-Vault column.
+    row_id = await save_session(
+        user_id=state.user_id,
+        program_id=state.program_id,
+        cookies=raw_cookies,
+        expires_at=expires_dt.isoformat(),
+        meta=meta,
+        password=state.password or None,
+    )
+    if not row_id:
+        state.state = STATE_FAILED
+        state.error = "db_save_failed"
+        return False
+
+    state.stored_row_id = row_id
+    state.state = STATE_CAPTURED
+    log.info(
+        "auth_capture: session %s captured (program=%s, cookies=%d, row=%s)",
+        state.session_id,
+        state.program_id,
+        len(raw_cookies),
+        row_id,
+    )
+    return True
+
+
+async def _scrape_mfa_prompt(page: Any, cfg: ProgramAuthConfig) -> str | None:
+    """Best-effort scrape of the human-readable MFA prompt text from the
+    airline verification page, e.g. "Enter the code sent to •••1234".
+    Returns the first reasonably-short, non-empty match, or None."""
+    selectors = _selectors(cfg.mfa_prompt_selector)
+    for sel in selectors:
+        try:
+            loc = page.locator(sel).first
+            if not await loc.is_visible():
+                continue
+            txt = (await loc.inner_text()) or ""
+            txt = re.sub(r"\s+", " ", txt).strip()
+            # Skip empty / huge blobs — we want the actual prompt line.
+            if txt and 4 <= len(txt) <= 300:
+                return txt
+        except Exception:  # noqa: BLE001
+            continue
+    return None
+
+
+async def _detect_outcome(
+    state: AuthSessionState, cfg: ProgramAuthConfig
+) -> str:
+    """Poll the page after a credential / MFA submit and classify the
+    outcome. Returns one of:
+      "success"  — verified post-login page reached
+      "invalid"  — an authentication error is shown
+      "mfa"      — the page is on an MFA / one-time-code step
+      "timeout"  — none of the above within the detection window
+
+    Does NOT mutate `state.state` for success/mfa/timeout — the caller
+    decides. For "invalid" the caller likewise transitions; we keep this
+    pure so the login loop stays readable.
+    """
+    error_selectors = _selectors(cfg.error_selector, *_GENERIC_ERROR_SELECTORS)
+    mfa_selectors = _selectors(cfg.mfa_marker_selector, *_GENERIC_MFA_MARKERS)
+
+    deadline = _now() + _DETECT_TIMEOUT_SEC
+    while _now() < deadline:
+        # Hard stop if the overall session TTL elapsed.
+        if _now() >= state.expires_at_unix:
+            return "timeout"
+
+        page = state.page
+        if not page:
+            return "timeout"
+
+        # 1. Success wins outright.
+        if await _is_success(page, cfg):
+            return "success"
+
+        # 2. An MFA code field present (and no success) → MFA step.
+        #    Checked before the error heuristic because some airlines
+        #    render a benign info banner on the MFA page that the error
+        #    heuristic could misread.
+        if await _any_present(page, mfa_selectors):
+            return "mfa"
+
+        # 3. A visible error banner whose text reads like a credential
+        #    rejection → invalid credentials.
+        err_text = await _any_visible_with_text(page, error_selectors)
+        if err_text and _looks_like_auth_error(err_text):
+            return "invalid"
+
+        await asyncio.sleep(_DETECT_POLL_SEC)
+
+    return "timeout"
+
+
+async def _fill_and_submit_credentials(
+    state: AuthSessionState, cfg: ProgramAuthConfig
+) -> bool:
+    """Fill the username + password into the login form and click submit.
+    Returns True if the form was filled and submitted, False if a required
+    field could not be found (caller transitions to a sensible state).
+
+    The password is typed with a human-like per-character delay and is
+    never logged.
+    """
+    page = state.page
+    if not page:
+        return False
+
+    # Wait for the login form to render. Air-Canada-style SPAs render the
+    # form after the JS bundle boots, so give the username field a
+    # generous window.
+    user_loc = await _first_visible(
+        page, _selectors(cfg.username_selector), timeout_ms=30_000
+    )
+    if user_loc is None:
+        return False
+    pass_loc = await _first_visible(
+        page, _selectors(cfg.password_selector), timeout_ms=15_000
+    )
+    if pass_loc is None:
+        return False
+
+    # Fill username — clear first, then type with human jitter.
+    # NB: only the exception *type* is logged for the credential-fill
+    # paths — never the exception message — so a typed value can't leak
+    # into a log line even via an unusual Playwright error.
+    try:
+        await user_loc.click()
+        await user_loc.fill("")
+        await user_loc.type(state.username, delay=_human_type_delay())
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_capture: username fill failed (%s)", type(exc).__name__)
+        return False
+
+    # Small human pause between fields.
+    await asyncio.sleep(_rand_int(200, 600) / 1000.0)
+
+    # Fill password — same human-typed approach. NEVER log the value.
+    try:
+        await pass_loc.click()
+        await pass_loc.fill("")
+        await pass_loc.type(state.password, delay=_human_type_delay())
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_capture: password fill failed (%s)", type(exc).__name__)
+        return False
+
+    await asyncio.sleep(_rand_int(200, 500) / 1000.0)
+
+    # Submit. Prefer a real submit-button click; fall back to pressing
+    # Enter in the password field if no button resolves.
+    submit_loc = await _first_visible(
+        page, _selectors(cfg.submit_selector), timeout_ms=8_000
+    )
+    try:
+        if submit_loc is not None:
+            await submit_loc.click()
+        else:
+            log.info(
+                "auth_capture: no submit button found for %s — pressing Enter",
+                state.program_id,
+            )
+            await pass_loc.press("Enter")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_capture: submit click failed: %s", exc)
+        return False
+
+    return True
+
+
+async def _fill_and_submit_mfa(
+    state: AuthSessionState, cfg: ProgramAuthConfig, code: str
+) -> bool:
+    """Fill the one-time code into the airline verification page and
+    submit. Returns True on a clean fill+submit, False if the code field
+    could not be found."""
+    page = state.page
+    if not page:
+        return False
+
+    code_loc = await _first_visible(
+        page, _selectors(cfg.mfa_code_selector, *_GENERIC_MFA_MARKERS),
+        timeout_ms=15_000,
+    )
+    if code_loc is None:
+        return False
+
+    try:
+        await code_loc.click()
+        await code_loc.fill("")
+        await code_loc.type(code, delay=_human_type_delay())
+    except Exception as exc:  # noqa: BLE001
+        # Log the exception type only — never the code value.
+        log.warning("auth_capture: MFA code fill failed (%s)", type(exc).__name__)
+        return False
+
+    await asyncio.sleep(_rand_int(200, 500) / 1000.0)
+
+    submit_loc = await _first_visible(
+        page, _selectors(cfg.mfa_submit_selector), timeout_ms=8_000
+    )
+    try:
+        if submit_loc is not None:
+            await submit_loc.click()
+        else:
+            await code_loc.press("Enter")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_capture: MFA submit failed: %s", exc)
+        return False
+
+    return True
+
+
+async def _login_task(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
+    """Background coroutine that drives the whole login: open the browser,
+    navigate, fill the form, detect the outcome, handle any MFA rounds,
+    and persist on success.
+
+    State transitions: working → (mfa_required → working)* → captured |
+    invalid_credentials | failed | expired. Never raises out — every
+    failure path sets a terminal `state` + (for `failed`) an `error`.
+
+    The BD browser is opened HERE (not in /auth/start) so /auth/start can
+    return immediately. On any terminal outcome the browser is torn down
+    so we never burn BD bandwidth on a finished session.
+    """
+    try:
+        # --- Open the browser --------------------------------------------
+        try:
+            pw, browser, context, page = await _open_bd_browser(
+                session_label=state.session_id, timeout_ms=60_000
+            )
+            state.pw = pw
+            state.browser = browser
+            state.context = context
+            state.page = page
+        except Exception as exc:  # noqa: BLE001
+            log.exception("auth_capture/login: BD browser open failed")
+            state.state = STATE_FAILED
+            state.error = f"bd_browser_open_failed:{exc!s}"[:200]
+            return
+
+        if _expired(state):
+            return
+
+        # --- Optional warmup, then navigate to the login page ------------
         if cfg.warmup_url:
             try:
                 await page.goto(
@@ -773,38 +1113,303 @@ async def auth_start(
                 await asyncio.sleep(2.0)
             except Exception as exc:  # noqa: BLE001
                 log.warning(
-                    "auth_capture/start: warmup nav failed (continuing): %s",
+                    "auth_capture/login: warmup nav failed (continuing): %s",
                     exc,
                 )
 
-        await page.goto(nav_url, wait_until="domcontentloaded", timeout=45_000)
-    except Exception as exc:  # noqa: BLE001
-        log.exception("auth_capture/start: nav to login page failed")
-        # Don't kill the session here — the user can refresh in the iframe.
-        state.error = f"initial_nav_failed:{exc!s}"[:200]
+        if _expired(state):
+            return
 
-    # Live view is the worker's own screenshot stream (approach 3 — the
-    # BD inspector URL is not iframe-embeddable). The cockpit builds the
-    # actual stream URL itself from session_id; `live_view_available` is
-    # True whenever we have a live page to stream. We also resolve BD's
-    # hosted DevTools inspector URL purely as an operator debug aid (it's
-    # surfaced in /status, never shown to the user).
-    state.bd_inspector_url = await _bd_inspector_url(page)
-    try:
-        live_view_available = page is not None and not page.is_closed()
-    except Exception:  # noqa: BLE001
-        live_view_available = page is not None
-    # Relative path the cockpit proxies — its own /api/auth/airline/stream
-    # forwards to the worker /auth/stream. Kept relative so it works for
-    # any cockpit origin (preview deploys included).
-    state.live_view_url = (
-        f"/api/auth/airline/stream?sessionId={session_id}"
-        if live_view_available
-        else None
+        try:
+            await page.goto(
+                cfg.login_url, wait_until="domcontentloaded", timeout=45_000
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.exception("auth_capture/login: nav to login page failed")
+            state.state = STATE_FAILED
+            state.error = f"login_nav_failed:{exc!s}"[:200]
+            await _capture_screenshot(state)
+            return
+
+        _update_current_url(state)
+        # Decision point #1 — form loaded.
+        await _capture_screenshot(state)
+
+        if _expired(state):
+            return
+
+        # --- Fill + submit credentials -----------------------------------
+        filled = await _fill_and_submit_credentials(state, cfg)
+        _update_current_url(state)
+        await _capture_screenshot(state)
+        if not filled:
+            # Could not find the form fields. Per the contract: when
+            # genuinely unsure, prefer mfa_required WITH a screenshot so
+            # the user can see the page and respond — but a missing
+            # *login* form is a real failure, not an MFA step. We only
+            # fall back to mfa_required if the page actually shows
+            # something code-like; otherwise fail honestly.
+            if await _any_present(
+                state.page,
+                _selectors(cfg.mfa_marker_selector, *_GENERIC_MFA_MARKERS),
+            ):
+                await _enter_mfa_required(state, cfg)
+            else:
+                state.state = STATE_FAILED
+                state.error = "login_form_not_found"
+            return
+
+        if _expired(state):
+            return
+
+        # --- Outcome-detection loop (handles repeated MFA rounds) --------
+        while True:
+            if _expired(state):
+                return
+
+            outcome = await _detect_outcome(state, cfg)
+            _update_current_url(state)
+            await _capture_screenshot(state)
+
+            if outcome == "success":
+                cur_url = state.current_url or ""
+                await _save_capture(state, cfg, cur_url)
+                return
+
+            if outcome == "invalid":
+                state.state = STATE_INVALID
+                log.info(
+                    "auth_capture/login: session %s — invalid credentials "
+                    "(program=%s)",
+                    state.session_id,
+                    state.program_id,
+                )
+                return
+
+            # Both "mfa" (a code field is present) and "timeout" (we could
+            # not positively classify) resolve the same way: per the
+            # contract, when genuinely unsure prefer mfa_required WITH a
+            # screenshot so the user sees the still and can respond, rather
+            # than guessing `failed`. `_run_mfa_round` pauses for the user,
+            # fills + submits the code, and returns whether to keep
+            # looping. A terminal state inside it ends the task.
+            if outcome == "timeout":
+                log.info(
+                    "auth_capture/login: session %s — outcome undetermined, "
+                    "surfacing as mfa_required with screenshot (program=%s)",
+                    state.session_id,
+                    state.program_id,
+                )
+            keep_looping = await _run_mfa_round(state, cfg)
+            if not keep_looping:
+                return
+            # Loop again to detect the post-MFA outcome.
+            continue
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        log.exception("auth_capture/login: unexpected error: %s", exc)
+        state.state = STATE_FAILED
+        state.error = f"login_task_crash:{exc!r}"[:200]
+    finally:
+        # Always tear down the BD browser once the task ends — a finished
+        # session must not keep burning BD bandwidth. _close_bd_browser
+        # preserves a terminal `state`; if the task ended without one
+        # (cancelled by /auth/finalize) it sets `torn_down`. Schedule it
+        # as a separate task: _close_bd_browser cancels + awaits THIS
+        # task, so calling it inline would deadlock.
+        #
+        # If /auth/finalize is already tearing us down, the handles are
+        # being closed there — scheduling a second teardown is harmless
+        # (it is idempotent) but we skip it when there's nothing left.
+        if state.pw or state.browser or state.context:
+            asyncio.create_task(_close_bd_browser(state))
+
+
+def _expired(state: AuthSessionState) -> bool:
+    """If the session TTL elapsed, transition to `expired` and return True.
+
+    The login task calls this at each await-boundary so a user who walked
+    away doesn't leave a BD browser burning bandwidth for the full idle
+    life. The `finally` block in `_login_task` handles the actual
+    teardown.
+    """
+    if state.state in _TERMINAL_STATES:
+        return state.state == STATE_EXPIRED
+    if _now() >= state.expires_at_unix:
+        state.state = STATE_EXPIRED
+        state.error = "session_max_ttl"
+        log.info(
+            "auth_capture: session %s expired (ttl=%ds)",
+            state.session_id,
+            SESSION_MAX_TTL_SEC,
+        )
+        return True
+    return False
+
+
+async def _enter_mfa_required(
+    state: AuthSessionState, cfg: ProgramAuthConfig
+) -> None:
+    """Transition the session to `mfa_required`: scrape any human prompt
+    text and capture a fresh still so /auth/status can surface both."""
+    page = state.page
+    if page is not None:
+        try:
+            state.mfa_prompt = await _scrape_mfa_prompt(page, cfg)
+        except Exception:  # noqa: BLE001
+            state.mfa_prompt = None
+    _update_current_url(state)
+    await _capture_screenshot(state)
+    # Arm a fresh event for this round (a previous round may have set it).
+    state.mfa_code_event = asyncio.Event()
+    state.mfa_code = None
+    state.state = STATE_MFA_REQUIRED
+    log.info(
+        "auth_capture: session %s — MFA required (program=%s)",
+        state.session_id,
+        state.program_id,
     )
 
-    # Kick off the watcher.
-    state.watcher_task = asyncio.create_task(_watcher(state, cfg))
+
+async def _await_mfa_code(state: AuthSessionState) -> bool:
+    """Block until /auth/mfa supplies a code, the session TTL elapses, or
+    the session is torn down. Returns True if a code arrived, False
+    otherwise (in which case `state` has already moved to a terminal
+    state via `_expired`, or the session was torn down)."""
+    while True:
+        if state.state != STATE_MFA_REQUIRED:
+            # Torn down, or already moved on by another path.
+            return False
+        # Bound the wait so we re-check TTL roughly every second.
+        remaining = state.expires_at_unix - _now()
+        if remaining <= 0:
+            _expired(state)
+            return False
+        try:
+            await asyncio.wait_for(
+                state.mfa_code_event.wait(), timeout=min(remaining, 1.0)
+            )
+        except asyncio.TimeoutError:
+            continue
+        if state.mfa_code:
+            return True
+        # Event set without a code — defensive; re-arm and keep waiting.
+        state.mfa_code_event = asyncio.Event()
+
+
+async def _run_mfa_round(
+    state: AuthSessionState, cfg: ProgramAuthConfig
+) -> bool:
+    """One MFA round: pause at `mfa_required` for the user, wait for the
+    code from /auth/mfa, fill + submit it, then hand control back to the
+    detection loop.
+
+    Returns True to keep looping (the post-MFA outcome must be detected),
+    False to end the login task — either because a terminal state was
+    reached (TTL expiry, torn down, or a missing code field set `failed`)
+    or because no code arrived.
+    """
+    await _enter_mfa_required(state, cfg)
+    if not await _await_mfa_code(state):
+        # TTL elapsed, torn down, or otherwise no code — `state` already
+        # carries the terminal outcome (or is being torn down).
+        return False
+
+    # Resume — back to `working` while we submit the code + re-detect.
+    state.state = STATE_WORKING
+    state.mfa_prompt = None
+    code = state.mfa_code or ""
+    state.mfa_code = None
+
+    submitted = await _fill_and_submit_mfa(state, cfg, code)
+    _update_current_url(state)
+    await _capture_screenshot(state)
+    if not submitted:
+        state.state = STATE_FAILED
+        state.error = "mfa_code_field_not_found"
+        return False
+    return True
+
+
+# ----------------------------------------------------------------------
+# Endpoints
+# ----------------------------------------------------------------------
+@router.post("/start")
+async def auth_start(
+    request: Request,
+    program: str = Query(..., description="Program ID, e.g. AC_AEROPLAN"),
+    user_id: str = Query(
+        ...,
+        description=(
+            "Authenticated user UUID from the cockpit SSR session. The "
+            "cockpit MUST pass this — the worker has no auth context of "
+            "its own. We rely on the cockpit's network being internal."
+        ),
+    ),
+) -> JSONResponse:
+    """Start a worker-driven login for the user.
+
+    JSON body: {"username": "...", "password": "..."} — the airline login
+    credentials the user typed into PointSnap's own form.
+
+    Creates an in-memory session and launches a background task that opens
+    a Bright Data browser, navigates to the airline login page, fills the
+    form, and detects the outcome. Returns immediately with the opaque
+    session_id; the cockpit polls /auth/status for progress.
+    """
+    cfg = PROGRAM_AUTH.get(program)
+    if not cfg:
+        return JSONResponse(
+            {"error": f"program={program!r} is not registered for auth capture"},
+            status_code=400,
+        )
+
+    try:
+        uuid.UUID(user_id)
+    except (ValueError, TypeError):
+        return JSONResponse(
+            {"error": "user_id must be a valid UUID"}, status_code=400
+        )
+
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse(
+            {"error": "request body must be JSON with username + password"},
+            status_code=400,
+        )
+
+    username = (body.get("username") if isinstance(body, dict) else None) or ""
+    password = (body.get("password") if isinstance(body, dict) else None) or ""
+    username = username.strip() if isinstance(username, str) else ""
+    # Do NOT strip the password — leading/trailing whitespace could be
+    # meaningful. Just type-check it.
+    if not isinstance(password, str):
+        password = ""
+
+    if not username or not password:
+        return JSONResponse(
+            {"error": "both username and password are required"},
+            status_code=400,
+        )
+
+    session_id = _gen_session_id()
+    now = _now()
+    state = AuthSessionState(
+        session_id=session_id,
+        user_id=user_id,
+        program_id=program,
+        state=STATE_WORKING,
+        started_at=now,
+        expires_at_unix=now + SESSION_MAX_TTL_SEC,
+        username=username,
+        password=password,
+    )
+    ACTIVE_SESSIONS[session_id] = state
+
+    # Launch the background login task. /auth/start returns immediately.
+    state.login_task = asyncio.create_task(_login_task(state, cfg))
 
     expires_at_iso = datetime.fromtimestamp(
         state.expires_at_unix, tz=timezone.utc
@@ -815,14 +1420,8 @@ async def auth_start(
             "session_id": session_id,
             "program_id": program,
             "program_label": cfg.label,
-            "live_view_url": state.live_view_url or "TBD",
-            "live_view_available": live_view_available,
-            "live_view_kind": "stream",
-            "viewport": {"w": STREAM_VIEWPORT_W, "h": STREAM_VIEWPORT_H},
-            "bd_inspector_url": state.bd_inspector_url,
-            "state": state.state,
+            "state": STATE_WORKING,
             "expires_at": expires_at_iso,
-            "current_url": (page.url if page else None),
         }
     )
 
@@ -831,242 +1430,105 @@ async def auth_start(
 async def auth_status(
     session_id: str = Query(..., description="Returned by /auth/start"),
 ) -> JSONResponse:
-    """Poll endpoint. Cockpit calls this every ~2s.
+    """Poll endpoint — the cockpit calls this every ~2s.
 
-    Returns:
-      state:        awaiting_login | captured | failed | expired | torn_down
-      current_url:  best-effort page.url for cockpit debugging
-      error:        optional error string when state in (failed, expired)
-      stored_row_id: program_auth_sessions row UUID when state == captured
+    Surfaces the current state, a single refreshed JPEG still
+    (`screenshot_b64`), any scraped MFA prompt text, and — on a successful
+    capture — the stored program_auth_sessions row id.
     """
     state = ACTIVE_SESSIONS.get(session_id)
     if not state:
         return JSONResponse(
-            {"state": "unknown", "session_id": session_id}, status_code=404
+            {"error": "unknown session_id", "session_id": session_id},
+            status_code=404,
         )
 
-    cur_url = None
-    try:
-        if state.page:
-            cur_url = state.page.url
-    except Exception:  # noqa: BLE001
-        cur_url = None
+    # Refresh the current URL best-effort (the page may still be live).
+    _update_current_url(state)
+
+    # A `torn_down` session that never reached a terminal outcome is
+    # reported as `failed` so the cockpit shows a clear end-state rather
+    # than an internal token.
+    public_state = state.state
+    if public_state == STATE_TORN_DOWN:
+        public_state = STATE_FAILED
 
     payload: dict = {
         "session_id": session_id,
         "program_id": state.program_id,
-        "state": state.state,
-        "current_url": cur_url,
-        "live_view_url": state.live_view_url,
-        "bd_inspector_url": state.bd_inspector_url,
+        "state": public_state,
+        "current_url": state.current_url,
+        "mfa_prompt": state.mfa_prompt if public_state == STATE_MFA_REQUIRED else None,
+        "screenshot_b64": state.screenshot_b64,
+        "stored_row_id": state.stored_row_id if public_state == STATE_CAPTURED else None,
+        "error": state.error if public_state == STATE_FAILED else None,
         "expires_at_unix": state.expires_at_unix,
-        "started_at_unix": state.started_at,
     }
-    if state.error:
-        payload["error"] = state.error
-    if state.stored_row_id:
-        payload["stored_row_id"] = state.stored_row_id
-
     return JSONResponse(payload)
 
 
-@router.get("/stream")
-async def auth_stream(
-    request: Request,
-    session_id: str = Query(..., description="Returned by /auth/start"),
-) -> StreamingResponse:
-    """Server-Sent-Events stream of the live BD page as base64 JPEG frames.
-
-    The cockpit's `<LiveSessionView>` opens an EventSource on this (via the
-    `/api/auth/airline/stream` proxy) and paints each frame onto a canvas.
-    SSE is used over a raw WebSocket because it proxies cleanly through the
-    Next.js API route without WS-upgrade handling, and the search route
-    already establishes the SSE pattern in this codebase.
-
-    Event types emitted (each an SSE `data:` line of JSON):
-      {"t":"frame","b64":"<jpeg>","w":1366,"h":768}
-      {"t":"url","url":"https://..."}            — page navigated
-      {"t":"state","state":"captured"|...}        — terminal; cockpit stops
-      {"t":"bye","reason":"..."}                  — stream closing
-
-    The loop ends when: the session leaves `awaiting_login`, the session
-    is torn down / gone, or the client disconnects.
-    """
-    state = ACTIVE_SESSIONS.get(session_id)
-    if not state:
-        raise HTTPException(status_code=404, detail="unknown session_id")
-
-    async def _gen():
-        frame_interval = 1.0 / STREAM_FPS
-        last_url: str | None = None
-        last_state = state.state
-        try:
-            while True:
-                if await request.is_disconnected():
-                    break
-                cur = ACTIVE_SESSIONS.get(session_id)
-                if not cur or cur.state == "torn_down" or not cur.page:
-                    yield _sse({"t": "bye", "reason": "session_gone"})
-                    break
-
-                # Surface a navigation change so the cockpit can update its
-                # address chip.
-                try:
-                    page_url = cur.page.url
-                except Exception:  # noqa: BLE001
-                    page_url = None
-                if page_url and page_url != last_url:
-                    last_url = page_url
-                    yield _sse({"t": "url", "url": page_url})
-
-                # Surface a terminal state transition (login captured /
-                # failed / expired) then stop streaming.
-                if cur.state != last_state:
-                    last_state = cur.state
-                    yield _sse({"t": "state", "state": cur.state})
-                if cur.state != "awaiting_login":
-                    yield _sse({"t": "bye", "reason": f"state:{cur.state}"})
-                    break
-
-                frame = await _capture_frame(cur)
-                if frame:
-                    yield _sse(
-                        {
-                            "t": "frame",
-                            "b64": frame,
-                            "w": STREAM_VIEWPORT_W,
-                            "h": STREAM_VIEWPORT_H,
-                        }
-                    )
-                await asyncio.sleep(frame_interval)
-        except asyncio.CancelledError:
-            raise
-        except Exception as exc:  # noqa: BLE001
-            log.warning("auth_capture/stream: generator error: %s", exc)
-            yield _sse({"t": "bye", "reason": "error"})
-
-    return StreamingResponse(
-        _gen(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache, no-transform",
-            "X-Accel-Buffering": "no",
-            "Connection": "keep-alive",
-        },
-    )
-
-
-@router.post("/input")
-async def auth_input(
+@router.post("/mfa")
+async def auth_mfa(
     request: Request,
     session_id: str = Query(..., description="Returned by /auth/start"),
 ) -> JSONResponse:
-    """Forward a batch of cockpit input events to the live BD page.
+    """Supply the one-time MFA code the user entered in the cockpit.
 
-    Body: {"events": [<event>, ...]} — see `_dispatch_input` for event
-    shapes. Batched so the cockpit can coalesce rapid mousemoves into one
-    request. Returns the count dispatched.
+    JSON body: {"code": "123456"}. The login task fills the code into the
+    airline verification page, submits, and resumes outcome detection.
+
+    409 if the session is not currently `mfa_required`.
     """
     state = ACTIVE_SESSIONS.get(session_id)
     if not state:
-        raise HTTPException(status_code=404, detail="unknown session_id")
-    if state.state != "awaiting_login" or not state.page:
-        raise HTTPException(
+        return JSONResponse(
+            {"error": "unknown session_id", "session_id": session_id},
+            status_code=404,
+        )
+
+    if state.state != STATE_MFA_REQUIRED:
+        return JSONResponse(
+            {"error": f"session is not awaiting MFA (state={state.state})"},
             status_code=409,
-            detail=f"session not interactive (state={state.state})",
         )
 
     try:
         body = await request.json()
     except Exception:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail="invalid JSON body")
+        return JSONResponse(
+            {"error": "request body must be JSON with a code"}, status_code=400
+        )
 
-    events = body.get("events") if isinstance(body, dict) else None
-    if not isinstance(events, list):
-        raise HTTPException(status_code=400, detail="body.events must be a list")
+    code = (body.get("code") if isinstance(body, dict) else None) or ""
+    code = code.strip() if isinstance(code, str) else ""
+    if not code:
+        return JSONResponse({"error": "code is required"}, status_code=400)
 
-    dispatched = 0
-    for ev in events[:200]:  # cap per request — defends against a flood
-        if isinstance(ev, dict) and await _dispatch_input(state, ev):
-            dispatched += 1
+    # Hand the code to the waiting login task and wake it.
+    state.mfa_code = code
+    state.mfa_code_event.set()
 
-    return JSONResponse({"ok": True, "dispatched": dispatched})
+    return JSONResponse({"ok": True})
 
 
 @router.post("/finalize")
 async def auth_finalize(
     session_id: str = Query(..., description="Returned by /auth/start"),
-    force_capture: int = Query(
-        0,
-        description=(
-            "1 = capture cookies even if watcher hasn't yet seen the "
-            "success URL. Use when the user manually clicks 'I'm done' "
-            "in the cockpit — sometimes the airline's post-login URL "
-            "doesn't match any of our hardcoded substrings."
-        ),
-    ),
 ) -> JSONResponse:
-    """Tear down the BD session. If `force_capture=1`, dump cookies first
-    (last-chance capture even without a verified success signal)."""
+    """Tear down the BD browser for this session. Idempotent — safe to
+    call after a terminal outcome, on cockpit modal close, or on cancel.
+    """
     state = ACTIVE_SESSIONS.get(session_id)
     if not state:
-        return JSONResponse(
-            {"state": "unknown", "session_id": session_id}, status_code=404
-        )
+        # Idempotent: an unknown / already-cleaned session is still "ok".
+        return JSONResponse({"ok": True})
 
-    cfg = PROGRAM_AUTH.get(state.program_id)
-    force_result: dict | None = None
-    if force_capture and state.state == "awaiting_login" and state.page:
-        try:
-            raw_cookies = await state.page.context.cookies()
-            expires_dt = datetime.now(timezone.utc) + timedelta(
-                hours=(cfg.cookie_ttl_hours if cfg else DEFAULT_COOKIE_TTL_HOURS)
-            )
-            meta = cookies_meta(raw_cookies)
-            meta["program_label"] = cfg.label if cfg else state.program_id
-            meta["forced"] = True
-            meta["login_url_seen"] = state.page.url
-            row_id = await save_session(
-                user_id=state.user_id,
-                program_id=state.program_id,
-                cookies=raw_cookies,
-                expires_at=expires_dt.isoformat(),
-                meta=meta,
-            )
-            if row_id:
-                state.stored_row_id = row_id
-                state.state = "captured"
-                force_result = {"ok": True, "row_id": row_id, "cookies": len(raw_cookies)}
-            else:
-                state.state = "failed"
-                state.error = "force_capture_db_save_failed"
-                force_result = {"ok": False, "reason": "db_save_failed"}
-        except Exception as exc:  # noqa: BLE001
-            log.warning("auth_capture/finalize: force_capture failed: %s", exc)
-            state.state = "failed"
-            state.error = f"force_capture_crash:{exc!s}"[:200]
-            force_result = {"ok": False, "reason": str(exc)[:200]}
-
-    # Always tear down (even if force_capture failed — keeping the BD
-    # session alive would only waste bandwidth).
-    final_state = state.state
-    stored_row_id = state.stored_row_id
     await _close_bd_browser(state)
 
-    # Keep the entry around in `torn_down` state for ~5min so a late
-    # /auth/status poll returns a friendly result rather than 404.
-    # (We could schedule deletion, but the registry stays small for our
-    # one-user-at-a-time use case.)
-
-    return JSONResponse(
-        {
-            "session_id": session_id,
-            "state": state.state,
-            "final_state_before_teardown": final_state,
-            "stored_row_id": stored_row_id,
-            "force_capture": force_result,
-        }
-    )
+    # Keep the entry around (in its terminal / torn_down state) so a late
+    # /auth/status poll returns a friendly result rather than 404. The
+    # registry stays small for our one-user-at-a-time use case.
+    return JSONResponse({"ok": True})
 
 
 @router.get("/connected")
