@@ -606,10 +606,18 @@ async def _watcher(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
                 state.state = "expired"
                 state.error = "session_max_ttl"
                 log.info(
-                    "auth_capture watcher: session %s expired (ttl=%ds)",
+                    "auth_capture watcher: session %s expired (ttl=%ds) — "
+                    "tearing down BD browser to stop bandwidth burn",
                     state.session_id,
                     SESSION_MAX_TTL_SEC,
                 )
+                # Tear down the BD browser ourselves rather than waiting for
+                # /auth/finalize — if the cockpit modal closed uncleanly
+                # (crash / network drop) finalize never fires and the BD
+                # session would burn bandwidth for its full idle life.
+                # Schedule it as a separate task: _close_bd_browser cancels
+                # + awaits THIS watcher, so calling it inline would deadlock.
+                asyncio.create_task(_close_bd_browser(state))
                 return
 
             page = state.page
