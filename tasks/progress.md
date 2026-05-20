@@ -373,3 +373,30 @@ Coordination: each agent owns disjoint files (its own `python-workers/<plugin>/`
 Per-airline classification each WU agent produces: Pattern A (WU 2-step, API accepts POST), Pattern B (WU in-page render, API edge-blocks POST), or auth_required (login-gated → routes to T5').
 
 **Spent so far**: ~$0.12 BD. 3 plugins live (VS/AS/B6), 60-day cap lifted, Phase 2.5 infra built.
+
+## 2026-05-20 20:30 — WU-grind complete: classification of all 9 Akamai airlines
+**Status**: 🟡 (honest inflection point — T5' is now the critical path)
+
+WU per-airline grind (3 agents, 9 airlines) finished. Verdict:
+
+| Airline | Result | Path |
+|---|---|---|
+| UA_MP | WU 2-step transport BUILT (3-step anonymous-token flow) | pending consolidated deploy-verify |
+| DL_SKYMILES | WU POST Akamai-edge-blocked (444); WU HTTP API can't hydrate the SPA | needs real-browser in-page XHR capture |
+| CX_CATHAY | Imperva+Akamai, login-gated, session-bound (TAB_ID) | T5' |
+| NH_ANA | JSF form renders anon via WU, but partner space is member-gated | T5' |
+| BA_AVIOS | Reward Flight Finder bounces without logged-in Club session | T5' |
+| AC_AEROPLAN | WU transport PROVEN viable; air-bounds API login-gated (Mar-2025 wall) | T5' |
+| AF_FLYINGBLUE | pure Angular SPA, no anon server API; ObSSO login | T5' |
+| LH_MILES_MORE | Cloudflare-cleared by WU, but Miles mode needs MyTravelID login | T5' |
+| TK_MILES_SMILES | award path Akamai-walled + Miles&Smiles login gate | T5' |
+
+**Tally**: 1 WU-buildable (UA), 1 needs-real-browser (DL), 7 auth_required → T5'.
+
+**The strategic truth, confirmed empirically**: WU bypasses *bot defense* but not *authentication*. The Akamai cluster is ~overwhelmingly login-walled. The realistic route to "all 23 airlines" is **T5' user-auth-capture** — the user logs into each airline once via the cockpit, the worker replays the session. This is exactly the frontend-login design the user proposed earlier in the session.
+
+Every auth_required plugin keeps its `_parse` shape intact + records `LAST_RUN_DIAG.verdict="auth_required"` — they become working WU/replay plugins the moment a logged-in cookie jar is available (AC's WU transport is already proven viable; it needs only the cookie jar + `{tenant}` path segment).
+
+**Everything now hinges on the T5' agent** completing auth-capture end-to-end. It went with screenshot-stream live-view (commit 08657dc). AA agent also still running (Browser-API mint hedge).
+
+Working set: VS, AS, B6 (3) + UA pending. 60-day cap lifted. Phase 2.5 infra built.
