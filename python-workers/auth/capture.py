@@ -15,8 +15,11 @@ User journey (cockpit-side, owned by another agent — see plan §"Phase 2.5"):
      (also called on timeout / explicit cancel) — tears down the BD
      session.
 
-The hard part is the live-view URL — see `_get_live_view_url()` and
-`tasks/scraper-research/phase-2-5-live-view-research.md`.
+The live-view question is RESOLVED — see `_bd_inspector_url()` and the
+big comment block above it. BD's hosted DevTools inspector is not
+iframe-embeddable (`X-Frame-Options: DENY`), so the cockpit live view is
+a worker-side screenshot stream: `/auth/stream` (SSE of base64 JPEG
+frames) + `/auth/input` (CDP input replay).
 
 This module holds live BD browser handles in process memory across HTTP
 requests. **Do not run multiple worker replicas without sticky routing**
@@ -40,8 +43,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from common.auth_session import cookies_meta, list_sessions, save_session
 
@@ -195,6 +198,9 @@ class AuthSessionState:
     started_at: float
     expires_at_unix: float
     live_view_url: str | None = None
+    # BD's hosted DevTools inspector URL — operator debug escape hatch
+    # only (NOT iframe-embeddable; see _bd_inspector_url docstring).
+    bd_inspector_url: str | None = None
     error: str | None = None
     # Live browser objects (Patchright/Camoufox). None after torn_down.
     # `pw` is the playwright handle returned by `async_playwright().start()`;
@@ -203,6 +209,12 @@ class AuthSessionState:
     browser: Any = None
     context: Any = None
     page: Any = None
+    # CDP session reused by the screenshot stream + input replay. Lazily
+    # created on the first /auth/stream or /auth/input call.
+    cdp: Any = None
+    # Serializes CDP access so a screenshot capture and an input dispatch
+    # don't interleave on the same CDP session.
+    cdp_lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
     # Background coroutine that watches the page for login signal.
     watcher_task: asyncio.Task | None = field(default=None, repr=False)
     # On success, populated with the row id in program_auth_sessions.
@@ -305,6 +317,14 @@ async def _close_bd_browser(state: AuthSessionState) -> None:
             pass
     state.watcher_task = None
 
+    # Detach the streaming CDP session before closing the context.
+    try:
+        if state.cdp:
+            await state.cdp.detach()
+    except Exception:  # noqa: BLE001
+        pass
+    state.cdp = None
+
     try:
         if state.context:
             await state.context.close()
@@ -330,78 +350,200 @@ async def _close_bd_browser(state: AuthSessionState) -> None:
     state.state = "torn_down"
 
 
-async def _get_live_view_url(page: Any) -> str | None:
-    """Try to resolve a user-embeddable live-view URL for a BD CDP page.
+# ----------------------------------------------------------------------
+# Live-view — RESOLVED (see phase-2-5-live-view-research.md, Session 11+)
+#
+# We probed all three candidate approaches against the live BD WSS:
+#
+#   1. BD's `Page.inspect` CDP method. RESULT: it works, but ONLY with the
+#      required `{frameId}` arg (the no-arg form returns `{url: null}`).
+#      The returned URL is BD's hosted Chrome DevTools inspector at
+#      `https://cdn.brightdata.com/static/devtools/<rev>/inspector.html`.
+#      FATAL for embedding: that page responds with `X-Frame-Options: DENY`
+#      and `Content-Security-Policy: frame-ancestors 'self'` — it CANNOT
+#      be embedded in a cross-origin iframe from the cockpit. Verified via
+#      `curl -IL https://cdn.brightdata.com/static/devtools/146/inspector.html`.
+#   2. Raw wss via `Target.getTargetInfo` → Google's hosted DevTools.
+#      RESULT: BD does not expose `webSocketDebuggerUrl` on
+#      `Target.getTargetInfo` at all (`target_ws_url_present: false`), so
+#      this approach has no input to work with.
+#   3. Worker-side screenshot streaming + input replay. BUILT — see
+#      `/auth/stream` (SSE of base64 JPEG frames captured via CDP
+#      `Page.captureScreenshot`) and `/auth/input` (mouse/keyboard events
+#      dispatched via CDP `Input.*`). Same-origin, full UX control, zero
+#      dependency on BD's framing policy.
+#
+# So the cockpit live view uses approach 3. `/auth/start` no longer
+# returns a BD URL — `live_view_available` is True whenever the BD page
+# spun up, and the cockpit builds its own (same-origin) stream URL from
+# the session_id.
+# ----------------------------------------------------------------------
 
-    Bright Data exposes the live-view in (at least) two documented ways:
+# Screenshot stream tuning. ~3 fps is enough for a login form (the user
+# is reading + typing, not watching video); JPEG q55 keeps each frame
+# ~40-90 KB at 1366×768, so ~120-270 KB/s — acceptable for a single
+# one-at-a-time auth session.
+STREAM_FPS = 3.0
+STREAM_JPEG_QUALITY = 55
+# Viewport the BD context renders at — see common/browser.py (1366×768).
+# The cockpit canvas uses these to map click coordinates 1:1.
+STREAM_VIEWPORT_W = 1366
+STREAM_VIEWPORT_H = 768
 
-      1. CDP `Page.inspect` method returns `{inspectorUrl: "..."}` — a
-         pre-baked Chrome DevTools URL that proxies through BD's frontend
-         (`https://api.brightdata.com/...?devtoolsId=...`). Embeddable in
-         an iframe directly.
 
-      2. CDP `Target.getTargetInfo` returns `webSocketDebuggerUrl` (the
-         raw wss endpoint). We can construct the DevTools URL ourselves:
-         `https://chrome-devtools-frontend.appspot.com/serve_file/<rev>/inspector.html?ws=<wss-url>`
-         — but this hits Google's hosted devtools and won't bypass BD's
-         IP whitelist if they enforce one.
+async def _bd_inspector_url(page: Any) -> str | None:
+    """Resolve Bright Data's hosted Chrome DevTools inspector URL for this
+    page via the `Page.inspect` CDP method.
 
-    We try (1) first. On any failure, we fall back to (2). On total
-    failure, return None — the cockpit will display "TBD" and the user
-    can still log in via a popup window if we surface the wss_url
-    separately. See `tasks/scraper-research/phase-2-5-live-view-research.md`
-    for the longer-term answer.
+    NOTE: this URL is NOT iframe-embeddable (BD serves the inspector with
+    `X-Frame-Options: DENY`). We keep this helper because the URL is still
+    useful as a developer-debug escape hatch — surfaced in `/auth/status`
+    as `bd_inspector_url` so an operator can open the raw BD DevTools in a
+    browser tab to debug a stuck session. The user-facing flow uses the
+    `/auth/stream` screenshot stream instead.
+
+    BD's API requires the `frameId` arg — the no-arg form returns
+    `{url: null}`. We fetch it via `Page.getFrameTree` first.
     """
-    # Method 1: BD's `Page.inspect` extension to CDP.
     try:
         cdp = await page.context.new_cdp_session(page)
-        result = await cdp.send("Page.inspect")
+        ftree = await cdp.send("Page.getFrameTree")
+        frame = ((ftree or {}).get("frameTree") or {}).get("frame") or {}
+        frame_id = frame.get("id")
+        if not frame_id:
+            return None
+        result = await cdp.send("Page.inspect", {"frameId": frame_id})
         if isinstance(result, dict):
-            url = (
-                result.get("inspectorUrl")
-                or result.get("url")
-                or result.get("inspector_url")
-            )
+            url = result.get("url") or result.get("inspectorUrl")
             if url and isinstance(url, str) and url.startswith("http"):
-                log.info(
-                    "auth_capture: live-view URL via Page.inspect: %s",
-                    url[:80],
-                )
                 return url
     except Exception as exc:  # noqa: BLE001
-        log.info("auth_capture: Page.inspect failed: %s", exc)
-
-    # Method 2: Construct from Target.getTargetInfo.
-    try:
-        cdp = await page.context.new_cdp_session(page)
-        info = await cdp.send("Target.getTargetInfo")
-        target_info = info.get("targetInfo") or {}
-        ws_url = target_info.get("webSocketDebuggerUrl")
-        if ws_url:
-            # We don't have the devtools-frontend revision pinned; use
-            # the public hosted version. Note: this depends on BD allowing
-            # cross-origin iframes from chrome-devtools-frontend.appspot.com.
-            # If they block it, the cockpit will see a blank iframe and
-            # we'll need to switch to streaming screenshots (the WebRTC
-            # approach noted in the research doc).
-            frontend = (
-                "https://chrome-devtools-frontend.appspot.com"
-                f"/serve_internal_file/@latest/inspector.html?wss={ws_url.replace('wss://', '')}"
-            )
-            log.info(
-                "auth_capture: live-view URL via constructed DevTools: %s",
-                frontend[:120],
-            )
-            return frontend
-    except Exception as exc:  # noqa: BLE001
-        log.info("auth_capture: Target.getTargetInfo fallback failed: %s", exc)
-
-    log.warning(
-        "auth_capture: no live-view URL available — both Page.inspect "
-        "and Target.getTargetInfo failed. See "
-        "tasks/scraper-research/phase-2-5-live-view-research.md"
-    )
+        log.info("auth_capture: BD Page.inspect lookup failed: %s", exc)
     return None
+
+
+async def _get_stream_cdp(state: AuthSessionState) -> Any:
+    """Lazily create (and cache) the CDP session used by the screenshot
+    stream + input replay. Returns None when the page is gone."""
+    if state.cdp is not None:
+        return state.cdp
+    page = state.page
+    if not page:
+        return None
+    try:
+        state.cdp = await page.context.new_cdp_session(page)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auth_capture: stream CDP session create failed: %s", exc)
+        return None
+    return state.cdp
+
+
+async def _capture_frame(state: AuthSessionState) -> str | None:
+    """Capture one JPEG screenshot of the live page, base64-encoded.
+
+    Uses CDP `Page.captureScreenshot` rather than Playwright's
+    `page.screenshot()` because the BD page is reached over CDP and the
+    raw CDP call is lower-overhead for a tight ~3 fps loop. Returns the
+    base64 string (no data-URI prefix) or None on failure.
+    """
+    cdp = await _get_stream_cdp(state)
+    if cdp is None:
+        return None
+    try:
+        async with state.cdp_lock:
+            result = await cdp.send(
+                "Page.captureScreenshot",
+                {
+                    "format": "jpeg",
+                    "quality": STREAM_JPEG_QUALITY,
+                    "captureBeyondViewport": False,
+                },
+            )
+        data = result.get("data") if isinstance(result, dict) else None
+        return data if isinstance(data, str) and data else None
+    except Exception as exc:  # noqa: BLE001
+        log.debug("auth_capture: frame capture failed: %s", exc)
+        return None
+
+
+# Cockpit input-event "type" → CDP dispatch. Mouse buttons follow the CDP
+# enum ("none"|"left"|"middle"|"right").
+_KEY_EVENT_TYPES = {"keyDown", "keyUp", "rawKeyDown", "char"}
+_MOUSE_EVENT_TYPES = {"mousePressed", "mouseReleased", "mouseMoved", "mouseWheel"}
+
+
+async def _dispatch_input(state: AuthSessionState, ev: dict) -> bool:
+    """Forward one cockpit input event to the BD page via CDP `Input.*`.
+
+    Event shapes the cockpit sends (see LiveSessionView):
+      mouse:  {kind:"mouse", type:"mousePressed"|"mouseReleased"|
+               "mouseMoved"|"mouseWheel", x, y, button?, deltaX?, deltaY?,
+               clickCount?, modifiers?}
+      key:    {kind:"key", type:"keyDown"|"keyUp"|"char", key?, code?,
+               text?, keyCode?, modifiers?}
+      text:   {kind:"text", text:"..."}  — bulk paste / IME commit
+
+    Returns True if the event dispatched cleanly.
+    """
+    cdp = await _get_stream_cdp(state)
+    if cdp is None:
+        return False
+    kind = ev.get("kind")
+    try:
+        async with state.cdp_lock:
+            if kind == "mouse":
+                etype = ev.get("type")
+                if etype not in _MOUSE_EVENT_TYPES:
+                    return False
+                params: dict = {
+                    "type": etype,
+                    "x": float(ev.get("x") or 0),
+                    "y": float(ev.get("y") or 0),
+                    "modifiers": int(ev.get("modifiers") or 0),
+                }
+                if etype == "mouseWheel":
+                    params["deltaX"] = float(ev.get("deltaX") or 0)
+                    params["deltaY"] = float(ev.get("deltaY") or 0)
+                else:
+                    params["button"] = ev.get("button") or "left"
+                    params["clickCount"] = int(ev.get("clickCount") or 1)
+                await cdp.send("Input.dispatchMouseEvent", params)
+                return True
+            if kind == "key":
+                etype = ev.get("type")
+                if etype not in _KEY_EVENT_TYPES:
+                    return False
+                params = {
+                    "type": etype,
+                    "modifiers": int(ev.get("modifiers") or 0),
+                }
+                if ev.get("key"):
+                    params["key"] = str(ev["key"])
+                if ev.get("code"):
+                    params["code"] = str(ev["code"])
+                if ev.get("keyCode") is not None:
+                    kc = int(ev["keyCode"])
+                    params["windowsVirtualKeyCode"] = kc
+                    params["nativeVirtualKeyCode"] = kc
+                if ev.get("text"):
+                    params["text"] = str(ev["text"])
+                await cdp.send("Input.dispatchKeyEvent", params)
+                return True
+            if kind == "text":
+                text = ev.get("text")
+                if not text:
+                    return False
+                await cdp.send("Input.insertText", {"text": str(text)})
+                return True
+    except Exception as exc:  # noqa: BLE001
+        log.debug("auth_capture: input dispatch failed (%s): %s", kind, exc)
+        return False
+    return False
+
+
+def _sse(obj: dict) -> str:
+    """Format one dict as an SSE `data:` frame."""
+    return f"data: {json.dumps(obj, separators=(',', ':'))}\n\n"
 
 
 async def _watcher(state: AuthSessionState, cfg: ProgramAuthConfig) -> None:
@@ -672,12 +814,25 @@ async def auth_start(
         # Don't kill the session here — the user can refresh in the iframe.
         state.error = f"initial_nav_failed:{exc!s}"[:200]
 
-    # Resolve the live-view URL. If it fails we still keep the session
-    # alive and let the cockpit display its "trouble loading live view"
-    # state; the open question is captured in
-    # tasks/scraper-research/phase-2-5-live-view-research.md.
-    live_view_url = await _get_live_view_url(page)
-    state.live_view_url = live_view_url
+    # Live view is the worker's own screenshot stream (approach 3 — the
+    # BD inspector URL is not iframe-embeddable). The cockpit builds the
+    # actual stream URL itself from session_id; `live_view_available` is
+    # True whenever we have a live page to stream. We also resolve BD's
+    # hosted DevTools inspector URL purely as an operator debug aid (it's
+    # surfaced in /status, never shown to the user).
+    state.bd_inspector_url = await _bd_inspector_url(page)
+    try:
+        live_view_available = page is not None and not page.is_closed()
+    except Exception:  # noqa: BLE001
+        live_view_available = page is not None
+    # Relative path the cockpit proxies — its own /api/auth/airline/stream
+    # forwards to the worker /auth/stream. Kept relative so it works for
+    # any cockpit origin (preview deploys included).
+    state.live_view_url = (
+        f"/api/auth/airline/stream?sessionId={session_id}"
+        if live_view_available
+        else None
+    )
 
     # Kick off the watcher.
     state.watcher_task = asyncio.create_task(_watcher(state, cfg))
@@ -691,8 +846,11 @@ async def auth_start(
             "session_id": session_id,
             "program_id": program,
             "program_label": cfg.label,
-            "live_view_url": live_view_url or "TBD",
-            "live_view_available": live_view_url is not None,
+            "live_view_url": state.live_view_url or "TBD",
+            "live_view_available": live_view_available,
+            "live_view_kind": "stream",
+            "viewport": {"w": STREAM_VIEWPORT_W, "h": STREAM_VIEWPORT_H},
+            "bd_inspector_url": state.bd_inspector_url,
             "state": state.state,
             "expires_at": expires_at_iso,
             "current_url": (page.url if page else None),
@@ -731,6 +889,7 @@ async def auth_status(
         "state": state.state,
         "current_url": cur_url,
         "live_view_url": state.live_view_url,
+        "bd_inspector_url": state.bd_inspector_url,
         "expires_at_unix": state.expires_at_unix,
         "started_at_unix": state.started_at,
     }
@@ -740,6 +899,129 @@ async def auth_status(
         payload["stored_row_id"] = state.stored_row_id
 
     return JSONResponse(payload)
+
+
+@router.get("/stream")
+async def auth_stream(
+    request: Request,
+    session_id: str = Query(..., description="Returned by /auth/start"),
+) -> StreamingResponse:
+    """Server-Sent-Events stream of the live BD page as base64 JPEG frames.
+
+    The cockpit's `<LiveSessionView>` opens an EventSource on this (via the
+    `/api/auth/airline/stream` proxy) and paints each frame onto a canvas.
+    SSE is used over a raw WebSocket because it proxies cleanly through the
+    Next.js API route without WS-upgrade handling, and the search route
+    already establishes the SSE pattern in this codebase.
+
+    Event types emitted (each an SSE `data:` line of JSON):
+      {"t":"frame","b64":"<jpeg>","w":1366,"h":768}
+      {"t":"url","url":"https://..."}            — page navigated
+      {"t":"state","state":"captured"|...}        — terminal; cockpit stops
+      {"t":"bye","reason":"..."}                  — stream closing
+
+    The loop ends when: the session leaves `awaiting_login`, the session
+    is torn down / gone, or the client disconnects.
+    """
+    state = ACTIVE_SESSIONS.get(session_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="unknown session_id")
+
+    async def _gen():
+        frame_interval = 1.0 / STREAM_FPS
+        last_url: str | None = None
+        last_state = state.state
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                cur = ACTIVE_SESSIONS.get(session_id)
+                if not cur or cur.state == "torn_down" or not cur.page:
+                    yield _sse({"t": "bye", "reason": "session_gone"})
+                    break
+
+                # Surface a navigation change so the cockpit can update its
+                # address chip.
+                try:
+                    page_url = cur.page.url
+                except Exception:  # noqa: BLE001
+                    page_url = None
+                if page_url and page_url != last_url:
+                    last_url = page_url
+                    yield _sse({"t": "url", "url": page_url})
+
+                # Surface a terminal state transition (login captured /
+                # failed / expired) then stop streaming.
+                if cur.state != last_state:
+                    last_state = cur.state
+                    yield _sse({"t": "state", "state": cur.state})
+                if cur.state != "awaiting_login":
+                    yield _sse({"t": "bye", "reason": f"state:{cur.state}"})
+                    break
+
+                frame = await _capture_frame(cur)
+                if frame:
+                    yield _sse(
+                        {
+                            "t": "frame",
+                            "b64": frame,
+                            "w": STREAM_VIEWPORT_W,
+                            "h": STREAM_VIEWPORT_H,
+                        }
+                    )
+                await asyncio.sleep(frame_interval)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            log.warning("auth_capture/stream: generator error: %s", exc)
+            yield _sse({"t": "bye", "reason": "error"})
+
+    return StreamingResponse(
+        _gen(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+@router.post("/input")
+async def auth_input(
+    request: Request,
+    session_id: str = Query(..., description="Returned by /auth/start"),
+) -> JSONResponse:
+    """Forward a batch of cockpit input events to the live BD page.
+
+    Body: {"events": [<event>, ...]} — see `_dispatch_input` for event
+    shapes. Batched so the cockpit can coalesce rapid mousemoves into one
+    request. Returns the count dispatched.
+    """
+    state = ACTIVE_SESSIONS.get(session_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="unknown session_id")
+    if state.state != "awaiting_login" or not state.page:
+        raise HTTPException(
+            status_code=409,
+            detail=f"session not interactive (state={state.state})",
+        )
+
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid JSON body")
+
+    events = body.get("events") if isinstance(body, dict) else None
+    if not isinstance(events, list):
+        raise HTTPException(status_code=400, detail="body.events must be a list")
+
+    dispatched = 0
+    for ev in events[:200]:  # cap per request — defends against a flood
+        if isinstance(ev, dict) and await _dispatch_input(state, ev):
+            dispatched += 1
+
+    return JSONResponse({"ok": True, "dispatched": dispatched})
 
 
 @router.post("/finalize")
