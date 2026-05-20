@@ -1,18 +1,24 @@
 /**
  * Phase 2.5 — GET /api/auth/airline/status?sessionId=...
  *
- * Short-poll wrapper around the worker's `/auth/status`. Polled every 2s
- * by ConnectAirlineModal. Returns 501 if the worker endpoint doesn't
- * exist yet so the UI can render "service unavailable" cleanly.
+ * Short-poll wrapper around the worker's `/auth/status`. Polled every 2s by
+ * ConnectAirlineModal. Returns 501 if the worker endpoint doesn't exist yet
+ * so the UI can render "service unavailable" cleanly.
+ *
+ * The worker takes `session_id` as a query param and returns snake_case;
+ * we translate to camelCase for the cockpit.
  */
 import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
 interface WorkerStatusResponse {
-  state: "awaiting_login" | "captured" | "expired" | "failed";
+  state: "awaiting_login" | "captured" | "expired" | "failed" | "torn_down";
   error?: string;
-  cookies_expire_at?: string;
+  current_url?: string | null;
+  live_view_url?: string | null;
+  bd_inspector_url?: string | null;
+  stored_row_id?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -42,6 +48,20 @@ export async function GET(req: NextRequest) {
   }
 
   if (res.status === 404) {
+    // Worker returns 404 both when the endpoint is missing AND when the
+    // session id is unknown. Inspect the body to tell them apart: an
+    // unknown session yields `{"state":"unknown",...}`; a missing route
+    // yields FastAPI's `{"detail":"Not Found"}`.
+    let unknownSession = false;
+    try {
+      const j = (await res.json()) as { state?: string };
+      unknownSession = j?.state === "unknown";
+    } catch {
+      // not JSON — treat as route-missing
+    }
+    if (unknownSession) {
+      return Response.json({ state: "expired", error: "session_not_found" });
+    }
     return Response.json(
       { message: "worker /auth/status not yet deployed" },
       { status: 501 },
@@ -63,6 +83,7 @@ export async function GET(req: NextRequest) {
   return Response.json({
     state: json.state,
     error: json.error,
-    cookiesExpireAt: json.cookies_expire_at,
+    currentUrl: json.current_url ?? null,
+    storedRowId: json.stored_row_id ?? null,
   });
 }
