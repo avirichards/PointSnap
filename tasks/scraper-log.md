@@ -136,6 +136,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | VS_FLYING_CLUB | ✅ live | httpx + IPRoyal | Calendar API, no Akamai gating |
 | AS_MILEAGEPLAN | ✅ live | httpx + IPRoyal | SvelteKit SSR, light protection |
 | AA_AADVANTAGE | 🚧 stuck | Camoufox (debugging) | Akamai BMP wall; see "AA: what's been tried" |
+| AA_AADVANTAGE_WU | 🚧 stuck | WU 2-step + BD Browser API mint rung | Mint rung mints `spa_session_id` via BD Browser API; WU-replayed award POST still error 309 — AA session is transport-bound. See Session 14 + blockers.md 2026-05-20 19:40. |
 | AC_AEROPLAN | ❌ broken | BD Browser API (migrated, untested) | Parsers likely drifted |
 | DL_SKYMILES | ❌ broken | WU 2-step (Akamai-walled on POST) | Homepage mint OK; `POST /shop/ow/search` → Akamai 444 for both WU formats. Award POST needs validated `_abck`. See Session 12. |
 | UA_MP | ❌ broken | BD Browser API (migrated, untested) | Imperva — needs investigation |
@@ -1267,3 +1268,76 @@ no per-plugin work needed when a new plugin starts returning rows.
 **Consolidation-pass plan**: when the 3 WU-grind agents report, for every airline
 marked "resisted"/"endpoint not found", dispatch a focused agent armed with #1–#5
 above (JS-bundle recon → BFF-host probe → GET-preference → Pattern B fallback).
+
+---
+
+### 2026-05-20 — Session 14 (AA WU plugin: BD Browser API mint rung)
+
+Goal: add a BD Browser API mint rung to `aa_aadvantage/search_wu.py` so the AA WU
+plugin can mint `spa_session_id` without depending on the disabled `pointsnap_webunlock`
+zone "Manual Expect" setting (the Session 13 blocker). Branch
+`claude/review-scraper-strategy-CXHmM`, commits `91d2d97` + `b1de16f`.
+
+**Viability probe — BD Browser API CAN render www.aa.com and mint `spa_session_id`.**
+Added a temporary `/diag/_tmp_aa_cookie_probe` endpoint (loads a URL via
+`browser_page(use_brightdata=True)`, dumps `page.context.cookies()`), then removed it.
+Probe results, BD Browser API (zone `pointsnap`, `BRIGHTDATA_WSS_URL`):
+- `https://www.aa.com/booking/find-flights` → **HTTP 200**, redirects to
+  `/booking/search/find-flights`, body is the real "Book flights" SPA form,
+  **56-cookie jar with `XSRF-TOKEN` + `spa_session_id` + `JSESSIONID`**,
+  `akamai_denied: false`. THIS is the URL that mints the SPA session.
+- `https://www.aa.com/` and `/booking/find-flights` on a *different* exit IP →
+  "Access Denied" (Akamai edgesuite hard-deny), only `bm_*` cookies, no session.
+- `/booking/flights/choose-flights` → HTTP 404 (AA's "page must have taken flight"
+  404 page — that path doesn't exist), but Akamai let it through: 45-cookie jar
+  with `XSRF-TOKEN` + `JSESSIONID`, NO `spa_session_id` (the 404 page isn't the SPA).
+- `/booking/choose-flights/1` → HTTP 200 but redirects to `/booking/session-timeout`
+  (no active search in session); still minted `spa_session_id`.
+Conclusion: BD Browser API renders www.aa.com on a clean exit IP and the booking
+SPA's bootstrap mints `spa_session_id`. The earlier scraper-log "~0% AA success
+via BD Browser API" was for a *harder* task (Patchright form-fill + result-page
+render) — a simple page-load-and-read-cookies clears Akamai ~50% of the time.
+
+**Mint rung built.** `search_wu.py` `_mint_via_browser_api()` / `_mint_browser_once()`:
+opens `browser_page(use_brightdata=True)`, navigates `/booking/find-flights`, polls
+`page.context.cookies()` until BOTH `XSRF-TOKEN` and `spa_session_id` are present
+(they land at slightly different moments in the SPA bootstrap — `b1de16f` fixed an
+initial bug where breaking on `spa_session_id`-only exported a jar missing
+`XSRF-TOKEN`, which the ladder's XSRF-floored gate then dropped). Retries up to 3
+fresh BD sessions for a complete jar. Gated to run only when the WU-GET strategies
+fail to mint `spa_session_id`.
+
+**Result — mint rung works, but `AA_AADVANTAGE_WU` still returns 0 rows.**
+Across ~6 deployed `/search` runs (`/diag/aa_wu_last` captured each):
+- Runs where a Browser-API try drew a clean IP: minted the full jar, ladder
+  selected it (`minted_via: browser_api_findflights`, `spa_sid_present: true`),
+  WU POST to `/booking/api/search/itinerary` → AA `{"error":"309",...,"slices":[]}`
+  (95 bytes), `api_new_cookie_names: []`. **309 even with a valid `spa_session_id`.**
+- Runs where all 3 Browser-API tries drew HTTP 403 hard-deny IPs (e.g. JFK→LAX
+  19:32 run): rung minted nothing, ladder fell back to the `mobile.aa.com` jar,
+  POST → 309. The 3-try retry rode out the deny ~50% of runs.
+
+**Key finding: AA's award API session is TRANSPORT-BOUND, not just cookie-bound.**
+`spa_session_id` is minted by a BD **Browser API** Chromium on exit IP A; the award
+POST is replayed by BD **Web Unlocker** through a different exit IP B with a freshly
+WU-solved Akamai context. AA binds the session to the originating browser's Akamai
+`_abck` device + IP, so a complete cookie jar handed to a *separate* transport still
+gets 309. `spa_session_id` is necessary but not sufficient — the request must also
+originate from the device/IP that minted it. **The WU two-step is architecturally a
+dead end for AA.**
+
+**Next move (see blockers.md 2026-05-20 19:40):** do the whole search *inside* the
+BD Browser API browser — after `/booking/find-flights` renders, fill the form / fire
+the SPA's own search and capture `/booking/api/search/itinerary` via
+`page.on("response")`. Session + `_abck` + IP + API call all share one browser
+context → no 309. ~2-4 h; capped by BD Browser API's ~50% Akamai deny rate.
+
+**Cost:** ~6 deployed `/search` runs (WU requests + ≤3 BD Browser API page loads
+each, image/css/font-blocked). Bandwidth-billed; ~$0.05-0.15. No commercial APIs.
+
+**Commits:**
+
+| SHA | Message |
+|---|---|
+| `91d2d97` | wip(aa): in-flight AA Browser-API mint work — syntax-verified |
+| `b1de16f` | fix(aa): BD Browser API mint rung must export both session cookies |
