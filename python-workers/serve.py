@@ -156,6 +156,13 @@ async def diag_wu_probe(
                 summary["set_cookie"] = (
                     hdrs.get("set-cookie") or hdrs.get("Set-Cookie")
                 )
+                # BD's own error signalling — tells us WHY a fetch failed
+                summary["x_brd_error"] = (
+                    hdrs.get("x-brd-error") or hdrs.get("X-Brd-Error")
+                )
+                summary["x_brd_error_code"] = (
+                    hdrs.get("x-brd-error-code") or hdrs.get("X-Brd-Error-Code")
+                )
             body = envelope.get("body")
             if isinstance(body, str):
                 summary["body_len"] = len(body)
