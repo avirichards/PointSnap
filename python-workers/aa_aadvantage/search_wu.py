@@ -31,15 +31,23 @@ We work around that two ways, tried in order (`_MINT_STRATEGIES`):
      `#weeklyCarousel` selector. If WU honours the override and renders,
      the SPA bootstrap mints `spa_session_id` too.
 
-We stop at the first strategy whose jar has `XSRF-TOKEN` (AA's load-bearing
-session cookie per Sekinal).
+We run every strategy and pick the best jar — prefer one with
+`spa_session_id`, else fall back to the `mobile.aa.com` jar (just
+`XSRF-TOKEN` + Akamai cookies). NOTE the `www.aa.com` override depends on
+the WU zone having "Manual expect" enabled; a 2026-05-20 run showed the
+`pointsnap_webunlock` zone returns `feature_not_active`, so today only the
+`mobile.aa.com` jar is obtainable. The `www.aa.com` strategy is kept as a
+canary that flips to a real jar once the zone setting is enabled.
 
-Step 2 — POST the award API. `wu_post` hands the request to WU again (WU
-re-solves Akamai for the POST, so the jar's `_abck` is not needed here);
-we forward the minted session cookies plus `X-XSRF-TOKEN` + `X-CID`
-headers AA's API derives from them (Sekinal recipe — see
+Step 2 — POST the award API. Done via `_wu_post_json` (`format=json`, so
+WU returns AA's response headers — `bd_wu.wu_post` is `format=raw` and
+discards them). WU re-solves Akamai for the POST, so the jar's `_abck` is
+not needed here; we forward the minted session cookies plus `X-XSRF-TOKEN`
++ `X-CID` headers AA's API derives from them (Sekinal recipe — see
 `tasks/scraper-research/agent-1-aa-oss-deep-dive.md` and
-`search.py:_search_via_curl_cffi`).
+`search.py:_search_via_curl_cffi`). If AA returns error 309 ("no session")
+but the response *issues* fresh session cookies, we fold them into the jar
+and retry — covering AA's API bootstrapping the session on the first call.
 
 `_parse_xhr` from `aa_aadvantage.search` parses the response — shape is
 identical regardless of how the request was made.
@@ -64,7 +72,7 @@ from aa_aadvantage.search import (
     PROGRAM_NAME,
     _parse_xhr,
 )
-from common.bd_wu import cookies_to_header, parse_set_cookie, wu_post
+from common.bd_wu import cookies_to_header, parse_set_cookie
 from common.types import NormalizedResult
 
 log = logging.getLogger(__name__)
@@ -101,17 +109,17 @@ WU_ENDPOINT = "https://api.brightdata.com/request"
 _MINT_STRATEGIES: list[tuple[str, str, str | None]] = [
     # Floor: confirmed-rendering legacy page. XSRF-TOKEN + Akamai jar, no SPA sid.
     ("mobile_booking", "https://mobile.aa.com/booking", None),
-    # The booking SPA — what mints `spa_session_id`. find-flights is the SPA's
-    # search entry; choose-flights is its results route. Both depend on the
-    # `x-unblock-expect` override defeating WU's stale `#weeklyCarousel` wait.
+    # Canary for the www.aa.com booking SPA (what would mint `spa_session_id`).
+    # WU applies a stale `#weeklyCarousel` render-wait to EVERY www.aa.com URL;
+    # the only way past it is an `x-unblock-expect` override — and a deployed
+    # run (2026-05-20) showed the `pointsnap_webunlock` zone returns
+    # `feature_not_active` ("Manual expect is not enabled for this zone").
+    # Kept as a single cheap canary: when the user enables Manual Expect on
+    # the WU zone, this strategy will start minting `spa_session_id` and the
+    # diag flips from `feature_not_active` to a real cookie jar.
     (
         "www_findflights",
         "https://www.aa.com/booking/find-flights",
-        '{"body": true}',
-    ),
-    (
-        "www_choose_flights",
-        "https://www.aa.com/booking/choose-flights/1",
         '{"body": true}',
     ),
 ]
@@ -121,6 +129,13 @@ _MINT_STRATEGIES: list[tuple[str, str, str | None]] = [
 _SPA_SESSION_COOKIE = "spa_session_id"
 # Cookie present on any rendered aa.com page — the floor for a usable jar.
 _BASE_SESSION_COOKIE = "XSRF-TOKEN"
+
+# Max award-API POSTs per search. The first POST may get error 309 but
+# *issue* the session AA was missing; a retry with that folded-in jar can
+# then succeed. Capped low — WU bills per request and AA's Akamai escalates
+# under load. We stop early anyway if a 309 issued no new cookies (a retry
+# would be byte-identical).
+_MAX_API_ATTEMPTS = 3
 
 # Module-level diagnostic state — last scrape's request + WU response,
 # exposed via `/diag/aa_wu_last`. Forensic-detail by design (CLAUDE.md
@@ -238,12 +253,77 @@ async def _wu_get_json(
         return resp.status_code, None
 
 
+async def _wu_post_json(
+    url: str,
+    body: dict[str, Any] | str,
+    headers: dict[str, str],
+    timeout_s: float = 120.0,
+) -> tuple[int, dict[str, Any] | None]:
+    """POST `body` to `url` via WU with `format=json`.
+
+    `bd_wu.wu_post` uses `format=raw`, which passes the target's body through
+    but DISCARDS the target's response headers — including `Set-Cookie`. AA's
+    award API, called without a session, returns error 309 ("no session");
+    the open question this function exists to answer is whether that 309
+    response *also issues* the session (a `Set-Cookie: spa_session_id` /
+    refreshed `XSRF-TOKEN`), the standard "bootstrap session on first call"
+    SPA-backend pattern. `format=json` is the only way to see those headers,
+    so we can fold them into the jar and retry.
+
+    Returns `(wu_http_status, envelope_or_None)`; envelope shape matches
+    `_wu_get_json` (`status_code` / `headers` / `body`).
+    """
+    token = os.environ.get("BRIGHTDATA_WU_TOKEN")
+    zone = os.environ.get("BRIGHTDATA_WU_ZONE")
+    if not token or not zone:
+        raise RuntimeError(
+            "BRIGHTDATA_WU_TOKEN and BRIGHTDATA_WU_ZONE env vars are "
+            "required for the AA WU variant. Set them as Fly secrets."
+        )
+
+    body_str = json.dumps(body) if isinstance(body, dict) else body
+    # WU computes Host/Content-Length itself — drop them if a caller passes
+    # them, same hygiene as `bd_wu.wu_post`.
+    forwarded = {
+        k: v
+        for k, v in headers.items()
+        if k.lower() not in ("host", "content-length")
+    }
+    wu_envelope: dict[str, Any] = {
+        "zone": zone,
+        "url": url,
+        "method": "POST",
+        "body": body_str,
+        "format": "json",
+        "headers": forwarded,
+    }
+
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(timeout_s, connect=10.0)
+    ) as client:
+        resp = await client.post(
+            WU_ENDPOINT,
+            json=wu_envelope,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+        )
+
+    try:
+        return resp.status_code, resp.json()
+    except (json.JSONDecodeError, ValueError):
+        return resp.status_code, None
+
+
 def _read_envelope(envelope: dict[str, Any] | None) -> dict[str, Any]:
     """Pull cookies + diagnostics out of a WU `format=json` envelope.
 
     Returns a dict: `{cookies, target_status, x_brd_error, x_brd_error_code,
-    cookie_names, body_len}`. `cookies` is a `{name: value}` jar (empty if
-    WU failed). Shape-tolerant — BD varies envelope key casing by version.
+    cookie_names, body_len, body_text, body_json}`. `cookies` is a
+    `{name: value}` jar (empty if WU failed); `body_json` is the body parsed
+    as a dict when it's JSON, else None. Shape-tolerant — BD varies envelope
+    key casing by version.
     """
     out: dict[str, Any] = {
         "cookies": {},
@@ -252,6 +332,8 @@ def _read_envelope(envelope: dict[str, Any] | None) -> dict[str, Any]:
         "x_brd_error_code": None,
         "cookie_names": [],
         "body_len": 0,
+        "body_text": "",
+        "body_json": None,
     }
     if not isinstance(envelope, dict):
         return out
@@ -270,6 +352,14 @@ def _read_envelope(envelope: dict[str, Any] | None) -> dict[str, Any]:
     body = envelope.get("body")
     if isinstance(body, str):
         out["body_len"] = len(body)
+        out["body_text"] = body
+        stripped = body.lstrip()
+        if stripped.startswith(("{", "[")):
+            try:
+                parsed = json.loads(body)
+            except (json.JSONDecodeError, ValueError):
+                parsed = None
+            out["body_json"] = parsed if isinstance(parsed, dict) else None
     return out
 
 
@@ -416,12 +506,15 @@ async def search_via_wu(
     """Search AA awards via Bright Data Web Unlocker, two-step.
 
     Step 1 mints an AA session (`_mint_aa_session`); Step 2 POSTs the award
-    API through WU with that session.
+    API through WU with that session, folding in any session cookies AA
+    issues on an error-309 response and retrying up to `_MAX_API_ATTEMPTS`.
 
     Verdict codes captured in LAST_RUN_DIAG.last_verdict:
       ok           — WU 200 with parseable AA response containing slices
       no_results   — WU 200, valid JSON, but zero rows parsed
-      no_slices    — WU 200, JSON, no `slices` key (still error 309 / empty)
+      no_slices    — every POST got error 309 / no `slices` (session never
+                     satisfied — see `attempts[].api_new_cookie_names` for
+                     whether AA ever issued bootstrap cookies)
       api_error    — WU 200 but body is not JSON (HTML / blank / unexpected)
       wu_error     — WU itself returned non-200 (BD validation, no credit, …)
       mint_failed  — Step 1 minted no session (no AA URL rendered via WU)
@@ -470,112 +563,148 @@ async def search_via_wu(
         LAST_RUN_DIAG["row_count"] = 0
         return []
 
-    # --- Step 2: POST the award API with the minted session -----------
+    # --- Step 2: POST the award API, folding in any session AA mints ---
+    #
+    # The minted jar (`mobile.aa.com`, lacking `spa_session_id`) gets error
+    # 309 on its own. But AA's API may *issue* the missing session on that
+    # first 309 response (bootstrap-on-first-call). We POST with `format=json`
+    # so WU returns AA's `Set-Cookie`, fold any fresh cookies into the jar,
+    # and retry — up to `_MAX_API_ATTEMPTS` POSTs. Each POST is a separate
+    # `attempts[]` entry in the diag.
     payload = _build_aa_payload(origin, dest, date)
-    api_headers = _build_api_headers(cookies)
-    attempt_diag: dict[str, Any] = {
-        "attempt": 1,
-        "endpoint": AA_API_ENDPOINT,
-        "payload_size": len(str(payload)),
-        "minted_via": mint_diag.get("minted_via"),
-        "cookie_count": len(cookies),
-        "sent_xsrf": "X-XSRF-TOKEN" in api_headers,
-        "spa_sid_present": "spa_session_id" in cookies,
-    }
+    jar = dict(cookies)  # mutable working jar — AA-minted cookies fold in here
+    results: list[NormalizedResult] = []
+    final_verdict = "no_slices"
 
-    try:
-        status, parsed, raw_text = await wu_post(
-            url=AA_API_ENDPOINT,
-            body=payload,
-            headers=api_headers,
-            timeout_s=90.0,  # WU can be slow on cold sessions (30-60s typical)
+    for attempt_no in range(1, _MAX_API_ATTEMPTS + 1):
+        api_headers = _build_api_headers(jar)
+        attempt_diag: dict[str, Any] = {
+            "attempt": attempt_no,
+            "endpoint": AA_API_ENDPOINT,
+            "payload_size": len(str(payload)),
+            "minted_via": mint_diag.get("minted_via"),
+            "cookie_count": len(jar),
+            "sent_xsrf": "X-XSRF-TOKEN" in api_headers,
+            "spa_sid_present": _SPA_SESSION_COOKIE in jar,
+        }
+
+        try:
+            wu_status, envelope = await _wu_post_json(
+                url=AA_API_ENDPOINT,
+                body=payload,
+                headers=api_headers,
+                timeout_s=120.0,  # WU can be slow on cold sessions
+            )
+        except httpx.HTTPError as exc:
+            err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+            print(f"AA_WU: httpx error talking to BD: {err_str}", flush=True)
+            attempt_diag["stage"] = "wu_http_error"
+            attempt_diag["error"] = err_str
+            LAST_RUN_DIAG["attempts"].append(attempt_diag)
+            LAST_RUN_DIAG["last_verdict"] = "http_error"
+            LAST_RUN_DIAG["row_count"] = 0
+            return []
+        except Exception as exc:  # noqa: BLE001 — defensive; surface anything else
+            err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
+            print(f"AA_WU: crash before parse: {err_str}", flush=True)
+            attempt_diag["stage"] = "outer_crash"
+            attempt_diag["error"] = err_str
+            LAST_RUN_DIAG["attempts"].append(attempt_diag)
+            LAST_RUN_DIAG["last_verdict"] = "crash"
+            LAST_RUN_DIAG["row_count"] = 0
+            return []
+
+        info = _read_envelope(envelope)
+        parsed = info["body_json"]
+        raw_text = info["body_text"]
+        # Cookies AA issued on THIS response — the prize if 309 bootstraps.
+        api_cookies = info["cookies"]
+        new_cookie_names = sorted(set(api_cookies) - set(jar))
+
+        attempt_diag["wu_status"] = wu_status
+        attempt_diag["target_status"] = info["target_status"]
+        attempt_diag["x_brd_error_code"] = info["x_brd_error_code"]
+        attempt_diag["raw_text_len"] = info["body_len"]
+        attempt_diag["raw_text_head"] = raw_text[:400]  # forensic preview
+        attempt_diag["json_parsed"] = parsed is not None
+        attempt_diag["api_set_cookie_names"] = info["cookie_names"]
+        attempt_diag["api_new_cookie_names"] = new_cookie_names
+        if parsed is not None:
+            attempt_diag["json_keys"] = sorted(parsed.keys())[:30]
+            if "error" in parsed:
+                attempt_diag["aa_error"] = str(parsed.get("error"))[:60]
+            attempt_diag["has_slices"] = bool(parsed.get("slices"))
+            attempt_diag["slice_count"] = len(parsed.get("slices") or [])
+
+        print(
+            f"AA_WU: POST #{attempt_no} wu={wu_status} "
+            f"target={info['target_status']} parsed={parsed is not None} "
+            f"aa_error={attempt_diag.get('aa_error')!r} "
+            f"slices={attempt_diag.get('slice_count', 0)} "
+            f"api_new_cookies={new_cookie_names}",
+            flush=True,
         )
-    except httpx.HTTPError as exc:
-        err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
-        print(f"AA_WU: httpx error talking to BD: {err_str}", flush=True)
-        attempt_diag["stage"] = "wu_http_error"
-        attempt_diag["error"] = err_str
-        LAST_RUN_DIAG["attempts"].append(attempt_diag)
-        LAST_RUN_DIAG["last_verdict"] = "http_error"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
-    except Exception as exc:  # noqa: BLE001 — defensive; surface anything else
-        err_str = f"{type(exc).__name__}: {str(exc)[:300]}"
-        print(f"AA_WU: crash before parse: {err_str}", flush=True)
-        attempt_diag["stage"] = "outer_crash"
-        attempt_diag["error"] = err_str
-        LAST_RUN_DIAG["attempts"].append(attempt_diag)
-        LAST_RUN_DIAG["last_verdict"] = "crash"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
 
-    attempt_diag["wu_status"] = status
-    attempt_diag["raw_text_len"] = len(raw_text)
-    attempt_diag["raw_text_head"] = raw_text[:400]  # forensic preview
-    attempt_diag["json_parsed"] = parsed is not None
-    if parsed is not None:
-        # Capture which top-level keys came back so we can spot shape drift
-        # (e.g. AA introducing new error envelopes) without bloating diag.
-        attempt_diag["json_keys"] = sorted(parsed.keys())[:30]
-        # Common AA error envelope: {"error":"309", ...}. Surface it.
-        if "error" in parsed:
-            attempt_diag["aa_error"] = str(parsed.get("error"))[:60]
-        attempt_diag["has_slices"] = bool(parsed.get("slices"))
-        attempt_diag["slice_count"] = len(parsed.get("slices") or [])
+        # WU itself failed (4xx/5xx from BD, or no envelope) — abort.
+        if wu_status != 200 or envelope is None:
+            attempt_diag["stage"] = "wu_non_200"
+            LAST_RUN_DIAG["attempts"].append(attempt_diag)
+            LAST_RUN_DIAG["last_verdict"] = "wu_error"
+            LAST_RUN_DIAG["row_count"] = 0
+            return []
 
-    print(
-        f"AA_WU: wu_post returned status={status} len={len(raw_text)} "
-        f"parsed={parsed is not None} "
-        f"aa_error={attempt_diag.get('aa_error')!r} "
-        f"slices={attempt_diag.get('slice_count', 0)}",
-        flush=True,
-    )
+        if parsed is None:
+            attempt_diag["stage"] = "api_non_json"
+            LAST_RUN_DIAG["attempts"].append(attempt_diag)
+            final_verdict = "api_error"
+            LAST_RUN_DIAG["last_verdict"] = final_verdict
+            LAST_RUN_DIAG["row_count"] = 0
+            return []
 
-    # Categorize verdict. We treat WU's status as the truth: with format=raw,
-    # 200 means AA replied 200 (whether or not the body is what we want).
-    if status != 200:
-        attempt_diag["stage"] = "wu_non_200"
-        LAST_RUN_DIAG["attempts"].append(attempt_diag)
-        LAST_RUN_DIAG["last_verdict"] = "wu_error"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        # Success — AA returned slices.
+        if parsed.get("slices"):
+            results = _parse_xhr(parsed, origin, dest, date)
+            attempt_diag["stage"] = "parsed"
+            attempt_diag["row_count"] = len(results)
+            LAST_RUN_DIAG["attempts"].append(attempt_diag)
+            final_verdict = "ok" if results else "no_results"
+            break
 
-    if parsed is None:
-        attempt_diag["stage"] = "api_non_json"
-        LAST_RUN_DIAG["attempts"].append(attempt_diag)
-        LAST_RUN_DIAG["last_verdict"] = "api_error"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
-
-    if not parsed.get("slices"):
-        # Either the `error: 309` shape (session still rejected) or a
-        # different empty-result shape. raw_text_head + aa_error + json_keys
-        # in diag tell us which.
+        # No slices (error 309 or empty). Fold any AA-minted session cookies
+        # into the jar; if AA gave us something new, the next POST may clear
+        # 309. If it gave us nothing new, retrying is pointless — stop.
         attempt_diag["stage"] = "api_no_slices"
         LAST_RUN_DIAG["attempts"].append(attempt_diag)
-        LAST_RUN_DIAG["last_verdict"] = "no_slices"
-        LAST_RUN_DIAG["row_count"] = 0
-        return []
+        final_verdict = "no_slices"
+        if api_cookies:
+            jar.update(api_cookies)
+        if not new_cookie_names:
+            print(
+                f"AA_WU: POST #{attempt_no} error-309 issued no new cookies "
+                f"— retry would be identical, stopping",
+                flush=True,
+            )
+            break
+        print(
+            f"AA_WU: POST #{attempt_no} folded {len(new_cookie_names)} "
+            f"AA-minted cookie(s) into jar — retrying",
+            flush=True,
+        )
 
-    results = _parse_xhr(parsed, origin, dest, date)
-    attempt_diag["stage"] = "parsed"
-    attempt_diag["row_count"] = len(results)
-    LAST_RUN_DIAG["attempts"].append(attempt_diag)
-
-    if not results:
-        LAST_RUN_DIAG["last_verdict"] = "no_results"
-        LAST_RUN_DIAG["row_count"] = 0
-        print("AA_WU: parsed JSON had slices but _parse_xhr returned 0 rows", flush=True)
-        return []
-
-    LAST_RUN_DIAG["last_verdict"] = "ok"
+    LAST_RUN_DIAG["last_verdict"] = final_verdict
     LAST_RUN_DIAG["row_count"] = len(results)
-    print(
-        f"AA_WU: SUCCESS ({len(results)} rows) — program_id={PROGRAM_ID} "
-        f"program_name={PROGRAM_NAME}",
-        flush=True,
-    )
-    return results
+
+    if final_verdict == "ok":
+        print(
+            f"AA_WU: SUCCESS ({len(results)} rows) — program_id={PROGRAM_ID} "
+            f"program_name={PROGRAM_NAME}",
+            flush=True,
+        )
+        return results
+
+    if final_verdict == "no_results":
+        print("AA_WU: parsed JSON had slices but _parse_xhr returned 0 rows", flush=True)
+    return []
 
 
 # Public name to mirror search.search — parent wires
