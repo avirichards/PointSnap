@@ -318,3 +318,21 @@ WU secrets: BRIGHTDATA_WU_TOKEN + BRIGHTDATA_WU_ZONE=pointsnap_webunlock set via
 Working state: VS ✅, AS ✅, B6 ✅ (pending deploy verify) = 3 plugins. AA still blocked (WU 2-step flow needed). 60-day cap lifted. Phase 2.5 backend+frontend landed.
 
 **Spent**: ~$0.05 BD + ~1 WU request (~$0.0015).
+
+## 2026-05-20 18:20 — WU multi-site probe: Strategy A validated
+**Status**: ✅ (WU works for DL + CX; AA needs a render-wait override)
+
+WU `format=json` probe results:
+- **AA** — 502, `x-brd-error: waiting for selector "#weeklyCarousel" failed: timeout 90000ms` (`expect_element`). WU's per-site readiness check waits for AA's homepage carousel; Akamai challenge prevents it rendering. Fixable via WU wait-config, NOT a hard block.
+- **DL delta.com** — ✅ 200, full Set-Cookie (AKA_A2, bm_ss, bm_mi, akaalb_*, Homepage, location)
+- **CX cathaypacific.com** — ✅ 200, full Set-Cookie (bm_mi, bm_s)
+- **example.com** — ✅ 200 (control)
+
+**Conclusion**: WU bypasses Akamai for normal airline homepages (DL, CX confirmed). AA's homepage specifically chokes WU's render-readiness selector. Strategy A (WU rollout) is viable for the Akamai-single-tier carriers.
+
+Path forward:
+1. Build a generic WU 2-step transport (GET homepage → extract Set-Cookie → POST/GET award API with cookies)
+2. Roll out to DL, CX first (WU-confirmed), then probe + roll out to NH/BA/AV/AF/LH/TK/UA
+3. AA: override WU's `#weeklyCarousel` wait — try a non-homepage entry URL, or a WU request param to relax the element-wait
+
+**Spent**: ~$0.06 BD (~6 WU requests at $1.5/CPM + smoke probes)
