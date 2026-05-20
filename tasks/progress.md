@@ -289,3 +289,15 @@ Next foreground work: AC, UA, NH empty-rows investigation via /diag/run_plugin.
 1. Set BD WU Fly secrets → test AA_AADVANTAGE_WU → if works, build same pattern for DL/NH/QR/CX/etc.
 2. Decide on live-view URL approach → end-to-end test Phase 2.5 with AC Aeroplan
 3. Wire Clerk auth so the /airlines page can identify users
+
+## 2026-05-19 22:00 — All 4 strategies launched in parallel
+**Status**: 🚀 (3 streams running)
+**Outcome**: User authorized "try all strategies". Running 3 parallel streams covering all 4:
+- **Stream 1 (Strategy A + B, me)**: WU secrets set via one-shot GH Action (commit 394e76d). Testing AA_AADVANTAGE_WU now. A = WU rollout; B = Camoufox+BDR per-plugin fallback where WU fails.
+- **Stream 2 (Strategy C, agent)**: Build B6 JetBlue plugin. JetBlue is Fastly-only (lightest defense). Agent investigating the live jbrest.jetblue.com endpoint + transport.
+- **Stream 3 (Strategy D, agent)**: Lift 60-day cap. Central `common/program_windows.py` registry + `/programs/meta` endpoint + cockpit calendar date-bounds.
+
+WU secrets: BRIGHTDATA_WU_TOKEN + BRIGHTDATA_WU_ZONE=pointsnap_webunlock set via flyctl in the one-shot workflow. User confirmed BRIGHTDATA_WSS_URL already on Fly (Browser API zone `pointsnap`, $4 spent, 507MB used).
+
+**Spent**: ~$0.04 BD so far. WU rate $1.50/CPM, $102 balance available.
+**Next**: read AA_AADVANTAGE_WU test; if rows>0 → roll WU out to DL/NH/CX/QR/etc; delete one-shot workflow; if WU fails → Strategy B (Camoufox+BDR) for the Akamai-single-tier carriers
