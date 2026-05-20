@@ -34,6 +34,7 @@ from ac_aeroplan import search as ac_search
 from af_flyingblue import search as af_search
 from as_mileageplan import search as as_search
 from av_lifemiles import search as av_search
+from b6_jetblue import search as b6_search
 from ba_avios import search as ba_search
 from cx_cathay import search as cx_search
 from dl_skymiles import search as dl_search
@@ -70,6 +71,7 @@ PLUGINS: dict[str, PluginCallable] = {
     "CX_CATHAY": cx_search.search,
     "AC_AEROPLAN": ac_search.search,
     "LH_MILES_MORE": lh_search.search,
+    "B6_TRUEBLUE": b6_search.search,
 }
 
 
