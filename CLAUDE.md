@@ -72,6 +72,23 @@ When in doubt, ask the user.
 
 ### Database migrations — GitHub-integrated auto-apply on Supabase
 
+> ⚠️ **STATUS (2026-05-21): the Supabase↔GitHub integration is NOT applying migrations.**
+> The production DB was found ~5 migrations behind the repo — the auto-apply
+> described below has not been running. Until the integration is reconnected in
+> the Supabase dashboard, apply committed migrations **manually via the Supabase
+> Management API**:
+> - `POST https://api.supabase.com/v1/projects/cgoyetahoktqupkcvrli/database/query`,
+>   body `{"query": "<migration SQL>"}`, header `Authorization: Bearer $SUPABASE_ACCESS_TOKEN`.
+> - `SUPABASE_ACCESS_TOKEN` is a Supabase Personal Access Token, kept as an
+>   environment variable — **never commit it to the repo**. If it is unset, ask
+>   the user (supabase.com → Account → Access Tokens).
+> - Use **curl** — `api.supabase.com` Cloudflare-blocks Python `urllib` (HTTP 403,
+>   error 1010). PointSnap Supabase project ref: `cgoyetahoktqupkcvrli`.
+> - The migrations are idempotent, so re-applying them once the integration is
+>   fixed is harmless.
+> All committed migrations through `20260520143000` were applied this way on
+> 2026-05-21, so the DB currently matches the repo.
+
 **User-facing rule:** the user says what they want changed; Claude writes the migration file; pushing it to GitHub deploys it.
 
 We use **Supabase's GitHub integration** (enabled when the project was created). The repo is connected to the Supabase project, and Supabase watches `supabase/migrations/`. On push:
