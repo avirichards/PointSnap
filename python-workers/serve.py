@@ -792,27 +792,44 @@ async def diag_ac_air_bounds(
                     )
                 except Exception:  # noqa: BLE001
                     pass
-            # Give the SPA time to bootstrap the redeem landing, then dump
-            # the search-form inputs/buttons so we know what to fill.
+
             if landed:
-                await asyncio.sleep(6.0)
+                # Let the Angular SPA bootstrap.
+                await asyncio.sleep(7.0)
+                # Dismiss the OneTrust cookie banner if present (it overlays
+                # the app and can block the redeem UI).
+                for sel in ("#onetrust-accept-btn-handler",
+                            "#accept-recommended-btn-handler"):
+                    try:
+                        btn = page.locator(sel)
+                        if await btn.count() > 0 and await btn.first.is_visible():
+                            await btn.first.click(timeout=4000)
+                            await asyncio.sleep(1.5)
+                            break
+                    except Exception:  # noqa: BLE001
+                        pass
+
+                # In-app SPA navigation to the availability route. The
+                # /availability/ document path is Akamai-403'd, but a
+                # client-side route change via the History API fires NO
+                # top-level document request — the Angular router picks up
+                # the pushState/popstate and the redeem SPA then issues the
+                # air-bounds XHR straight to akamai-gw.dbaas.aircanada.com.
+                spa_path = search_url.split("aircanada.com", 1)[1]
+                out["spa_path"] = spa_path
                 try:
-                    out["redeem_inputs"] = await page.evaluate(
-                        """() => Array.from(document.querySelectorAll(
-                            'input,button,select,[role=button],[role=combobox]'
-                        )).map(el => ({
-                            tag: el.tagName.toLowerCase(),
-                            type: el.getAttribute('type'),
-                            name: el.getAttribute('name'),
-                            id: el.id || null,
-                            placeholder: el.getAttribute('placeholder'),
-                            aria: el.getAttribute('aria-label'),
-                            cls: (el.getAttribute('class')||'').slice(0,60),
-                            txt: (el.innerText||el.value||'').slice(0,40),
-                        })).filter(x => x.name||x.id||x.placeholder||x.aria||x.txt).slice(0,60)"""
+                    await page.evaluate(
+                        """(p) => {
+                            window.history.pushState({}, '', p);
+                            window.dispatchEvent(new PopStateEvent(
+                                'popstate', {state: {}}));
+                        }""",
+                        spa_path,
                     )
+                    nav_attempts.append({"step": "spa_inapp_nav", "path": spa_path})
                 except Exception as exc:  # noqa: BLE001
-                    out["redeem_inputs_error"] = str(exc)[:200]
+                    nav_attempts.append({
+                        "step": "spa_inapp_nav", "error": str(exc)[:200]})
             out["nav_attempts"] = nav_attempts
 
             # Poll for the air-bounds XHR.
