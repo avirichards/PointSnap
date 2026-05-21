@@ -641,74 +641,42 @@ async def diag_ac_air_bounds(
         air_bounds_resps: list[dict] = []
         all_loyalty_urls: list[str] = []
 
-        # We need cookie injection BEFORE navigation, so use the BD Browser
-        # API path but get at the context. browser_page yields a page; its
-        # context is page.context.
+        # Build CDP-shape cookie params. CDP `Network.setCookie` is far more
+        # permissive than Playwright `add_cookies` (which uses
+        # `Storage.setCookies` and refuses to override an existing cookie
+        # name — every aircanada.com cookie BD's hosted Chromium pre-loads).
+        cdp_cookies: list[dict] = []
+        for c in cookies:
+            if not c.get("name") or "value" not in c:
+                continue
+            domain = c.get("domain") or ""
+            cc: dict = {
+                "name": c["name"],
+                "value": str(c["value"]),
+                "path": c.get("path") or "/",
+                "secure": bool(c.get("secure", True)),
+                "httpOnly": bool(c.get("httpOnly", False)),
+            }
+            if domain:
+                cc["domain"] = domain
+            ss = c.get("sameSite")
+            if ss in ("Strict", "Lax", "None"):
+                cc["sameSite"] = ss
+            exp = c.get("expires")
+            if exp is not None and exp != -1:
+                try:
+                    cc["expires"] = float(exp)
+                except (TypeError, ValueError):
+                    pass
+            cdp_cookies.append(cc)
+        out["cdp_cookie_count"] = len(cdp_cookies)
+
+        REDEEM_ROOT = "https://www.aircanada.com/aeroplan/redeem/"
+
         async with browser_page(
             timeout_ms=120_000, use_brightdata=True
         ) as page:
             ctx = page.context
-            # BD's hosted Chromium can hand back a context whose cookie
-            # store already holds aircanada.com cookies — CDP then refuses
-            # `Storage.setCookies` for any name already present ("Overriding
-            # X cookie is forbidden"). Clear the jar first so injection of
-            # the user's captured session always wins.
-            try:
-                await ctx.clear_cookies()
-                out["cleared_cookies"] = True
-            except Exception as exc:  # noqa: BLE001
-                out["clear_cookies_error"] = str(exc)[:200]
-
-            # Normalize captured cookies to Playwright's shape (drop
-            # partitionKey / _crHasCrossSiteAncestor and other extra keys).
-            norm: list[dict] = []
-            for c in cookies:
-                if not c.get("name") or "value" not in c:
-                    continue
-                nc: dict = {"name": c["name"], "value": str(c["value"])}
-                if c.get("domain"):
-                    nc["domain"] = c["domain"]
-                    nc["path"] = c.get("path") or "/"
-                elif c.get("url"):
-                    nc["url"] = c["url"]
-                else:
-                    continue
-                if "httpOnly" in c:
-                    nc["httpOnly"] = bool(c["httpOnly"])
-                if "secure" in c:
-                    nc["secure"] = bool(c["secure"])
-                ss = c.get("sameSite")
-                if ss in ("Strict", "Lax", "None"):
-                    nc["sameSite"] = ss
-                exp = c.get("expires")
-                if exp is not None and exp != -1:
-                    try:
-                        nc["expires"] = int(exp)
-                    except (TypeError, ValueError):
-                        pass
-                norm.append(nc)
-            out["normalized_count"] = len(norm)
-
-            injected = 0
-            try:
-                await ctx.add_cookies(norm)
-                out["raw_add_cookies"] = "ok"
-                injected = len(norm)
-            except Exception as exc:  # noqa: BLE001
-                out["raw_add_cookies_error"] = str(exc)[:400]
-                # Fall back: inject one-by-one (skip whatever still fails).
-                ok_one = 0
-                bad = []
-                for nc in norm:
-                    try:
-                        await ctx.add_cookies([nc])
-                        ok_one += 1
-                    except Exception as exc2:  # noqa: BLE001
-                        bad.append(f"{nc.get('name')}: {str(exc2)[:120]}")
-                out["cookies_injected_one_by_one"] = ok_one
-                out["bad_cookies"] = bad[:8]
-                injected = ok_one
-            out["cookies_injected"] = injected
 
             async def _on_request(req):
                 try:
@@ -751,38 +719,98 @@ async def diag_ac_air_bounds(
 
             search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
             out["search_url"] = search_url
-            # Navigate straight to the redeem availability page. Use
-            # wait_until="commit" so a same-app SPA redirect doesn't raise
-            # "interrupted by another navigation". The redeem SPA fires the
-            # air-bounds XHR itself once it bootstraps with the logged-in
-            # session cookies we injected. Retry to ride out BD exit-IP
-            # Akamai hard-denies (~50% per the scraper log).
-            nav_attempts: list[dict] = []
-            for attempt in range(3):
+
+            # CDP session for permissive cookie injection.
+            cdp = None
+            try:
+                cdp = await ctx.new_cdp_session(page)
+            except Exception as exc:  # noqa: BLE001
+                out["cdp_session_error"] = str(exc)[:200]
+
+            async def _inject_via_cdp() -> int:
+                """Inject the captured cookies via CDP Network.setCookies.
+                Returns the count CDP accepted. No-op if no CDP session."""
+                if not cdp:
+                    return 0
+                ok = 0
                 try:
-                    sr = await page.goto(
-                        search_url, wait_until="commit", timeout=90_000
+                    await cdp.send("Network.setCookies", {"cookies": cdp_cookies})
+                    ok = len(cdp_cookies)
+                except Exception:  # noqa: BLE001
+                    # Bulk failed — set one at a time.
+                    for cc in cdp_cookies:
+                        try:
+                            await cdp.send("Network.setCookie", cc)
+                            ok += 1
+                        except Exception:  # noqa: BLE001
+                            pass
+                return ok
+
+            # Step 1: land on the redeem SPA root (lighter Akamai path than
+            # the /availability/ deep-link). Retry to ride out BD exit-IP
+            # hard-denies (~50% per scraper log).
+            nav_attempts: list[dict] = []
+            landed = False
+            for attempt in range(4):
+                try:
+                    r = await page.goto(
+                        REDEEM_ROOT, wait_until="commit", timeout=90_000
                     )
-                    await asyncio.sleep(4.0)
+                    await asyncio.sleep(3.0)
                     title = ""
                     try:
                         title = await page.title()
                     except Exception:  # noqa: BLE001
                         pass
                     nav_attempts.append({
-                        "attempt": attempt,
-                        "status": sr.status if sr else None,
-                        "url": page.url,
-                        "title": title,
+                        "step": "redeem_root", "attempt": attempt,
+                        "status": r.status if r else None,
+                        "url": page.url, "title": title,
                     })
-                    # Akamai hard-deny → retry on a fresh navigation.
-                    if "Access Denied" in title or (sr and sr.status == 403):
-                        await asyncio.sleep(2.0)
-                        continue
-                    break
-                except Exception as exc:  # noqa: BLE001
-                    nav_attempts.append({"attempt": attempt, "error": str(exc)[:200]})
+                    if "Access Denied" not in title and not (r and r.status == 403):
+                        landed = True
+                        break
                     await asyncio.sleep(2.0)
+                except Exception as exc:  # noqa: BLE001
+                    nav_attempts.append({
+                        "step": "redeem_root", "attempt": attempt,
+                        "error": str(exc)[:200],
+                    })
+                    await asyncio.sleep(2.0)
+
+            # Step 2: inject the logged-in session cookies now that we're
+            # on-origin, then navigate to the availability deep-link.
+            out["cookies_injected"] = await _inject_via_cdp()
+
+            if landed:
+                for attempt in range(4):
+                    try:
+                        r = await page.goto(
+                            search_url, wait_until="commit", timeout=90_000
+                        )
+                        await asyncio.sleep(5.0)
+                        title = ""
+                        try:
+                            title = await page.title()
+                        except Exception:  # noqa: BLE001
+                            pass
+                        nav_attempts.append({
+                            "step": "availability", "attempt": attempt,
+                            "status": r.status if r else None,
+                            "url": page.url, "title": title,
+                        })
+                        # Re-inject (a fresh nav can drop the jar) and stop
+                        # once we're past Akamai deny.
+                        await _inject_via_cdp()
+                        if "Access Denied" not in title and not (r and r.status == 403):
+                            break
+                        await asyncio.sleep(2.0)
+                    except Exception as exc:  # noqa: BLE001
+                        nav_attempts.append({
+                            "step": "availability", "attempt": attempt,
+                            "error": str(exc)[:200],
+                        })
+                        await asyncio.sleep(2.0)
             out["nav_attempts"] = nav_attempts
 
             # Poll for the air-bounds XHR.
