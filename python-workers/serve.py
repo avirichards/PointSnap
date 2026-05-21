@@ -630,12 +630,11 @@ async def diag_ac_air_bounds(
 
         cookies = session.get("cookies") or []
         out["cookie_count"] = len(cookies)
-        # Sample the raw cookie shape so we can see why injection might fail.
-        out["cookie_sample"] = [
-            {k: (str(v)[:40] if k == "value" else v) for k, v in c.items()}
-            for c in cookies[:3]
-        ]
-        out["cookie_keys"] = sorted({k for c in cookies for k in c.keys()})
+        out["session_expires_at"] = session.get("expires_at")
+        out["session_meta"] = session.get("meta")
+        out["all_cookie_names"] = sorted(
+            {c.get("name") for c in cookies if c.get("name")}
+        )
 
         air_bounds_reqs: list[dict] = []
         air_bounds_resps: list[dict] = []
@@ -796,6 +795,32 @@ async def diag_ac_air_bounds(
             if landed:
                 # Let the Angular SPA bootstrap.
                 await asyncio.sleep(7.0)
+                # Dump what the SPA's auth guard can see — its login state
+                # may come from localStorage / sessionStorage / cookies
+                # rather than the captured cookie jar.
+                try:
+                    out["spa_storage"] = await page.evaluate(
+                        """() => {
+                            const ls = {}, ss = {};
+                            try { for (let i=0;i<localStorage.length;i++){
+                                const k=localStorage.key(i);
+                                ls[k]=(localStorage.getItem(k)||'').slice(0,120);
+                            }} catch(e){}
+                            try { for (let i=0;i<sessionStorage.length;i++){
+                                const k=sessionStorage.key(i);
+                                ss[k]=(sessionStorage.getItem(k)||'').slice(0,120);
+                            }} catch(e){}
+                            return {
+                                cookie: document.cookie.slice(0,800),
+                                localStorage_keys: Object.keys(ls),
+                                localStorage: ls,
+                                sessionStorage_keys: Object.keys(ss),
+                                location: location.href,
+                            };
+                        }"""
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    out["spa_storage_error"] = str(exc)[:200]
                 # Dismiss the OneTrust cookie banner if present (it overlays
                 # the app and can block the redeem UI).
                 for sel in ("#onetrust-accept-btn-handler",
