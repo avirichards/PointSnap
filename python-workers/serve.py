@@ -1223,48 +1223,76 @@ async def diag_ac_air_bounds(
             # session token is stale (must be re-captured); 400 = reached
             # the API, body shape wrong. Best-guess `airBoundsInputs` body.
             if direct_fetch:
-                await asyncio.sleep(3.0)  # let Kasada p.js settle
+                # Kasada `p.js` patches fetch/XHR to add `x-kpsdk-ct/cd`,
+                # but only AFTER it has solved its challenge. Give it a long
+                # settle (28s) and probe `window.KPSDK` state first.
+                await asyncio.sleep(28.0)
                 try:
-                    probe = await page.evaluate(
-                        """async ({url, apiKey, clientId, o, d, dt}) => {
-                            const body = {
-                              origin: o, destination: d, departureDate: dt,
-                              searchType: "BRANDED", subType: "ROUNDTRIP",
-                              marketCode: "TNB",
-                              flightSearchType: "FUNCTION_AIR",
-                              fareFilters: { value: "ECONOMY" },
-                              passengers: { adultCount: 1, youthCount: 0,
-                                            childCount: 0, infantCount: 0 },
+                    out["kpsdk_state"] = await page.evaluate(
+                        """() => {
+                            const k = window.KPSDK;
+                            return {
+                              has_KPSDK: typeof k !== 'undefined',
+                              kpsdk_keys: k ? Object.keys(k) : [],
+                              has_kpsdk_ct_cookie: /KP_UIDz/.test(document.cookie)
+                                || /x-kpsdk/.test(document.cookie),
                             };
-                            try {
-                              const r = await fetch(url, {
-                                method: "POST",
-                                credentials: "include",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  "Accept": "application/json",
-                                  "x-api-key": apiKey,
-                                  "x-app-client-id": clientId,
-                                },
-                                body: JSON.stringify(body),
-                              });
-                              const txt = await r.text();
-                              return { status: r.status,
-                                       headers_kpsdk: r.headers.get("x-kpsdk-ct") || null,
-                                       body_head: txt.slice(0, 2500) };
-                            } catch (e) { return { fetch_error: String(e) }; }
-                        }""",
-                        {
-                            "url": AC_AIR_BOUNDS_URL,
-                            "apiKey": AC_AIR_BOUNDS_KEY,
-                            "clientId": AC_AIR_BOUNDS_CLIENT,
-                            "o": origin, "d": dest, "dt": date,
-                        },
+                        }"""
                     )
-                    out["direct_fetch_probe"] = probe
-                    _step("direct_fetch_done", status=probe.get("status"))
                 except Exception as exc:  # noqa: BLE001
-                    out["direct_fetch_probe"] = {"error": str(exc)[:300]}
+                    out["kpsdk_state"] = {"error": str(exc)[:200]}
+                # Probe via BOTH fetch and XHR (Kasada patches XHR most
+                # reliably). 2 attempts each, 8s apart, for p.js to be ready.
+                probes: list[dict] = []
+                for attempt in range(2):
+                    try:
+                        p = await page.evaluate(
+                            """async ({url, apiKey, clientId, o, d, dt}) => {
+                                const body = JSON.stringify({
+                                  origin: o, destination: d, departureDate: dt,
+                                  searchType: "BRANDED", subType: "ROUNDTRIP",
+                                  marketCode: "TNB",
+                                  flightSearchType: "FUNCTION_AIR",
+                                  fareFilters: { value: "ECONOMY" },
+                                  passengers: { adultCount: 1, youthCount: 0,
+                                                childCount: 0, infantCount: 0 },
+                                });
+                                const out = {};
+                                // XHR attempt
+                                out.xhr = await new Promise((res) => {
+                                  try {
+                                    const x = new XMLHttpRequest();
+                                    x.open("POST", url, true);
+                                    x.withCredentials = true;
+                                    x.setRequestHeader("Content-Type", "application/json");
+                                    x.setRequestHeader("Accept", "application/json");
+                                    x.setRequestHeader("x-api-key", apiKey);
+                                    x.setRequestHeader("x-app-client-id", clientId);
+                                    x.onload = () => res({status: x.status,
+                                      body_head: (x.responseText||'').slice(0,2000)});
+                                    x.onerror = () => res({error: "xhr onerror"});
+                                    x.ontimeout = () => res({error: "xhr timeout"});
+                                    x.timeout = 30000;
+                                    x.send(body);
+                                  } catch (e) { res({error: String(e)}); }
+                                });
+                                return out;
+                            }""",
+                            {
+                                "url": AC_AIR_BOUNDS_URL,
+                                "apiKey": AC_AIR_BOUNDS_KEY,
+                                "clientId": AC_AIR_BOUNDS_CLIENT,
+                                "o": origin, "d": dest, "dt": date,
+                            },
+                        )
+                        probes.append({"attempt": attempt, **p})
+                        if (p.get("xhr") or {}).get("status") not in (None, 429):
+                            break
+                    except Exception as exc:  # noqa: BLE001
+                        probes.append({"attempt": attempt, "error": str(exc)[:200]})
+                    await asyncio.sleep(8.0)
+                out["direct_fetch_probe"] = probes
+                _step("direct_fetch_done", n=len(probes))
 
             if "clogin" in (page.url or ""):
                 nav_attempts.append({"step": "clogin_bounce_reload"})
