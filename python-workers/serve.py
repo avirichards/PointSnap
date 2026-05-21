@@ -641,6 +641,41 @@ async def diag_sysinfo() -> JSONResponse:
     return JSONResponse(out)
 
 
+def _firefox_crash_artifacts() -> list[dict]:
+    """Glob for Firefox crash-report `.extra` files left by a crashed
+    Camoufox/Playwright Firefox process. The `.extra` file is plaintext
+    key=value with the crash signature (`MozCrashReason`, `Signature`,
+    `GraphicsCriticalError`, ...) — exactly what we need to know WHY
+    Firefox died. Playwright launches Firefox with a temp profile under
+    /tmp; crash dumps land in `<profile>/minidumps` or a `Crash Reports`
+    dir under the cache.
+    """
+    import glob as _glob
+    found: list[dict] = []
+    roots = [
+        "/tmp", "/root/.mozilla", "/root/.cache",
+        os.path.expanduser("~/.mozilla"),
+    ]
+    seen: set[str] = set()
+    for root in roots:
+        for pat in ("**/*.extra", "**/minidumps/*.extra",
+                    "**/Crash Reports/**/*.extra"):
+            try:
+                for fp in _glob.glob(os.path.join(root, pat), recursive=True):
+                    if fp in seen:
+                        continue
+                    seen.add(fp)
+                    try:
+                        with open(fp, errors="replace") as f:
+                            txt = f.read()
+                        found.append({"file": fp, "content": txt[:4000]})
+                    except Exception as exc:  # noqa: BLE001
+                        found.append({"file": fp, "read_error": str(exc)[:200]})
+            except Exception:  # noqa: BLE001
+                pass
+    return found[:8]
+
+
 @app.get("/diag/ac_air_bounds")
 async def diag_ac_air_bounds(
     user_id: str = Query(..., description="User UUID with a captured AC_AEROPLAN session"),
@@ -649,6 +684,8 @@ async def diag_ac_air_bounds(
     date: str = Query("2026-07-15"),
     wait_s: int = Query(45, description="seconds to wait for the air-bounds XHR"),
     headless: str = Query("true", description="Camoufox headless mode: 'true' (offscreen) | 'virtual' (Xvfb)"),
+    webgl_off: int = Query(0, description="1 = disable WebGL via firefox prefs (crash-isolation test)"),
+    fast_nav: int = Query(0, description="1 = skip the post-load sleep, drive in-app nav immediately"),
 ) -> JSONResponse:
     """Capture Air Canada's real logged-in air-bounds request.
 
@@ -664,9 +701,17 @@ async def diag_ac_air_bounds(
     teardown crash — which fires when Firefox's process has already died —
     does NOT discard the data captured so far, and (b) every phase appends
     to a `steps` trace, so a crash mid-flow shows exactly where it died.
+    On a crash, Firefox's crash-report `.extra` files are globbed + returned
+    so we can read the actual crash signature.
     """
     import time as _time
     import traceback
+    # Make Firefox write a crash report locally (plaintext .extra) instead
+    # of phoning home / silently dying — so _firefox_crash_artifacts() can
+    # read the crash signature.
+    os.environ.setdefault("MOZ_CRASHREPORTER", "1")
+    os.environ.setdefault("MOZ_CRASHREPORTER_NO_REPORT", "1")
+    os.environ.setdefault("MOZ_CRASHREPORTER_SHUTDOWN", "1")
     out: dict = {
         "user_id": user_id,
         "origin": origin,
@@ -706,8 +751,21 @@ async def diag_ac_air_bounds(
         # ---- launch Camoufox (direct lifecycle; crash-safe teardown) ----
         hl: Any = "virtual" if headless.lower() == "virtual" else True
         out["headless_mode"] = hl
-        _step("camoufox_launch_begin", headless=str(hl))
-        browser = await AsyncCamoufox(**build_camoufox_config(headless=hl)).__aenter__()
+        cf_config = build_camoufox_config(headless=hl)
+        if webgl_off:
+            # Crash-isolation: hard-disable WebGL. If the Firefox process
+            # then survives the AC redeem SPA, a software-WebGL draw was
+            # the crasher.
+            cf_config["firefox_user_prefs"].update({
+                "webgl.disabled": True,
+                "webgl.force-enabled": False,
+                "dom.webgpu.enabled": False,
+                "gfx.canvas.accelerated": False,
+                "layers.acceleration.disabled": True,
+            })
+            out["webgl_off"] = True
+        _step("camoufox_launch_begin", headless=str(hl), webgl_off=bool(webgl_off))
+        browser = await AsyncCamoufox(**cf_config).__aenter__()
         _step("camoufox_launched")
         ctx = await browser.new_context()
         page = await ctx.new_page()
@@ -841,8 +899,11 @@ async def diag_ac_air_bounds(
         _step("nav_redeem_root_done", landed=landed)
 
         if landed:
-            await asyncio.sleep(8.0)  # SPA bootstrap + Kasada p.js init
-            _step("spa_bootstrapped")
+            # fast_nav: skip the post-load sleep so the in-app nav (and the
+            # air-bounds XHR it triggers) happens BEFORE the ~10-20s window
+            # in which Firefox crashes on the redeem SPA.
+            await asyncio.sleep(1.5 if fast_nav else 8.0)
+            _step("spa_bootstrapped", fast_nav=bool(fast_nav))
             try:
                 out["spa_storage"] = await page.evaluate(
                     """() => {
@@ -923,11 +984,20 @@ async def diag_ac_air_bounds(
     finally:
         # Crash-safe teardown: if Firefox's process already died, close()
         # raises `handler is closed` — swallow it so captured data survives.
+        crashed = False
         if browser is not None:
             try:
                 await browser.close()
             except Exception as exc:  # noqa: BLE001
+                crashed = True
                 _step("teardown_close_failed", err=str(exc)[:160])
+        # On a crash, read Firefox's own crash-report .extra files (plaintext
+        # crash signature) so we can see WHY the process died.
+        if crashed or any("handler is closed" in str(s) for s in steps):
+            try:
+                out["firefox_crash_artifacts"] = _firefox_crash_artifacts()
+            except Exception as exc:  # noqa: BLE001
+                out["firefox_crash_artifacts_error"] = str(exc)[:200]
 
     out["steps"] = steps
     out["air_bounds_requests"] = air_bounds_reqs
