@@ -593,6 +593,54 @@ async def diag_ac_scrape(
         )
 
 
+@app.get("/diag/sysinfo")
+async def diag_sysinfo() -> JSONResponse:
+    """Report the worker VM's memory + /dev/shm size + process list.
+
+    Used to diagnose the Camoufox `WriteUnixTransport closed` crash —
+    Firefox dying mid-render on a container is almost always OOM or a
+    too-small /dev/shm.
+    """
+    import shutil
+    import subprocess
+    out: dict = {}
+    try:
+        with open("/proc/meminfo") as f:
+            mem = {}
+            for line in f:
+                parts = line.split(":")
+                if len(parts) == 2:
+                    mem[parts[0].strip()] = parts[1].strip()
+        out["meminfo"] = {
+            k: mem.get(k)
+            for k in ("MemTotal", "MemFree", "MemAvailable", "SwapTotal", "SwapFree")
+        }
+    except Exception as exc:  # noqa: BLE001
+        out["meminfo_error"] = str(exc)
+    try:
+        total, used, free = shutil.disk_usage("/dev/shm")
+        out["dev_shm"] = {
+            "total_mb": round(total / 1048576, 1),
+            "used_mb": round(used / 1048576, 1),
+            "free_mb": round(free / 1048576, 1),
+        }
+    except Exception as exc:  # noqa: BLE001
+        out["dev_shm_error"] = str(exc)
+    try:
+        out["tmp_dir"] = shutil.disk_usage("/tmp")._asdict()
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        ps = subprocess.run(
+            ["ps", "-eo", "pid,rss,comm", "--sort=-rss"],
+            capture_output=True, text=True, timeout=10,
+        )
+        out["top_processes"] = ps.stdout.splitlines()[:15]
+    except Exception as exc:  # noqa: BLE001
+        out["ps_error"] = str(exc)
+    return JSONResponse(out)
+
+
 @app.get("/diag/ac_air_bounds")
 async def diag_ac_air_bounds(
     user_id: str = Query(..., description="User UUID with a captured AC_AEROPLAN session"),
@@ -608,274 +656,281 @@ async def diag_ac_air_bounds(
     cookie jar via `context.add_cookies` (works on Firefox/Camoufox — the
     BD Browser API "Overriding X forbidden" wall does NOT apply), navigates
     the redeem SPA, drives an in-app route change to the availability page,
-    and records every network request whose URL contains `air-bounds` — its
-    FULL url, method, headers, and post body, plus the response status +
-    body head. Camoufox runs AC's Kasada `p.js`, so the SPA's own XHR
-    carries valid `x-kpsdk-*` tokens.
+    and records every network request whose URL contains `air-bounds`.
 
-    Transport note (Session 16, scraper-log.md): Session 15's "Camoufox
-    crashes on Fly" was a misdiagnosis — the crash was IPRoyal forbidding
-    the aircanada.com CONNECT (`NS_ERROR_PROXY_FORBIDDEN`). Camoufox itself
-    runs fine; this endpoint runs it with `use_proxy=False`.
+    The Camoufox lifecycle is managed DIRECTLY here (not via
+    `browser_page`) so that (a) a `Browser.close ... handler is closed`
+    teardown crash — which fires when Firefox's process has already died —
+    does NOT discard the data captured so far, and (b) every phase appends
+    to a `steps` trace, so a crash mid-flow shows exactly where it died.
     """
+    import time as _time
     import traceback
-    try:
-        from common.auth_session import get_active_session
-        from common.browser import browser_page
-        from ac_aeroplan.search import SEARCH_PAGE_TMPL
+    out: dict = {
+        "user_id": user_id,
+        "origin": origin,
+        "dest": dest,
+        "date": date,
+        "transport": "camoufox_fly_egress",
+    }
+    steps: list[dict] = []
+    t0 = _time.time()
 
+    def _step(name: str, **extra) -> None:
+        steps.append({"t": round(_time.time() - t0, 1), "step": name, **extra})
+
+    air_bounds_reqs: list[dict] = []
+    air_bounds_resps: list[dict] = []
+    all_loyalty_urls: list[str] = []
+    browser = None
+    try:
+        from camoufox.async_api import AsyncCamoufox
+
+        from common.auth_session import get_active_session
+        from ac_aeroplan.search import SEARCH_PAGE_TMPL, build_camoufox_config
+
+        _step("started")
         session = await get_active_session(user_id, "AC_AEROPLAN")
-        out: dict = {
-            "user_id": user_id,
-            "origin": origin,
-            "dest": dest,
-            "date": date,
-            "transport": "camoufox_fly_egress",
-            "session_found": bool(session),
-        }
+        out["session_found"] = bool(session)
         if not session:
-            return JSONResponse({"ok": False, "stage": "no_session", **out})
+            return JSONResponse({"ok": False, "stage": "no_session", **out, "steps": steps})
 
         cookies = session.get("cookies") or []
         out["cookie_count"] = len(cookies)
         out["session_expires_at"] = session.get("expires_at")
-        out["all_cookie_names"] = sorted(
-            {c.get("name") for c in cookies if c.get("name")}
-        )
-
-        air_bounds_reqs: list[dict] = []
-        air_bounds_resps: list[dict] = []
-        all_loyalty_urls: list[str] = []
-
         REDEEM_ROOT = "https://www.aircanada.com/aeroplan/redeem/"
+        search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
+        out["search_url"] = search_url
 
-        # Camoufox + Fly direct egress (use_proxy=False). Camoufox is a real
-        # local Firefox — context.add_cookies works normally (no managed-
-        # browser cookie wall) and AC's Kasada p.js runs so the air-bounds
-        # XHR is minted with valid x-kpsdk-* tokens.
-        async with browser_page(
-            timeout_ms=120_000, use_camoufox=True, use_proxy=False
-        ) as page:
-            ctx = page.context
+        # ---- launch Camoufox (direct lifecycle; crash-safe teardown) ----
+        _step("camoufox_launch_begin")
+        browser = await AsyncCamoufox(**build_camoufox_config()).__aenter__()
+        _step("camoufox_launched")
+        ctx = await browser.new_context()
+        page = await ctx.new_page()
+        page.set_default_timeout(120_000)
 
-            async def _on_request(req):
-                try:
-                    u = req.url
-                    if "/loyalty/" in u or "dapidynamic" in u:
-                        all_loyalty_urls.append(f"{req.method} {u}")
-                    if "air-bounds" in u:
-                        post_data = None
-                        try:
-                            post_data = req.post_data
-                        except Exception:  # noqa: BLE001
-                            pass
-                        air_bounds_reqs.append({
-                            "url": u,
-                            "method": req.method,
-                            "headers": dict(req.headers),
-                            "post_data": post_data,
-                        })
-                except Exception:  # noqa: BLE001
-                    pass
+        # Block only heavy media — keep CSS/JS so the SPA + Kasada p.js run.
+        async def _block_heavy(route):
+            if route.request.resource_type in ("image", "media"):
+                await route.abort()
+            else:
+                await route.continue_()
+        await page.route("**/*", _block_heavy)
 
-            async def _on_response(resp):
-                try:
-                    if "air-bounds" in resp.url:
-                        body_head = ""
-                        try:
-                            body_head = (await resp.text())[:2500]
-                        except Exception:  # noqa: BLE001
-                            pass
-                        air_bounds_resps.append({
-                            "url": resp.url,
-                            "status": resp.status,
-                            "body_head": body_head,
-                        })
-                except Exception:  # noqa: BLE001
-                    pass
-
-            page.on("request", _on_request)
-            page.on("response", _on_response)
-
-            search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
-            out["search_url"] = search_url
-
-            store_diag: dict = {"set_ok": 0, "set_fail": 0}
-
-            # Inject the captured Aeroplan session into the Camoufox cookie
-            # store. add_cookies wants Playwright-shape cookies with
-            # domain+path; we strip the CHIPS-capture extras (partitionKey,
-            # _crHasCrossSiteAncestor) Playwright 1.5x adds. Camoufox accepts
-            # httpOnly cookies via add_cookies (it's a server-side primitive
-            # — bypasses the JS httpOnly restriction). Batch, fall back to
-            # one-by-one so a single bad cookie doesn't drop the whole jar.
-            pw_cookies: list[dict] = []
-            for c in cookies:
-                if not c.get("name") or "value" not in c or not c.get("domain"):
-                    continue
-                nc: dict = {
-                    "name": c["name"],
-                    "value": str(c["value"]),
-                    "domain": c["domain"],
-                    "path": c.get("path") or "/",
-                    "secure": bool(c.get("secure", True)),
-                    "httpOnly": bool(c.get("httpOnly", False)),
-                }
-                ss = c.get("sameSite")
-                if ss in ("Strict", "Lax", "None"):
-                    nc["sameSite"] = ss
-                exp = c.get("expires")
-                if exp is not None and exp != -1:
-                    try:
-                        nc["expires"] = int(exp)
-                    except (TypeError, ValueError):
-                        pass
-                pw_cookies.append(nc)
+        def _on_request(req):
             try:
-                await ctx.add_cookies(pw_cookies)
-                store_diag["set_ok"] = len(pw_cookies)
-                store_diag["mode"] = "batch"
-            except Exception as exc:  # noqa: BLE001
-                store_diag["batch_error"] = str(exc)[:200]
-                for nc in pw_cookies:
+                u = req.url
+                if "/loyalty/" in u or "dapidynamic" in u:
+                    all_loyalty_urls.append(f"{req.method} {u}")
+                if "air-bounds" in u:
+                    post_data = None
                     try:
-                        await ctx.add_cookies([nc])
-                        store_diag["set_ok"] += 1
-                    except Exception as exc2:  # noqa: BLE001
-                        store_diag["set_fail"] += 1
-                        if "first_err" not in store_diag:
-                            store_diag["first_err"] = f"{nc['name']}: {str(exc2)[:140]}"
-                store_diag["mode"] = "one_by_one"
-            out["store_inject"] = dict(store_diag)
-            try:
-                jar0 = await ctx.cookies()
-                out["jar_after_inject"] = len(jar0)
-            except Exception:  # noqa: BLE001
-                pass
-
-            nav_attempts: list[dict] = []
-
-            async def _nav(url: str, label: str, attempts: int = 3) -> bool:
-                """goto with retry past Akamai hard-denies."""
-                for attempt in range(attempts):
-                    try:
-                        r = await page.goto(url, wait_until="domcontentloaded", timeout=90_000)
-                        await asyncio.sleep(5.0)
-                        title = ""
-                        try:
-                            title = await page.title()
-                        except Exception:  # noqa: BLE001
-                            pass
-                        nav_attempts.append({
-                            "step": label, "attempt": attempt,
-                            "status": r.status if r else None,
-                            "url": page.url, "title": title,
-                        })
-                        if "Access Denied" not in title and not (r and r.status == 403):
-                            return True
-                        await asyncio.sleep(2.0)
-                    except Exception as exc:  # noqa: BLE001
-                        nav_attempts.append({
-                            "step": label, "attempt": attempt,
-                            "error": str(exc)[:200],
-                        })
-                        await asyncio.sleep(2.0)
-                return False
-
-            # Step 1: redeem SPA root (lighter Akamai path — the
-            # /availability/ deep-link is Akamai path-protected). The
-            # session jar is already injected into the Camoufox context.
-            landed = await _nav(REDEEM_ROOT, "redeem_root")
-
-            if landed:
-                # Let the Angular SPA bootstrap + Kasada p.js initialize.
-                await asyncio.sleep(8.0)
-                try:
-                    out["spa_storage"] = await page.evaluate(
-                        """() => {
-                            const ls = {}, ss = {};
-                            try { for (let i=0;i<localStorage.length;i++){
-                                const k=localStorage.key(i);
-                                ls[k]=(localStorage.getItem(k)||'').slice(0,120);
-                            }} catch(e){}
-                            try { for (let i=0;i<sessionStorage.length;i++){
-                                const k=sessionStorage.key(i);
-                                ss[k]=(sessionStorage.getItem(k)||'').slice(0,120);
-                            }} catch(e){}
-                            return {
-                                cookie: document.cookie.slice(0,800),
-                                localStorage_keys: Object.keys(ls),
-                                sessionStorage_keys: Object.keys(ss),
-                                location: location.href,
-                            };
-                        }"""
-                    )
-                except Exception as exc:  # noqa: BLE001
-                    out["spa_storage_error"] = str(exc)[:200]
-                # Dismiss the OneTrust cookie banner if present.
-                for sel in ("#onetrust-accept-btn-handler",
-                            "#accept-recommended-btn-handler"):
-                    try:
-                        btn = page.locator(sel)
-                        if await btn.count() > 0 and await btn.first.is_visible():
-                            await btn.first.click(timeout=4000)
-                            await asyncio.sleep(1.5)
-                            break
+                        post_data = req.post_data
                     except Exception:  # noqa: BLE001
                         pass
-
-                # If the SPA bounced us to /clogin, reload the redeem root
-                # once so the auth guard re-evaluates with the injected jar.
-                if "clogin" in (page.url or ""):
-                    nav_attempts.append({"step": "clogin_bounce_reload"})
-                    await _nav(REDEEM_ROOT, "redeem_root_retry")
-                    await asyncio.sleep(8.0)
-
-                # In-app SPA navigation to the availability route. The
-                # /availability/ document path is Akamai-403'd, but a
-                # client-side route change via the History API fires NO
-                # top-level document request — the Angular router picks up
-                # the pushState/popstate and the redeem SPA issues the
-                # air-bounds XHR straight to akamai-gw.dbaas.aircanada.com.
-                spa_path = search_url.split("aircanada.com", 1)[1]
-                out["spa_path"] = spa_path
-                try:
-                    await page.evaluate(
-                        """(p) => {
-                            window.history.pushState({}, '', p);
-                            window.dispatchEvent(new PopStateEvent(
-                                'popstate', {state: {}}));
-                        }""",
-                        spa_path,
-                    )
-                    nav_attempts.append({"step": "spa_inapp_nav", "path": spa_path})
-                except Exception as exc:  # noqa: BLE001
-                    nav_attempts.append({
-                        "step": "spa_inapp_nav", "error": str(exc)[:200]})
-            out["nav_attempts"] = nav_attempts
-
-            # Poll for the air-bounds XHR.
-            for _ in range(max(1, wait_s)):
-                if air_bounds_resps:
-                    break
-                await asyncio.sleep(1.0)
-
-            try:
-                out["page_url"] = page.url
-                out["page_title"] = await page.title()
-                out["body_snippet"] = (await page.locator("body").inner_text())[:500]
+                    air_bounds_reqs.append({
+                        "url": u,
+                        "method": req.method,
+                        "headers": dict(req.headers),
+                        "post_data": post_data,
+                    })
             except Exception:  # noqa: BLE001
                 pass
 
-        out["air_bounds_requests"] = air_bounds_reqs
-        out["air_bounds_responses"] = air_bounds_resps
-        out["loyalty_urls_seen"] = all_loyalty_urls[:40]
-        return JSONResponse({"ok": bool(air_bounds_reqs), **out})
+        async def _on_response(resp):
+            try:
+                if "air-bounds" in resp.url:
+                    body_head = ""
+                    try:
+                        body_head = (await resp.text())[:6000]
+                    except Exception:  # noqa: BLE001
+                        pass
+                    air_bounds_resps.append({
+                        "url": resp.url,
+                        "status": resp.status,
+                        "body_head": body_head,
+                    })
+            except Exception:  # noqa: BLE001
+                pass
+
+        page.on("request", _on_request)
+        page.on("response", _on_response)
+
+        # ---- inject the captured Aeroplan session ----
+        store_diag: dict = {"set_ok": 0, "set_fail": 0}
+        pw_cookies: list[dict] = []
+        for c in cookies:
+            if not c.get("name") or "value" not in c or not c.get("domain"):
+                continue
+            nc: dict = {
+                "name": c["name"],
+                "value": str(c["value"]),
+                "domain": c["domain"],
+                "path": c.get("path") or "/",
+                "secure": bool(c.get("secure", True)),
+                "httpOnly": bool(c.get("httpOnly", False)),
+            }
+            ss = c.get("sameSite")
+            if ss in ("Strict", "Lax", "None"):
+                nc["sameSite"] = ss
+            exp = c.get("expires")
+            if exp is not None and exp != -1:
+                try:
+                    nc["expires"] = int(exp)
+                except (TypeError, ValueError):
+                    pass
+            pw_cookies.append(nc)
+        try:
+            await ctx.add_cookies(pw_cookies)
+            store_diag["set_ok"] = len(pw_cookies)
+            store_diag["mode"] = "batch"
+        except Exception as exc:  # noqa: BLE001
+            store_diag["batch_error"] = str(exc)[:200]
+            for nc in pw_cookies:
+                try:
+                    await ctx.add_cookies([nc])
+                    store_diag["set_ok"] += 1
+                except Exception as exc2:  # noqa: BLE001
+                    store_diag["set_fail"] += 1
+                    if "first_err" not in store_diag:
+                        store_diag["first_err"] = f"{nc['name']}: {str(exc2)[:140]}"
+            store_diag["mode"] = "one_by_one"
+        out["store_inject"] = dict(store_diag)
+        _step("cookies_injected", set_ok=store_diag["set_ok"])
+        try:
+            out["jar_after_inject"] = len(await ctx.cookies())
+        except Exception:  # noqa: BLE001
+            pass
+
+        nav_attempts: list[dict] = []
+
+        async def _nav(url: str, label: str, attempts: int = 3) -> bool:
+            for attempt in range(attempts):
+                try:
+                    r = await page.goto(url, wait_until="domcontentloaded", timeout=90_000)
+                    await asyncio.sleep(5.0)
+                    title = ""
+                    try:
+                        title = await page.title()
+                    except Exception:  # noqa: BLE001
+                        pass
+                    nav_attempts.append({
+                        "step": label, "attempt": attempt,
+                        "status": r.status if r else None,
+                        "url": page.url, "title": title,
+                    })
+                    if "Access Denied" not in title and not (r and r.status == 403):
+                        return True
+                    await asyncio.sleep(2.0)
+                except Exception as exc:  # noqa: BLE001
+                    nav_attempts.append({
+                        "step": label, "attempt": attempt,
+                        "error": str(exc)[:200],
+                    })
+                    await asyncio.sleep(2.0)
+            return False
+
+        # Step 1: redeem SPA root (the /availability/ deep-link is Akamai
+        # path-protected; the SPA root is not).
+        _step("nav_redeem_root_begin")
+        landed = await _nav(REDEEM_ROOT, "redeem_root")
+        _step("nav_redeem_root_done", landed=landed)
+
+        if landed:
+            await asyncio.sleep(8.0)  # SPA bootstrap + Kasada p.js init
+            _step("spa_bootstrapped")
+            try:
+                out["spa_storage"] = await page.evaluate(
+                    """() => {
+                        const ls = {}, ss = {};
+                        try { for (let i=0;i<localStorage.length;i++){
+                            const k=localStorage.key(i);
+                            ls[k]=(localStorage.getItem(k)||'').slice(0,80);
+                        }} catch(e){}
+                        try { for (let i=0;i<sessionStorage.length;i++){
+                            ss[sessionStorage.key(i)]=1;
+                        }} catch(e){}
+                        return {
+                            cookie: document.cookie.slice(0,500),
+                            localStorage_keys: Object.keys(ls),
+                            sessionStorage_keys: Object.keys(ss),
+                            location: location.href,
+                        };
+                    }"""
+                )
+            except Exception as exc:  # noqa: BLE001
+                out["spa_storage_error"] = str(exc)[:200]
+            for sel in ("#onetrust-accept-btn-handler",
+                        "#accept-recommended-btn-handler"):
+                try:
+                    btn = page.locator(sel)
+                    if await btn.count() > 0 and await btn.first.is_visible():
+                        await btn.first.click(timeout=4000)
+                        await asyncio.sleep(1.5)
+                        break
+                except Exception:  # noqa: BLE001
+                    pass
+
+            if "clogin" in (page.url or ""):
+                nav_attempts.append({"step": "clogin_bounce_reload"})
+                _step("clogin_bounce")
+                await _nav(REDEEM_ROOT, "redeem_root_retry")
+                await asyncio.sleep(8.0)
+
+            # In-app SPA navigation to the availability route — no
+            # Akamai-protected document request fires.
+            spa_path = search_url.split("aircanada.com", 1)[1]
+            out["spa_path"] = spa_path
+            try:
+                await page.evaluate(
+                    """(p) => {
+                        window.history.pushState({}, '', p);
+                        window.dispatchEvent(new PopStateEvent(
+                            'popstate', {state: {}}));
+                    }""",
+                    spa_path,
+                )
+                nav_attempts.append({"step": "spa_inapp_nav", "path": spa_path})
+                _step("spa_inapp_nav")
+            except Exception as exc:  # noqa: BLE001
+                nav_attempts.append({
+                    "step": "spa_inapp_nav", "error": str(exc)[:200]})
+        out["nav_attempts"] = nav_attempts
+
+        # Poll for the air-bounds XHR.
+        _step("poll_air_bounds_begin", wait_s=wait_s)
+        for _ in range(max(1, wait_s)):
+            if air_bounds_resps:
+                break
+            await asyncio.sleep(1.0)
+        _step("poll_air_bounds_done", got=len(air_bounds_resps))
+
+        try:
+            out["page_url"] = page.url
+            out["page_title"] = await page.title()
+            out["body_snippet"] = (await page.locator("body").inner_text())[:400]
+        except Exception:  # noqa: BLE001
+            pass
+        _step("flow_complete")
     except Exception as exc:  # noqa: BLE001
-        return JSONResponse(
-            {"ok": False, "error": str(exc)[:500], "traceback": traceback.format_exc()[-1200:]},
-            status_code=500,
-        )
+        out["error"] = str(exc)[:500]
+        out["traceback"] = traceback.format_exc()[-1500:]
+        _step("EXCEPTION", err=str(exc)[:200])
+    finally:
+        # Crash-safe teardown: if Firefox's process already died, close()
+        # raises `handler is closed` — swallow it so captured data survives.
+        if browser is not None:
+            try:
+                await browser.close()
+            except Exception as exc:  # noqa: BLE001
+                _step("teardown_close_failed", err=str(exc)[:160])
+
+    out["steps"] = steps
+    out["air_bounds_requests"] = air_bounds_reqs
+    out["air_bounds_responses"] = air_bounds_resps
+    out["loyalty_urls_seen"] = all_loyalty_urls[:40]
+    return JSONResponse({"ok": bool(air_bounds_reqs), **out})
 
 
 @app.get("/diag/ua_scrape")

@@ -138,6 +138,52 @@ AIR_BOUNDS_PATH = "/v2/search/air-bounds"
 LAST_RUN_DIAG: dict[str, Any] = {}
 
 
+def build_camoufox_config() -> dict[str, Any]:
+    """Camoufox launch kwargs for the AC redeem-SPA transport.
+
+    Used by both `/diag/ac_air_bounds` and `_auth_search`. The base config
+    matches `common/browser.py`'s Camoufox branch (proven to launch on the
+    Fly worker). On top of that it adds **Firefox memory-hardening prefs**:
+    Air Canada's redeem SPA (Angular + Kasada `p.js` + Akamai sensor.js +
+    Adobe/tracking tags) is heavy, and a long-lived Firefox content process
+    on a container can grow its RSS until the Linux OOM killer reaps it —
+    which surfaces to Playwright as `Browser.close ... WriteUnixTransport
+    closed; the handler is closed` (the symptom Session 15 misread as "the
+    Camoufox runtime is broken").
+
+    The prefs below cap Firefox's in-memory caches and make GC/CC fire
+    sooner. They are **fingerprint-safe** — caching limits and GC cadence
+    are not observable to a bot-defense script (unlike disabling e10s /
+    fission, which we deliberately do NOT touch).
+    """
+    return {
+        "headless": "virtual",   # bundled Xvfb — looks headful to Akamai
+        "humanize": True,
+        "locale": "en-US",
+        "window": (1366, 768),
+        "block_webrtc": True,
+        "geoip": False,          # Fly direct egress — no proxy
+        "firefox_user_prefs": {
+            # Cap the HTTP + image memory caches (defaults are unbounded /
+            # large). Keeps Firefox RSS bounded over a 60-90s SPA session.
+            "browser.cache.memory.enable": True,
+            "browser.cache.memory.capacity": 51200,        # 50 MB (KB units)
+            "browser.cache.disk.enable": False,
+            "image.mem.max_decoded_image_kb": 51200,       # 50 MB
+            "media.memory_cache_max_size": 16384,          # 16 MB (KB units)
+            "media.cache_size": 16384,
+            # Make the garbage / cycle collector fire sooner and harder so
+            # the content process gives memory back instead of growing.
+            "javascript.options.mem.gc_incremental_slice_ms": 10,
+            "javascript.options.mem.high_water_mark": 64,  # MB — GC trigger
+            "browser.sessionhistory.max_total_viewers": 0,  # no bfcache
+            "browser.sessionhistory.max_entries": 3,
+            # Trim background memory aggressively.
+            "memory.low_commit_space_threshold_mb": 64,
+        },
+    }
+
+
 def _cabin_from_ac(code: str) -> str | None:
     """Map an Air Canada cabin code to our cabin enum.
 
