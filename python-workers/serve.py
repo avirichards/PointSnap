@@ -776,9 +776,10 @@ async def diag_ac_air_bounds(
                 return False
 
             nav_attempts: list[dict] = []
-            # Step 1: redeem SPA root (lighter Akamai path). The Cookie
-            # header rewrite already carries the logged-in session, so the
-            # SPA bootstraps authenticated.
+            # Step 1: redeem SPA root (lighter Akamai path — the
+            # /availability/ deep-link is Akamai path-protected and 403s
+            # from BD exit IPs). The Cookie header rewrite carries the
+            # logged-in session so the SPA bootstraps authenticated.
             landed = await _nav(REDEEM_ROOT, "redeem_root")
             # Belt-and-suspenders: also set the non-httpOnly captured cookies
             # in document.cookie for any purely client-side auth check.
@@ -791,10 +792,27 @@ async def diag_ac_air_bounds(
                     )
                 except Exception:  # noqa: BLE001
                     pass
-            # Step 2: the availability deep-link — the SPA fires the
-            # air-bounds XHR once it bootstraps with the search params.
+            # Give the SPA time to bootstrap the redeem landing, then dump
+            # the search-form inputs/buttons so we know what to fill.
             if landed:
-                await _nav(search_url, "availability")
+                await asyncio.sleep(6.0)
+                try:
+                    out["redeem_inputs"] = await page.evaluate(
+                        """() => Array.from(document.querySelectorAll(
+                            'input,button,select,[role=button],[role=combobox]'
+                        )).map(el => ({
+                            tag: el.tagName.toLowerCase(),
+                            type: el.getAttribute('type'),
+                            name: el.getAttribute('name'),
+                            id: el.id || null,
+                            placeholder: el.getAttribute('placeholder'),
+                            aria: el.getAttribute('aria-label'),
+                            cls: (el.getAttribute('class')||'').slice(0,60),
+                            txt: (el.innerText||el.value||'').slice(0,40),
+                        })).filter(x => x.name||x.id||x.placeholder||x.aria||x.txt).slice(0,60)"""
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    out["redeem_inputs_error"] = str(exc)[:200]
             out["nav_attempts"] = nav_attempts
 
             # Poll for the air-bounds XHR.
