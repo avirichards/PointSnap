@@ -1622,14 +1622,30 @@ uncaught error fires. `camoufox` itself, `headless`, `use_proxy`, memory,
 those was varied and the crash is identical; the only constant is the AC
 SPA raising an uncaught error.
 
-**Fix:** `install_pw_crash_shield(context)` (new helper in
-`ac_aeroplan/search.py`) adds an init script (runs before any page script,
-every navigation) that registers capture-phase `error` +
-`unhandledrejection` handlers calling `preventDefault()` +
-`stopImmediatePropagation()`, and neutralizes `window.onerror` /
-`window.onunhandledrejection`. A *handled* error is no longer "uncaught",
-so Firefox does not emit the page-error event, so Playwright's buggy
-`FFPage._onUncaughtError → addPageError` path never runs. AC's SPA is
-unaffected (its own try/catch still works; only genuinely-uncaught errors
-are shielded from the crash-prone driver telemetry hook).
-`/diag/camoufox_probe` has a `shield` param to A/B verify.
+**Fix attempt 1 (`install_pw_crash_shield`, FAILED):** an init script
+registering capture-phase `error`/`unhandledrejection` handlers that
+`preventDefault()`. Verified via `/diag/camoufox_probe?shield=1` — **same
+crash at coreBundle.js:49624**. A page-level `error`-event handler does
+NOT stop the crash: Firefox's Juggler protocol emits the page-error
+telemetry at the JS-engine error-report level, *before* the page's own
+`error` handlers run. The shield is kept (it does silence the console
+noise) but it is not the fix.
+
+**Fix attempt 2 (`patch_playwright.py`, THE FIX):** patch the Playwright
+driver bundle directly. `/diag/pw_source` gave the exact buggy code — TWO
+occurrences (coreBundle.js lines 25566 + 49624), each:
+```js
+location: {
+  url: pageError.location.url,
+  line: pageError.location.lineNumber,
+  column: pageError.location.columnNumber
+}
+```
+`python-workers/patch_playwright.py` (run at Docker build, after
+`camoufox fetch` so that layer stays cached) replaces every
+`pageError.location.X` with `(pageError.location||{}).X`.
+`(undefined||{}).url` → `undefined` (no crash); `({url:'x'}).url` → `'x'`
+(unchanged when present). Behaviour-preserving, idempotent. This null-
+guards the driver so an undefined page-error `location` no longer crashes
+the Node process. `/diag/camoufox_probe?shield=0` will confirm the redeem
+page survives after the rebuild.

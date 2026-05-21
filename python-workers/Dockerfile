@@ -41,6 +41,16 @@ RUN patchright install chromium
 # first request doesn't pay this cost. ~210 MB compressed, ~713 MB on disk.
 RUN python -m camoufox fetch
 
+# Patch the Playwright Firefox driver's page-error NPE crash
+# (`pageError.location.url` on an undefined location → the Node driver
+# process exits → every subsequent call fails "Connection closed while
+# reading from the driver"). Air Canada's redeem SPA reliably triggers it.
+# See patch_playwright.py. Placed AFTER `camoufox fetch` so that expensive
+# layer stays cached; the patch only touches the already-installed
+# `playwright` package, so ordering is functionally irrelevant.
+COPY patch_playwright.py ./
+RUN python patch_playwright.py
+
 COPY . .
 
 EXPOSE 8000
