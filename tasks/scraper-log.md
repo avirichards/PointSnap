@@ -137,7 +137,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | AS_MILEAGEPLAN | ✅ live | httpx + IPRoyal | SvelteKit SSR, light protection |
 | AA_AADVANTAGE | 🚧 stuck | Camoufox (debugging) | Akamai BMP wall; see "AA: what's been tried" |
 | AA_AADVANTAGE_WU | 🚧 stuck | WU 2-step + BD Browser API mint rung | Mint rung mints `spa_session_id` via BD Browser API; WU-replayed award POST still error 309 — AA session is transport-bound. See Session 14 + blockers.md 2026-05-20 19:40. |
-| AC_AEROPLAN | ❌ broken | BD Browser API (migrated, untested) | Parsers likely drifted |
+| AC_AEROPLAN | ❌ broken | auth path; tenant RESOLVED, transport blocked | air-bounds tenant `1ASIUDALAC` + host `akamai-gw.dbaas.aircanada.com` resolved (Session 15). Blocked: Kasada-protected path needs `x-kpsdk-*` from a real browser; BD Browser API blocks cookie injection, Camoufox crashes on Fly. |
 | DL_SKYMILES | ❌ broken | WU 2-step (Akamai-walled on POST) | Homepage mint OK; `POST /shop/ow/search` → Akamai 444 for both WU formats. Award POST needs validated `_abck`. See Session 12. |
 | UA_MP | ❌ broken | BD Browser API (migrated, untested) | Imperva — needs investigation |
 | BA_AVIOS | ❌ broken | BD Browser API (migrated, untested) | Akamai + queue interstitial |
@@ -156,7 +156,7 @@ User's BD account: rotates the visible API key after sessions for security.
 |---|---|---|---|
 | **Patchright + IPRoyal residential** | ✅ for VS/AS, ❌ for everyone with Akamai | Session 3 | IPRoyal blocks AA/DL/AC at CONNECT layer. Even for sites it reaches, Akamai sensor.js detects Patchright. |
 | **ScraperAPI proxy (free + premium)** | ❌ | Session 3 | Per-resource billing burned credits; "premium" still failed AA. |
-| **Bright Data Browser API (CDP)** | ✅ for non-Akamai sites, ❌ for AA | Session 5 morning | 9/11 airline homepages loaded clean (200 OK with HTML). AA returned 403 Access Denied on most IPs. Some IPs got behavioral-challenge response. |
+| **Bright Data Browser API (CDP)** | ✅ for non-Akamai sites, ❌ for AA, ❌ for any cookie injection | Session 5 morning / 15 | 9/11 airline homepages loaded clean (200 OK with HTML). AA returned 403 Access Denied on most IPs. **Session 15: BD Browser API is a MANAGED browser — it blocks ALL client-side cookie writes for the proxied domain. `add_cookies`, CDP `Network.setCookie`/`setCookies`, `Storage.setCookies`, and `document.cookie` all fail "Overriding X forbidden" (even into a provably-empty jar); a second `page.route` handler breaks the proxy tunnel (`ERR_TUNNEL_CONNECTION_FAILED`). A captured logged-in session CANNOT be replayed inside BD Browser API. Do not retry.** |
 | **Bright Data Web Unlocker (HTTP API)** | ⚠️ AA blocked on a zone setting | Session 13 | WU renders `mobile.aa.com/booking` (200, jar w/ `XSRF-TOKEN`+`JSESSIONID`, NO `spa_session_id`) + reaches AA's award POST (200). Every `www.aa.com` page 502s — stale `#weeklyCarousel` `expect_element` rule. The `x-unblock-expect` override that fixes it is OFF on the `pointsnap_webunlock` zone (`feature_not_active` — "Manual expect is not enabled"). AA award POST still `error 309` without `spa_session_id`; AA mints no cookies on the 309. **Fix: enable "Manual Expect" on the WU zone — then code works unchanged.** See Session 13 + blockers.md. |
 | **CapSolver `AntiAkamaiBMTask`** | ❌ (deprecated) | Session 5 mid | CapSolver dropped Akamai support entirely — task type returns `ERROR_TYPE_NOT_SUPPORTED`. Their docs no longer list Akamai. |
 | **2Captcha** | ❌ (never supported BMP) | Session 5 mid | Public docs confirm only reCAPTCHA, AWS WAF, Cloudflare, Geetest. No Akamai. |
@@ -1341,3 +1341,164 @@ each, image/css/font-blocked). Bandwidth-billed; ~$0.05-0.15. No commercial APIs
 |---|---|
 | `91d2d97` | wip(aa): in-flight AA Browser-API mint work — syntax-verified |
 | `b1de16f` | fix(aa): BD Browser API mint rung must export both session cookies |
+
+---
+
+## Session 15 — 2026-05-21 — AC Aeroplan: air-bounds `{tenant}` RESOLVED; transport blocked
+
+Goal: resolve the AC Aeroplan air-bounds `{tenant}` placeholder, wire it into
+`ac_aeroplan/search.py`, and get an authenticated `/search` to return rows.
+A logged-in Aeroplan session was captured for user
+`e9d28a3e-9bfa-445b-a195-4ce19479ab07` (65 cookies in `program_auth_sessions`,
+expires 2026-05-22T03:14:56Z — valid during this session).
+
+### RESOLVED — the air-bounds `{tenant}` and full endpoint shape
+
+Fetched the redeem SPA shell anonymously (no auth, no bot-defense block):
+`GET https://www.aircanada.com/aeroplan/redeem/` → 200, 62 KB HTML, title
+`AC Loyalty`. The HTML's inline `<script>KPSDK.configure([...])</script>` and
+the Angular bundle `main.a9487328622ef44a.js` gave the ground truth:
+
+- **Real tenant id: `1ASIUDALAC`** (the prior placeholder `1ASIATSAC` 404s).
+- **API gateway host: `akamai-gw.dbaas.aircanada.com`** — NOT `www.aircanada.com`.
+- **The redeem SPA uses the `dapidynamicplus` base, not `dapidynamic`.**
+  `main.js`:  `Co = "https://akamai-gw.dbaas.aircanada.com"`,
+  `ua = "/loyalty/dapidynamicplus/1ASIUDALAC/v2"`, the air-bounds API client
+  basePath = `Co + ua`.
+- **Full air-bounds URL:**
+  `POST https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamicplus/1ASIUDALAC/v2/search/air-bounds?lang=en-CA`
+- **Required request headers** (Angular `requestPlugins`):
+  `x-api-key: Z5R8Rm1sA37iC0gaS5kb69ltHwKBTYzUa89gQDwm`,
+  `x-app-client-id: redemption-web`.
+- Body: a JSON object the SPA calls `airBoundsInputs`; the air-bounds method
+  is `vendor.js` `AirBoundApi.airBoundsShopping(xt, Xt)` →
+  `body = JSON.stringify(xt.airBoundsInputs)`, query param `lang`.
+- The `KPSDK.configure` block registers BOTH
+  `/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds` and the
+  `dapidynamicplus` variant — the SPA's air-bounds client wires the
+  `dapidynamicplus` base.
+
+These are now baked into `ac_aeroplan/search.py` as the `AIR_BOUNDS_*`
+constants (commit `bb4f33f`). `_auth_search` POSTs the correct URL + headers.
+
+### BLOCKER — AC is Kasada-protected and the session cannot be replayed
+
+The redeem page loads **Kasada** (`KPSDK.configure(...)` + the Kasada `p.js`
+at `https://akamai-gw.dbaas.aircanada.com/<uuid>/<uuid>/p.js`). The
+air-bounds POST is KPSDK-registered, so it requires per-request
+`x-kpsdk-ct` / `x-kpsdk-cd` headers that **only AC's `p.js` can mint inside
+a real browser**. A stateless WU `Cookie:`-header replay cannot produce
+those — so the existing `_auth_search` WU path returns no rows even with
+the correct tenant. The captured session must be replayed *inside a
+browser* that runs `p.js`.
+
+### BLOCKER — BD Browser API cannot inject a captured session for aircanada.com
+
+Built `/diag/ac_air_bounds` (serve.py) — opens a browser, injects the
+captured 65-cookie jar, navigates the redeem SPA, captures the air-bounds
+XHR. **Every cookie-injection primitive failed on BD Browser API:**
+
+- `context.add_cookies(...)` → `Protocol error (Storage.setCookies):
+  Overriding deviceId, geoCityName, ..., XSRF-TOKEN, ... is forbidden`
+  (22 cookie names listed).
+- `clear_cookies()` then `add_cookies` → same error, even though
+  `ctx.cookies()` confirmed the jar was empty (`jar_after_inject: 0`).
+- CDP `Network.setCookies` (bulk) → same `Overriding ... forbidden`.
+- CDP `Network.setCookie` (one-by-one, into a provably-empty jar) →
+  `Overriding deviceId cookie is forbidden` — fails for a SINGLE cookie.
+- CDP `Network.clearBrowserCookies` then `Network.setCookies` → same.
+- CDP `Network.deleteCookies` per cookie, then `Network.setCookie` → same.
+- `page.route("**/*", ...)` to rewrite the `Cookie` HEADER → broke BD's
+  proxy tunnel: `Page.goto: net::ERR_TUNNEL_CONNECTION_FAILED` on every
+  navigation (a plain `browser_page(use_brightdata=True)` page load to the
+  SAME URL succeeds — so it is the second `page.route` handler that breaks
+  the tunnel).
+- `page.set_extra_http_headers({"Cookie": ...})` → did not crash, but the
+  navigation then failed: `Page.navigate: Overriding deviceId, ... is
+  forbidden` — the document-load itself rejected.
+- `document.cookie` writes via an `add_init_script` → ALSO triggered
+  `Page.navigate: Overriding ... is forbidden`.
+
+**Conclusion: BD Browser API is a managed browser — it does not permit any
+client-side cookie manipulation for the proxied domain.** This is a hard
+architectural wall, definitively established. Do NOT re-attempt cookie
+injection on BD Browser API for any airline; it will not work.
+
+### BLOCKER — Camoufox crashes on the Fly worker
+
+Pivoted `/diag/ac_air_bounds` to Camoufox (`use_camoufox=True`) — Camoufox
+is a local Firefox where `add_cookies` works normally. **Camoufox is
+currently broken on the deployed Fly worker:** both `/diag/ac_air_bounds`
+and a plain `/diag/airline?use_camoufox=1&url=...` crash with
+`Browser.close: unable to perform operation on <WriteUnixTransport
+closed=True ...>; the handler is closed` — the Camoufox browser process
+dies. The Camoufox runtime in the deployed image is broken and needs an
+infra fix (Dockerfile / Camoufox bundle / Xvfb) before it is usable. The
+endpoint was reverted to BD Browser API as a still-functional recon tool.
+
+### Useful facts learned (forensic detail for next session)
+
+- `GET https://www.aircanada.com/aeroplan/redeem/` is **anonymously
+  fetchable** (200, 62 KB) — NOT Akamai-blocked. So is `/aeroplan/redeem/
+  main.<hash>.js` and `vendor.<hash>.js`.
+- `GET https://www.aircanada.com/aeroplan/redeem/availability/outbound?...`
+  (the deep-link with search params) **IS Akamai path-protected** — `403
+  Access Denied` (`edgesuite.net` reference) from BD exit IPs. The redeem
+  SPA *root* loads, the `/availability/` deep-link does not.
+- In-app SPA navigation works: load `/aeroplan/redeem/` then
+  `history.pushState` + `dispatchEvent(new PopStateEvent('popstate'))` to
+  the `/availability/outbound?...` route — no Akamai-protected document
+  request. The Angular router picks it up. (But without a logged-in session
+  the SPA then redirects to `/clogin/pages/login`.)
+- The redeem SPA's auth guard reads login state **client-side from
+  `document.cookie`** (the Gigya `glt_3_*` / `gig_loginToken_3_*` cookies),
+  not from an API call — it redirects to `/clogin` BEFORE making any
+  `/loyalty/` XHR.
+- Captured-jar cookie facts: the Gigya login cookies `glt_3_...`,
+  `gig_bootstrap_3_...` (domain `.aircanada.com`) and `gig_loginToken_3_...`
+  (domain `.login.aircanada.com`) are all **non-httpOnly** (so settable via
+  `document.cookie` on a transport that allows it). `XSRF-TOKEN` and
+  `cognito` are httpOnly, domain `auth.api-gw.dbaas.aircanada.com`.
+- The captured cookies carry `partitionKey` + `_crHasCrossSiteAncestor`
+  fields (Playwright 1.5x+ CHIPS capture) — these must be stripped before
+  `add_cookies` on any transport.
+- AC v seats.aero: AC built the Aeroplan login wall in March 2025 to stop
+  award scrapers. Throttle aggressively.
+
+### Open angles for next session (prioritized)
+
+1. **Fix Camoufox on the Fly worker.** Camoufox is the only transport that
+   both runs `p.js` (mints Kasada tokens) AND allows `add_cookies` (injects
+   the captured session). The `Browser.close ... handler is closed` crash
+   needs debugging — likely a Dockerfile / `camoufox fetch` / Xvfb issue.
+   Once Camoufox runs: `/diag/ac_air_bounds` is already written to inject
+   the jar via `add_cookies`, drive the redeem SPA in-app, and capture the
+   air-bounds XHR (URL + headers + body). That one capture finalizes the
+   `airBoundsInputs` body and — if Akamai/Kasada accept the injected
+   session — yields real rows.
+2. **BD Residential + Camoufox** (zone `pointsnap_residential`,
+   `BRIGHTDATA_RESIDENTIAL_URL`) — gives Camoufox a clean residential IP if
+   Fly egress is Akamai-flagged for AC.
+3. The `airBoundsInputs` body shape can also be partially reverse-engineered
+   from `main.js`/`vendor.js` but it is assembled from NgRx state, not a
+   greppable literal — a live XHR capture is far more reliable.
+
+### Commit log (Session 15)
+
+| SHA | Message |
+|---|---|
+| `6c31292` | diag(ac): add /diag/ac_air_bounds to capture the real air-bounds request |
+| `2220b00` | diag(ac): surface raw cookie-injection failure |
+| `cb6e825` | diag(ac): clear stale jar + retry redeem nav past Akamai deny |
+| `17b0d44` | diag(ac): inject cookies via CDP Network.setCookies + land redeem root |
+| `87c56fe` | diag(ac): surface CDP cookie-injection error + post-inject jar count |
+| `e4f95fe` | diag(ac): clear cookie jar before CDP injection, inject before first nav |
+| `630b005` | diag(ac): inject session via Cookie-header rewrite, not cookie store |
+| `b595b06` | diag(ac): dump redeem-root search-form inputs |
+| `399bf70` | diag(ac): drive air-bounds via in-app SPA navigation |
+| `76b205a` | diag(ac): dump SPA storage + session expiry to find the auth signal |
+| `07c9a71` | diag(ac): inject auth cookies via document.cookie init script |
+| `e65d5b6` | diag(ac): terminal route handler, leave document request untouched |
+| `2085270` | diag(ac): use set_extra_http_headers for Cookie, drop page.route |
+| `643bfc6` | diag(ac): pivot air-bounds capture to Camoufox |
+| `bb4f33f` | fix(ac): wire resolved air-bounds tenant/host/path/headers into plugin |
