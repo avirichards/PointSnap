@@ -712,6 +712,119 @@ async def diag_firefox_crashes() -> JSONResponse:
         )
 
 
+# Self-contained Camoufox probe script — run as a SUBPROCESS so its full
+# stdout+stderr (Playwright Node driver errors, Firefox stderr, glibc/OOM
+# messages, the real death reason) is captured verbatim. The async
+# /diag/ac_air_bounds only sees Playwright's "handler is closed" wrapper,
+# never the underlying cause; a subprocess hands us everything.
+_CAMOUFOX_PROBE_SCRIPT = r'''
+import asyncio, os, sys, time
+os.environ.setdefault("MOZ_CRASHREPORTER", "1")
+os.environ.setdefault("MOZ_CRASHREPORTER_NO_REPORT", "1")
+
+URL = sys.argv[1] if len(sys.argv) > 1 else "https://www.aircanada.com/aeroplan/redeem/"
+WAIT = int(sys.argv[2]) if len(sys.argv) > 2 else 30
+
+def log(m): print(f"[{time.strftime('%H:%M:%S')}] {m}", flush=True)
+
+async def main():
+    from camoufox.async_api import AsyncCamoufox
+    cfg = {"headless": True, "humanize": True, "locale": "en-US",
+           "window": (1366, 768), "block_webrtc": True, "geoip": False}
+    log(f"launching camoufox headless=True")
+    browser = await AsyncCamoufox(**cfg).__aenter__()
+    log("camoufox launched")
+    ctx = await browser.new_context()
+    page = await ctx.new_page()
+
+    page.on("crash", lambda p: log("!!! PAGE CRASH event"))
+    page.on("close", lambda p: log("!!! PAGE CLOSE event"))
+    browser.on("disconnected", lambda b: log("!!! BROWSER DISCONNECTED event"))
+    page.on("console", lambda m: log(f"console.{m.type}: {m.text[:200]}")
+            if m.type in ("error",) else None)
+    page.on("pageerror", lambda e: log(f"PAGEERROR: {str(e)[:300]}"))
+
+    log(f"goto {URL}")
+    try:
+        r = await page.goto(URL, wait_until="domcontentloaded", timeout=90000)
+        log(f"goto done status={r.status if r else None}")
+    except Exception as e:
+        log(f"goto EXC: {type(e).__name__}: {e}")
+    # Poll the page alive every 2s — pinpoint exactly when it dies.
+    for i in range(WAIT // 2):
+        await asyncio.sleep(2)
+        try:
+            t = await asyncio.wait_for(page.title(), timeout=5)
+            url = page.url
+            log(f"  alive t+{(i+1)*2}s title={t[:40]!r} url={url[:70]}")
+        except Exception as e:
+            log(f"  DEAD at t+{(i+1)*2}s: {type(e).__name__}: {str(e)[:200]}")
+            break
+    log("teardown")
+    try:
+        await asyncio.wait_for(browser.close(), timeout=15)
+        log("teardown ok")
+    except Exception as e:
+        log(f"teardown EXC: {type(e).__name__}: {str(e)[:160]}")
+
+try:
+    asyncio.run(main())
+except Exception as e:
+    log(f"TOP EXC: {type(e).__name__}: {e}")
+log("script end")
+'''
+
+
+@app.get("/diag/camoufox_probe")
+async def diag_camoufox_probe(
+    url: str = Query("https://www.aircanada.com/aeroplan/redeem/"),
+    wait_s: int = Query(30),
+) -> JSONResponse:
+    """Run a self-contained Camoufox load of `url` in a SUBPROCESS and
+    return its full stdout+stderr + exit code. The subprocess output
+    captures the REAL crash cause (Playwright Node-driver stderr, Firefox
+    stderr, kernel OOM line) that the async handler's `handler is closed`
+    wrapper hides. Polls the page alive every 2s to pinpoint the death."""
+    import subprocess
+    import sys
+    import tempfile
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".py", delete=False, dir="/tmp"
+        ) as f:
+            f.write(_CAMOUFOX_PROBE_SCRIPT)
+            script_path = f.name
+        proc = subprocess.run(
+            [sys.executable, script_path, url, str(wait_s)],
+            capture_output=True, text=True, timeout=wait_s + 180,
+        )
+        try:
+            os.unlink(script_path)
+        except Exception:  # noqa: BLE001
+            pass
+        return JSONResponse({
+            "ok": proc.returncode == 0,
+            "returncode": proc.returncode,
+            "stdout": proc.stdout[-8000:],
+            "stderr": proc.stderr[-8000:],
+            "crash_artifacts": _firefox_crash_artifacts(),
+        })
+    except subprocess.TimeoutExpired as exc:  # noqa: BLE001
+        return JSONResponse({
+            "ok": False, "error": "subprocess timeout",
+            "stdout": (exc.stdout or b"").decode(errors="replace")[-8000:]
+            if isinstance(exc.stdout, bytes) else (exc.stdout or "")[-8000:],
+            "stderr": (exc.stderr or b"").decode(errors="replace")[-8000:]
+            if isinstance(exc.stderr, bytes) else (exc.stderr or "")[-8000:],
+        })
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:400], "tb": traceback.format_exc()[-700:]},
+            status_code=500,
+        )
+
+
 @app.get("/diag/ac_air_bounds")
 async def diag_ac_air_bounds(
     user_id: str = Query(..., description="User UUID with a captured AC_AEROPLAN session"),
