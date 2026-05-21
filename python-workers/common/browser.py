@@ -86,6 +86,39 @@ def _brightdata_residential_proxy(
     }
 
 
+def _tailscale_proxy() -> dict | None:
+    """Return Camoufox/Playwright proxy kwargs for the local userspace
+    Tailscale proxy, or None if Tailscale is not configured on this worker.
+
+    The worker's `entrypoint.sh` runs `tailscaled` in userspace-networking
+    mode with `--socks5-server` + `--outbound-http-proxy-listen` both bound
+    to `localhost:1055`. Routing Camoufox through that proxy makes its
+    traffic egress from the Tailscale exit node — the user's home Mac, a
+    RESIDENTIAL IP — instead of the Fly worker's data-center IP. That
+    defeats Air Canada's Kasada bot-defense, which HTTP-429s the air-bounds
+    API for any data-center-sourced request.
+
+    Unlike a commercial residential proxy (Bright Data), Tailscale is a
+    real WireGuard tunnel — it does NOT MITM TLS, so there is no rogue cert
+    and no HSTS problem; aircanada.com's certificate chain is delivered
+    untouched.
+
+    Gated on `TAILSCALE_AUTHKEY`: that env var is what `entrypoint.sh`
+    needs to actually bring the tailnet up, so its presence is the single
+    signal that the userspace proxy is expected to be live. When it is
+    unset the caller falls back to direct Fly egress (degrades — Kasada
+    will 429 the air-bounds call — rather than hard-failing).
+
+    A SOCKS5 server is used (not the HTTP-proxy form): `tailscaled` serves
+    both on the same port, and SOCKS5 carries CONNECT for HTTPS cleanly
+    without the proxy seeing or rewriting anything.
+    """
+    if not os.environ.get("TAILSCALE_AUTHKEY"):
+        return None
+    port = os.environ.get("TAILSCALE_SOCKS_PORT", "1055")
+    return {"server": f"socks5://127.0.0.1:{port}"}
+
+
 def _scraperapi_proxy(
     country: str | None = None,
     render: bool = True,

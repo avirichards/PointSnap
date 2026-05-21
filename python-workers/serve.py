@@ -901,15 +901,15 @@ async def diag_ac_air_bounds(
 ) -> JSONResponse:
     """Capture Air Canada's real logged-in air-bounds request.
 
-    Opens a **Camoufox** browser routed through a Bright Data Residential
-    CA exit IP (`build_camoufox_config` wires the proxy — Air Canada's
-    Kasada-protected air-bounds API 429s the Fly worker's data-center IP,
-    so a residential exit is required), injects the user's captured
-    Aeroplan cookie jar via `context.add_cookies` (works on Firefox/
-    Camoufox — the BD Browser API "Overriding X forbidden" wall does NOT
-    apply), navigates the redeem SPA, drives an in-app route change to the
-    availability page, and records every network request whose URL
-    contains `air-bounds`.
+    Opens a **Camoufox** browser routed through the user's home Tailscale
+    exit node — a residential IP (`build_camoufox_config` wires the local
+    userspace SOCKS5 proxy — Air Canada's Kasada-protected air-bounds API
+    429s the Fly worker's data-center IP, so a residential exit is
+    required), injects the user's captured Aeroplan cookie jar via
+    `context.add_cookies` (works on Firefox/Camoufox — the BD Browser API
+    "Overriding X forbidden" wall does NOT apply), navigates the redeem
+    SPA, drives an in-app route change to the availability page, and
+    records every network request whose URL contains `air-bounds`.
 
     The Camoufox lifecycle is managed DIRECTLY here (not via
     `browser_page`) so that (a) a `Browser.close ... handler is closed`
@@ -932,7 +932,9 @@ async def diag_ac_air_bounds(
         "origin": origin,
         "dest": dest,
         "date": date,
-        "transport": "camoufox_fly_egress",
+        "transport": "camoufox",
+        # `out["proxy"]` is set authoritatively below once the launch
+        # config is built — "tailscale_exit_node" or "none".
     }
     steps: list[dict] = []
     t0 = _time.time()
@@ -987,18 +989,19 @@ async def diag_ac_air_bounds(
                 "layers.acceleration.disabled": True,
             })
             out["webgl_off"] = True
-        # `build_camoufox_config` wires a Bright Data Residential CA exit
-        # into `cf_config["proxy"]` (when BRIGHTDATA_RESIDENTIAL_URL is set)
-        # — Air Canada's Kasada-protected air-bounds API 429s the Fly
-        # worker's data-center IP, so a residential exit is required.
+        # `build_camoufox_config` wires the local userspace Tailscale
+        # SOCKS5 proxy into `cf_config["proxy"]` (when TAILSCALE_AUTHKEY is
+        # set) — Air Canada's Kasada-protected air-bounds API 429s the Fly
+        # worker's data-center IP, so the residential exit node is required.
         through_proxy = "proxy" in cf_config
-        out["proxy"] = "brightdata_residential_ca" if through_proxy else "none"
+        out["proxy"] = "tailscale_exit_node" if through_proxy else "none"
         _step("camoufox_launch_begin", headless=str(hl),
               webgl_off=bool(webgl_off), proxy=out["proxy"])
         browser = await AsyncCamoufox(**cf_config).__aenter__()
         _step("camoufox_launched")
-        # BD Residential MITMs HTTPS (its own cert) — Firefox throws
-        # SEC_ERROR_UNKNOWN_ISSUER without ignore_https_errors.
+        # Tailscale is a plain WireGuard tunnel (no TLS MITM) — AC's real
+        # cert is delivered intact, so ignore_https_errors is not required.
+        # Kept as a harmless safety net.
         ctx = await browser.new_context(
             **({"ignore_https_errors": True} if through_proxy else {})
         )
