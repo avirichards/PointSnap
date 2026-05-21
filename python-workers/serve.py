@@ -631,6 +631,12 @@ async def diag_ac_air_bounds(
 
         cookies = session.get("cookies") or []
         out["cookie_count"] = len(cookies)
+        # Sample the raw cookie shape so we can see why injection might fail.
+        out["cookie_sample"] = [
+            {k: (str(v)[:40] if k == "value" else v) for k, v in c.items()}
+            for c in cookies[:3]
+        ]
+        out["cookie_keys"] = sorted({k for c in cookies for k in c.keys()})
 
         air_bounds_reqs: list[dict] = []
         air_bounds_resps: list[dict] = []
@@ -645,6 +651,55 @@ async def diag_ac_air_bounds(
             ctx = page.context
             injected = await inject_cookies(ctx, cookies)
             out["cookies_injected"] = injected
+            # If the batch injection accepted nothing, replicate the
+            # normalization and call add_cookies directly so we see the
+            # raw Playwright exception (inject_cookies swallows it).
+            if injected == 0 and cookies:
+                norm: list[dict] = []
+                for c in cookies:
+                    if not c.get("name") or "value" not in c:
+                        continue
+                    nc: dict = {"name": c["name"], "value": str(c["value"])}
+                    if c.get("domain"):
+                        nc["domain"] = c["domain"]
+                        nc["path"] = c.get("path") or "/"
+                    elif c.get("url"):
+                        nc["url"] = c["url"]
+                    else:
+                        continue
+                    if "httpOnly" in c:
+                        nc["httpOnly"] = bool(c["httpOnly"])
+                    if "secure" in c:
+                        nc["secure"] = bool(c["secure"])
+                    ss = c.get("sameSite")
+                    if ss in ("Strict", "Lax", "None"):
+                        nc["sameSite"] = ss
+                    exp = c.get("expires")
+                    if exp is not None and exp != -1:
+                        try:
+                            nc["expires"] = int(exp)
+                        except (TypeError, ValueError):
+                            pass
+                    norm.append(nc)
+                out["normalized_count"] = len(norm)
+                try:
+                    await ctx.add_cookies(norm)
+                    out["raw_add_cookies"] = "ok"
+                    injected = len(norm)
+                except Exception as exc:  # noqa: BLE001
+                    out["raw_add_cookies_error"] = str(exc)[:400]
+                    # Try one-by-one to skip the offending cookie(s).
+                    ok_one = 0
+                    bad = []
+                    for nc in norm:
+                        try:
+                            await ctx.add_cookies([nc])
+                            ok_one += 1
+                        except Exception as exc2:  # noqa: BLE001
+                            bad.append(f"{nc.get('name')}: {str(exc2)[:120]}")
+                    out["cookies_injected_one_by_one"] = ok_one
+                    out["bad_cookies"] = bad[:8]
+                    injected = ok_one
 
             async def _on_request(req):
                 try:
