@@ -354,6 +354,162 @@ def _cookie_header(cookies: list[dict]) -> str:
     return "; ".join(parts)
 
 
+def _to_session_cookies(cookies: list[dict]) -> list[dict]:
+    """Normalise stored Playwright-shape cookies for `context.add_cookies`.
+
+    Injected as SESSION cookies (no `expires`): a captured cookie's stored
+    `expires` is often in the past (Gigya `glt_*` login tokens are
+    short-lived) and the browser silently discards an already-expired
+    cookie. A session cookie survives the whole context lifetime, which is
+    all an air-bounds search needs. CHIPS-capture extras (`partitionKey`,
+    `_crHasCrossSiteAncestor`) are dropped.
+    """
+    out: list[dict] = []
+    for c in cookies:
+        if not c.get("name") or "value" not in c or not c.get("domain"):
+            continue
+        nc: dict[str, Any] = {
+            "name": c["name"],
+            "value": str(c["value"]),
+            "domain": c["domain"],
+            "path": c.get("path") or "/",
+            "secure": bool(c.get("secure", True)),
+            "httpOnly": bool(c.get("httpOnly", False)),
+        }
+        ss = c.get("sameSite")
+        if ss in ("Strict", "Lax", "None"):
+            nc["sameSite"] = ss
+        out.append(nc)
+    return out
+
+
+async def _camoufox_air_bounds(
+    cookies: list[dict],
+    origin: str,
+    dest: str,
+    date: str,
+) -> tuple[dict | None, dict]:
+    """Run the Aeroplan air-bounds search inside Camoufox with the user's
+    captured session injected, and return `(air_bounds_response_json,
+    diag)`.
+
+    This is the real T5' transport. Air Canada's air-bounds API is Kasada-
+    protected (`x-kpsdk-*` headers, minted only by AC's `p.js` in a real
+    browser) AND gated behind a logged-in Aeroplan session — so the call
+    must be made by the redeem SPA itself, from inside a browser, with the
+    user's session. Bright Data Browser API blocks cookie injection for
+    aircanada.com; Camoufox is the only transport where injection works.
+
+    Flow: launch Camoufox (Fly egress, no proxy — IPRoyal blocks
+    aircanada.com at CONNECT) → install the Playwright-driver crash shield
+    → inject the captured jar as session cookies → load the redeem SPA
+    root (warms Akamai) → navigate the availability deep-link, which makes
+    the logged-in SPA run AC's Kasada `p.js` and fire its own properly-
+    stamped air-bounds XHR → capture that XHR's JSON via `page.on`.
+
+    Never raises — returns `(None, diag)` on any failure. `diag` carries
+    forensic detail for `LAST_RUN_DIAG`.
+    """
+    diag: dict[str, Any] = {"transport": "camoufox", "stages": []}
+    air_bounds_json: dict | None = None
+    air_bounds_status: int | None = None
+    browser = None
+    try:
+        from camoufox.async_api import AsyncCamoufox
+
+        search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
+        redeem_root = "https://www.aircanada.com/aeroplan/redeem/"
+
+        browser = await AsyncCamoufox(**build_camoufox_config()).__aenter__()
+        diag["stages"].append("camoufox_launched")
+        ctx = await browser.new_context()
+        await install_pw_crash_shield(ctx)
+        page = await ctx.new_page()
+        page.set_default_timeout(120_000)
+
+        # Block only heavy media — the SPA + Kasada p.js are scripts/XHR.
+        async def _block_heavy(route: Any) -> None:
+            if route.request.resource_type in ("image", "media"):
+                await route.abort()
+            else:
+                await route.continue_()
+        await page.route("**/*", _block_heavy)
+
+        async def _on_response(resp: Any) -> None:
+            nonlocal air_bounds_json, air_bounds_status
+            try:
+                if AIR_BOUNDS_PATH in resp.url and air_bounds_json is None:
+                    air_bounds_status = resp.status
+                    if resp.status == 200:
+                        air_bounds_json = await resp.json()
+            except Exception:  # noqa: BLE001
+                pass
+        page.on("response", _on_response)
+
+        # Inject the captured session jar.
+        try:
+            await ctx.add_cookies(_to_session_cookies(cookies))
+            diag["stages"].append(f"cookies_injected({len(cookies)})")
+        except Exception as exc:  # noqa: BLE001
+            diag["cookie_inject_error"] = str(exc)[:200]
+
+        async def _goto(url: str, attempts: int = 3) -> bool:
+            for _ in range(attempts):
+                try:
+                    r = await page.goto(url, wait_until="domcontentloaded",
+                                        timeout=90_000)
+                    await asyncio.sleep(4.0)
+                    title = ""
+                    try:
+                        title = await page.title()
+                    except Exception:  # noqa: BLE001
+                        pass
+                    if "Access Denied" not in title and not (r and r.status == 403):
+                        return True
+                except Exception:  # noqa: BLE001
+                    pass
+                await asyncio.sleep(2.0)
+            return False
+
+        # Warm the redeem root (mints Akamai _abck/bm_*), then deep-link to
+        # the availability route so the logged-in SPA runs the search.
+        if not await _goto(redeem_root):
+            diag["stages"].append("redeem_root_blocked")
+            return None, diag
+        diag["stages"].append("redeem_root_loaded")
+        await asyncio.sleep(7.0)
+
+        await _goto(search_url)
+        diag["stages"].append("availability_nav")
+
+        # Ride any /clogin silent-SSO redirect chain, then wait for the
+        # air-bounds XHR. Poll up to ~90s total.
+        for _ in range(90):
+            if air_bounds_json is not None:
+                break
+            await asyncio.sleep(1.0)
+
+        diag["air_bounds_status"] = air_bounds_status
+        try:
+            diag["final_url"] = page.url
+        except Exception:  # noqa: BLE001
+            pass
+        diag["stages"].append(
+            "air_bounds_captured" if air_bounds_json is not None
+            else "air_bounds_timeout"
+        )
+        return air_bounds_json, diag
+    except Exception as exc:  # noqa: BLE001 — never raise out of a plugin
+        diag["error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
+        return None, diag
+    finally:
+        if browser is not None:
+            try:
+                await asyncio.wait_for(browser.close(), timeout=20.0)
+            except BaseException:  # noqa: BLE001
+                pass
+
+
 async def _auth_search(
     user_id: str,
     origin: str,
@@ -361,30 +517,17 @@ async def _auth_search(
     date: str,
 ) -> list[NormalizedResult]:
     """T5' auth path — Aeroplan award search with the user's captured
-    logged-in session.
-
-    This is the hook the Phase 2.5 user-auth-capture flow feeds. Steps:
+    logged-in session, run through Camoufox.
 
       1. Look up the user's stored Aeroplan session (the encrypted cookie
          jar captured when they logged in via the cockpit `/airlines`
          flow) via `get_active_session`.
       2. If no session (or it expired): fall through to the `auth_required`
          verdict — the cockpit shows a "Connect Air Canada" prompt.
-      3. If a session exists: replay the logged-in cookie jar as a
-         `Cookie:` header on the air-bounds API call (Web Unlocker clears
-         Air Canada's Akamai; the cookie jar supplies the logged-in
-         Aeroplan account that the March-2025 login wall demands).
-
-    TRANSPORT SEAM (updated 2026-05-21) — the `{tenant}` is now RESOLVED
-    (`1ASIUDALAC`, host `akamai-gw.dbaas.aircanada.com`, see the
-    AIR_BOUNDS_* constants). Two things still block a real result:
-      1. The air-bounds path is Kasada-protected — this WU `Cookie:`-header
-         replay cannot mint the per-request `x-kpsdk-*` tokens, so it is
-         expected to fail. A browser-based transport (Camoufox, once the
-         Fly-worker Camoufox crash is fixed) is required.
-      2. The exact `airBoundsInputs` request body still needs a live
-         logged-in air-bounds XHR capture (see scraper-log.md Session 15).
-    `_parse_air_bounds` is already wired to consume the response.
+      3. If a session exists: run `_camoufox_air_bounds` — launch Camoufox,
+         inject the captured jar, drive the redeem SPA to the availability
+         route so it fires its own Kasada-stamped air-bounds XHR, capture
+         that response, and parse it with `_parse_air_bounds`.
 
     Records a verdict in `LAST_RUN_DIAG` and never raises.
     """
@@ -417,88 +560,62 @@ async def _auth_search(
         return []
 
     cookies = session.get("cookies") or []
-    cookie_header = _cookie_header(cookies)
     session_id = session.get("session_id")
 
-    # We have the user's logged-in jar. Attempt the air-bounds call.
+    # Run the air-bounds search inside Camoufox with the captured session.
     rows: list[NormalizedResult] = []
-    transport_ok = False
-    target_status: int | None = None
+    air_bounds_json: dict | None = None
+    transport_diag: dict[str, Any] = {}
     try:
-        from common.bd_wu import wu_post
-
-        # The redeem-SPA air-bounds API — tenant/host/path RESOLVED, see the
-        # AIR_BOUNDS_* constants + module docstring. NOTE: this WU replay is
-        # expected to fail Kasada validation (the path is KPSDK-registered;
-        # the per-request x-kpsdk-* tokens can only be minted by AC's p.js
-        # inside a real browser). The call is wired with the correct URL +
-        # headers so that when a browser-based transport replaces it, only
-        # the request body needs finalizing.
-        body = {
-            "origin": origin,
-            "destination": dest,
-            "date": date,
-            "cabinClass": "eco",
-            "passengers": {"adults": 1, "youth": 0, "children": 0, "infants": 0},
-        }
-        status, parsed, raw = await wu_post(
-            f"{AIR_BOUNDS_URL}?lang=en-CA",
-            body,
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Cookie": cookie_header,
-                "x-api-key": AIR_BOUNDS_API_KEY,
-                "x-app-client-id": AIR_BOUNDS_CLIENT_ID,
-                "Referer": SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date),
-            },
-            timeout_s=60.0,
+        air_bounds_json, transport_diag = await _camoufox_air_bounds(
+            cookies, origin, dest, date
         )
-        target_status = status
-        if status == 200 and isinstance(parsed, dict):
-            rows = _parse_air_bounds(parsed, origin, dest, date)
-            transport_ok = True
+        if isinstance(air_bounds_json, dict):
+            rows = _parse_air_bounds(air_bounds_json, origin, dest, date)
     except Exception as exc:  # noqa: BLE001 — never raise out of a plugin
         log.warning("AC auth-search transport error: %s", exc)
+        transport_diag = {"error": str(exc)[:300]}
 
     # Record the outcome against the session so the cockpit can surface a
-    # "reconnect" hint if the cookies stopped working.
+    # "reconnect" hint if the captured session stopped working.
     if session_id:
         try:
             await mark_used(session_id, ok=bool(rows))
         except Exception as exc:  # noqa: BLE001
             log.debug("AC mark_used failed: %s", exc)
 
-    verdict = (
-        "ok"
-        if rows
-        else ("auth_session_present_transport_pending" if transport_ok or target_status else "auth_failed")
-    )
+    air_bounds_status = transport_diag.get("air_bounds_status")
+    if rows:
+        verdict = "ok"
+    elif air_bounds_json is not None:
+        verdict = "air_bounds_unparseable"
+    elif air_bounds_status:
+        verdict = "air_bounds_rejected"
+    else:
+        verdict = "auth_failed"
     LAST_RUN_DIAG = {
         "started_at": now_iso,
-        "transport": "wu_2step_auth",
+        "transport": "camoufox_auth",
         "origin": origin,
         "dest": dest,
         "date": date,
         "user_id": user_id,
         "auth_session_id": session_id,
         "cookie_count": len(cookies),
-        "air_bounds_target_status": target_status,
+        "air_bounds_status": air_bounds_status,
+        "transport_diag": transport_diag,
         "last_verdict": verdict,
         "row_count": len(rows),
         "note": (
-            "Captured Aeroplan session found and replayed. "
-            + (
-                f"Parsed {len(rows)} award itineraries."
-                if rows
-                else (
-                    "Air-bounds POST reached but returned no parseable "
-                    "award data — the {tenant} path segment + request-body "
-                    "shape still need to be captured from a logged-in "
-                    "air-bounds XHR (see module docstring). The "
-                    "cookie-injection hook is wired and correct; only the "
-                    "transport's tenant/body constants remain."
-                )
+            f"Parsed {len(rows)} award itineraries via Camoufox."
+            if rows
+            else (
+                "Camoufox transport ran but no award rows — the redeem SPA "
+                "did not reach a logged-in state and fire the air-bounds "
+                "XHR. Most common cause: the captured Aeroplan session has "
+                "expired (Gigya glt_*/cognito tokens are short-lived; AC's "
+                "silent-SSO refresh fails with SYS011 for a stale session) "
+                "— the user should re-connect Air Canada. See transport_diag."
             )
         ),
     }
