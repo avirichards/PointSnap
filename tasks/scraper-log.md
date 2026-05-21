@@ -1748,3 +1748,65 @@ capture-then-replay.
 | `7fa37e8` | diag(ac): direct air-bounds fetch probe + full /clogin SSO chain capture |
 | `ed4c0e8` | diag(ac): probe air-bounds via XHR after 28s Kasada settle |
 | `e300987` | feat(ac): wire _auth_search to the Camoufox air-bounds transport |
+
+---
+
+## Session 17 — 2026-05-21 — AC Aeroplan: route Camoufox through BD Residential to beat the Kasada 429
+
+Goal: get the AC Aeroplan `/search` to return real award rows. Session 16
+left the transport "complete and proven to drive the SPA" but `/search`
+returned `[]` — the captured session was stale (SYS011). A FRESH session
+for user `e9d28a3e-9bfa-445b-a195-4ce19479ab07` was re-captured this
+session (~2026-05-21T15:34Z): Camoufox launches, ~50 cookies inject,
+login completes (Cognito tokens minted, NO SYS011), the redeem SPA reaches
+the logged-in availability page ("Select departing flight"). THE WALL: the
+SPA's own air-bounds XHR to `akamai-gw.dbaas.aircanada.com/loyalty/
+dapidynamicplus/1ASIUDALAC/v2/search/air-bounds?lang=en-CA` returns HTTP
+**429** — a Kasada block (body is a `KPSDK` challenge page). Diagnosis from
+the parent: the request leaves the Fly worker's DATA-CENTER IP and Kasada
+flags data-center traffic on sight.
+
+### Bug found + fixed — `_camoufox_air_bounds` raised NameError
+
+`ac_aeroplan/search.py` used `asyncio.sleep` / `asyncio.wait_for` inside
+`_camoufox_air_bounds` but its import block had **no `import asyncio`**.
+Every production `/search` auth call therefore raised
+`NameError: name 'asyncio' is not defined` the moment the transport ran —
+the `/diag/ac_air_bounds` endpoint imports `asyncio` at module scope in
+`serve.py` so it was unaffected, which is why the bug hid. Added
+`import asyncio` to `search.py`.
+
+### Transport fix — Bright Data Residential CA exit
+
+`build_camoufox_config` previously launched Camoufox with NO proxy
+(`geoip: False  # Fly direct egress`). Rewired it to route through a
+Bright Data Residential **Canada** exit IP:
+- `build_camoufox_config` now calls `common.browser._brightdata_residential_proxy(country="ca")`
+  — that helper parses `BRIGHTDATA_RESIDENTIAL_URL` into a
+  `{server, username, password}` dict and appends `-country-ca` to the
+  username so the exit lands in Canada (AC is a Canadian carrier).
+- When the proxy is set: `cfg["proxy"] = bd_proxy` and `geoip=True` so
+  Camoufox derives a Canadian TZ/locale/lat-long from the exit IP
+  (internally-consistent fingerprint).
+- Both contexts (`_camoufox_air_bounds` in `search.py` and the
+  `/diag/ac_air_bounds` endpoint in `serve.py`) now pass
+  `ignore_https_errors=True` when the proxy is active — BD Residential
+  MITMs HTTPS and presents its own cert, so Firefox would otherwise throw
+  `SEC_ERROR_UNKNOWN_ISSUER`.
+- If `BRIGHTDATA_RESIDENTIAL_URL` is unset the helper returns None and the
+  launch falls back to direct Fly egress (degrades, not hard-fails).
+
+### `BRIGHTDATA_RESIDENTIAL_URL` IS set on the worker — verified
+
+`GET /diag/airline?use_camoufox=1&brightdata_residential=1&brightdata_country=ca&url=https://geo.brdtest.com/welcome.txt?product=resi&method=native`
+→ 200, body: `Country: CA  City: Delta  Region: BC  ASN 11260 EastLink`.
+So the BD Residential secret is present, the proxy works, and `-country-ca`
+correctly lands a Canadian residential exit (a real EastLink home IP in
+Delta, BC). This is the canonical way to confirm the secret without a
+`/diag/env` endpoint (there is none).
+
+### Commit log (Session 17)
+
+| SHA | Message |
+|---|---|
+| `cc9103a` | fix(ac): import asyncio + route Camoufox through BD Residential CA exit |
