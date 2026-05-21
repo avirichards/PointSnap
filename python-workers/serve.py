@@ -997,6 +997,14 @@ async def diag_ac_air_bounds(
                 await route.continue_()
         await page.route("**/*", _block_heavy)
 
+        auth_flow: list[dict] = []  # /clogin + oauth2 + auth-gw traffic
+
+        def _is_auth_url(u: str) -> bool:
+            return any(t in u for t in (
+                "/clogin/", "oauth2/", "auth.api-gw.dbaas.aircanada.com",
+                "gigya.com", "/accounts.", "socialize.",
+            ))
+
         def _on_request(req):
             try:
                 u = req.url
@@ -1014,6 +1022,9 @@ async def diag_ac_air_bounds(
                         "headers": dict(req.headers),
                         "post_data": post_data,
                     })
+                elif _is_auth_url(u) and len(auth_flow) < 80:
+                    auth_flow.append({"dir": "req", "method": req.method,
+                                      "url": u[:220], "rtype": req.resource_type})
             except Exception:  # noqa: BLE001
                 pass
 
@@ -1030,6 +1041,9 @@ async def diag_ac_air_bounds(
                         "status": resp.status,
                         "body_head": body_head,
                     })
+                elif _is_auth_url(resp.url) and len(auth_flow) < 80:
+                    auth_flow.append({"dir": "resp", "status": resp.status,
+                                      "url": resp.url[:220]})
             except Exception:  # noqa: BLE001
                 pass
 
@@ -1289,9 +1303,10 @@ async def diag_ac_air_bounds(
         try:
             out["page_url"] = page.url
             out["page_title"] = await page.title()
-            out["body_snippet"] = (await page.locator("body").inner_text())[:400]
+            out["body_snippet"] = (await page.locator("body").inner_text())[:1200]
         except Exception:  # noqa: BLE001
             pass
+        out["auth_flow"] = auth_flow
         _step("flow_complete")
     except BaseException as exc:  # noqa: BLE001 — incl. CancelledError
         out["error"] = f"{type(exc).__name__}: {str(exc)[:480]}"
