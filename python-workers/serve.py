@@ -631,10 +631,26 @@ async def diag_ac_air_bounds(
         cookies = session.get("cookies") or []
         out["cookie_count"] = len(cookies)
         out["session_expires_at"] = session.get("expires_at")
-        out["session_meta"] = session.get("meta")
         out["all_cookie_names"] = sorted(
             {c.get("name") for c in cookies if c.get("name")}
         )
+        # Flags for the auth-relevant cookies — a non-httpOnly Gigya login
+        # cookie can be injected via document.cookie (the SPA's client-side
+        # auth guard reads it there).
+        out["auth_cookie_flags"] = [
+            {
+                "name": c.get("name"),
+                "domain": c.get("domain"),
+                "httpOnly": c.get("httpOnly"),
+                "path": c.get("path"),
+            }
+            for c in cookies
+            if c.get("name") and any(
+                tok in c["name"].lower()
+                for tok in ("gig", "glt", "khaos", "audit", "cognito",
+                            "globalid", "l_user", "xsrf", "sso")
+            )
+        ]
 
         air_bounds_reqs: list[dict] = []
         air_bounds_resps: list[dict] = []
@@ -789,6 +805,31 @@ async def diag_ac_air_bounds(
                 cdp = await ctx.new_cdp_session(page)
             except Exception as exc:  # noqa: BLE001
                 out["cdp_session_error"] = str(exc)[:200]
+
+            # document.cookie injection — BD Browser API blocks CDP cookie
+            # WRITES for the proxied domain ("Overriding X forbidden"), but a
+            # `document.cookie = ...` write goes through Chromium's normal
+            # script cookie path, which BD does not block. Set the
+            # non-httpOnly cookies (the Gigya `gig_loginToken`/`glt_` login
+            # cookies the SPA's auth guard reads) at every document start so
+            # they're present before the SPA bootstraps.
+            js_cookie_pairs = [
+                [c["name"], str(c["value"])]
+                for c in cookies
+                if c.get("name") and "value" in c and not c.get("httpOnly")
+            ]
+            out["js_cookie_count"] = len(js_cookie_pairs)
+            try:
+                import json as _j
+                await page.add_init_script(
+                    "(() => { const ps = " + _j.dumps(js_cookie_pairs) + ";"
+                    " for (const [n,v] of ps) { try {"
+                    " document.cookie = n+'='+v+'; path=/; domain=.aircanada.com';"
+                    " document.cookie = n+'='+v+'; path=/';"
+                    " } catch(e){} } })();"
+                )
+            except Exception as exc:  # noqa: BLE001
+                out["init_script_error"] = str(exc)[:200]
 
             store_diag: dict = {"set_ok": 0, "set_fail": 0}
 
