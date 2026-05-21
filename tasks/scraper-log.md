@@ -137,7 +137,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | AS_MILEAGEPLAN | ✅ live | httpx + IPRoyal | SvelteKit SSR, light protection |
 | AA_AADVANTAGE | 🚧 stuck | Camoufox (debugging) | Akamai BMP wall; see "AA: what's been tried" |
 | AA_AADVANTAGE_WU | 🚧 stuck | WU 2-step + BD Browser API mint rung | Mint rung mints `spa_session_id` via BD Browser API; WU-replayed award POST still error 309 — AA session is transport-bound. See Session 14 + blockers.md 2026-05-20 19:40. |
-| AC_AEROPLAN | ❌ broken | auth path; tenant RESOLVED, transport blocked | air-bounds tenant `1ASIUDALAC` + host `akamai-gw.dbaas.aircanada.com` resolved (Session 15). Blocked: Kasada-protected path needs `x-kpsdk-*` from a real browser; BD Browser API blocks cookie injection, Camoufox crashes on Fly. |
+| AC_AEROPLAN | ❌ broken | auth path; transport blocked on BD KYC | Tenant `1ASIUDALAC` + host `akamai-gw.dbaas.aircanada.com` resolved (S15). Camoufox crash fixed (S16). S17: routed Camoufox through BD Residential CA — Kasada data-center 429 IS gone, but the air-bounds POST now gets HTTP 402 `bad_endpoint` from Bright Data itself (BD Residential no-KYC mode rejects POST). **Blocked on the BD account completing KYC** (https://brightdata.com/cp/kyc) — not a code defect. Also a BD-MITM HSTS cert error on the availability deeplink. |
 | DL_SKYMILES | ❌ broken | WU 2-step (Akamai-walled on POST) | Homepage mint OK; `POST /shop/ow/search` → Akamai 444 for both WU formats. Award POST needs validated `_abck`. See Session 12. |
 | UA_MP | ❌ broken | BD Browser API (migrated, untested) | Imperva — needs investigation |
 | BA_AVIOS | ❌ broken | BD Browser API (migrated, untested) | Akamai + queue interstitial |
@@ -158,6 +158,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | **ScraperAPI proxy (free + premium)** | ❌ | Session 3 | Per-resource billing burned credits; "premium" still failed AA. |
 | **Bright Data Browser API (CDP)** | ✅ for non-Akamai sites, ❌ for AA, ❌ for any cookie injection | Session 5 morning / 15 | 9/11 airline homepages loaded clean (200 OK with HTML). AA returned 403 Access Denied on most IPs. **Session 15: BD Browser API is a MANAGED browser — it blocks ALL client-side cookie writes for the proxied domain. `add_cookies`, CDP `Network.setCookie`/`setCookies`, `Storage.setCookies`, and `document.cookie` all fail "Overriding X forbidden" (even into a provably-empty jar); a second `page.route` handler breaks the proxy tunnel (`ERR_TUNNEL_CONNECTION_FAILED`). A captured logged-in session CANNOT be replayed inside BD Browser API. Do not retry.** |
 | **Bright Data Web Unlocker (HTTP API)** | ⚠️ AA blocked on a zone setting | Session 13 | WU renders `mobile.aa.com/booking` (200, jar w/ `XSRF-TOKEN`+`JSESSIONID`, NO `spa_session_id`) + reaches AA's award POST (200). Every `www.aa.com` page 502s — stale `#weeklyCarousel` `expect_element` rule. The `x-unblock-expect` override that fixes it is OFF on the `pointsnap_webunlock` zone (`feature_not_active` — "Manual expect is not enabled"). AA award POST still `error 309` without `spa_session_id`; AA mints no cookies on the 309. **Fix: enable "Manual Expect" on the WU zone — then code works unchanged.** See Session 13 + blockers.md. |
+| **Bright Data Residential (proxy)** | ⚠️ GET works, POST blocked on KYC | Session 17 | `BRIGHTDATA_RESIDENTIAL_URL` is set on the Fly worker; the proxy works for GET (BD geo test → real CA EastLink residential IP, `-country-ca` honoured). **But the zone is in Immediate (no-KYC) access mode, which rejects POST/PUT/DELETE — POST returns HTTP 402 `Residential Failed (bad_endpoint)`.** AC Aeroplan's air-bounds API is POST-only, so it cannot be carried until the BD account completes KYC for "Full Access" (https://brightdata.com/cp/kyc). Also: BD MITMs TLS with its own cert → Firefox `SEC_ERROR_UNKNOWN_ISSUER` / HSTS error on some aircanada.com requests even with `ignore_https_errors`. |
 | **CapSolver `AntiAkamaiBMTask`** | ❌ (deprecated) | Session 5 mid | CapSolver dropped Akamai support entirely — task type returns `ERROR_TYPE_NOT_SUPPORTED`. Their docs no longer list Akamai. |
 | **2Captcha** | ❌ (never supported BMP) | Session 5 mid | Public docs confirm only reCAPTCHA, AWS WAF, Cloudflare, Geetest. No Akamai. |
 | **Camoufox (Firefox-based stealth)** | 🚧 in progress | Session 5 late | Loads www.aa.com but Akamai serves the `sec-if-cpt-container` behavioral challenge interstitial. Sensor.js doesn't validate Camoufox-on-Fly-egress within 40s wait + mouse simulation. |
@@ -1805,8 +1806,85 @@ correctly lands a Canadian residential exit (a real EastLink home IP in
 Delta, BC). This is the canonical way to confirm the secret without a
 `/diag/env` endpoint (there is none).
 
+### Live test after the BD Residential wiring — the Kasada 429 is gone, but TWO new BD walls appeared
+
+`GET /diag/ac_air_bounds?user_id=e9d28a3e-…&origin=YYZ&dest=YVR&date=2026-07-15&wait_s=5`
+ran with `proxy: brightdata_residential_ca` confirmed in the output. Result:
+
+**WALL 1 — air-bounds POST gets HTTP 402 from Bright Data (not from AC).**
+The air-bounds XHR (`POST akamai-gw.dbaas.aircanada.com/loyalty/
+dapidynamicplus/1ASIUDALAC/v2/search/air-bounds?lang=en-CA`) returns
+**HTTP 402** with this verbatim body:
+
+```
+<!doctype html><h1>Webpage not available</h1><p>The webpage could not be
+loaded because:</p><p>Residential Failed (bad_endpoint): Requested site is
+not available for immediate residential (no KYC) access mode due to the
+fact that POST requests are not allowed. To get full residential access
+for targeting this site, fill in the KYC form:
+https://brightdata.com/cp/kyc</p>
+```
+
+This is a **Bright Data account-policy block, NOT an Air Canada / Kasada
+block.** Confirmed via BD docs (docs.brightdata.com/proxy-networks/
+residential/network-access): a BD Residential zone in **Immediate (no-KYC)
+access mode rejects POST/PUT/DELETE** — only GET is allowed until the
+account completes Bright Data's **KYC process** for "Full Access". The
+air-bounds API is POST-only, so BD itself refuses the request and AC never
+even sees it. **No code change, header, sticky-session, or country flag
+can bypass this — it requires the BD account owner to complete KYC at
+https://brightdata.com/cp/kyc.** Reproduced twice (2026-05-21 ~16:00Z and
+~16:09Z), identical 402 both times.
+
+**WALL 2 — HSTS cert error on the availability deeplink.** BD Residential
+MITMs HTTPS with its own cert. The redeem ROOT (`www.aircanada.com/
+aeroplan/redeem/`) loads fine through the proxy (200, title "AC Loyalty"),
+but `page.goto` of the availability deeplink fails with **`Page.goto:
+SEC_ERROR_UNKNOWN_ISSUER`** and the page body shows Firefox's HSTS error
+("www.aircanada.com has a security policy called HTTP Strict Transport
+Security (HSTS)… You can't add an exception"). `ignore_https_errors=True`
+does NOT help — Firefox refuses cert exceptions for HSTS-pinned hosts.
+Commit `d1d89e5` added `firefox_user_prefs`
+`network.stricttransportsecurity.enabled=false` +
+`...preloadlist=false` + `security.cert_pinning.enforcement_level=0` to
+disable HSTS — but the re-test STILL showed `SEC_ERROR_UNKNOWN_ISSUER` +
+the HSTS body. Either the pref is not honoured by this Camoufox/Firefox
+build for the dynamic HSTS store, or BD's MITM cert handling is
+per-request inconsistent (root request gets a trusted chain, deeplink
+request does not). NOT pursued further because WALL 1 makes it moot — even
+a perfectly-loading page cannot complete the POST air-bounds call.
+
+**`window.KPSDK` is absent** on the redeem root (`has_KPSDK: false`) — same
+as Session 16: Kasada `p.js` only loads on the logged-in `/availability/`
+state, which we never reach (HSTS-blocked).
+
+### CONCLUSION (Session 17) — blocked on Bright Data KYC, not on code
+
+The bug fix (`import asyncio`) and the residential-proxy wiring are
+correct and deployed. The Kasada **data-center 429 is genuinely gone** —
+the air-bounds request now leaves a Canadian residential IP. But it is
+replaced by Bright Data's own **402 "POST not allowed in no-KYC mode"**,
+which is an **account-level restriction**: the BD Residential zone must
+complete Bright Data's KYC process to get "Full Access" before it will
+carry POST requests. Until the BD account owner completes KYC at
+`https://brightdata.com/cp/kyc`, AC Aeroplan `/search` cannot return rows
+through this transport — and no amount of code tuning changes that.
+
+**The transport code is otherwise complete** — once the BD zone has Full
+Access, the existing `_camoufox_air_bounds` flow should work end-to-end
+(the HSTS pref may also then need revisiting if WALL 2 turns out to be a
+real pref-not-honoured issue rather than BD cert inconsistency).
+
+**Next-session options if KYC is not viable:**
+- Use a residential provider that allows POST without KYC for the air-bounds
+  call (the log's Tools table: IPRoyal blocks aircanada.com at CONNECT, so
+  IPRoyal is not it — a different vendor would need evaluating).
+- Or a residential provider that does NOT MITM TLS (so no HSTS problem) —
+  a SOCKS5 residential exit passes TLS through untouched.
+
 ### Commit log (Session 17)
 
 | SHA | Message |
 |---|---|
 | `cc9103a` | fix(ac): import asyncio + route Camoufox through BD Residential CA exit |
+| `d1d89e5` | fix(ac): disable Firefox HSTS so BD Residential MITM cert is accepted |
