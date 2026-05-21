@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import Callable, Coroutine
 
 from dotenv import load_dotenv
