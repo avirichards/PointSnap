@@ -163,12 +163,13 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
     "AC_AEROPLAN": ProgramAuthConfig(
         label="Air Canada Aeroplan",
         login_url="https://www.aircanada.com/signin",
-        # NB: AC puts `isAuth=true` on the *pre-login* sign-in page too, so
-        # it is NOT a success marker — only genuinely post-login paths here.
-        success_url_match=(
-            "/aco/home/aeroplan/your-aeroplan",
-            "/customer-profile",
-        ),
+        # Success is judged only inside _detect_outcome — i.e. AFTER the
+        # credentials are submitted, while the page sits on AC's `clogin`
+        # login subsystem. clogin URLs never contain `/aco/`; the moment
+        # the browser lands back on an `/aco/` page it has left the login
+        # flow — i.e. signed in. (`isAuth=true` is unusable as a marker:
+        # AC puts it on the pre-login page too.)
+        success_url_match=("/aco/",),
         cookie_ttl_hours=24,
         warmup_url="https://www.aircanada.com/",
         # NEEDS-VERIFICATION selectors — see module-level note in the
@@ -862,6 +863,10 @@ async def _save_capture(
         state.error = "page_gone_before_capture"
         return False
 
+    # Let the post-login redirect chain fully settle so every Set-Cookie
+    # from the auth handshake has landed before we snapshot the jar.
+    await asyncio.sleep(3.0)
+
     try:
         raw_cookies = await page.context.cookies()
     except Exception as exc:  # noqa: BLE001
@@ -1466,6 +1471,30 @@ def _expired(state: AuthSessionState) -> bool:
     return False
 
 
+async def _wait_for_url_change(
+    page: Any, pre_url: str, timeout_s: float
+) -> None:
+    """After an action that triggers navigation, wait (bounded) for the
+    page's URL PATH to leave `pre_url`, then let the redirect chain
+    settle. Compares paths only — query/hash ignored — so a SPA tweaking
+    its own query string doesn't read as a navigation. Silent on timeout:
+    an action that triggered no navigation (e.g. a wrong MFA code that
+    re-prompts inline) just falls through to the detection loop."""
+    if page is None:
+        return
+    pre_path = pre_url.split("?")[0].split("#")[0]
+    deadline = _now() + timeout_s
+    while _now() < deadline:
+        try:
+            cur = (page.url or "").split("?")[0].split("#")[0]
+            if cur != pre_path:
+                await asyncio.sleep(2.5)
+                return
+        except Exception:  # noqa: BLE001
+            pass
+        await asyncio.sleep(0.5)
+
+
 async def _enter_mfa_required(
     state: AuthSessionState, cfg: ProgramAuthConfig
 ) -> None:
@@ -1540,13 +1569,28 @@ async def _run_mfa_round(
     code = state.mfa_code or ""
     state.mfa_code = None
 
+    pre_url = ""
+    try:
+        pre_url = state.page.url if state.page else ""
+    except Exception:  # noqa: BLE001
+        pre_url = ""
+
     submitted = await _fill_and_submit_mfa(state, cfg, code)
-    _update_current_url(state)
-    await _capture_screenshot(state)
     if not submitted:
+        _update_current_url(state)
+        await _capture_screenshot(state)
         state.state = STATE_FAILED
         state.error = "mfa_code_field_not_found"
         return False
+
+    # Submitting the code triggers the airline's post-login redirect
+    # chain. Wait for the page to actually LEAVE the MFA screen before
+    # handing back to the detection loop — otherwise the next
+    # _detect_outcome catches the stale, pre-navigation MFA field still
+    # on the page and wrongly concludes another code is needed.
+    await _wait_for_url_change(state.page, pre_url, timeout_s=18.0)
+    _update_current_url(state)
+    await _capture_screenshot(state)
     return True
 
 
