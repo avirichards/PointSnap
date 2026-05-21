@@ -1538,3 +1538,54 @@ Fix: Camoufox must run with `use_proxy=False` (Fly direct egress) for
 aircanada.com — exactly what Sekinal's AA pattern already does. `/diag/
 ac_air_bounds` (still hardcoded `use_brightdata=True` from the Session-15
 revert) is being switched to `use_camoufox=True, use_proxy=False`.
+
+### BUT — the `handler is closed` crash ALSO reproduces with use_proxy=False
+
+After switching `/diag/ac_air_bounds` to Camoufox + Fly egress, the
+`Browser.close: unable to perform operation on <WriteUnixTransport
+closed=True ...>; the handler is closed` crash STILL fired on the AC
+redeem flow. So it is NOT only an IPRoyal artifact — IPRoyal was just the
+FIRST way to trigger it. Rebuilt `/diag/ac_air_bounds` with a direct
+Camoufox lifecycle (crash-safe teardown) + a per-phase `steps` trace, and
+added `/diag/sysinfo`. Forensic results:
+
+**Memory + /dev/shm RULED OUT.** `/diag/sysinfo` on the idle worker:
+`MemAvailable 3.69 GB`, `SwapTotal 0`, **`/dev/shm` total 1958 MB**
+(~1.9 GB — not the feared 64 MB), worker idle RSS ~68 MB. Firefox + a
+heavy SPA cannot OOM in 3.6 GB free. So the crash is neither memory nor
+/dev/shm exhaustion.
+
+**Step trace pinpoints the crash.** `/diag/ac_air_bounds` step timings:
+`camoufox_launched` t=51.9s (slow cold Firefox start, not fatal) →
+`cookies_injected` 65 ok → `nav_redeem_root_done landed=True status=200`
+t=65.3 (redeem page loads fine) → `spa_bootstrapped` t=73.3 → then the
+next call `page.evaluate` (spa_storage dump) failed `handler is closed`.
+`loyalty_urls_seen` shows the SPA DID start (fetched `info.json`,
+`app-config.json`, `airports.json`). **Firefox's process dies during AC
+redeem-SPA bootstrap, ~10-20s after the page loads.**
+
+**Reproduces ANONYMOUSLY.** `/diag/airline?use_camoufox=1&use_proxy=0&
+wait_ms=20000&url=https://www.aircanada.com/aeroplan/redeem/` (no injected
+cookies, 20s wait) → same `handler is closed` crash. So the crash is NOT
+the injected session either — it is the AC redeem SPA itself crashing the
+Camoufox Firefox process. (`example.com` with the same Camoufox config
+survives fine; a `wait_ms=0` redeem load also survived — it crashes only
+when the SPA runs for ~10-20s.)
+
+### ROOT CAUSE — `headless="virtual"` 1x1 Xvfb GLX context + WebGL
+
+`camoufox/virtdisplay.py`: `headless="virtual"` spawns Xvfb with
+`-screen 0 1x1x24` (a hardcoded **1x1-pixel** screen) and `+extension
+GLX`. Air Canada's redeem SPA — Kasada `p.js` + Akamai `sensor.js` —
+aggressively probes **WebGL** for fingerprinting. A WebGL draw on a
+degenerate 1x1 Xvfb GLX context crashes the Firefox content process. That
+is why example.com (no WebGL) survives and the AC redeem SPA does not.
+
+**Fix:** `build_camoufox_config()` (new helper in `ac_aeroplan/search.py`)
+now defaults to **`headless=True`** — Camoufox's plain headless mode uses
+Firefox's own offscreen compositor, NOT an Xvfb GLX context, so the
+degenerate-GLX WebGL crash cannot occur. Camoufox's C++-level fingerprint
+patches still spoof the headless tells, so `headless=True` is not a
+bot-defense regression (Sekinal/aa_contest's verified AA config is
+likewise `headless=True`). `/diag/ac_air_bounds` got a `headless` query
+param to A/B verify `true` vs `virtual`.

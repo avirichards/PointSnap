@@ -138,26 +138,34 @@ AIR_BOUNDS_PATH = "/v2/search/air-bounds"
 LAST_RUN_DIAG: dict[str, Any] = {}
 
 
-def build_camoufox_config() -> dict[str, Any]:
+def build_camoufox_config(headless: Any = True) -> dict[str, Any]:
     """Camoufox launch kwargs for the AC redeem-SPA transport.
 
-    Used by both `/diag/ac_air_bounds` and `_auth_search`. The base config
-    matches `common/browser.py`'s Camoufox branch (proven to launch on the
-    Fly worker). On top of that it adds **Firefox memory-hardening prefs**:
-    Air Canada's redeem SPA (Angular + Kasada `p.js` + Akamai sensor.js +
-    Adobe/tracking tags) is heavy, and a long-lived Firefox content process
-    on a container can grow its RSS until the Linux OOM killer reaps it —
-    which surfaces to Playwright as `Browser.close ... WriteUnixTransport
-    closed; the handler is closed` (the symptom Session 15 misread as "the
-    Camoufox runtime is broken").
+    Used by both `/diag/ac_air_bounds` and `_auth_search`.
 
-    The prefs below cap Firefox's in-memory caches and make GC/CC fire
-    sooner. They are **fingerprint-safe** — caching limits and GC cadence
-    are not observable to a bot-defense script (unlike disabling e10s /
-    fission, which we deliberately do NOT touch).
+    Camoufox-on-Fly crash — ROOT CAUSE (Session 16): with
+    `headless="virtual"` Camoufox spawns Xvfb on a hardcoded **1x1-pixel
+    screen with `+extension GLX`** (see `camoufox/virtdisplay.py`). Air
+    Canada's redeem SPA — Angular + Kasada `p.js` + Akamai `sensor.js` —
+    aggressively probes **WebGL** for fingerprinting. A WebGL draw on a
+    degenerate 1x1 Xvfb GLX context crashes the Firefox content process,
+    which surfaces to Playwright as `Browser.close ... WriteUnixTransport
+    closed; the handler is closed`. (A page with no WebGL — example.com —
+    survives `headless="virtual"` fine; the AC redeem SPA does not.)
+
+    Fix: default to `headless=True` — Camoufox's plain headless mode uses
+    Firefox's own offscreen compositor, NOT an Xvfb GLX context, so the
+    degenerate-1x1-GLX WebGL crash cannot happen. Camoufox's C++-level
+    fingerprint patches still spoof the headless tells (`navigator.webdriver`,
+    headless UA, etc.), so `headless=True` is not a bot-defense regression —
+    Sekinal/aa_contest's verified AA config is likewise `headless=True`.
+
+    The Firefox memory-hardening prefs (capped HTTP/image/media caches,
+    sooner GC, no bfcache) are kept — fingerprint-safe and cheap insurance
+    against RSS growth over a 60-90s SPA session.
     """
     return {
-        "headless": "virtual",   # bundled Xvfb — looks headful to Akamai
+        "headless": headless,    # True (offscreen) — NOT "virtual" (Xvfb GLX)
         "humanize": True,
         "locale": "en-US",
         "window": (1366, 768),
@@ -178,8 +186,6 @@ def build_camoufox_config() -> dict[str, Any]:
             "javascript.options.mem.high_water_mark": 64,  # MB — GC trigger
             "browser.sessionhistory.max_total_viewers": 0,  # no bfcache
             "browser.sessionhistory.max_entries": 3,
-            # Trim background memory aggressively.
-            "memory.low_commit_space_threshold_mb": 64,
         },
     }
 

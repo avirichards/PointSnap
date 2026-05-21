@@ -648,6 +648,7 @@ async def diag_ac_air_bounds(
     dest: str = Query("YVR"),
     date: str = Query("2026-07-15"),
     wait_s: int = Query(45, description="seconds to wait for the air-bounds XHR"),
+    headless: str = Query("true", description="Camoufox headless mode: 'true' (offscreen) | 'virtual' (Xvfb)"),
 ) -> JSONResponse:
     """Capture Air Canada's real logged-in air-bounds request.
 
@@ -703,8 +704,10 @@ async def diag_ac_air_bounds(
         out["search_url"] = search_url
 
         # ---- launch Camoufox (direct lifecycle; crash-safe teardown) ----
-        _step("camoufox_launch_begin")
-        browser = await AsyncCamoufox(**build_camoufox_config()).__aenter__()
+        hl: Any = "virtual" if headless.lower() == "virtual" else True
+        out["headless_mode"] = hl
+        _step("camoufox_launch_begin", headless=str(hl))
+        browser = await AsyncCamoufox(**build_camoufox_config(headless=hl)).__aenter__()
         _step("camoufox_launched")
         ctx = await browser.new_context()
         page = await ctx.new_page()
