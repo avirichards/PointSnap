@@ -897,6 +897,7 @@ async def diag_ac_air_bounds(
     headless: str = Query("true", description="Camoufox headless mode: 'true' (offscreen) | 'virtual' (Xvfb)"),
     webgl_off: int = Query(0, description="1 = disable WebGL via firefox prefs (crash-isolation test)"),
     fast_nav: int = Query(0, description="1 = skip the post-load sleep, drive in-app nav immediately"),
+    direct_fetch: int = Query(1, description="1 = probe the air-bounds API directly from page context"),
 ) -> JSONResponse:
     """Capture Air Canada's real logged-in air-bounds request.
 
@@ -945,10 +946,14 @@ async def diag_ac_air_bounds(
 
         from common.auth_session import get_active_session
         from ac_aeroplan.search import (
+            AIR_BOUNDS_API_KEY as AC_AIR_BOUNDS_KEY,
+            AIR_BOUNDS_CLIENT_ID as AC_AIR_BOUNDS_CLIENT,
+            AIR_BOUNDS_URL as _AC_AIR_BOUNDS_BASE,
             SEARCH_PAGE_TMPL,
             build_camoufox_config,
             install_pw_crash_shield,
         )
+        AC_AIR_BOUNDS_URL = f"{_AC_AIR_BOUNDS_BASE}?lang=en-CA"
 
         _step("started")
         session = await get_active_session(user_id, "AC_AEROPLAN")
@@ -1208,6 +1213,58 @@ async def diag_ac_air_bounds(
                         break
                 except Exception:  # noqa: BLE001
                     pass
+
+            # DIRECT-FETCH PROBE: from inside the redeem page (Kasada `p.js`
+            # is loaded, so a page-context fetch is auto-stamped with
+            # `x-kpsdk-*`), call the air-bounds API directly with the
+            # captured session cookies. This sidesteps the whole `/clogin`
+            # SPA login dance. The response status is decisive: 200 = the
+            # captured `cognito` API-gw session still works; 401/403 = the
+            # session token is stale (must be re-captured); 400 = reached
+            # the API, body shape wrong. Best-guess `airBoundsInputs` body.
+            if direct_fetch:
+                await asyncio.sleep(3.0)  # let Kasada p.js settle
+                try:
+                    probe = await page.evaluate(
+                        """async ({url, apiKey, clientId, o, d, dt}) => {
+                            const body = {
+                              origin: o, destination: d, departureDate: dt,
+                              searchType: "BRANDED", subType: "ROUNDTRIP",
+                              marketCode: "TNB",
+                              flightSearchType: "FUNCTION_AIR",
+                              fareFilters: { value: "ECONOMY" },
+                              passengers: { adultCount: 1, youthCount: 0,
+                                            childCount: 0, infantCount: 0 },
+                            };
+                            try {
+                              const r = await fetch(url, {
+                                method: "POST",
+                                credentials: "include",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  "Accept": "application/json",
+                                  "x-api-key": apiKey,
+                                  "x-app-client-id": clientId,
+                                },
+                                body: JSON.stringify(body),
+                              });
+                              const txt = await r.text();
+                              return { status: r.status,
+                                       headers_kpsdk: r.headers.get("x-kpsdk-ct") || null,
+                                       body_head: txt.slice(0, 2500) };
+                            } catch (e) { return { fetch_error: String(e) }; }
+                        }""",
+                        {
+                            "url": AC_AIR_BOUNDS_URL,
+                            "apiKey": AC_AIR_BOUNDS_KEY,
+                            "clientId": AC_AIR_BOUNDS_CLIENT,
+                            "o": origin, "d": dest, "dt": date,
+                        },
+                    )
+                    out["direct_fetch_probe"] = probe
+                    _step("direct_fetch_done", status=probe.get("status"))
+                except Exception as exc:  # noqa: BLE001
+                    out["direct_fetch_probe"] = {"error": str(exc)[:300]}
 
             if "clogin" in (page.url or ""):
                 nav_attempts.append({"step": "clogin_bounce_reload"})
