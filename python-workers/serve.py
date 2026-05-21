@@ -657,14 +657,13 @@ async def diag_ac_air_bounds(
         all_loyalty_urls: list[str] = []
 
         # Two-pronged session injection:
-        #  (a) Cookie HEADER rewrite (via page.route) — makes every
-        #      aircanada.com HTTP request carry the captured session, so the
-        #      air-bounds API POST is authenticated.
-        #  (b) Cookie STORE injection (via CDP) — so `document.cookie`, which
-        #      the redeem SPA's client-side Gigya auth guard reads, carries
-        #      the `gig_loginToken`/`glt_` login cookies. Without (b) the SPA
-        #      thinks it is logged out and redirects to /clogin even though
-        #      the HTTP layer is authenticated.
+        #  (a) Cookie extra-HTTP-header — makes every aircanada.com HTTP
+        #      request carry the captured session, so the air-bounds API
+        #      POST is authenticated.
+        #  (b) document.cookie init script — so the redeem SPA's client-side
+        #      Gigya auth guard sees the `gig_loginToken`/`glt_` login
+        #      cookies. Without (b) the SPA thinks it is logged out and
+        #      redirects to /clogin even though the HTTP layer is authed.
         cookie_pairs: list[str] = []
         seen_names: set[str] = set()
         for c in cookies:
@@ -766,51 +765,23 @@ async def diag_ac_air_bounds(
             search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
             out["search_url"] = search_url
 
-            # Inject the captured session by rewriting the `Cookie` header on
-            # every aircanada.com request. This handler is TERMINAL (calls
-            # continue_/abort, not fallback) — a fallback chain to
-            # browser_page's resource blocker is unreliable over BD's CDP
-            # (manifests as ERR_TUNNEL_CONNECTION_FAILED), so we fold the
-            # heavy-resource block in here. Kasada `x-kpsdk-*` headers that
-            # p.js sets inside the SPA are preserved — we only touch cookie.
+            # Inject the captured session as a `Cookie` extra-HTTP-header on
+            # every request. We do NOT use page.route — a second route
+            # handler over BD Browser API's CDP breaks the proxy tunnel
+            # (ERR_TUNNEL_CONNECTION_FAILED). set_extra_http_headers applies
+            # via CDP Network.setExtraHTTPHeaders without intercepting, so
+            # BD's tunnel is undisturbed. This carries the captured session
+            # on the air-bounds API POST + the SPA's auth/profile XHRs;
+            # Kasada x-kpsdk-* headers p.js adds inside the SPA are merged.
             route_diag = {"matched": 0}
-            _BLOCK = ("image", "stylesheet", "font", "media", "manifest")
-
-            async def _cookie_router(route):
+            if captured_cookie_header:
                 try:
-                    req = route.request
-                    if req.resource_type in _BLOCK:
-                        await route.abort()
-                        return
-                    # Leave the main document request UNTOUCHED — modifying
-                    # a top-level navigation request's headers over BD's CDP
-                    # breaks the proxy tunnel (ERR_TUNNEL_CONNECTION_FAILED).
-                    # The cookie-store / document.cookie injection covers the
-                    # SPA's client-side auth; the Cookie-header rewrite only
-                    # needs to ride the XHR/fetch calls (the air-bounds API
-                    # POST + the SPA's auth/profile XHRs).
-                    if (
-                        req.resource_type in ("xhr", "fetch")
-                        and "aircanada.com" in req.url
-                        and captured_cookie_header
-                    ):
-                        route_diag["matched"] += 1
-                        hdrs = dict(req.headers)
-                        existing = hdrs.get("cookie") or hdrs.get("Cookie") or ""
-                        hdrs["cookie"] = (
-                            f"{existing}; {captured_cookie_header}"
-                            if existing else captured_cookie_header
-                        )
-                        await route.continue_(headers=hdrs)
-                    else:
-                        await route.continue_()
-                except Exception:  # noqa: BLE001
-                    try:
-                        await route.continue_()
-                    except Exception:  # noqa: BLE001
-                        pass
-
-            await page.route("**/*", _cookie_router)
+                    await page.set_extra_http_headers(
+                        {"Cookie": captured_cookie_header}
+                    )
+                    out["extra_header_set"] = True
+                except Exception as exc:  # noqa: BLE001
+                    out["extra_header_error"] = str(exc)[:200]
 
             # CDP session for cookie-store injection.
             cdp = None
@@ -999,7 +970,7 @@ async def diag_ac_air_bounds(
                 if air_bounds_resps:
                     break
                 await asyncio.sleep(1.0)
-            out["route_matched"] = route_diag["matched"]
+            out["route_matched"] = route_diag.get("matched", 0)
 
             try:
                 out["page_url"] = page.url
