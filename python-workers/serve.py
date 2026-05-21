@@ -901,12 +901,15 @@ async def diag_ac_air_bounds(
 ) -> JSONResponse:
     """Capture Air Canada's real logged-in air-bounds request.
 
-    Opens a **Camoufox** browser (Fly direct egress — NO proxy; IPRoyal
-    blocks aircanada.com at CONNECT), injects the user's captured Aeroplan
-    cookie jar via `context.add_cookies` (works on Firefox/Camoufox — the
-    BD Browser API "Overriding X forbidden" wall does NOT apply), navigates
-    the redeem SPA, drives an in-app route change to the availability page,
-    and records every network request whose URL contains `air-bounds`.
+    Opens a **Camoufox** browser routed through a Bright Data Residential
+    CA exit IP (`build_camoufox_config` wires the proxy — Air Canada's
+    Kasada-protected air-bounds API 429s the Fly worker's data-center IP,
+    so a residential exit is required), injects the user's captured
+    Aeroplan cookie jar via `context.add_cookies` (works on Firefox/
+    Camoufox — the BD Browser API "Overriding X forbidden" wall does NOT
+    apply), navigates the redeem SPA, drives an in-app route change to the
+    availability page, and records every network request whose URL
+    contains `air-bounds`.
 
     The Camoufox lifecycle is managed DIRECTLY here (not via
     `browser_page`) so that (a) a `Browser.close ... handler is closed`
@@ -984,10 +987,21 @@ async def diag_ac_air_bounds(
                 "layers.acceleration.disabled": True,
             })
             out["webgl_off"] = True
-        _step("camoufox_launch_begin", headless=str(hl), webgl_off=bool(webgl_off))
+        # `build_camoufox_config` wires a Bright Data Residential CA exit
+        # into `cf_config["proxy"]` (when BRIGHTDATA_RESIDENTIAL_URL is set)
+        # — Air Canada's Kasada-protected air-bounds API 429s the Fly
+        # worker's data-center IP, so a residential exit is required.
+        through_proxy = "proxy" in cf_config
+        out["proxy"] = "brightdata_residential_ca" if through_proxy else "none"
+        _step("camoufox_launch_begin", headless=str(hl),
+              webgl_off=bool(webgl_off), proxy=out["proxy"])
         browser = await AsyncCamoufox(**cf_config).__aenter__()
         _step("camoufox_launched")
-        ctx = await browser.new_context()
+        # BD Residential MITMs HTTPS (its own cert) — Firefox throws
+        # SEC_ERROR_UNKNOWN_ISSUER without ignore_https_errors.
+        ctx = await browser.new_context(
+            **({"ignore_https_errors": True} if through_proxy else {})
+        )
         # Shield against the Playwright-1.60 Firefox driver page-error NPE
         # crash (THE "Camoufox crash" — see install_pw_crash_shield docs).
         await install_pw_crash_shield(ctx)

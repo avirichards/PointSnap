@@ -78,6 +78,7 @@ a verdict in `LAST_RUN_DIAG`.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Any
@@ -210,14 +211,34 @@ def build_camoufox_config(headless: Any = True) -> dict[str, Any]:
     The Firefox memory-hardening prefs (capped HTTP/image/media caches,
     sooner GC, no bfcache) are kept — fingerprint-safe and cheap insurance
     against RSS growth over a 60-90s SPA session.
+
+    TRANSPORT — Bright Data Residential (Session 17). Air Canada's
+    air-bounds XHR (`akamai-gw.dbaas.aircanada.com/.../v2/search/air-bounds`)
+    is Kasada-protected and HTTP-429s any request from the Fly worker's
+    DATA-CENTER IP — Kasada flags data-center traffic on sight. The fix is
+    to route the whole Camoufox transport through a residential exit IP.
+    `_brightdata_residential_proxy()` parses `BRIGHTDATA_RESIDENTIAL_URL`
+    into a `{server, username, password}` proxy dict; Camoufox/Playwright
+    accepts that directly as `proxy=`. AC is a Canadian carrier, so we
+    request a Canada residential exit (`-country-ca`). When the proxy is
+    set, `geoip=True` so Camoufox auto-derives the timezone/locale/lat-long
+    from the (Canadian) exit IP — keeping the fingerprint internally
+    consistent with the residential IP.
+
+    If `BRIGHTDATA_RESIDENTIAL_URL` is unset, `_brightdata_residential_proxy`
+    returns None and the launch falls back to direct Fly egress (which the
+    air-bounds Kasada wall will then 429 — but the redeem SPA still loads,
+    so this degrades rather than hard-fails).
     """
-    return {
+    from common.browser import _brightdata_residential_proxy
+
+    cfg: dict[str, Any] = {
         "headless": headless,    # True (offscreen) — NOT "virtual" (Xvfb GLX)
         "humanize": True,
         "locale": "en-US",
         "window": (1366, 768),
         "block_webrtc": True,
-        "geoip": False,          # Fly direct egress — no proxy
+        "geoip": False,          # overridden to True below when a proxy is set
         "firefox_user_prefs": {
             # Cap the HTTP + image memory caches (defaults are unbounded /
             # large). Keeps Firefox RSS bounded over a 60-90s SPA session.
@@ -235,6 +256,17 @@ def build_camoufox_config(headless: Any = True) -> dict[str, Any]:
             "browser.sessionhistory.max_entries": 3,
         },
     }
+
+    # Route the transport through a Canada residential exit IP so Air
+    # Canada's Kasada-protected air-bounds API does not 429 the call as
+    # data-center traffic. `-country-ca` keeps the exit in Canada (AC is a
+    # Canadian carrier); `geoip=True` makes Camoufox derive a consistent
+    # Canadian fingerprint (TZ/locale/geo) from the exit IP.
+    bd_proxy = _brightdata_residential_proxy(country="ca")
+    if bd_proxy:
+        cfg["proxy"] = bd_proxy
+        cfg["geoip"] = True
+    return cfg
 
 
 def _cabin_from_ac(code: str) -> str | None:
@@ -400,12 +432,14 @@ async def _camoufox_air_bounds(
     user's session. Bright Data Browser API blocks cookie injection for
     aircanada.com; Camoufox is the only transport where injection works.
 
-    Flow: launch Camoufox (Fly egress, no proxy — IPRoyal blocks
-    aircanada.com at CONNECT) → install the Playwright-driver crash shield
-    → inject the captured jar as session cookies → load the redeem SPA
-    root (warms Akamai) → navigate the availability deep-link, which makes
-    the logged-in SPA run AC's Kasada `p.js` and fire its own properly-
-    stamped air-bounds XHR → capture that XHR's JSON via `page.on`.
+    Flow: launch Camoufox through a Bright Data Residential CA exit IP
+    (`build_camoufox_config` wires the proxy — Kasada 429s the air-bounds
+    XHR from the Fly worker's data-center IP, so a residential exit is
+    required) → install the Playwright-driver crash shield → inject the
+    captured jar as session cookies → load the redeem SPA root (warms
+    Akamai) → navigate the availability deep-link, which makes the
+    logged-in SPA run AC's Kasada `p.js` and fire its own properly-stamped
+    air-bounds XHR → capture that XHR's JSON via `page.on`.
 
     Never raises — returns `(None, diag)` on any failure. `diag` carries
     forensic detail for `LAST_RUN_DIAG`.
@@ -420,9 +454,19 @@ async def _camoufox_air_bounds(
         search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
         redeem_root = "https://www.aircanada.com/aeroplan/redeem/"
 
-        browser = await AsyncCamoufox(**build_camoufox_config()).__aenter__()
-        diag["stages"].append("camoufox_launched")
-        ctx = await browser.new_context()
+        cf_config = build_camoufox_config()
+        through_proxy = "proxy" in cf_config
+        diag["proxy"] = "brightdata_residential_ca" if through_proxy else "none"
+        browser = await AsyncCamoufox(**cf_config).__aenter__()
+        diag["stages"].append(
+            "camoufox_launched"
+            + ("(bd_residential)" if through_proxy else "(fly_egress)")
+        )
+        # Bright Data Residential MITMs HTTPS (presents its own cert);
+        # Firefox throws SEC_ERROR_UNKNOWN_ISSUER without ignore_https_errors.
+        ctx = await browser.new_context(
+            **({"ignore_https_errors": True} if through_proxy else {})
+        )
         await install_pw_crash_shield(ctx)
         page = await ctx.new_page()
         page.set_default_timeout(120_000)
