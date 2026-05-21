@@ -1632,20 +1632,60 @@ telemetry at the JS-engine error-report level, *before* the page's own
 noise) but it is not the fix.
 
 **Fix attempt 2 (`patch_playwright.py`, THE FIX):** patch the Playwright
-driver bundle directly. `/diag/pw_source` gave the exact buggy code — TWO
-occurrences (coreBundle.js lines 25566 + 49624), each:
-```js
-location: {
-  url: pageError.location.url,
-  line: pageError.location.lineNumber,
-  column: pageError.location.columnNumber
-}
-```
-`python-workers/patch_playwright.py` (run at Docker build, after
-`camoufox fetch` so that layer stays cached) replaces every
-`pageError.location.X` with `(pageError.location||{}).X`.
-`(undefined||{}).url` → `undefined` (no crash); `({url:'x'}).url` → `'x'`
-(unchanged when present). Behaviour-preserving, idempotent. This null-
-guards the driver so an undefined page-error `location` no longer crashes
-the Node process. `/diag/camoufox_probe?shield=0` will confirm the redeem
-page survives after the rebuild.
+driver bundle directly. `python-workers/patch_playwright.py` (run at
+Docker build, after `camoufox fetch` so that layer stays cached) patches
+`FFPage._onUncaughtError`: `this._page.addPageError(error,
+params2.location)` → `... params2.location || { url: "", lineNumber: 0,
+columnNumber: 0 }`. The default object is TYPE-CORRECT (`url` a string,
+`lineNumber`/`columnNumber` numbers) — a plain `{}` would relocate the
+crash to Playwright's protocol validator (`ValidationError: location.url:
+expected string, got undefined`). Plus defensive `(pageError.location||
+{}).X` guards at the two dispatch sites. Behaviour-preserving, idempotent.
+
+**VERIFIED FIXED.** `/diag/camoufox_probe` on `aircanada.com/aeroplan/
+redeem/` now stays alive the full 44s (`alive t+2s` … `alive t+44s`,
+clean `teardown ok`). The Camoufox-on-Fly crash is resolved — root cause
+was a Playwright-1.60 Firefox-driver NPE, NOT a browser/Camoufox/Xvfb/
+memory problem.
+
+### After the crash fix — the AUTH wall (Session 16 continued)
+
+Camoufox now drives the AC redeem SPA fine, but `/search` still returns
+0 rows because the **captured Aeroplan session is too stale to use**:
+
+- The injected jar (65 cookies) is now fully retained (`jar_after_inject:
+  65`) — fixed by injecting every cookie as a SESSION cookie (dropping the
+  captured `expires`), since the captured expiries are partly in the past.
+- Forensic `auth_cookie_detail` of the captured jar:
+  * `glt_3_*` (Gigya short-lived login token) — **expired ~1.3 h** before
+    the test (`expires 1779340446` ≈ 2026-05-21 05:14 UTC).
+  * `cognito` (the AWS-Cognito session for `auth.api-gw.dbaas.aircanada
+    .com`, which gates the air-bounds API) — **expired ~2.3 h** before the
+    test (`expires 1779336869` ≈ 04:14 UTC).
+  * `gig_loginToken_3_*` / `gmid` / `ucid` (Gigya remember-me + device
+    tokens) — valid to **2027**.
+- With the short-lived tokens expired, the redeem SPA's auth guard bounces
+  to AC's silent-SSO chain: `auth.api-gw.../oauth2/authorize` →
+  `akamai-gw.../cognito-proxy/authorize-proxy` → `www.aircanada.com/
+  clogin/pages/proxy?context=<JWT>` (loads `ac_SSO_bundle.js`) → and after
+  ~57 s → **`/clogin/pages/error?code=SYS011`**. The SSO bundle makes NO
+  Gigya call — it bails before contacting Gigya, then times out → SYS011.
+  So the silent re-auth from the long-lived remember-me token FAILS for a
+  >2 h-stale session replayed in a fresh browser.
+- A direct `fetch()`/XHR to the air-bounds API
+  (`POST akamai-gw.dbaas.aircanada.com/loyalty/dapidynamicplus/
+  1ASIUDALAC/v2/search/air-bounds?lang=en-CA`) from the redeem page → HTTP
+  **429** with NO `x-kpsdk-*` request header — Kasada's `p.js` does not
+  stamp a `page.evaluate` fetch that runs before its challenge solves.
+
+**Confirmed transport facts for the production wiring:**
+- The air-bounds endpoint URL/headers in `ac_aeroplan/search.py`
+  (`AIR_BOUNDS_*`) are correct — a request reaches it (got a 429, not a
+  404/DNS error).
+- A best-guess `airBoundsInputs` body that the API at least parsed:
+  `{"origin","destination","departureDate","searchType":"BRANDED",
+  "subType":"ROUNDTRIP","marketCode":"TNB","flightSearchType":
+  "FUNCTION_AIR","fareFilters":{"value":"ECONOMY"},"passengers":
+  {"adultCount":1,"youthCount":0,"childCount":0,"infantCount":0}}` — but
+  the response was a Kasada 429, so the body shape is not yet confirmed
+  against a real 200.
