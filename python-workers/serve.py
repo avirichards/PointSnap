@@ -730,11 +730,24 @@ async def diag_ac_air_bounds(
             cdp_inject_diag: dict = {}
 
             async def _inject_via_cdp() -> int:
-                """Inject the captured cookies via CDP Network.setCookies.
-                Returns the count CDP accepted. No-op if no CDP session."""
+                """Inject the captured cookies via CDP.
+
+                BD's hosted Chromium hands back a context whose cookie store
+                already holds aircanada.com cookies, and CDP refuses to
+                *override* an existing name ("Overriding X forbidden"). So we
+                first `Network.clearBrowserCookies` to empty the jar, then
+                `Network.setCookies` — into an empty store there is nothing
+                to override. MUST run before the first navigation (a page
+                load re-sets Akamai cookies and brings the conflict back).
+                """
                 if not cdp:
                     cdp_inject_diag["no_cdp"] = True
                     return 0
+                try:
+                    await cdp.send("Network.clearBrowserCookies", {})
+                    cdp_inject_diag["cleared"] = True
+                except Exception as exc:  # noqa: BLE001
+                    cdp_inject_diag["clear_error"] = str(exc)[:200]
                 ok = 0
                 try:
                     await cdp.send("Network.setCookies", {"cookies": cdp_cookies})
@@ -742,7 +755,6 @@ async def diag_ac_air_bounds(
                     cdp_inject_diag["bulk"] = "ok"
                 except Exception as exc:  # noqa: BLE001
                     cdp_inject_diag["bulk_error"] = str(exc)[:300]
-                    # Bulk failed — set one at a time.
                     one_err = None
                     for cc in cdp_cookies:
                         try:
@@ -755,7 +767,19 @@ async def diag_ac_air_bounds(
                     cdp_inject_diag["one_error"] = one_err
                 return ok
 
-            # Step 1: land on the redeem SPA root (lighter Akamai path than
+            # Step 1: inject the logged-in session cookies into the empty
+            # context BEFORE any navigation, so the redeem SPA bootstraps
+            # already authenticated.
+            out["cookies_injected"] = await _inject_via_cdp()
+            out["cdp_inject_diag"] = cdp_inject_diag
+            try:
+                jar = await ctx.cookies()
+                out["jar_after_inject"] = len(jar)
+                out["jar_names_sample"] = sorted({c["name"] for c in jar})[:25]
+            except Exception:  # noqa: BLE001
+                pass
+
+            # Step 2: land on the redeem SPA root (lighter Akamai path than
             # the /availability/ deep-link). Retry to ride out BD exit-IP
             # hard-denies (~50% per scraper log).
             nav_attempts: list[dict] = []
@@ -787,24 +811,17 @@ async def diag_ac_air_bounds(
                     })
                     await asyncio.sleep(2.0)
 
-            # Step 2: inject the logged-in session cookies now that we're
-            # on-origin, then navigate to the availability deep-link.
-            out["cookies_injected"] = await _inject_via_cdp()
-            out["cdp_inject_diag"] = cdp_inject_diag
-            try:
-                jar = await ctx.cookies()
-                out["jar_after_inject"] = len(jar)
-                out["jar_names_sample"] = sorted({c["name"] for c in jar})[:25]
-            except Exception:  # noqa: BLE001
-                pass
-
+            # Step 3: navigate to the availability deep-link. The injected
+            # cookies persist in the context jar across same-origin navs, so
+            # no re-injection — that would wipe the Akamai cookies the
+            # redeem-root load legitimately minted. Retry on Akamai deny.
             if landed:
                 for attempt in range(4):
                     try:
                         r = await page.goto(
                             search_url, wait_until="commit", timeout=90_000
                         )
-                        await asyncio.sleep(5.0)
+                        await asyncio.sleep(6.0)
                         title = ""
                         try:
                             title = await page.title()
@@ -815,9 +832,6 @@ async def diag_ac_air_bounds(
                             "status": r.status if r else None,
                             "url": page.url, "title": title,
                         })
-                        # Re-inject (a fresh nav can drop the jar) and stop
-                        # once we're past Akamai deny.
-                        await _inject_via_cdp()
                         if "Access Denied" not in title and not (r and r.status == 403):
                             break
                         await asyncio.sleep(2.0)
@@ -834,6 +848,12 @@ async def diag_ac_air_bounds(
                 if air_bounds_resps:
                     break
                 await asyncio.sleep(1.0)
+            # Snapshot the post-search jar (shows whether the session held).
+            try:
+                jar2 = await ctx.cookies()
+                out["jar_final_count"] = len(jar2)
+            except Exception:  # noqa: BLE001
+                pass
 
             try:
                 out["page_url"] = page.url
