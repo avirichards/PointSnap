@@ -1037,10 +1037,22 @@ async def diag_ac_air_bounds(
         page.on("response", _on_response)
 
         # ---- inject the captured Aeroplan session ----
+        # Inject as SESSION cookies (no `expires`): a captured cookie's
+        # stored `expires` may be in the past (Gigya `glt_*` login tokens
+        # are often short-lived) and the browser silently discards an
+        # already-expired cookie — which is why the earlier run lost the
+        # auth-critical Gigya jar. A session cookie is kept for the whole
+        # context lifetime, which is all our flow needs; the SPA reads
+        # cookie VALUES, not expiry.
+        AUTH_TOKENS = ("glt_", "gig_logintoken", "gig_bootstrap", "apidomain",
+                       "gmid", "ucid", "hasgmid", "cognito", "xsrf", "audit",
+                       "khaos", "l_user", "globalid", "ac-sso")
         store_diag: dict = {"set_ok": 0, "set_fail": 0}
         pw_cookies: list[dict] = []
+        skipped: list[str] = []
         for c in cookies:
             if not c.get("name") or "value" not in c or not c.get("domain"):
+                skipped.append(c.get("name") or "<noname>")
                 continue
             nc: dict = {
                 "name": c["name"],
@@ -1053,13 +1065,10 @@ async def diag_ac_air_bounds(
             ss = c.get("sameSite")
             if ss in ("Strict", "Lax", "None"):
                 nc["sameSite"] = ss
-            exp = c.get("expires")
-            if exp is not None and exp != -1:
-                try:
-                    nc["expires"] = int(exp)
-                except (TypeError, ValueError):
-                    pass
+            # Deliberately NO `expires` — inject as a session cookie so an
+            # expired captured timestamp can't make the browser drop it.
             pw_cookies.append(nc)
+        out["cookies_skipped_noattr"] = skipped
         try:
             await ctx.add_cookies(pw_cookies)
             store_diag["set_ok"] = len(pw_cookies)
@@ -1076,11 +1085,37 @@ async def diag_ac_air_bounds(
                         store_diag["first_err"] = f"{nc['name']}: {str(exc2)[:140]}"
             store_diag["mode"] = "one_by_one"
         out["store_inject"] = dict(store_diag)
-        _step("cookies_injected", set_ok=store_diag["set_ok"])
+        # Forensic: which auth-critical cookies actually survived into the
+        # browser jar, and per-cookie raw attrs for any that did NOT.
         try:
-            out["jar_after_inject"] = len(await ctx.cookies())
-        except Exception:  # noqa: BLE001
-            pass
+            jar = await ctx.cookies()
+            jar_names = {jc.get("name") for jc in jar}
+            out["jar_after_inject"] = len(jar)
+            injected_names = {pc["name"] for pc in pw_cookies}
+            dropped = sorted(injected_names - jar_names)
+            out["cookies_dropped_by_browser"] = dropped
+            # Raw captured attrs for every auth-token cookie (whether kept
+            # or dropped) — so we can see exactly what made one drop.
+            auth_detail: list[dict] = []
+            for c in cookies:
+                nm = (c.get("name") or "")
+                if any(tok in nm.lower() for tok in AUTH_TOKENS):
+                    auth_detail.append({
+                        "name": nm,
+                        "domain": c.get("domain"),
+                        "path": c.get("path"),
+                        "secure": c.get("secure"),
+                        "httpOnly": c.get("httpOnly"),
+                        "sameSite": c.get("sameSite"),
+                        "expires": c.get("expires"),
+                        "value_len": len(str(c.get("value") or "")),
+                        "in_jar": nm in jar_names,
+                    })
+            out["auth_cookie_detail"] = auth_detail
+        except Exception as exc:  # noqa: BLE001
+            out["jar_inspect_error"] = str(exc)[:200]
+        _step("cookies_injected", set_ok=store_diag["set_ok"],
+              jar=out.get("jar_after_inject"))
 
         nav_attempts: list[dict] = []
 
