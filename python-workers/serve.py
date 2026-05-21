@@ -642,38 +642,73 @@ async def diag_sysinfo() -> JSONResponse:
 
 
 def _firefox_crash_artifacts() -> list[dict]:
-    """Glob for Firefox crash-report `.extra` files left by a crashed
+    """Find Firefox crash-report `.extra` files left by a crashed
     Camoufox/Playwright Firefox process. The `.extra` file is plaintext
     key=value with the crash signature (`MozCrashReason`, `Signature`,
     `GraphicsCriticalError`, ...) — exactly what we need to know WHY
-    Firefox died. Playwright launches Firefox with a temp profile under
-    /tmp; crash dumps land in `<profile>/minidumps` or a `Crash Reports`
-    dir under the cache.
+    Firefox died.
+
+    Bounded walk (depth + node cap) — a naive recursive glob over /tmp can
+    be huge/slow and itself break the request.
     """
-    import glob as _glob
     found: list[dict] = []
-    roots = [
-        "/tmp", "/root/.mozilla", "/root/.cache",
-        os.path.expanduser("~/.mozilla"),
-    ]
+    roots = ["/tmp", "/root/.mozilla", "/root/.cache",
+             os.path.expanduser("~/.mozilla")]
     seen: set[str] = set()
-    for root in roots:
-        for pat in ("**/*.extra", "**/minidumps/*.extra",
-                    "**/Crash Reports/**/*.extra"):
-            try:
-                for fp in _glob.glob(os.path.join(root, pat), recursive=True):
-                    if fp in seen:
-                        continue
-                    seen.add(fp)
+    visited = 0
+    MAX_NODES = 40000
+
+    def _walk(path: str, depth: int) -> None:
+        nonlocal visited
+        if depth > 7 or visited > MAX_NODES or len(found) >= 8:
+            return
+        try:
+            with os.scandir(path) as it:
+                for entry in it:
+                    visited += 1
+                    if visited > MAX_NODES or len(found) >= 8:
+                        return
                     try:
-                        with open(fp, errors="replace") as f:
-                            txt = f.read()
-                        found.append({"file": fp, "content": txt[:4000]})
-                    except Exception as exc:  # noqa: BLE001
-                        found.append({"file": fp, "read_error": str(exc)[:200]})
-            except Exception:  # noqa: BLE001
-                pass
+                        if entry.is_dir(follow_symlinks=False):
+                            _walk(entry.path, depth + 1)
+                        elif entry.name.endswith((".extra", ".dmp")):
+                            fp = entry.path
+                            if fp in seen:
+                                continue
+                            seen.add(fp)
+                            if fp.endswith(".dmp"):
+                                found.append({"file": fp, "note": "minidump (binary) present"})
+                                continue
+                            try:
+                                with open(fp, errors="replace") as f:
+                                    found.append({"file": fp, "content": f.read()[:4000]})
+                            except Exception as exc:  # noqa: BLE001
+                                found.append({"file": fp, "read_error": str(exc)[:200]})
+                    except Exception:  # noqa: BLE001
+                        pass
+        except Exception:  # noqa: BLE001
+            pass
+
+    for root in roots:
+        if len(found) >= 8:
+            break
+        _walk(root, 0)
     return found[:8]
+
+
+@app.get("/diag/firefox_crashes")
+async def diag_firefox_crashes() -> JSONResponse:
+    """Standalone read of any Firefox crash-report files on the worker FS.
+    Survives even when /diag/ac_air_bounds itself 500s — lets us read the
+    crash signature from a prior crashed run."""
+    try:
+        return JSONResponse({"ok": True, "artifacts": _firefox_crash_artifacts()})
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:300], "tb": traceback.format_exc()[-500:]},
+            status_code=500,
+        )
 
 
 @app.get("/diag/ac_air_bounds")
@@ -977,20 +1012,26 @@ async def diag_ac_air_bounds(
         except Exception:  # noqa: BLE001
             pass
         _step("flow_complete")
-    except Exception as exc:  # noqa: BLE001
-        out["error"] = str(exc)[:500]
-        out["traceback"] = traceback.format_exc()[-1500:]
+    except BaseException as exc:  # noqa: BLE001 — incl. CancelledError
+        out["error"] = f"{type(exc).__name__}: {str(exc)[:480]}"
+        try:
+            out["traceback"] = traceback.format_exc()[-1500:]
+        except Exception:  # noqa: BLE001
+            pass
         _step("EXCEPTION", err=str(exc)[:200])
     finally:
         # Crash-safe teardown: if Firefox's process already died, close()
-        # raises `handler is closed` — swallow it so captured data survives.
+        # can RAISE (`handler is closed`) OR HANG (dead transport, the
+        # close response never arrives). Bound it with wait_for and catch
+        # BaseException so neither failure mode escapes as a 500.
         crashed = False
         if browser is not None:
             try:
-                await browser.close()
-            except Exception as exc:  # noqa: BLE001
+                await asyncio.wait_for(browser.close(), timeout=20.0)
+            except BaseException as exc:  # noqa: BLE001
                 crashed = True
-                _step("teardown_close_failed", err=str(exc)[:160])
+                _step("teardown_close_failed",
+                      err=f"{type(exc).__name__}: {str(exc)[:140]}")
         # On a crash, read Firefox's own crash-report .extra files (plaintext
         # crash signature) so we can see WHY the process died.
         if crashed or any("handler is closed" in str(s) for s in steps):
@@ -1003,7 +1044,15 @@ async def diag_ac_air_bounds(
     out["air_bounds_requests"] = air_bounds_reqs
     out["air_bounds_responses"] = air_bounds_resps
     out["loyalty_urls_seen"] = all_loyalty_urls[:40]
-    return JSONResponse({"ok": bool(air_bounds_reqs), **out})
+    try:
+        return JSONResponse({"ok": bool(air_bounds_reqs), **out})
+    except Exception as exc:  # noqa: BLE001
+        # Last-ditch: something in `out` isn't JSON-serializable. Stringify.
+        return JSONResponse({
+            "ok": False,
+            "serialize_error": str(exc)[:200],
+            "out_repr": repr(out)[:4000],
+        })
 
 
 @app.get("/diag/ua_scrape")
