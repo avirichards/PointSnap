@@ -101,6 +101,12 @@ class ProgramAuthConfig:
     login_url: str
     success_url_match: tuple[str, ...]
     success_dom_check: str | None = None
+    # Substring that, while present in the URL, means the browser is
+    # still inside the airline's login subsystem. Once it is GONE from
+    # the URL (during the post-submit detection loop) authentication has
+    # succeeded — lets us recognize success even when the airline stalls
+    # on an OAuth-callback hop before the final account-page URL.
+    login_host_marker: str = ""
     cookie_ttl_hours: int = 24
     # Optional warmup before login_url to mint sensor cookies (Akamai
     # programs).
@@ -170,6 +176,11 @@ PROGRAM_AUTH: dict[str, ProgramAuthConfig] = {
         # flow — i.e. signed in. (`isAuth=true` is unusable as a marker:
         # AC puts it on the pre-login page too.)
         success_url_match=("/aco/",),
+        # AC's login subsystem lives under `clogin`. Once the browser
+        # leaves it (during post-submit detection) the user is
+        # authenticated — even while still mid-redirect to the account
+        # page. This is the reliable success signal.
+        login_host_marker="clogin",
         cookie_ttl_hours=24,
         warmup_url="https://www.aircanada.com/",
         # NEEDS-VERIFICATION selectors — see module-level note in the
@@ -832,14 +843,25 @@ def _human_type_delay() -> float:
 
 
 async def _is_success(page: Any, cfg: ProgramAuthConfig) -> bool:
-    """True if the page is at a verified post-login state: URL matches one
-    of `success_url_match` AND (if set) the `success_dom_check` selector is
-    visible."""
+    """True if the page has reached a verified post-login state.
+
+    Either signal is sufficient:
+      - the URL matches one of `success_url_match`; OR
+      - `login_host_marker` is set and is NO LONGER in the URL — the
+        browser has left the login subsystem entirely. Inside the
+        post-submit detection loop that means authentication succeeded;
+        this catches an airline's OAuth-callback hop even when it stalls
+        before reaching the final account-page URL.
+    """
     try:
         cur_url = page.url or ""
     except Exception:  # noqa: BLE001
         return False
-    if not any(sub in cur_url for sub in cfg.success_url_match):
+    left_login = bool(cfg.login_host_marker) and (
+        cfg.login_host_marker not in cur_url
+    )
+    url_match = any(sub in cur_url for sub in cfg.success_url_match)
+    if not (left_login or url_match):
         return False
     if cfg.success_dom_check:
         try:
@@ -863,9 +885,23 @@ async def _save_capture(
         state.error = "page_gone_before_capture"
         return False
 
-    # Let the post-login redirect chain fully settle so every Set-Cookie
-    # from the auth handshake has landed before we snapshot the jar.
-    await asyncio.sleep(3.0)
+    # Settle the post-login redirect chain before snapshotting the cookie
+    # jar. Auth is already done (the browser left the login subsystem),
+    # but the airline may still be redirect-chaining through an
+    # OAuth-callback page, setting session cookies along the way. Wait
+    # (bounded) for the URL to reach a success_url_match target; if it
+    # stalls on the callback page, snapshot anyway — by then the
+    # handshake's Set-Cookies have landed.
+    _settle_deadline = _now() + 35.0
+    while _now() < _settle_deadline:
+        try:
+            _cur = page.url or ""
+        except Exception:  # noqa: BLE001
+            _cur = ""
+        if any(sub in _cur for sub in cfg.success_url_match):
+            break
+        await asyncio.sleep(1.5)
+    await asyncio.sleep(4.0)
 
     try:
         raw_cookies = await page.context.cookies()
