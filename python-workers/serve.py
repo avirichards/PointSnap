@@ -1215,25 +1215,42 @@ async def diag_ac_air_bounds(
             avail_landed = await _nav(search_url, "availability_deeplink")
             _step("nav_availability_done", landed=avail_landed)
 
+            # Ride the FULL redirect chain. The redeem app loads, its auth
+            # guard runs, sees the expired short-lived `glt_*`, and bounces
+            # to `/clogin/pages/proxy` (AC's silent-SSO OAuth entry). With a
+            # valid remember-me token the proxy chain (-> oauth2/idpresponse
+            # -> back to the redeem app) completes WITHOUT a password
+            # prompt. We must NOT break on the first redeem-app URL sighting
+            # (that is the pre-bounce moment); poll until the URL is STABLE
+            # for several consecutive checks (settled), or an air-bounds XHR
+            # fires, or 70s elapses.
             redirect_chain: list[str] = []
             last_url = ""
-            for poll_i in range(50):
+            stable = 0
+            for poll_i in range(70):
                 await asyncio.sleep(1.0)
                 try:
                     cur = page.url
                 except Exception:  # noqa: BLE001
                     break
                 if cur != last_url:
-                    redirect_chain.append(f"t+{poll_i + 1}s {cur[:130]}")
+                    redirect_chain.append(f"t+{poll_i + 1}s {cur[:140]}")
                     last_url = cur
-                # Settled back inside the redeem app (not /clogin) → done.
-                if "/aeroplan/redeem/" in cur and "clogin" not in cur:
-                    break
-                # An air-bounds XHR already fired → done.
+                    stable = 0
+                else:
+                    stable += 1
                 if air_bounds_resps:
+                    redirect_chain.append(f"t+{poll_i + 1}s [air-bounds XHR fired]")
+                    break
+                # Settled: URL unchanged for 6 consecutive checks AND we are
+                # back inside the redeem app (NOT parked on /clogin login).
+                if stable >= 6 and "/aeroplan/redeem/" in cur and "clogin" not in cur:
+                    break
+                # Parked on the interactive login page — silent SSO failed.
+                if stable >= 8 and "clogin/pages/login" in cur:
                     break
             out["oauth_redirect_chain"] = redirect_chain
-            _step("oauth_chain_settled", final_url=(last_url or page.url)[:90])
+            _step("oauth_chain_settled", final_url=(last_url or page.url)[:100])
             await asyncio.sleep(5.0)
             await _dump_state("after_oauth_chain")
 
