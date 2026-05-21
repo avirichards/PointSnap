@@ -593,6 +593,140 @@ async def diag_ac_scrape(
         )
 
 
+@app.get("/diag/ac_air_bounds")
+async def diag_ac_air_bounds(
+    user_id: str = Query(..., description="User UUID with a captured AC_AEROPLAN session"),
+    origin: str = Query("YYZ"),
+    dest: str = Query("YVR"),
+    date: str = Query("2026-07-15"),
+    wait_s: int = Query(45, description="seconds to wait for the air-bounds XHR"),
+) -> JSONResponse:
+    """Capture Air Canada's real logged-in air-bounds request.
+
+    Opens a BD Browser API browser, injects the user's captured Aeroplan
+    cookie jar, navigates the redeem availability page, and records every
+    network request whose URL contains `air-bounds` — its FULL url (so we
+    can read the real `{tenant}` path segment), request method, request
+    headers, and request post body. Also captures the response status +
+    body head. This is the recon step that resolves the `{tenant}` seam
+    documented in ac_aeroplan/search.py.
+    """
+    import json as _json
+    import traceback
+    try:
+        from common.auth_session import get_active_session, inject_cookies
+        from common.browser import browser_page
+        from ac_aeroplan.search import SEARCH_PAGE_TMPL, WARMUP_URL
+
+        session = await get_active_session(user_id, "AC_AEROPLAN")
+        out: dict = {
+            "user_id": user_id,
+            "origin": origin,
+            "dest": dest,
+            "date": date,
+            "session_found": bool(session),
+        }
+        if not session:
+            return JSONResponse({"ok": False, "stage": "no_session", **out})
+
+        cookies = session.get("cookies") or []
+        out["cookie_count"] = len(cookies)
+
+        air_bounds_reqs: list[dict] = []
+        air_bounds_resps: list[dict] = []
+        all_loyalty_urls: list[str] = []
+
+        # We need cookie injection BEFORE navigation, so use the BD Browser
+        # API path but get at the context. browser_page yields a page; its
+        # context is page.context.
+        async with browser_page(
+            timeout_ms=120_000, use_brightdata=True
+        ) as page:
+            ctx = page.context
+            injected = await inject_cookies(ctx, cookies)
+            out["cookies_injected"] = injected
+
+            async def _on_request(req):
+                try:
+                    u = req.url
+                    if "/loyalty/" in u or "dapidynamic" in u:
+                        all_loyalty_urls.append(f"{req.method} {u}")
+                    if "air-bounds" in u:
+                        post_data = None
+                        try:
+                            post_data = req.post_data
+                        except Exception:  # noqa: BLE001
+                            pass
+                        air_bounds_reqs.append({
+                            "url": u,
+                            "method": req.method,
+                            "headers": dict(req.headers),
+                            "post_data": post_data,
+                        })
+                except Exception:  # noqa: BLE001
+                    pass
+
+            async def _on_response(resp):
+                try:
+                    if "air-bounds" in resp.url:
+                        body_head = ""
+                        try:
+                            body_head = (await resp.text())[:1500]
+                        except Exception:  # noqa: BLE001
+                            pass
+                        air_bounds_resps.append({
+                            "url": resp.url,
+                            "status": resp.status,
+                            "body_head": body_head,
+                        })
+                except Exception:  # noqa: BLE001
+                    pass
+
+            page.on("request", _on_request)
+            page.on("response", _on_response)
+
+            # Warmup the homepage to settle Akamai, then go to the redeem
+            # availability page. The redeem SPA fires the air-bounds XHR
+            # itself once it bootstraps with the logged-in session.
+            try:
+                wr = await page.goto(WARMUP_URL, wait_until="domcontentloaded", timeout=60_000)
+                out["warmup_status"] = wr.status if wr else None
+                await asyncio.sleep(3.0)
+            except Exception as exc:  # noqa: BLE001
+                out["warmup_error"] = str(exc)[:300]
+
+            search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
+            out["search_url"] = search_url
+            try:
+                sr = await page.goto(search_url, wait_until="domcontentloaded", timeout=90_000, referer=WARMUP_URL)
+                out["search_page_status"] = sr.status if sr else None
+            except Exception as exc:  # noqa: BLE001
+                out["search_page_error"] = str(exc)[:300]
+
+            # Poll for the air-bounds XHR.
+            for _ in range(max(1, wait_s)):
+                if air_bounds_resps:
+                    break
+                await asyncio.sleep(1.0)
+
+            try:
+                out["page_url"] = page.url
+                out["page_title"] = await page.title()
+                out["body_snippet"] = (await page.locator("body").inner_text())[:500]
+            except Exception:  # noqa: BLE001
+                pass
+
+        out["air_bounds_requests"] = air_bounds_reqs
+        out["air_bounds_responses"] = air_bounds_resps
+        out["loyalty_urls_seen"] = all_loyalty_urls[:40]
+        return JSONResponse({"ok": bool(air_bounds_reqs), **out})
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500], "traceback": traceback.format_exc()[-1200:]},
+            status_code=500,
+        )
+
+
 @app.get("/diag/ua_scrape")
 async def diag_ua_scrape(
     origin: str = Query("EWR"),
