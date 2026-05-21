@@ -727,23 +727,32 @@ async def diag_ac_air_bounds(
             except Exception as exc:  # noqa: BLE001
                 out["cdp_session_error"] = str(exc)[:200]
 
+            cdp_inject_diag: dict = {}
+
             async def _inject_via_cdp() -> int:
                 """Inject the captured cookies via CDP Network.setCookies.
                 Returns the count CDP accepted. No-op if no CDP session."""
                 if not cdp:
+                    cdp_inject_diag["no_cdp"] = True
                     return 0
                 ok = 0
                 try:
                     await cdp.send("Network.setCookies", {"cookies": cdp_cookies})
                     ok = len(cdp_cookies)
-                except Exception:  # noqa: BLE001
+                    cdp_inject_diag["bulk"] = "ok"
+                except Exception as exc:  # noqa: BLE001
+                    cdp_inject_diag["bulk_error"] = str(exc)[:300]
                     # Bulk failed — set one at a time.
+                    one_err = None
                     for cc in cdp_cookies:
                         try:
                             await cdp.send("Network.setCookie", cc)
                             ok += 1
-                        except Exception:  # noqa: BLE001
-                            pass
+                        except Exception as exc2:  # noqa: BLE001
+                            if one_err is None:
+                                one_err = f"{cc.get('name')}: {str(exc2)[:200]}"
+                    cdp_inject_diag["one_by_one_ok"] = ok
+                    cdp_inject_diag["one_error"] = one_err
                 return ok
 
             # Step 1: land on the redeem SPA root (lighter Akamai path than
@@ -781,6 +790,13 @@ async def diag_ac_air_bounds(
             # Step 2: inject the logged-in session cookies now that we're
             # on-origin, then navigate to the availability deep-link.
             out["cookies_injected"] = await _inject_via_cdp()
+            out["cdp_inject_diag"] = cdp_inject_diag
+            try:
+                jar = await ctx.cookies()
+                out["jar_after_inject"] = len(jar)
+                out["jar_names_sample"] = sorted({c["name"] for c in jar})[:25]
+            except Exception:  # noqa: BLE001
+                pass
 
             if landed:
                 for attempt in range(4):
