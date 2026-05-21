@@ -1990,3 +1990,66 @@ Two commits pushed to `main` (Fly auto-deploys via the GitHub Action,
 - `3e93126` feat(workers): add fail-safe userspace Tailscale to the worker image
 - `48b0140` feat(ac): route the AC Camoufox transport through the Tailscale exit node
 
+
+### Post-deploy verification (2026-05-21)
+
+**Deploy landed, worker stayed up.** `GET /health` → `200
+{"status":"ok","dbSkipped":false}` continuously across the deploy window
+(one expected ~15s blip to `HTTP 000` during the Fly machine's
+rolling-restart onto the new build, recovered immediately). The new build
+is confirmed live: `/diag/ac_air_bounds` now reports `"transport":
+"camoufox"` (the pre-S18 build reported `"camoufox_fly_egress"`). The
+fail-safe entrypoint works — the FastAPI app came up clean and the
+endpoint ran a full Camoufox flow with no crash.
+
+**Tailscale secrets not yet set — test ran on the fallback path.**
+`/diag/ac_air_bounds?user_id=e9d28a3e-…&origin=YYZ&dest=YVR&date=2026-07-15&wait_s=5`
+returned `"proxy": "none"`. `_tailscale_proxy()` returns `None` iff
+`TAILSCALE_AUTHKEY` is unset, so this proves the secret was not yet on the
+worker at test time (the user is provisioning the home-Mac exit node +
+the `TAILSCALE_AUTHKEY`/`TAILSCALE_EXIT_NODE` Fly secrets in parallel).
+Camoufox therefore fell back to direct Fly egress — exactly the designed
+fail-safe degradation.
+
+**Air-bounds on the fallback path = HTTP 429 (as expected).** With no
+Tailscale, the air-bounds POST
+(`akamai-gw.dbaas.aircanada.com/loyalty/dapidynamicplus/1ASIUDALAC/v2/search/air-bounds?lang=en-CA`,
+POST, 273-byte JSON body) returned **HTTP 429** — twice (the SPA XHR and a
+`direct_fetch` probe both 429). The injected jar's `geoCityName=CHICAGO;
+geoCountryCode=US` cookie confirms the request egressed from Fly's
+data-center IP (IAD). This is the exact Kasada data-center-IP 429 that
+Session 16/17 documented — it is still 429 ONLY because the request has
+not yet been routed through the residential exit node. This is the
+control result: once `TAILSCALE_AUTHKEY`/`TAILSCALE_EXIT_NODE` are set,
+re-running this same test will show whether routing through the home
+exit node turns the 429 into a 200.
+
+**Session-flow note (not a Tailscale issue):** the re-captured session
+(`session_expires_at 2026-05-22T15:34Z`) injected all 50 cookies, got
+past sign-in (`shows_signin: false` after the OAuth chain), and entered an
+AC `/clogin/pages/consent` → `/clogin/consent` → `ac_SSO_bundle.js` →
+`oauth2/idpresponse` → `/clogin/pages/proxy?mode=afterConsent` chain — but
+did not reach the logged-in availability page, so the SPA never fired a
+properly-Kasada-stamped air-bounds XHR (`window.KPSDK` absent on the
+redeem root, `loyalty_urls_seen` shows only static config JSON, no
+air-bounds). AC login tokens last ~1-2 h; by test time (~hours after the
+15:34Z capture) the session was stale. **A fresh AC session is required
+for the real end-to-end test** — reconnect Air Canada via the cockpit
+`/airlines` flow immediately before re-testing.
+
+**Next step (blocked on the user):** once the home Mac is online as a
+Tailscale exit node and the `TAILSCALE_AUTHKEY` + `TAILSCALE_EXIT_NODE`
+Fly secrets are set, AND a fresh AC session is captured, re-run
+`/diag/ac_air_bounds?user_id=e9d28a3e-…&origin=YYZ&dest=YVR&date=2026-07-15&wait_s=5`.
+Expect `"proxy": "tailscale_exit_node"` and — if the residential IP
+defeats Kasada — air-bounds HTTP 200 with award rows instead of 429. To
+debug the tunnel from inside the container, read `/tmp/tailscaled.log` and
+`/tmp/tailscale-up.log`.
+
+### Commit log (Session 18)
+
+| SHA | Message |
+|---|---|
+| `3e93126` | feat(workers): add fail-safe userspace Tailscale to the worker image |
+| `48b0140` | feat(ac): route the AC Camoufox transport through the Tailscale exit node |
+| `bcc14e1` | docs(scraper): Session 18 — route AC Camoufox through a Tailscale exit node |
