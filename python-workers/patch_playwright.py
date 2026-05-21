@@ -19,18 +19,31 @@ Firefox's Juggler protocol emits the page-error telemetry at the JS-engine
 level, before the page's own `error` handlers run. The only real fix is to
 null-guard the driver code itself.
 
-THE PATCH:
-    pageError.location.url           ->  (pageError.location||{}).url
-    pageError.location.lineNumber    ->  (pageError.location||{}).lineNumber
-    pageError.location.columnNumber  ->  (pageError.location||{}).columnNumber
+THE PATCH — two complementary edits:
 
-`(undefined||{}).url` is `undefined` (no crash); `({url:'x'}).url` is `'x'`
-(unchanged when a location IS present). Behaviour-preserving, idempotent
-(re-running finds nothing to replace), and scoped to exactly the crash.
+1. The SOURCE fix (`FFPage._onUncaughtError`): the Firefox session builds
+   the page-error from the Juggler `Page.uncaughtError` event and calls
+   `this._page.addPageError(error, params2.location)` — but `params2.
+   location` is `undefined` for some uncaught errors. Default it to a
+   well-formed, TYPE-CORRECT object so the whole downstream chain is sound:
+       params2.location
+         -> params2.location || { url: "", lineNumber: 0, columnNumber: 0 }
+   This matters because Playwright's protocol validator (`tString` /
+   `tNumber`) rejects an `undefined` `location.url` with
+   `ValidationError: location.url: expected string, got undefined` — which
+   ALSO crashes the Node driver. So the default must be `url:""` (a
+   string), `lineNumber:0` / `columnNumber:0` (numbers), not just any
+   truthy object.
 
-Run at Docker build time, after `pip install` has installed playwright.
-Exits 0 even if nothing matched (e.g. a future Playwright that already
-fixed this) so the build never breaks on it.
+2. The defensive member-access fix (kept as belt-and-braces): every
+   `pageError.location.X` -> `(pageError.location||{}).X`. With edit (1)
+   in place `pageError.location` is never undefined so this is a no-op,
+   but it costs nothing and guards the two dispatch sites directly.
+
+Both edits are behaviour-preserving and idempotent (re-running finds
+nothing to replace). Run at Docker build time, after `pip install` has
+installed playwright. Exits 0 even if nothing matched (e.g. a future
+Playwright that already fixed this) so the build never breaks on it.
 """
 
 from __future__ import annotations
@@ -38,11 +51,19 @@ from __future__ import annotations
 import glob
 import sys
 
-# Both the (older) `pageError.location.url` shape and any whitespace
-# variant collapse to the same three member accesses. We replace the
-# member-access expressions directly — order-independent, whitespace-
-# independent, and safe to run twice.
+# Edit (1) — the source fix in FFPage._onUncaughtError — plus edit (2) —
+# the defensive member-access guards. All are exact-substring replacements:
+# order-independent, whitespace-tolerant within the matched substring, and
+# safe to run twice.
 REPLACEMENTS = [
+    # (1) SOURCE fix: default the undefined Juggler event `location` to a
+    #     type-correct object (url:string, lineNumber/columnNumber:number).
+    (
+        "this._page.addPageError(error, params2.location);",
+        "this._page.addPageError(error, params2.location || "
+        '{ url: "", lineNumber: 0, columnNumber: 0 });',
+    ),
+    # (2) defensive member-access guards at the two dispatch sites.
     ("pageError.location.url", "(pageError.location||{}).url"),
     ("pageError.location.lineNumber", "(pageError.location||{}).lineNumber"),
     ("pageError.location.columnNumber", "(pageError.location||{}).columnNumber"),
