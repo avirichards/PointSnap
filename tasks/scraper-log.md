@@ -137,7 +137,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | AS_MILEAGEPLAN | ✅ live | httpx + IPRoyal | SvelteKit SSR, light protection |
 | AA_AADVANTAGE | 🚧 stuck | Camoufox (debugging) | Akamai BMP wall; see "AA: what's been tried" |
 | AA_AADVANTAGE_WU | 🚧 stuck | WU 2-step + BD Browser API mint rung | Mint rung mints `spa_session_id` via BD Browser API; WU-replayed award POST still error 309 — AA session is transport-bound. See Session 14 + blockers.md 2026-05-20 19:40. |
-| AC_AEROPLAN | ❌ broken | auth path; transport blocked on BD KYC | Tenant `1ASIUDALAC` + host `akamai-gw.dbaas.aircanada.com` resolved (S15). Camoufox crash fixed (S16). S17: routed Camoufox through BD Residential CA — Kasada data-center 429 IS gone, but the air-bounds POST now gets HTTP 402 `bad_endpoint` from Bright Data itself (BD Residential no-KYC mode rejects POST). **Blocked on the BD account completing KYC** (https://brightdata.com/cp/kyc) — not a code defect. Also a BD-MITM HSTS cert error on the availability deeplink. |
+| AC_AEROPLAN | 🚧 auth path; Camoufox routed through Tailscale exit node | Camoufox + Tailscale exit node | Tenant `1ASIUDALAC` + host `akamai-gw.dbaas.aircanada.com` resolved (S15). Camoufox crash fixed (S16). S17: BD Residential CA killed the Kasada data-center 429 but BD's own no-KYC zone HTTP-402s the POST-only air-bounds call (BD KYC is business-only — dead end). **S18: replaced BD Residential with Tailscale.** The worker image now runs userspace `tailscaled` (entrypoint.sh, fail-safe) and the AC Camoufox transport's `proxy=` points at the local SOCKS5 proxy (`socks5://127.0.0.1:1055`), egressing from the user's home Mac (a Tailscale exit node = residential IP). Tailscale is a plain WireGuard tunnel → no TLS MITM → no HSTS wall (also fixes S17 WALL 2). End-to-end test pending the user's `TAILSCALE_AUTHKEY`/`TAILSCALE_EXIT_NODE` Fly secrets + a fresh AC session. |
 | DL_SKYMILES | ❌ broken | WU 2-step (Akamai-walled on POST) | Homepage mint OK; `POST /shop/ow/search` → Akamai 444 for both WU formats. Award POST needs validated `_abck`. See Session 12. |
 | UA_MP | ❌ broken | BD Browser API (migrated, untested) | Imperva — needs investigation |
 | BA_AVIOS | ❌ broken | BD Browser API (migrated, untested) | Akamai + queue interstitial |
@@ -158,7 +158,8 @@ User's BD account: rotates the visible API key after sessions for security.
 | **ScraperAPI proxy (free + premium)** | ❌ | Session 3 | Per-resource billing burned credits; "premium" still failed AA. |
 | **Bright Data Browser API (CDP)** | ✅ for non-Akamai sites, ❌ for AA, ❌ for any cookie injection | Session 5 morning / 15 | 9/11 airline homepages loaded clean (200 OK with HTML). AA returned 403 Access Denied on most IPs. **Session 15: BD Browser API is a MANAGED browser — it blocks ALL client-side cookie writes for the proxied domain. `add_cookies`, CDP `Network.setCookie`/`setCookies`, `Storage.setCookies`, and `document.cookie` all fail "Overriding X forbidden" (even into a provably-empty jar); a second `page.route` handler breaks the proxy tunnel (`ERR_TUNNEL_CONNECTION_FAILED`). A captured logged-in session CANNOT be replayed inside BD Browser API. Do not retry.** |
 | **Bright Data Web Unlocker (HTTP API)** | ⚠️ AA blocked on a zone setting | Session 13 | WU renders `mobile.aa.com/booking` (200, jar w/ `XSRF-TOKEN`+`JSESSIONID`, NO `spa_session_id`) + reaches AA's award POST (200). Every `www.aa.com` page 502s — stale `#weeklyCarousel` `expect_element` rule. The `x-unblock-expect` override that fixes it is OFF on the `pointsnap_webunlock` zone (`feature_not_active` — "Manual expect is not enabled"). AA award POST still `error 309` without `spa_session_id`; AA mints no cookies on the 309. **Fix: enable "Manual Expect" on the WU zone — then code works unchanged.** See Session 13 + blockers.md. |
-| **Bright Data Residential (proxy)** | ⚠️ GET works, POST blocked on KYC | Session 17 | `BRIGHTDATA_RESIDENTIAL_URL` is set on the Fly worker; the proxy works for GET (BD geo test → real CA EastLink residential IP, `-country-ca` honoured). **But the zone is in Immediate (no-KYC) access mode, which rejects POST/PUT/DELETE — POST returns HTTP 402 `Residential Failed (bad_endpoint)`.** AC Aeroplan's air-bounds API is POST-only, so it cannot be carried until the BD account completes KYC for "Full Access" (https://brightdata.com/cp/kyc). Also: BD MITMs TLS with its own cert → Firefox `SEC_ERROR_UNKNOWN_ISSUER` / HSTS error on some aircanada.com requests even with `ignore_https_errors`. |
+| **Bright Data Residential (proxy)** | ❌ POST blocked on business-only KYC | Session 17 | `BRIGHTDATA_RESIDENTIAL_URL` is set on the Fly worker; the proxy works for GET (BD geo test → real CA EastLink residential IP, `-country-ca` honoured). **But the zone is in Immediate (no-KYC) access mode, which rejects POST/PUT/DELETE — POST returns HTTP 402 `Residential Failed (bad_endpoint)`.** AC Aeroplan's air-bounds API is POST-only. Bright Data's "Full Access" KYC is **business-only** — the user is an individual, so KYC is not completable. Dead end for PointSnap. Also: BD MITMs TLS with its own cert → Firefox `SEC_ERROR_UNKNOWN_ISSUER` / HSTS error on some aircanada.com requests even with `ignore_https_errors`. **Superseded by Tailscale (Session 18).** |
+| **Tailscale exit node (userspace)** | 🚧 wired Session 18 | Session 18 | Replaces BD Residential as the AC residential-egress path. The worker image copies the `tailscale`/`tailscaled` binaries from `tailscale/tailscale:v1.96.5`; `entrypoint.sh` backgrounds `tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055` (no TUN device / no NET_ADMIN — cannot break the container) then a bounded `tailscale up --authkey=$TAILSCALE_AUTHKEY --exit-node=$TAILSCALE_EXIT_NODE`. The AC Camoufox transport's `proxy=` points at `socks5://127.0.0.1:1055`, so its traffic egresses from the user's home Mac (the exit node = a residential IP). **Strictly additive + fail-safe**: the entrypoint always `exec`s uvicorn; if the secrets are unset or the exit node is offline, only AC search degrades. Tailscale does NOT MITM TLS (real WireGuard tunnel) → no rogue cert, no HSTS wall — so it fixes BOTH Session 17 walls (the 402 *and* the HSTS `SEC_ERROR`). End-to-end verification pending the user's Fly secrets + a fresh AC session. |
 | **CapSolver `AntiAkamaiBMTask`** | ❌ (deprecated) | Session 5 mid | CapSolver dropped Akamai support entirely — task type returns `ERROR_TYPE_NOT_SUPPORTED`. Their docs no longer list Akamai. |
 | **2Captcha** | ❌ (never supported BMP) | Session 5 mid | Public docs confirm only reCAPTCHA, AWS WAF, Cloudflare, Geetest. No Akamai. |
 | **Camoufox (Firefox-based stealth)** | 🚧 in progress | Session 5 late | Loads www.aa.com but Akamai serves the `sec-if-cpt-container` behavioral challenge interstitial. Sensor.js doesn't validate Camoufox-on-Fly-egress within 40s wait + mouse simulation. |
@@ -1888,3 +1889,104 @@ real pref-not-honoured issue rather than BD cert inconsistency).
 |---|---|
 | `cc9103a` | fix(ac): import asyncio + route Camoufox through BD Residential CA exit |
 | `d1d89e5` | fix(ac): disable Firefox HSTS so BD Residential MITM cert is accepted |
+
+---
+
+## Session 18 — 2026-05-21 — AC Aeroplan: route Camoufox through a Tailscale residential exit node
+
+Goal: get AC Aeroplan `/search` to return real award rows. Session 17 left
+the transport "complete and proven to drive the SPA" but the air-bounds
+POST is double-walled: (WALL 1) Bright Data Residential's no-KYC zone
+HTTP-402s POST requests, and BD's "Full Access" KYC is **business-only**
+(the user is an individual, so KYC is uncompletable — BD Residential is a
+permanent dead end for PointSnap); (WALL 2) BD MITMs TLS, so the
+availability deeplink throws `SEC_ERROR_UNKNOWN_ISSUER` behind HSTS.
+
+The Session-17 conclusion said the next move is "a residential provider
+that allows POST without KYC" or "one that does NOT MITM TLS (SOCKS5)".
+**Tailscale satisfies both at once**: the user's own home Mac, joined to
+the worker's tailnet as an *exit node*, is a residential IP that carries
+any method, and Tailscale is a plain WireGuard tunnel that never touches
+TLS. So Session 18 replaces BD Residential with Tailscale.
+
+### Architecture built — userspace Tailscale on the Fly worker
+
+Fly containers cannot get a kernel TUN device without `NET_ADMIN`, so
+Tailscale runs in **userspace-networking** mode — which needs no TUN and
+no capability, and exposes the tunnel as a local SOCKS5/HTTP proxy.
+
+- **Dockerfile** (`python-workers/Dockerfile`): copies the `tailscale` +
+  `tailscaled` binaries straight from the official image
+  `docker.io/tailscale/tailscale:v1.96.5` (no apt repo). Added `coreutils`
+  to the apt line for a guaranteed `timeout` binary. `CMD` changed from a
+  direct `uvicorn ...` to `./entrypoint.sh`.
+- **`python-workers/entrypoint.sh`** (new, +x): the fail-safe entrypoint.
+  * Backgrounds `tailscaled --tun=userspace-networking
+    --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055
+    --state=/var/lib/tailscale/tailscaled.state
+    --socket=/var/run/tailscale/tailscaled.sock` → `/tmp/tailscaled.log`.
+    Both the SOCKS5 and HTTP proxy bind `127.0.0.1:1055` (Tailscale's
+    userspace-networking docs show both flags on the same port).
+  * In a background subshell, runs `timeout 60 tailscale up
+    --authkey=$TAILSCALE_AUTHKEY --hostname=pointsnap-worker
+    --accept-dns=false --exit-node=$TAILSCALE_EXIT_NODE
+    --exit-node-allow-lan-access` → `/tmp/tailscale-up.log`. The
+    `--exit-node-allow-lan-access` flag keeps localhost reachable so the
+    userspace proxy still works while an exit node is selected. The
+    `timeout 60` means a hung `tailscale up` can never wedge startup.
+  * **Then `exec uvicorn serve:app --host 0.0.0.0 --port 8000`
+    UNCONDITIONALLY** — the last line. If `TAILSCALE_AUTHKEY` is unset the
+    whole Tailscale block is skipped; if `tailscaled`/`tailscale up`
+    fails, the failure is in a backgrounded process and cannot reach the
+    `exec`. The worker therefore always serves `/health`, every other
+    airline, and the auth endpoints — only AC search degrades.
+
+### Wiring — only the AC Camoufox transport routes through Tailscale
+
+- **`python-workers/common/browser.py`**: new helper `_tailscale_proxy()`
+  — returns `{"server": "socks5://127.0.0.1:1055"}` (port overridable via
+  `TAILSCALE_SOCKS_PORT`) when `TAILSCALE_AUTHKEY` is set, else `None`.
+  Gating on `TAILSCALE_AUTHKEY` because that env var is what
+  `entrypoint.sh` needs to bring the tunnel up — its presence is the
+  single signal the proxy is expected live. SOCKS5 form chosen over the
+  HTTP-proxy form: `tailscaled` serves both on 1055, and SOCKS5 carries
+  HTTPS CONNECT cleanly without the proxy inspecting anything.
+- **`python-workers/ac_aeroplan/search.py`**: `build_camoufox_config()`
+  now calls `_tailscale_proxy()` instead of
+  `_brightdata_residential_proxy(country="ca")`. When it returns a proxy:
+  `cfg["proxy"] = ts_proxy` and `geoip=True` (Camoufox derives a
+  fingerprint consistent with the exit node's location). **Removed** the
+  three HSTS-disabling `firefox_user_prefs`
+  (`network.stricttransportsecurity.enabled/preloadlist`,
+  `security.cert_pinning.enforcement_level`) — Tailscale does not MITM
+  TLS, so AC's real cert is delivered intact and there is nothing to
+  disable. `ignore_https_errors=True` is kept on `new_context()` only as a
+  harmless safety net (nothing to ignore now).
+- **`python-workers/serve.py`**: the `/diag/ac_air_bounds` endpoint's
+  `out["proxy"]` label + comments updated `brightdata_residential_ca` →
+  `tailscale_exit_node`; the static `out["transport"]` simplified to
+  `camoufox` (the real proxy is reported at runtime in `out["proxy"]`).
+
+Every other worker code path (other airline scrapers, the Supabase DB
+writes, the auth-capture endpoints) is untouched and keeps Fly's normal
+data-center egress. Tailscale is strictly an AC-only side-channel.
+
+### Why this fixes BOTH Session 17 walls
+
+- **WALL 1 (BD 402 on POST)** — gone: the air-bounds POST now travels
+  through a WireGuard tunnel to the user's home Mac and out its home
+  internet. There is no proxy vendor in the path to refuse POST. The exit
+  node is a residential IP, so Kasada's data-center-IP 429 (the original
+  Session-16/17 problem) is also gone.
+- **WALL 2 (HSTS `SEC_ERROR_UNKNOWN_ISSUER`)** — gone: Tailscale forwards
+  raw TCP; it never terminates or re-originates TLS, so aircanada.com's
+  genuine, CA-signed certificate reaches Firefox unmodified. No rogue
+  cert → no HSTS exception needed.
+
+### Deploy
+
+Two commits pushed to `main` (Fly auto-deploys via the GitHub Action,
+~4 min; the Action smoke-tests `/health` itself):
+- `3e93126` feat(workers): add fail-safe userspace Tailscale to the worker image
+- `48b0140` feat(ac): route the AC Camoufox transport through the Tailscale exit node
+
