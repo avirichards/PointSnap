@@ -1581,11 +1581,55 @@ aggressively probes **WebGL** for fingerprinting. A WebGL draw on a
 degenerate 1x1 Xvfb GLX context crashes the Firefox content process. That
 is why example.com (no WebGL) survives and the AC redeem SPA does not.
 
-**Fix:** `build_camoufox_config()` (new helper in `ac_aeroplan/search.py`)
-now defaults to **`headless=True`** — Camoufox's plain headless mode uses
-Firefox's own offscreen compositor, NOT an Xvfb GLX context, so the
-degenerate-GLX WebGL crash cannot occur. Camoufox's C++-level fingerprint
-patches still spoof the headless tells, so `headless=True` is not a
-bot-defense regression (Sekinal/aa_contest's verified AA config is
-likewise `headless=True`). `/diag/ac_air_bounds` got a `headless` query
-param to A/B verify `true` vs `virtual`.
+**Fix attempt (WRONG):** switched `build_camoufox_config()` to
+`headless=True`. **Did not fix it** — Firefox still died during redeem-SPA
+bootstrap with no Xvfb in the path. WebGL/1x1-GLX theory disproved.
+
+### ACTUAL ROOT CAUSE — Playwright 1.60 Firefox driver NPE crash
+
+Built `/diag/camoufox_probe` — runs the Camoufox load in a **subprocess**
+with full stdout+stderr capture (the async handler only ever sees
+Playwright's `handler is closed` wrapper, never the real cause). The
+subprocess `stderr` finally showed it:
+
+```
+/usr/local/lib/python3.12/site-packages/playwright/driver/package/lib/coreBundle.js:49624
+              url: pageError.location.url,
+                                      ^
+TypeError: Cannot read properties of undefined (reading 'url')
+    at FFBrowserContext.<anonymous> (.../coreBundle.js:49624:39)
+    at _Page.addPageError (.../coreBundle.js:19951:16)
+    at FFPage._onUncaughtError (.../coreBundle.js:43470:20)
+Node.js v24.15.0   [process exits]
+```
+
+It is **NOT a browser crash at all** — there is zero Firefox crash dump
+(`/diag/firefox_crashes` → `[]`). The **Playwright Node driver process**
+crashes: when Air Canada's redeem SPA / Kasada `p.js` raises an uncaught
+JS error within ~2-4s of load, Firefox emits a page-error event whose
+`location` field is `undefined`; Playwright 1.60's `FFBrowserContext`
+page-error handler does `pageError.location.url` with no null-check →
+`TypeError` → the **entire Node driver exits** → the Python side loses the
+stdio pipe → `WriteUnixTransport closed` / `Connection closed while
+reading from the driver`. (`example.com`, which throws no uncaught error,
+survives indefinitely — confirmed via the same probe.)
+
+Probe timeline (AC redeem): camoufox launched → `goto` 200 "AC Loyalty" →
+`alive t+2s` → **`DEAD at t+4s: Connection closed while reading from the
+driver`**. Crash is ~2-4s after load, exactly when the SPA's first
+uncaught error fires. `camoufox` itself, `headless`, `use_proxy`, memory,
+`/dev/shm`, and the injected cookies are all IRRELEVANT — every one of
+those was varied and the crash is identical; the only constant is the AC
+SPA raising an uncaught error.
+
+**Fix:** `install_pw_crash_shield(context)` (new helper in
+`ac_aeroplan/search.py`) adds an init script (runs before any page script,
+every navigation) that registers capture-phase `error` +
+`unhandledrejection` handlers calling `preventDefault()` +
+`stopImmediatePropagation()`, and neutralizes `window.onerror` /
+`window.onunhandledrejection`. A *handled* error is no longer "uncaught",
+so Firefox does not emit the page-error event, so Playwright's buggy
+`FFPage._onUncaughtError → addPageError` path never runs. AC's SPA is
+unaffected (its own try/catch still works; only genuinely-uncaught errors
+are shielded from the crash-prone driver telemetry hook).
+`/diag/camoufox_probe` has a `shield` param to A/B verify.

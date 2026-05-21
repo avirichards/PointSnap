@@ -138,6 +138,53 @@ AIR_BOUNDS_PATH = "/v2/search/air-bounds"
 LAST_RUN_DIAG: dict[str, Any] = {}
 
 
+# JavaScript injected into every AC page BEFORE its own scripts run. The
+# Playwright 1.60 Firefox driver crashes (`TypeError: Cannot read
+# properties of undefined (reading 'url')` at coreBundle.js
+# FFBrowserContext page-error handler → the whole Node driver process
+# exits) when the page raises an uncaught error whose Firefox page-error
+# event has an undefined `location`. Air Canada's redeem SPA + Kasada
+# `p.js` throw exactly such an error within ~2-4s of load — which is THE
+# cause of the "Camoufox crash" (Session 16: not memory, not WebGL, not
+# Akamai — a Playwright driver NPE on a malformed Firefox page-error).
+#
+# Fix: register capture-phase `error` + `unhandledrejection` handlers that
+# `preventDefault()` every uncaught error. A handled error is no longer
+# "uncaught", so Firefox does not emit the page-error event, so the buggy
+# driver code path never runs. AC's SPA is unaffected — its own try/catch
+# still works; we only stop genuinely-uncaught errors from reaching the
+# (crash-prone) driver telemetry hook.
+_PW_CRASH_SHIELD_JS = """
+(() => {
+  try {
+    window.addEventListener('error', function (e) {
+      try { e.preventDefault(); e.stopImmediatePropagation(); } catch (_) {}
+      return true;
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      try { e.preventDefault(); e.stopImmediatePropagation(); } catch (_) {}
+      return true;
+    }, true);
+    // Some uncaught errors route via window.onerror — neutralize it too.
+    try { window.onerror = function () { return true; }; } catch (_) {}
+    try { window.onunhandledrejection = function () { return true; }; } catch (_) {}
+  } catch (_) {}
+})();
+"""
+
+
+async def install_pw_crash_shield(context: Any) -> None:
+    """Add `_PW_CRASH_SHIELD_JS` as an init script on a Playwright/Camoufox
+    BrowserContext so it runs before any page script on every navigation.
+    Prevents the Playwright-1.60 Firefox driver page-error NPE crash that
+    Air Canada's redeem SPA otherwise triggers. Never raises.
+    """
+    try:
+        await context.add_init_script(_PW_CRASH_SHIELD_JS)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("AC: install_pw_crash_shield failed: %s", exc)
+
+
 def build_camoufox_config(headless: Any = True) -> dict[str, Any]:
     """Camoufox launch kwargs for the AC redeem-SPA transport.
 

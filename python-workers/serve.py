@@ -712,6 +712,42 @@ async def diag_firefox_crashes() -> JSONResponse:
         )
 
 
+@app.get("/diag/pw_source")
+async def diag_pw_source(
+    needle: str = Query("pageError.location", description="substring to grep"),
+    ctx: int = Query(2, description="lines of context each side"),
+) -> JSONResponse:
+    """Grep the installed Playwright driver `coreBundle.js` for a substring
+    and return matching lines + context. Used to design the exact patch
+    for the FFBrowserContext page-error `pageError.location` NPE crash."""
+    import glob as _glob
+    try:
+        hits: list[dict] = []
+        files = _glob.glob(
+            "/usr/local/lib/python3*/site-packages/playwright/driver/"
+            "package/lib/coreBundle.js"
+        )
+        for fp in files:
+            with open(fp, errors="replace") as f:
+                lines = f.read().splitlines()
+            for i, ln in enumerate(lines):
+                if needle in ln:
+                    lo = max(0, i - ctx)
+                    hi = min(len(lines), i + ctx + 1)
+                    hits.append({
+                        "file": fp,
+                        "line_no": i + 1,
+                        "context": {j + 1: lines[j][:300] for j in range(lo, hi)},
+                    })
+        return JSONResponse({"ok": True, "files": files, "hits": hits[:20]})
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:300], "tb": traceback.format_exc()[-500:]},
+            status_code=500,
+        )
+
+
 # Self-contained Camoufox probe script — run as a SUBPROCESS so its full
 # stdout+stderr (Playwright Node driver errors, Firefox stderr, glibc/OOM
 # messages, the real death reason) is captured verbatim. The async
@@ -724,17 +760,22 @@ os.environ.setdefault("MOZ_CRASHREPORTER_NO_REPORT", "1")
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "https://www.aircanada.com/aeroplan/redeem/"
 WAIT = int(sys.argv[2]) if len(sys.argv) > 2 else 30
+SHIELD = (sys.argv[3] if len(sys.argv) > 3 else "1") == "1"
 
 def log(m): print(f"[{time.strftime('%H:%M:%S')}] {m}", flush=True)
 
 async def main():
     from camoufox.async_api import AsyncCamoufox
+    from ac_aeroplan.search import install_pw_crash_shield
     cfg = {"headless": True, "humanize": True, "locale": "en-US",
            "window": (1366, 768), "block_webrtc": True, "geoip": False}
-    log(f"launching camoufox headless=True")
+    log(f"launching camoufox headless=True shield={SHIELD}")
     browser = await AsyncCamoufox(**cfg).__aenter__()
     log("camoufox launched")
     ctx = await browser.new_context()
+    if SHIELD:
+        await install_pw_crash_shield(ctx)
+        log("pw_crash_shield installed")
     page = await ctx.new_page()
 
     page.on("crash", lambda p: log("!!! PAGE CRASH event"))
@@ -779,12 +820,15 @@ log("script end")
 async def diag_camoufox_probe(
     url: str = Query("https://www.aircanada.com/aeroplan/redeem/"),
     wait_s: int = Query(30),
+    shield: int = Query(1, description="1 = install the pw-crash-shield init script"),
 ) -> JSONResponse:
     """Run a self-contained Camoufox load of `url` in a SUBPROCESS and
     return its full stdout+stderr + exit code. The subprocess output
     captures the REAL crash cause (Playwright Node-driver stderr, Firefox
     stderr, kernel OOM line) that the async handler's `handler is closed`
-    wrapper hides. Polls the page alive every 2s to pinpoint the death."""
+    wrapper hides. Polls the page alive every 2s to pinpoint the death.
+    `shield=1` installs the pw-crash-shield init script (the fix); set
+    `shield=0` to reproduce the raw crash."""
     import subprocess
     import sys
     import tempfile
@@ -795,7 +839,7 @@ async def diag_camoufox_probe(
             f.write(_CAMOUFOX_PROBE_SCRIPT)
             script_path = f.name
         proc = subprocess.run(
-            [sys.executable, script_path, url, str(wait_s)],
+            [sys.executable, script_path, url, str(wait_s), str(shield)],
             capture_output=True, text=True, timeout=wait_s + 180,
         )
         try:
@@ -882,7 +926,11 @@ async def diag_ac_air_bounds(
         from camoufox.async_api import AsyncCamoufox
 
         from common.auth_session import get_active_session
-        from ac_aeroplan.search import SEARCH_PAGE_TMPL, build_camoufox_config
+        from ac_aeroplan.search import (
+            SEARCH_PAGE_TMPL,
+            build_camoufox_config,
+            install_pw_crash_shield,
+        )
 
         _step("started")
         session = await get_active_session(user_id, "AC_AEROPLAN")
@@ -917,6 +965,9 @@ async def diag_ac_air_bounds(
         browser = await AsyncCamoufox(**cf_config).__aenter__()
         _step("camoufox_launched")
         ctx = await browser.new_context()
+        # Shield against the Playwright-1.60 Firefox driver page-error NPE
+        # crash (THE "Camoufox crash" — see install_pw_crash_shield docs).
+        await install_pw_crash_shield(ctx)
         page = await ctx.new_page()
         page.set_default_timeout(120_000)
 
