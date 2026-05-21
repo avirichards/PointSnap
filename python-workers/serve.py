@@ -603,13 +603,20 @@ async def diag_ac_air_bounds(
 ) -> JSONResponse:
     """Capture Air Canada's real logged-in air-bounds request.
 
-    Opens a BD Browser API browser, injects the user's captured Aeroplan
-    cookie jar, navigates the redeem availability page, and records every
-    network request whose URL contains `air-bounds` — its FULL url (so we
-    can read the real `{tenant}` path segment), request method, request
-    headers, and request post body. Also captures the response status +
-    body head. This is the recon step that resolves the `{tenant}` seam
-    documented in ac_aeroplan/search.py.
+    Opens a **Camoufox** browser (Fly direct egress — NO proxy; IPRoyal
+    blocks aircanada.com at CONNECT), injects the user's captured Aeroplan
+    cookie jar via `context.add_cookies` (works on Firefox/Camoufox — the
+    BD Browser API "Overriding X forbidden" wall does NOT apply), navigates
+    the redeem SPA, drives an in-app route change to the availability page,
+    and records every network request whose URL contains `air-bounds` — its
+    FULL url, method, headers, and post body, plus the response status +
+    body head. Camoufox runs AC's Kasada `p.js`, so the SPA's own XHR
+    carries valid `x-kpsdk-*` tokens.
+
+    Transport note (Session 16, scraper-log.md): Session 15's "Camoufox
+    crashes on Fly" was a misdiagnosis — the crash was IPRoyal forbidding
+    the aircanada.com CONNECT (`NS_ERROR_PROXY_FORBIDDEN`). Camoufox itself
+    runs fine; this endpoint runs it with `use_proxy=False`.
     """
     import traceback
     try:
@@ -623,6 +630,7 @@ async def diag_ac_air_bounds(
             "origin": origin,
             "dest": dest,
             "date": date,
+            "transport": "camoufox_fly_egress",
             "session_found": bool(session),
         }
         if not session:
@@ -634,47 +642,19 @@ async def diag_ac_air_bounds(
         out["all_cookie_names"] = sorted(
             {c.get("name") for c in cookies if c.get("name")}
         )
-        # Flags for the auth-relevant cookies — a non-httpOnly Gigya login
-        # cookie can be injected via document.cookie (the SPA's client-side
-        # auth guard reads it there).
-        out["auth_cookie_flags"] = [
-            {
-                "name": c.get("name"),
-                "domain": c.get("domain"),
-                "httpOnly": c.get("httpOnly"),
-                "path": c.get("path"),
-            }
-            for c in cookies
-            if c.get("name") and any(
-                tok in c["name"].lower()
-                for tok in ("gig", "glt", "khaos", "audit", "cognito",
-                            "globalid", "l_user", "xsrf", "sso")
-            )
-        ]
 
         air_bounds_reqs: list[dict] = []
         air_bounds_resps: list[dict] = []
         all_loyalty_urls: list[str] = []
 
-        # The captured Aeroplan session is injected into the Camoufox cookie
-        # context via add_cookies (built below, after the browser opens).
         REDEEM_ROOT = "https://www.aircanada.com/aeroplan/redeem/"
 
-        # Transport note (2026-05-21 investigation, see scraper-log.md):
-        #   * BD Browser API is a *managed* browser — it blocks every
-        #     client-side cookie write for the proxied domain (add_cookies /
-        #     CDP Network.setCookie/setCookies / Storage.setCookies /
-        #     document.cookie all fail "Overriding X forbidden"; page.route
-        #     breaks the proxy tunnel). A captured session cannot be injected.
-        #   * Camoufox currently crashes on the Fly worker ("Browser.close:
-        #     ... handler is closed") — the Camoufox runtime is broken in the
-        #     deployed image and needs an infra fix before it is usable.
-        # This endpoint is left on BD Browser API as a still-functional recon
-        # tool (it can navigate AC + capture the air-bounds XHR shape once a
-        # transport that injects the session is available). add_cookies below
-        # is a no-op on BD but does not crash.
+        # Camoufox + Fly direct egress (use_proxy=False). Camoufox is a real
+        # local Firefox — context.add_cookies works normally (no managed-
+        # browser cookie wall) and AC's Kasada p.js runs so the air-bounds
+        # XHR is minted with valid x-kpsdk-* tokens.
         async with browser_page(
-            timeout_ms=120_000, use_brightdata=True
+            timeout_ms=120_000, use_camoufox=True, use_proxy=False
         ) as page:
             ctx = page.context
 
@@ -703,7 +683,7 @@ async def diag_ac_air_bounds(
                     if "air-bounds" in resp.url:
                         body_head = ""
                         try:
-                            body_head = (await resp.text())[:1500]
+                            body_head = (await resp.text())[:2500]
                         except Exception:  # noqa: BLE001
                             pass
                         air_bounds_resps.append({
@@ -720,15 +700,15 @@ async def diag_ac_air_bounds(
             search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
             out["search_url"] = search_url
 
-            route_diag = {"matched": 0}
             store_diag: dict = {"set_ok": 0, "set_fail": 0}
 
-            # Attempt to inject the captured Aeroplan session into the
-            # browser cookie store. On BD Browser API this is expected to
-            # fail ("Overriding X forbidden") — recorded in store_diag, not
-            # fatal. add_cookies needs Playwright-shape cookies with
-            # domain+path; we drop extra keys (partitionKey,
-            # _crHasCrossSiteAncestor). Batch first, then one-by-one.
+            # Inject the captured Aeroplan session into the Camoufox cookie
+            # store. add_cookies wants Playwright-shape cookies with
+            # domain+path; we strip the CHIPS-capture extras (partitionKey,
+            # _crHasCrossSiteAncestor) Playwright 1.5x adds. Camoufox accepts
+            # httpOnly cookies via add_cookies (it's a server-side primitive
+            # — bypasses the JS httpOnly restriction). Batch, fall back to
+            # one-by-one so a single bad cookie doesn't drop the whole jar.
             pw_cookies: list[dict] = []
             for c in cookies:
                 if not c.get("name") or "value" not in c or not c.get("domain"):
@@ -766,18 +746,20 @@ async def diag_ac_air_bounds(
                         if "first_err" not in store_diag:
                             store_diag["first_err"] = f"{nc['name']}: {str(exc2)[:140]}"
                 store_diag["mode"] = "one_by_one"
-            out["store_inject_1"] = dict(store_diag)
+            out["store_inject"] = dict(store_diag)
             try:
                 jar0 = await ctx.cookies()
                 out["jar_after_inject"] = len(jar0)
             except Exception:  # noqa: BLE001
                 pass
 
-            async def _nav(url: str, label: str, attempts: int = 4) -> bool:
+            nav_attempts: list[dict] = []
+
+            async def _nav(url: str, label: str, attempts: int = 3) -> bool:
                 """goto with retry past Akamai hard-denies."""
                 for attempt in range(attempts):
                     try:
-                        r = await page.goto(url, wait_until="commit", timeout=90_000)
+                        r = await page.goto(url, wait_until="domcontentloaded", timeout=90_000)
                         await asyncio.sleep(5.0)
                         title = ""
                         try:
@@ -800,18 +782,14 @@ async def diag_ac_air_bounds(
                         await asyncio.sleep(2.0)
                 return False
 
-            nav_attempts: list[dict] = []
             # Step 1: redeem SPA root (lighter Akamai path — the
             # /availability/ deep-link is Akamai path-protected). The
             # session jar is already injected into the Camoufox context.
             landed = await _nav(REDEEM_ROOT, "redeem_root")
 
             if landed:
-                # Let the Angular SPA bootstrap.
-                await asyncio.sleep(7.0)
-                # Dump what the SPA's auth guard can see — its login state
-                # may come from localStorage / sessionStorage / cookies
-                # rather than the captured cookie jar.
+                # Let the Angular SPA bootstrap + Kasada p.js initialize.
+                await asyncio.sleep(8.0)
                 try:
                     out["spa_storage"] = await page.evaluate(
                         """() => {
@@ -827,7 +805,6 @@ async def diag_ac_air_bounds(
                             return {
                                 cookie: document.cookie.slice(0,800),
                                 localStorage_keys: Object.keys(ls),
-                                localStorage: ls,
                                 sessionStorage_keys: Object.keys(ss),
                                 location: location.href,
                             };
@@ -835,8 +812,7 @@ async def diag_ac_air_bounds(
                     )
                 except Exception as exc:  # noqa: BLE001
                     out["spa_storage_error"] = str(exc)[:200]
-                # Dismiss the OneTrust cookie banner if present (it overlays
-                # the app and can block the redeem UI).
+                # Dismiss the OneTrust cookie banner if present.
                 for sel in ("#onetrust-accept-btn-handler",
                             "#accept-recommended-btn-handler"):
                     try:
@@ -849,18 +825,17 @@ async def diag_ac_air_bounds(
                         pass
 
                 # If the SPA bounced us to /clogin, reload the redeem root
-                # once so the auth guard re-evaluates with the injected
-                # session jar in place.
+                # once so the auth guard re-evaluates with the injected jar.
                 if "clogin" in (page.url or ""):
                     nav_attempts.append({"step": "clogin_bounce_reload"})
                     await _nav(REDEEM_ROOT, "redeem_root_retry")
-                    await asyncio.sleep(7.0)
+                    await asyncio.sleep(8.0)
 
                 # In-app SPA navigation to the availability route. The
                 # /availability/ document path is Akamai-403'd, but a
                 # client-side route change via the History API fires NO
                 # top-level document request — the Angular router picks up
-                # the pushState/popstate and the redeem SPA then issues the
+                # the pushState/popstate and the redeem SPA issues the
                 # air-bounds XHR straight to akamai-gw.dbaas.aircanada.com.
                 spa_path = search_url.split("aircanada.com", 1)[1]
                 out["spa_path"] = spa_path
@@ -884,7 +859,6 @@ async def diag_ac_air_bounds(
                 if air_bounds_resps:
                     break
                 await asyncio.sleep(1.0)
-            out["route_matched"] = route_diag.get("matched", 0)
 
             try:
                 out["page_url"] = page.url

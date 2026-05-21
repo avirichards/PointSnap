@@ -1502,3 +1502,39 @@ endpoint was reverted to BD Browser API as a still-functional recon tool.
 | `2085270` | diag(ac): use set_extra_http_headers for Cookie, drop page.route |
 | `643bfc6` | diag(ac): pivot air-bounds capture to Camoufox |
 | `bb4f33f` | fix(ac): wire resolved air-bounds tenant/host/path/headers into plugin |
+
+---
+
+## Session 16 — 2026-05-21 — AC Aeroplan: Camoufox crash MISDIAGNOSED; real cause = IPRoyal proxy
+
+Goal: finish the AC Aeroplan award search. Pick up Session 15's #1 open angle
+("fix Camoufox on the Fly worker"). Same captured session for user
+`e9d28a3e-9bfa-445b-a195-4ce19479ab07` (65 cookies, expires 2026-05-22T03:14:56Z).
+
+### CORRECTION — Camoufox is NOT broken on the Fly worker
+
+Session 15 concluded "Camoufox crashes on the Fly worker
+(`Browser.close ... handler is closed`)" and listed a Dockerfile/Xvfb infra
+fix as the #1 task. **That diagnosis was wrong.** Reproduction this session:
+
+| Test | Result |
+|---|---|
+| `GET /diag/airline?use_camoufox=1&url=https://example.com` | **200**, title `Example Domain`, no crash — Camoufox runs fine |
+| `GET /diag/airline?use_camoufox=1&url=https://www.aircanada.com/aeroplan/redeem/` (default `use_proxy=1`) | `Page.goto: NS_ERROR_PROXY_FORBIDDEN` |
+| `GET /diag/airline?use_camoufox=1&use_proxy=0&url=https://www.aircanada.com/aeroplan/redeem/` | **200**, title `AC Loyalty`, AC's Akamai sensor.js executing in console — works |
+
+Root cause: `/diag/airline` defaults `use_proxy=1`. The `browser_page()`
+Camoufox branch, when `use_proxy=True` and no BD-residential, routes Camoufox
+through **IPRoyal residential** (`_proxy_kwargs()`). **IPRoyal blocks
+aircanada.com at the CONNECT layer** (already documented in this log's Tools
+table — "IPRoyal blocks AA/DL/AC at CONNECT"). Firefox surfaces a forbidden
+CONNECT as `NS_ERROR_PROXY_FORBIDDEN`; when the dead proxied browser is then
+torn down, Playwright's transport is already gone and `Browser.close` throws
+`handler is closed`. **Session 15 saw the teardown-crash variant and wrongly
+blamed the Camoufox runtime / Docker image.** The Dockerfile + `camoufox fetch`
++ Xvfb are all fine — no infra change is needed.
+
+Fix: Camoufox must run with `use_proxy=False` (Fly direct egress) for
+aircanada.com — exactly what Sekinal's AA pattern already does. `/diag/
+ac_air_bounds` (still hardcoded `use_brightdata=True` from the Session-15
+revert) is being switched to `use_camoufox=True, use_proxy=False`.
