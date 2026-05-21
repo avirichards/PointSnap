@@ -640,14 +640,15 @@ async def diag_ac_air_bounds(
         air_bounds_resps: list[dict] = []
         all_loyalty_urls: list[str] = []
 
-        # Build a `Cookie:` header from the captured jar. We inject the
-        # session by REWRITING the Cookie header on every aircanada.com
-        # request (via page.route) rather than seeding the cookie store —
-        # BD's hosted Chromium pre-loads aircanada.com cookies and CDP
-        # refuses to override them ("Overriding X forbidden"), so cookie-
-        # store injection is a dead end on BD Browser API. Header rewriting
-        # has no such restriction and still rides alongside the Kasada
-        # `x-kpsdk-*` tokens that p.js adds inside the live SPA.
+        # Two-pronged session injection:
+        #  (a) Cookie HEADER rewrite (via page.route) — makes every
+        #      aircanada.com HTTP request carry the captured session, so the
+        #      air-bounds API POST is authenticated.
+        #  (b) Cookie STORE injection (via CDP) — so `document.cookie`, which
+        #      the redeem SPA's client-side Gigya auth guard reads, carries
+        #      the `gig_loginToken`/`glt_` login cookies. Without (b) the SPA
+        #      thinks it is logged out and redirects to /clogin even though
+        #      the HTTP layer is authenticated.
         cookie_pairs: list[str] = []
         seen_names: set[str] = set()
         for c in cookies:
@@ -658,12 +659,47 @@ async def diag_ac_air_bounds(
             cookie_pairs.append(f"{n}={c['value']}")
         captured_cookie_header = "; ".join(cookie_pairs)
         out["captured_cookie_pairs"] = len(cookie_pairs)
-        # Non-httpOnly cookies, for a belt-and-suspenders document.cookie set.
-        js_cookies = [
-            (c["name"], str(c["value"]))
-            for c in cookies
-            if c.get("name") and "value" in c and not c.get("httpOnly")
-        ]
+
+        # CDP cookie params — preserve partitionKey (captured cookies can be
+        # CHIPS-partitioned; setting an unpartitioned copy while a
+        # partitioned ghost remains is what triggers "Overriding forbidden").
+        cdp_cookies: list[dict] = []
+        for c in cookies:
+            if not c.get("name") or "value" not in c:
+                continue
+            cc: dict = {
+                "name": c["name"],
+                "value": str(c["value"]),
+                "path": c.get("path") or "/",
+                "secure": bool(c.get("secure", True)),
+                "httpOnly": bool(c.get("httpOnly", False)),
+            }
+            dom = c.get("domain")
+            if dom:
+                cc["domain"] = dom
+            ss = c.get("sameSite")
+            if ss in ("Strict", "Lax", "None"):
+                cc["sameSite"] = ss
+            exp = c.get("expires")
+            if exp is not None and exp != -1:
+                try:
+                    cc["expires"] = float(exp)
+                except (TypeError, ValueError):
+                    pass
+            pk = c.get("partitionKey")
+            if pk:
+                # CDP wants {topLevelSite, hasCrossSiteAncestor}; Playwright
+                # captures partitionKey as a string (the top-level site).
+                if isinstance(pk, str):
+                    cc["partitionKey"] = {
+                        "topLevelSite": pk,
+                        "hasCrossSiteAncestor": bool(
+                            c.get("_crHasCrossSiteAncestor")
+                        ),
+                    }
+                elif isinstance(pk, dict):
+                    cc["partitionKey"] = pk
+            cdp_cookies.append(cc)
 
         REDEEM_ROOT = "https://www.aircanada.com/aeroplan/redeem/"
 
@@ -747,6 +783,48 @@ async def diag_ac_air_bounds(
 
             await page.route("**/*", _cookie_router)
 
+            # CDP session for cookie-store injection.
+            cdp = None
+            try:
+                cdp = await ctx.new_cdp_session(page)
+            except Exception as exc:  # noqa: BLE001
+                out["cdp_session_error"] = str(exc)[:200]
+
+            store_diag: dict = {"set_ok": 0, "set_fail": 0}
+
+            async def _inject_store() -> None:
+                """Seed the browser cookie store with the captured session.
+
+                Per cookie: delete any pre-existing copy first (BD's hosted
+                Chromium pre-loads aircanada.com cookies and CDP refuses to
+                *override* an existing name), then set ours. Run before each
+                navigation so the SPA's client-side auth guard sees the
+                Gigya login cookies in document.cookie.
+                """
+                if not cdp:
+                    return
+                store_diag["set_ok"] = 0
+                store_diag["set_fail"] = 0
+                first_err = None
+                for cc in cdp_cookies:
+                    try:
+                        await cdp.send("Network.deleteCookies", {
+                            "name": cc["name"],
+                            "domain": cc.get("domain", ""),
+                            "path": cc.get("path", "/"),
+                        })
+                    except Exception:  # noqa: BLE001
+                        pass
+                    try:
+                        await cdp.send("Network.setCookie", cc)
+                        store_diag["set_ok"] += 1
+                    except Exception as exc:  # noqa: BLE001
+                        store_diag["set_fail"] += 1
+                        if first_err is None:
+                            first_err = f"{cc['name']}: {str(exc)[:160]}"
+                if first_err:
+                    store_diag["first_err"] = first_err
+
             async def _nav(url: str, label: str, attempts: int = 4) -> bool:
                 """goto with retry past BD exit-IP Akamai hard-denies."""
                 for attempt in range(attempts):
@@ -775,22 +853,16 @@ async def diag_ac_air_bounds(
                 return False
 
             nav_attempts: list[dict] = []
+            # Seed the cookie store BEFORE the first navigation so the
+            # redeem SPA bootstraps with the Gigya login cookies already in
+            # document.cookie (its client-side auth guard reads them).
+            await _inject_store()
+            out["store_inject_1"] = dict(store_diag)
+
             # Step 1: redeem SPA root (lighter Akamai path — the
             # /availability/ deep-link is Akamai path-protected and 403s
-            # from BD exit IPs). The Cookie header rewrite carries the
-            # logged-in session so the SPA bootstraps authenticated.
+            # from BD exit IPs).
             landed = await _nav(REDEEM_ROOT, "redeem_root")
-            # Belt-and-suspenders: also set the non-httpOnly captured cookies
-            # in document.cookie for any purely client-side auth check.
-            if landed and js_cookies:
-                try:
-                    await page.evaluate(
-                        """(pairs) => { for (const [n,v] of pairs) {
-                            document.cookie = n+'='+v+'; path=/; domain=.aircanada.com'; } }""",
-                        js_cookies,
-                    )
-                except Exception:  # noqa: BLE001
-                    pass
 
             if landed:
                 # Let the Angular SPA bootstrap.
@@ -833,6 +905,17 @@ async def diag_ac_air_bounds(
                             break
                     except Exception:  # noqa: BLE001
                         pass
+
+                # Re-seed the store (a nav can have re-set Akamai cookies;
+                # ensure the Gigya login cookies are present), then if the
+                # SPA bounced us to /clogin, reload the redeem root once so
+                # the auth guard re-evaluates with the cookies in place.
+                await _inject_store()
+                out["store_inject_2"] = dict(store_diag)
+                if "clogin" in (page.url or ""):
+                    nav_attempts.append({"step": "clogin_bounce_reload"})
+                    await _nav(REDEEM_ROOT, "redeem_root_retry")
+                    await asyncio.sleep(7.0)
 
                 # In-app SPA navigation to the availability route. The
                 # /availability/ document path is Akamai-403'd, but a
