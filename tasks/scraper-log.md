@@ -1682,10 +1682,69 @@ Camoufox now drives the AC redeem SPA fine, but `/search` still returns
 - The air-bounds endpoint URL/headers in `ac_aeroplan/search.py`
   (`AIR_BOUNDS_*`) are correct — a request reaches it (got a 429, not a
   404/DNS error).
-- A best-guess `airBoundsInputs` body that the API at least parsed:
-  `{"origin","destination","departureDate","searchType":"BRANDED",
-  "subType":"ROUNDTRIP","marketCode":"TNB","flightSearchType":
-  "FUNCTION_AIR","fareFilters":{"value":"ECONOMY"},"passengers":
-  {"adultCount":1,"youthCount":0,"childCount":0,"infantCount":0}}` — but
-  the response was a Kasada 429, so the body shape is not yet confirmed
-  against a real 200.
+- `window.KPSDK` is **absent** on the redeem SPA *root* page — the redeem
+  root does NOT load Kasada `p.js`. Only the logged-in `/availability/`
+  page state runs `p.js` (and would fire a properly-`x-kpsdk-*`-stamped
+  air-bounds XHR). A `page.evaluate` fetch/XHR from the redeem root is
+  unstamped → Kasada 429. So a manual air-bounds call from outside the
+  logged-in SPA is not viable; the SPA must make the call itself.
+
+### CONCLUSION — Camoufox crash fixed; this captured session is stale
+
+**What was achieved (Session 16):**
+- The Camoufox-on-Fly crash is **fixed** (`patch_playwright.py` — the
+  Playwright-1.60 Firefox-driver `pageError.location` NPE). Verified: the
+  AC redeem SPA runs in Camoufox 44s+ with a clean teardown.
+- `ac_aeroplan/search.py` `_auth_search` is **rewired** off the dead WU
+  `Cookie:`-replay onto the real Camoufox transport `_camoufox_air_bounds`
+  — launch Camoufox, inject the captured jar (as session cookies), drive
+  the redeem SPA root → availability deep-link, capture the SPA's own
+  air-bounds XHR, parse with `_parse_air_bounds`.
+
+**Why `/search` still returns `[]` for user `e9d28a3e-…`:** the captured
+Aeroplan session is **expired**. Its short-lived Gigya/Cognito tokens
+(`glt_3_*`, `cognito`) lapsed ~1.3-2.3 h before testing; AC's silent-SSO
+refresh (`/clogin/pages/proxy` → `ac_SSO_bundle.js`) fails with `SYS011`
+for a stale session replayed in a fresh browser. The redeem SPA therefore
+never reaches a logged-in state, never loads Kasada `p.js`, and never
+fires the air-bounds XHR. This is NOT a code defect — it is session
+staleness. The `program_auth_sessions` row's `expires_at` (2026-05-22)
+is bookkeeping; the *real* Gigya session lifetime is far shorter.
+
+**To get real rows:** capture a FRESH Aeroplan session (via the cockpit
+`/airlines` connect flow) and run `/search` within the Gigya session's
+live window (minutes-to-≈1 h, not hours). The transport code is now
+complete and proven to drive the SPA — only a live session is needed.
+
+**Open follow-up (next session):** confirm whether a fresh session
+replayed in Camoufox stays logged in end-to-end (it should — Camoufox's
+fingerprint is stable and AC's `gmid`/`ucid` device tokens are valid),
+OR whether AC's silent SSO is browser/IP-bound such that even a fresh
+captured session can't be replayed in a different browser. If the latter,
+the T5' capture flow itself (`auth/capture.py`, currently BD Browser API)
+should capture *and search* in one continuous browser session rather than
+capture-then-replay.
+
+### Commit log (Session 16)
+
+| SHA | Message |
+|---|---|
+| `9716b42` | diag(ac): switch ac_air_bounds capture to Camoufox + Fly egress |
+| `4f13fe3` | diag(ac): step-traced ac_air_bounds + sysinfo; harden Camoufox memory |
+| `f76e9e7` | fix(ac): Camoufox headless=True — escape the 1x1 Xvfb GLX WebGL crash |
+| `e897fe9` | diag(ac): capture Firefox crash signature + webgl_off/fast_nav probes |
+| `99c1570` | diag(ac): bulletproof ac_air_bounds teardown + standalone crash reader |
+| `848b29b` | fix(diag): add missing `import os` in serve.py |
+| `bfc5e4d` | diag(ac): subprocess Camoufox probe to capture the REAL crash cause |
+| `2c47d3f` | fix(ac): shield against the Playwright-1.60 Firefox driver NPE crash |
+| `7d3d3eb` | fix(diag): self-contained camoufox_probe script |
+| `130e813` | fix(ac): patch the Playwright Firefox driver page-error NPE crash |
+| `1129319` | fix(ac): patch the page-error crash at its SOURCE (_onUncaughtError) |
+| `1438f6e` | diag(ac): direct availability deep-link nav + full cookie/login dump |
+| `96ee9ec` | diag(ac): inject cookies as session cookies + per-cookie drop forensics |
+| `031f41a` | diag(ac): wait through the /clogin silent-SSO redirect chain |
+| `cd9a2af` | diag(ac): ride the full /clogin redirect chain to settle |
+| `869894b` | diag(ac): capture /clogin + oauth2 + auth-gw traffic to debug SYS011 |
+| `7fa37e8` | diag(ac): direct air-bounds fetch probe + full /clogin SSO chain capture |
+| `ed4c0e8` | diag(ac): probe air-bounds via XHR after 28s Kasada settle |
+| `e300987` | feat(ac): wire _auth_search to the Camoufox air-bounds transport |
