@@ -656,70 +656,20 @@ async def diag_ac_air_bounds(
         air_bounds_resps: list[dict] = []
         all_loyalty_urls: list[str] = []
 
-        # Two-pronged session injection:
-        #  (a) Cookie extra-HTTP-header — makes every aircanada.com HTTP
-        #      request carry the captured session, so the air-bounds API
-        #      POST is authenticated.
-        #  (b) document.cookie init script — so the redeem SPA's client-side
-        #      Gigya auth guard sees the `gig_loginToken`/`glt_` login
-        #      cookies. Without (b) the SPA thinks it is logged out and
-        #      redirects to /clogin even though the HTTP layer is authed.
-        cookie_pairs: list[str] = []
-        seen_names: set[str] = set()
-        for c in cookies:
-            n = c.get("name")
-            if not n or "value" not in c or n in seen_names:
-                continue
-            seen_names.add(n)
-            cookie_pairs.append(f"{n}={c['value']}")
-        captured_cookie_header = "; ".join(cookie_pairs)
-        out["captured_cookie_pairs"] = len(cookie_pairs)
-
-        # CDP cookie params — preserve partitionKey (captured cookies can be
-        # CHIPS-partitioned; setting an unpartitioned copy while a
-        # partitioned ghost remains is what triggers "Overriding forbidden").
-        cdp_cookies: list[dict] = []
-        for c in cookies:
-            if not c.get("name") or "value" not in c:
-                continue
-            cc: dict = {
-                "name": c["name"],
-                "value": str(c["value"]),
-                "path": c.get("path") or "/",
-                "secure": bool(c.get("secure", True)),
-                "httpOnly": bool(c.get("httpOnly", False)),
-            }
-            dom = c.get("domain")
-            if dom:
-                cc["domain"] = dom
-            ss = c.get("sameSite")
-            if ss in ("Strict", "Lax", "None"):
-                cc["sameSite"] = ss
-            exp = c.get("expires")
-            if exp is not None and exp != -1:
-                try:
-                    cc["expires"] = float(exp)
-                except (TypeError, ValueError):
-                    pass
-            pk = c.get("partitionKey")
-            if pk:
-                # CDP wants {topLevelSite, hasCrossSiteAncestor}; Playwright
-                # captures partitionKey as a string (the top-level site).
-                if isinstance(pk, str):
-                    cc["partitionKey"] = {
-                        "topLevelSite": pk,
-                        "hasCrossSiteAncestor": bool(
-                            c.get("_crHasCrossSiteAncestor")
-                        ),
-                    }
-                elif isinstance(pk, dict):
-                    cc["partitionKey"] = pk
-            cdp_cookies.append(cc)
-
+        # The captured Aeroplan session is injected into the Camoufox cookie
+        # context via add_cookies (built below, after the browser opens).
         REDEEM_ROOT = "https://www.aircanada.com/aeroplan/redeem/"
 
+        # Camoufox (local stealth Firefox), NOT BD Browser API. BD's hosted
+        # Chromium is a *managed* browser — it blocks every client-side
+        # cookie write for the proxied domain (add_cookies / CDP
+        # Network.setCookie / Storage.setCookies / document.cookie all
+        # "Overriding X forbidden", and page.route breaks the tunnel), so a
+        # captured session cannot be injected there. Camoufox's add_cookies
+        # works normally. AC's Akamai is the trade-off; we inject the
+        # captured (already Akamai-validated) `_abck`/`bm_*` cookies too.
         async with browser_page(
-            timeout_ms=120_000, use_brightdata=True
+            timeout_ms=120_000, use_camoufox=True, use_proxy=False
         ) as page:
             ctx = page.context
 
@@ -765,93 +715,61 @@ async def diag_ac_air_bounds(
             search_url = SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date)
             out["search_url"] = search_url
 
-            # Inject the captured session as a `Cookie` extra-HTTP-header on
-            # every request. We do NOT use page.route — a second route
-            # handler over BD Browser API's CDP breaks the proxy tunnel
-            # (ERR_TUNNEL_CONNECTION_FAILED). set_extra_http_headers applies
-            # via CDP Network.setExtraHTTPHeaders without intercepting, so
-            # BD's tunnel is undisturbed. This carries the captured session
-            # on the air-bounds API POST + the SPA's auth/profile XHRs;
-            # Kasada x-kpsdk-* headers p.js adds inside the SPA are merged.
             route_diag = {"matched": 0}
-            if captured_cookie_header:
-                try:
-                    await page.set_extra_http_headers(
-                        {"Cookie": captured_cookie_header}
-                    )
-                    out["extra_header_set"] = True
-                except Exception as exc:  # noqa: BLE001
-                    out["extra_header_error"] = str(exc)[:200]
-
-            # CDP session for cookie-store injection.
-            cdp = None
-            try:
-                cdp = await ctx.new_cdp_session(page)
-            except Exception as exc:  # noqa: BLE001
-                out["cdp_session_error"] = str(exc)[:200]
-
-            # document.cookie injection — BD Browser API blocks CDP cookie
-            # WRITES for the proxied domain ("Overriding X forbidden"), but a
-            # `document.cookie = ...` write goes through Chromium's normal
-            # script cookie path, which BD does not block. Set the
-            # non-httpOnly cookies (the Gigya `gig_loginToken`/`glt_` login
-            # cookies the SPA's auth guard reads) at every document start so
-            # they're present before the SPA bootstraps.
-            js_cookie_pairs = [
-                [c["name"], str(c["value"])]
-                for c in cookies
-                if c.get("name") and "value" in c and not c.get("httpOnly")
-            ]
-            out["js_cookie_count"] = len(js_cookie_pairs)
-            try:
-                import json as _j
-                await page.add_init_script(
-                    "(() => { const ps = " + _j.dumps(js_cookie_pairs) + ";"
-                    " for (const [n,v] of ps) { try {"
-                    " document.cookie = n+'='+v+'; path=/; domain=.aircanada.com';"
-                    " document.cookie = n+'='+v+'; path=/';"
-                    " } catch(e){} } })();"
-                )
-            except Exception as exc:  # noqa: BLE001
-                out["init_script_error"] = str(exc)[:200]
-
             store_diag: dict = {"set_ok": 0, "set_fail": 0}
 
-            async def _inject_store() -> None:
-                """Seed the browser cookie store with the captured session.
-
-                Per cookie: delete any pre-existing copy first (BD's hosted
-                Chromium pre-loads aircanada.com cookies and CDP refuses to
-                *override* an existing name), then set ours. Run before each
-                navigation so the SPA's client-side auth guard sees the
-                Gigya login cookies in document.cookie.
-                """
-                if not cdp:
-                    return
-                store_diag["set_ok"] = 0
-                store_diag["set_fail"] = 0
-                first_err = None
-                for cc in cdp_cookies:
+            # Inject the captured Aeroplan session into the Camoufox cookie
+            # store. add_cookies needs Playwright-shape cookies and EITHER
+            # (domain+path) OR url. Captured cookies carry domain+path. We
+            # drop extra keys (partitionKey, _crHasCrossSiteAncestor) Firefox
+            # does not accept. add_cookies is all-or-nothing, so on a batch
+            # failure we fall back to one-by-one.
+            pw_cookies: list[dict] = []
+            for c in cookies:
+                if not c.get("name") or "value" not in c or not c.get("domain"):
+                    continue
+                nc: dict = {
+                    "name": c["name"],
+                    "value": str(c["value"]),
+                    "domain": c["domain"],
+                    "path": c.get("path") or "/",
+                    "secure": bool(c.get("secure", True)),
+                    "httpOnly": bool(c.get("httpOnly", False)),
+                }
+                ss = c.get("sameSite")
+                if ss in ("Strict", "Lax", "None"):
+                    nc["sameSite"] = ss
+                exp = c.get("expires")
+                if exp is not None and exp != -1:
                     try:
-                        await cdp.send("Network.deleteCookies", {
-                            "name": cc["name"],
-                            "domain": cc.get("domain", ""),
-                            "path": cc.get("path", "/"),
-                        })
-                    except Exception:  # noqa: BLE001
+                        nc["expires"] = int(exp)
+                    except (TypeError, ValueError):
                         pass
+                pw_cookies.append(nc)
+            try:
+                await ctx.add_cookies(pw_cookies)
+                store_diag["set_ok"] = len(pw_cookies)
+                store_diag["mode"] = "batch"
+            except Exception as exc:  # noqa: BLE001
+                store_diag["batch_error"] = str(exc)[:200]
+                for nc in pw_cookies:
                     try:
-                        await cdp.send("Network.setCookie", cc)
+                        await ctx.add_cookies([nc])
                         store_diag["set_ok"] += 1
-                    except Exception as exc:  # noqa: BLE001
+                    except Exception as exc2:  # noqa: BLE001
                         store_diag["set_fail"] += 1
-                        if first_err is None:
-                            first_err = f"{cc['name']}: {str(exc)[:160]}"
-                if first_err:
-                    store_diag["first_err"] = first_err
+                        if "first_err" not in store_diag:
+                            store_diag["first_err"] = f"{nc['name']}: {str(exc2)[:140]}"
+                store_diag["mode"] = "one_by_one"
+            out["store_inject_1"] = dict(store_diag)
+            try:
+                jar0 = await ctx.cookies()
+                out["jar_after_inject"] = len(jar0)
+            except Exception:  # noqa: BLE001
+                pass
 
             async def _nav(url: str, label: str, attempts: int = 4) -> bool:
-                """goto with retry past BD exit-IP Akamai hard-denies."""
+                """goto with retry past Akamai hard-denies."""
                 for attempt in range(attempts):
                     try:
                         r = await page.goto(url, wait_until="commit", timeout=90_000)
@@ -878,15 +796,9 @@ async def diag_ac_air_bounds(
                 return False
 
             nav_attempts: list[dict] = []
-            # Seed the cookie store BEFORE the first navigation so the
-            # redeem SPA bootstraps with the Gigya login cookies already in
-            # document.cookie (its client-side auth guard reads them).
-            await _inject_store()
-            out["store_inject_1"] = dict(store_diag)
-
             # Step 1: redeem SPA root (lighter Akamai path — the
-            # /availability/ deep-link is Akamai path-protected and 403s
-            # from BD exit IPs).
+            # /availability/ deep-link is Akamai path-protected). The
+            # session jar is already injected into the Camoufox context.
             landed = await _nav(REDEEM_ROOT, "redeem_root")
 
             if landed:
@@ -931,12 +843,9 @@ async def diag_ac_air_bounds(
                     except Exception:  # noqa: BLE001
                         pass
 
-                # Re-seed the store (a nav can have re-set Akamai cookies;
-                # ensure the Gigya login cookies are present), then if the
-                # SPA bounced us to /clogin, reload the redeem root once so
-                # the auth guard re-evaluates with the cookies in place.
-                await _inject_store()
-                out["store_inject_2"] = dict(store_diag)
+                # If the SPA bounced us to /clogin, reload the redeem root
+                # once so the auth guard re-evaluates with the injected
+                # session jar in place.
                 if "clogin" in (page.url or ""):
                     nav_attempts.append({"step": "clogin_bounce_reload"})
                     await _nav(REDEEM_ROOT, "redeem_root_retry")
