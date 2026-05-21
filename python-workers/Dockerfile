@@ -11,8 +11,11 @@ ENV PYTHONUNBUFFERED=1 \
 # Camoufox uses headless="virtual" which spawns Xvfb internally — so AA's
 # Akamai BMP detects a "headful" Firefox session even though we're in a
 # headless container.
+# `coreutils` is pulled in for a guaranteed `timeout` binary (the entrypoint
+# bounds `tailscale up` with it). `iptables`/`iproute2` are NOT needed:
+# Tailscale runs in userspace-networking mode (no TUN device, no NET_ADMIN).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget gnupg ca-certificates xvfb \
+    wget gnupg ca-certificates xvfb coreutils \
     fonts-liberation fonts-noto-color-emoji \
     libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 \
     libcairo2 libcups2 libdbus-1-3 libdbus-glib-1-2 libdrm2 libgbm1 \
@@ -22,6 +25,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxfixes3 libxkbcommon0 libxrandr2 libxt6 libxtst6 \
     xdg-utils libu2f-udev libvulkan1 \
   && rm -rf /var/lib/apt/lists/*
+
+# Tailscale — copied straight from the official image (no apt repo needed).
+# Used ONLY to route the Air Canada Aeroplan award-search Camoufox transport
+# through a residential exit node (the user's home Mac), defeating AC's
+# Kasada data-center-IP 429. tailscaled runs in userspace-networking mode
+# (see entrypoint.sh) — no TUN device, no NET_ADMIN, cannot break the
+# container. Pinned to a specific version for reproducible builds.
+COPY --from=docker.io/tailscale/tailscale:v1.96.5 /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=docker.io/tailscale/tailscale:v1.96.5 /usr/local/bin/tailscale /usr/local/bin/tailscale
 
 WORKDIR /app
 
@@ -53,5 +65,9 @@ RUN python patch_playwright.py
 
 COPY . .
 
+# entrypoint.sh backgrounds userspace tailscaled + `tailscale up` (fail-safe,
+# never blocks startup), then `exec`s uvicorn. See the script header.
+RUN chmod +x ./entrypoint.sh
+
 EXPOSE 8000
-CMD ["uvicorn", "serve:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["./entrypoint.sh"]
