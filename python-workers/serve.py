@@ -660,16 +660,21 @@ async def diag_ac_air_bounds(
         # context via add_cookies (built below, after the browser opens).
         REDEEM_ROOT = "https://www.aircanada.com/aeroplan/redeem/"
 
-        # Camoufox (local stealth Firefox), NOT BD Browser API. BD's hosted
-        # Chromium is a *managed* browser — it blocks every client-side
-        # cookie write for the proxied domain (add_cookies / CDP
-        # Network.setCookie / Storage.setCookies / document.cookie all
-        # "Overriding X forbidden", and page.route breaks the tunnel), so a
-        # captured session cannot be injected there. Camoufox's add_cookies
-        # works normally. AC's Akamai is the trade-off; we inject the
-        # captured (already Akamai-validated) `_abck`/`bm_*` cookies too.
+        # Transport note (2026-05-21 investigation, see scraper-log.md):
+        #   * BD Browser API is a *managed* browser — it blocks every
+        #     client-side cookie write for the proxied domain (add_cookies /
+        #     CDP Network.setCookie/setCookies / Storage.setCookies /
+        #     document.cookie all fail "Overriding X forbidden"; page.route
+        #     breaks the proxy tunnel). A captured session cannot be injected.
+        #   * Camoufox currently crashes on the Fly worker ("Browser.close:
+        #     ... handler is closed") — the Camoufox runtime is broken in the
+        #     deployed image and needs an infra fix before it is usable.
+        # This endpoint is left on BD Browser API as a still-functional recon
+        # tool (it can navigate AC + capture the air-bounds XHR shape once a
+        # transport that injects the session is available). add_cookies below
+        # is a no-op on BD but does not crash.
         async with browser_page(
-            timeout_ms=120_000, use_camoufox=True, use_proxy=False
+            timeout_ms=120_000, use_brightdata=True
         ) as page:
             ctx = page.context
 
@@ -718,12 +723,12 @@ async def diag_ac_air_bounds(
             route_diag = {"matched": 0}
             store_diag: dict = {"set_ok": 0, "set_fail": 0}
 
-            # Inject the captured Aeroplan session into the Camoufox cookie
-            # store. add_cookies needs Playwright-shape cookies and EITHER
-            # (domain+path) OR url. Captured cookies carry domain+path. We
-            # drop extra keys (partitionKey, _crHasCrossSiteAncestor) Firefox
-            # does not accept. add_cookies is all-or-nothing, so on a batch
-            # failure we fall back to one-by-one.
+            # Attempt to inject the captured Aeroplan session into the
+            # browser cookie store. On BD Browser API this is expected to
+            # fail ("Overriding X forbidden") — recorded in store_diag, not
+            # fatal. add_cookies needs Playwright-shape cookies with
+            # domain+path; we drop extra keys (partitionKey,
+            # _crHasCrossSiteAncestor). Batch first, then one-by-one.
             pw_cookies: list[dict] = []
             for c in cookies:
                 if not c.get("name") or "value" not in c or not c.get("domain"):

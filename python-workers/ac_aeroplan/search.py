@@ -49,17 +49,27 @@ CONCLUSION — auth_required:
   Per the scraping briefing, a broken plugin must NOT be forced — so
   `search()` here returns `[]` with verdict `auth_required`.
 
-  HANDOFF for the T5' transport — this plugin is *close* to working:
-  the WU transport is already proven viable for Air Canada (page renders,
-  Akamai cleared, `dapidynamic/*` POST reachable). T5' needs only two
-  things to flip this plugin to a real WU 2-step:
-    1. A logged-in Aeroplan cookie jar (the T5' session capture), to be
-       forwarded as a `Cookie:` header on the air-bounds POST.
-    2. The `{tenant}` path segment + exact request-body shape, extracted
-       from the redeem SPA's Angular JS bundle (or captured from a real
-       logged-in browser's air-bounds XHR during the T5' capture).
+UPDATE 2026-05-21 — the `{tenant}` seam is RESOLVED (see scraper-log.md
+"Session 15" + the AIR_BOUNDS_* constants below):
+  * Real tenant `1ASIUDALAC`, API gateway host `akamai-gw.dbaas.aircanada
+    .com`, base `/loyalty/dapidynamicplus/1ASIUDALAC/v2`, POST
+    `/search/air-bounds?lang=en-CA`, headers `x-api-key` +
+    `x-app-client-id: redemption-web`. Extracted from the redeem SPA's
+    Angular bundle (`main.<hash>.js`) + the page's `KPSDK.configure` block.
+  * What is STILL unresolved is the TRANSPORT. The air-bounds path is
+    Kasada-protected (`KPSDK.configure`), so the request needs per-call
+    `x-kpsdk-ct`/`x-kpsdk-cd` tokens that only AC's `p.js` can mint inside
+    a real browser — a stateless WU `Cookie:`-header replay cannot. The
+    captured logged-in session must be replayed *inside a browser*. BD
+    Browser API blocks all cookie injection for aircanada.com (it is a
+    managed browser — add_cookies / CDP setCookie / document.cookie all
+    fail "Overriding X forbidden"); Camoufox is the viable path but is
+    currently crashing on the Fly worker and needs an infra fix first.
+  * The exact request BODY shape (`airBoundsInputs`) still needs a live
+    logged-in air-bounds XHR capture — the Angular bundle assembles it
+    from NgRx state, not a greppable literal.
   `_parse_air_bounds()` below — the AwardWiz-derived response parser — is
-  kept fully intact and ready, so only the transport needs wiring.
+  kept fully intact and ready, so only the transport + body remain.
 =============================================================================
 
 Defensive contract: `search()` never raises — it returns `[]` and records
@@ -86,8 +96,41 @@ SEARCH_PAGE_TMPL = (
     "?org0={origin}&dest0={dest}&departureDate0={date}"
     "&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB"
 )
-# The award API; `{tenant}` is a specific path segment baked into the
-# redeem SPA's JS bundle (see docstring — must be extracted for T5').
+
+# ---------------------------------------------------------------------------
+# Air-bounds award API — RESOLVED 2026-05-21 (see scraper-log.md "Session 15").
+#
+# The `{tenant}` seam is resolved. The values below were extracted from the
+# redeem SPA's Angular bundle (`https://www.aircanada.com/aeroplan/redeem/
+# main.<hash>.js`) and the redeem page's inline `KPSDK.configure([...])`
+# block:
+#   * Real tenant id:  1ASIUDALAC   (the old placeholder `1ASIATSAC` 404s)
+#   * API gateway host: akamai-gw.dbaas.aircanada.com  (NOT www.aircanada.com)
+#   * The redeem SPA uses the `dapidynamicplus` API base, not `dapidynamic`:
+#       main.js  →  Co = "https://akamai-gw.dbaas.aircanada.com"
+#                   ua = "/loyalty/dapidynamicplus/1ASIUDALAC/v2"
+#                   air-bounds API client basePath = Co + ua
+#   * Required request headers (Angular `requestPlugins`):
+#       x-api-key:        Z5R8Rm1sA37iC0gaS5kb69ltHwKBTYzUa89gQDwm
+#       x-app-client-id:  redemption-web
+#   * Method POST, query param `lang`, JSON body `airBoundsInputs`.
+#
+# TRANSPORT — still unresolved. The air-bounds path is registered with
+# Kasada (`KPSDK.configure`), so a stateless WU `Cookie:`-header replay can
+# NOT mint the per-request `x-kpsdk-ct`/`x-kpsdk-cd` tokens. The session must
+# be replayed inside a real browser running AC's `p.js`. BD Browser API
+# blocks cookie injection for aircanada.com (managed browser); Camoufox is
+# the path but currently crashes on the Fly worker. See scraper-log.md.
+# ---------------------------------------------------------------------------
+AIR_BOUNDS_TENANT = "1ASIUDALAC"
+AIR_BOUNDS_API_HOST = "akamai-gw.dbaas.aircanada.com"
+AIR_BOUNDS_URL = (
+    f"https://{AIR_BOUNDS_API_HOST}"
+    f"/loyalty/dapidynamicplus/{AIR_BOUNDS_TENANT}/v2/search/air-bounds"
+)
+AIR_BOUNDS_API_KEY = "Z5R8Rm1sA37iC0gaS5kb69ltHwKBTYzUa89gQDwm"
+AIR_BOUNDS_CLIENT_ID = "redemption-web"
+# Substring used by network-capture diagnostics to recognise the XHR.
 AIR_BOUNDS_PATH = "/v2/search/air-bounds"
 
 # Module-level diagnostic state — exposed for the parent's consolidated
@@ -233,13 +276,15 @@ async def _auth_search(
          Air Canada's Akamai; the cookie jar supplies the logged-in
          Aeroplan account that the March-2025 login wall demands).
 
-    TRANSPORT SEAM — the air-bounds POST needs two facts the T5' capture
-    does not yet hand us (see this module's header docstring): the
-    `{tenant}` path segment baked into the redeem SPA's Angular bundle, and
-    the exact request-body shape. Until those are captured, the POST 404s
-    on the unknown tenant. The cookie-injection hook itself is real and
-    correct: when a future session capture records the tenant + body, this
-    function flips to a working WU 2-step with no structural change —
+    TRANSPORT SEAM (updated 2026-05-21) — the `{tenant}` is now RESOLVED
+    (`1ASIUDALAC`, host `akamai-gw.dbaas.aircanada.com`, see the
+    AIR_BOUNDS_* constants). Two things still block a real result:
+      1. The air-bounds path is Kasada-protected — this WU `Cookie:`-header
+         replay cannot mint the per-request `x-kpsdk-*` tokens, so it is
+         expected to fail. A browser-based transport (Camoufox, once the
+         Fly-worker Camoufox crash is fixed) is required.
+      2. The exact `airBoundsInputs` request body still needs a live
+         logged-in air-bounds XHR capture (see scraper-log.md Session 15).
     `_parse_air_bounds` is already wired to consume the response.
 
     Records a verdict in `LAST_RUN_DIAG` and never raises.
@@ -283,15 +328,13 @@ async def _auth_search(
     try:
         from common.bd_wu import wu_post
 
-        # The redeem-SPA air-bounds API. `{tenant}` is the unresolved seam
-        # (see docstring) — kept as a clearly-flagged placeholder so a
-        # future capture only edits this one constant.
-        air_bounds_url = (
-            "https://www.aircanada.com/loyalty/dapidynamic/"
-            "1ASIATSAC/v2/search/air-bounds"
-        )
-        # Minimal AwardWiz-derived body. The real shape is captured during
-        # a logged-in air-bounds XHR — this is the documented skeleton.
+        # The redeem-SPA air-bounds API — tenant/host/path RESOLVED, see the
+        # AIR_BOUNDS_* constants + module docstring. NOTE: this WU replay is
+        # expected to fail Kasada validation (the path is KPSDK-registered;
+        # the per-request x-kpsdk-* tokens can only be minted by AC's p.js
+        # inside a real browser). The call is wired with the correct URL +
+        # headers so that when a browser-based transport replaces it, only
+        # the request body needs finalizing.
         body = {
             "origin": origin,
             "destination": dest,
@@ -300,12 +343,14 @@ async def _auth_search(
             "passengers": {"adults": 1, "youth": 0, "children": 0, "infants": 0},
         }
         status, parsed, raw = await wu_post(
-            air_bounds_url,
+            f"{AIR_BOUNDS_URL}?lang=en-CA",
             body,
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/json",
                 "Cookie": cookie_header,
+                "x-api-key": AIR_BOUNDS_API_KEY,
+                "x-app-client-id": AIR_BOUNDS_CLIENT_ID,
                 "Referer": SEARCH_PAGE_TMPL.format(origin=origin, dest=dest, date=date),
             },
             timeout_s=60.0,
