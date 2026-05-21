@@ -1201,21 +1201,46 @@ async def diag_ac_air_bounds(
                 await _nav(REDEEM_ROOT, "redeem_root_retry")
                 await asyncio.sleep(8.0)
 
-            # PRIMARY: navigate directly to the availability deep-link. The
-            # redeem-root load above warmed Akamai's _abck/bm_* cookies, so
-            # the deep-link (Akamai path-protected from cold) should now
-            # load. A real document navigation makes the Angular router
-            # actually run the availability/search route + fire air-bounds —
-            # unlike history.pushState, which Angular's Router ignores.
+            # PRIMARY: navigate directly to the availability deep-link.
+            # With the captured remember-me token (`gig_loginToken_3_*`,
+            # valid ~1yr) the redeem app's auth guard hops through AC's
+            # `/clogin/pages/proxy` SILENT-SSO chain — `/clogin` ->
+            # `auth.api-gw.dbaas.aircanada.com/oauth2/idpresponse` -> back
+            # to the redeem app, minting a fresh short-lived `glt_*` +
+            # `cognito`. That chain is several redirects and takes time, so
+            # after the nav we POLL the URL until it settles back on
+            # `/aeroplan/redeem/` (logged in) or stalls on
+            # `/clogin/pages/login` (interactive login needed).
             _step("nav_availability_begin")
             avail_landed = await _nav(search_url, "availability_deeplink")
             _step("nav_availability_done", landed=avail_landed)
-            await asyncio.sleep(6.0)
-            await _dump_state("after_availability")
 
-            # FALLBACK: if the deep-link bounced/was blocked, try the
-            # in-app History-API nudge from the redeem root.
-            if not avail_landed or "/availability/" not in (page.url or ""):
+            redirect_chain: list[str] = []
+            last_url = ""
+            for poll_i in range(50):
+                await asyncio.sleep(1.0)
+                try:
+                    cur = page.url
+                except Exception:  # noqa: BLE001
+                    break
+                if cur != last_url:
+                    redirect_chain.append(f"t+{poll_i + 1}s {cur[:130]}")
+                    last_url = cur
+                # Settled back inside the redeem app (not /clogin) → done.
+                if "/aeroplan/redeem/" in cur and "clogin" not in cur:
+                    break
+                # An air-bounds XHR already fired → done.
+                if air_bounds_resps:
+                    break
+            out["oauth_redirect_chain"] = redirect_chain
+            _step("oauth_chain_settled", final_url=(last_url or page.url)[:90])
+            await asyncio.sleep(5.0)
+            await _dump_state("after_oauth_chain")
+
+            # If we settled back in the redeem app but NOT on the
+            # availability route, nudge the Angular router there in-app.
+            cur_url = page.url or ""
+            if "/aeroplan/redeem/" in cur_url and "/availability/" not in cur_url:
                 spa_path = search_url.split("aircanada.com", 1)[1]
                 out["spa_path"] = spa_path
                 try:
