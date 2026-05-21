@@ -266,6 +266,19 @@ def build_camoufox_config(headless: Any = True) -> dict[str, Any]:
     if bd_proxy:
         cfg["proxy"] = bd_proxy
         cfg["geoip"] = True
+        # Bright Data Residential MITMs HTTPS with its OWN cert. Firefox
+        # treats www.aircanada.com as HSTS (the site sends an HSTS response
+        # header, registering a DYNAMIC pin on first load), and for an HSTS
+        # host Firefox refuses to honour `ignore_https_errors` — the cert
+        # error is fatal and unbypassable ("You can't add an exception to
+        # visit this site"). Fully disabling HSTS enforcement — the dynamic
+        # store (`...enabled`), the preload list, and cert pinning — lets
+        # Firefox accept BD's MITM cert so the aircanada.com page loads.
+        cfg["firefox_user_prefs"].update({
+            "network.stricttransportsecurity.enabled": False,
+            "network.stricttransportsecurity.preloadlist": False,
+            "security.cert_pinning.enforcement_level": 0,
+        })
     return cfg
 
 
