@@ -755,6 +755,7 @@ async def diag_pw_source(
 # never the underlying cause; a subprocess hands us everything.
 _CAMOUFOX_PROBE_SCRIPT = r'''
 import asyncio, os, sys, time
+sys.path.insert(0, "/app")
 os.environ.setdefault("MOZ_CRASHREPORTER", "1")
 os.environ.setdefault("MOZ_CRASHREPORTER_NO_REPORT", "1")
 
@@ -762,11 +763,28 @@ URL = sys.argv[1] if len(sys.argv) > 1 else "https://www.aircanada.com/aeroplan/
 WAIT = int(sys.argv[2]) if len(sys.argv) > 2 else 30
 SHIELD = (sys.argv[3] if len(sys.argv) > 3 else "1") == "1"
 
+# Inlined so the probe is self-contained (no /app import dependency).
+_SHIELD_JS = r"""
+(() => {
+  try {
+    window.addEventListener('error', function (e) {
+      try { e.preventDefault(); e.stopImmediatePropagation(); } catch (_) {}
+      return true;
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      try { e.preventDefault(); e.stopImmediatePropagation(); } catch (_) {}
+      return true;
+    }, true);
+    try { window.onerror = function () { return true; }; } catch (_) {}
+    try { window.onunhandledrejection = function () { return true; }; } catch (_) {}
+  } catch (_) {}
+})();
+"""
+
 def log(m): print(f"[{time.strftime('%H:%M:%S')}] {m}", flush=True)
 
 async def main():
     from camoufox.async_api import AsyncCamoufox
-    from ac_aeroplan.search import install_pw_crash_shield
     cfg = {"headless": True, "humanize": True, "locale": "en-US",
            "window": (1366, 768), "block_webrtc": True, "geoip": False}
     log(f"launching camoufox headless=True shield={SHIELD}")
@@ -774,7 +792,7 @@ async def main():
     log("camoufox launched")
     ctx = await browser.new_context()
     if SHIELD:
-        await install_pw_crash_shield(ctx)
+        await ctx.add_init_script(_SHIELD_JS)
         log("pw_crash_shield installed")
     page = await ctx.new_page()
 
