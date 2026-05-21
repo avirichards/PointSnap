@@ -261,6 +261,71 @@ async def diag_proxy() -> JSONResponse:
         )
 
 
+@app.get("/diag/dbcheck")
+async def diag_dbcheck(
+    user_id: str = Query("", description="UUID to check in auth.users"),
+) -> JSONResponse:
+    """Verify the program_auth_sessions save path — diagnoses a
+    db_save_failed from the auth-capture flow. Read-only: checks whether
+    the password_secret_id column + encrypt_password/encrypt_cookies
+    functions exist, whether `user_id` is a real auth.users row, and
+    which migrations have been applied."""
+    import os
+    dsn = os.environ.get("DATABASE_URL")
+    if not dsn:
+        return JSONResponse(
+            {"ok": False, "error": "DATABASE_URL unset"}, status_code=500
+        )
+    out: dict = {}
+    try:
+        import psycopg
+        async with await psycopg.AsyncConnection.connect(dsn) as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT EXISTS(SELECT 1 FROM information_schema.columns "
+                    "WHERE table_schema='public' "
+                    "AND table_name='program_auth_sessions' "
+                    "AND column_name='password_secret_id')"
+                )
+                out["password_secret_id_column"] = (await cur.fetchone())[0]
+                await cur.execute(
+                    "SELECT EXISTS(SELECT 1 FROM pg_proc "
+                    "WHERE proname='encrypt_password')"
+                )
+                out["encrypt_password_fn"] = (await cur.fetchone())[0]
+                await cur.execute(
+                    "SELECT EXISTS(SELECT 1 FROM pg_proc "
+                    "WHERE proname='encrypt_cookies')"
+                )
+                out["encrypt_cookies_fn"] = (await cur.fetchone())[0]
+                if user_id:
+                    try:
+                        await cur.execute(
+                            "SELECT EXISTS(SELECT 1 FROM auth.users "
+                            "WHERE id=%s::uuid)",
+                            (user_id,),
+                        )
+                        out["user_in_auth_users"] = (await cur.fetchone())[0]
+                    except Exception as e:  # noqa: BLE001
+                        out["user_in_auth_users"] = f"query-failed: {e}"
+                try:
+                    await cur.execute(
+                        "SELECT version FROM "
+                        "supabase_migrations.schema_migrations ORDER BY version"
+                    )
+                    out["applied_migrations"] = [
+                        r[0] for r in await cur.fetchall()
+                    ]
+                except Exception as e:  # noqa: BLE001
+                    out["applied_migrations"] = f"query-failed: {e}"
+        return JSONResponse({"ok": True, **out})
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            {"ok": False, "error": str(exc)[:500], "partial": out},
+            status_code=500,
+        )
+
+
 @app.get("/diag/inputs")
 async def diag_inputs(
     url: str = Query(..., description="URL to load via Patchright"),
