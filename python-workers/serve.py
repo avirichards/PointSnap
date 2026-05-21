@@ -767,33 +767,46 @@ async def diag_ac_air_bounds(
             out["search_url"] = search_url
 
             # Inject the captured session by rewriting the `Cookie` header on
-            # every aircanada.com / dbaas.aircanada.com request. `route.
-            # fallback()` mutates the request and passes it to the next
-            # handler (browser_page's resource blocker), so blocking still
-            # works. Kasada `x-kpsdk-*` headers that p.js sets inside the SPA
-            # are preserved — we only replace `cookie`.
+            # every aircanada.com request. This handler is TERMINAL (calls
+            # continue_/abort, not fallback) — a fallback chain to
+            # browser_page's resource blocker is unreliable over BD's CDP
+            # (manifests as ERR_TUNNEL_CONNECTION_FAILED), so we fold the
+            # heavy-resource block in here. Kasada `x-kpsdk-*` headers that
+            # p.js sets inside the SPA are preserved — we only touch cookie.
             route_diag = {"matched": 0}
+            _BLOCK = ("image", "stylesheet", "font", "media", "manifest")
 
             async def _cookie_router(route):
                 try:
                     req = route.request
-                    if "aircanada.com" in req.url and captured_cookie_header:
+                    if req.resource_type in _BLOCK:
+                        await route.abort()
+                        return
+                    # Leave the main document request UNTOUCHED — modifying
+                    # a top-level navigation request's headers over BD's CDP
+                    # breaks the proxy tunnel (ERR_TUNNEL_CONNECTION_FAILED).
+                    # The cookie-store / document.cookie injection covers the
+                    # SPA's client-side auth; the Cookie-header rewrite only
+                    # needs to ride the XHR/fetch calls (the air-bounds API
+                    # POST + the SPA's auth/profile XHRs).
+                    if (
+                        req.resource_type in ("xhr", "fetch")
+                        and "aircanada.com" in req.url
+                        and captured_cookie_header
+                    ):
                         route_diag["matched"] += 1
                         hdrs = dict(req.headers)
-                        # Merge: keep any Kasada/app cookies the SPA added,
-                        # append our captured session jar (ours wins on dup
-                        # because it comes last in the header string).
                         existing = hdrs.get("cookie") or hdrs.get("Cookie") or ""
                         hdrs["cookie"] = (
                             f"{existing}; {captured_cookie_header}"
                             if existing else captured_cookie_header
                         )
-                        await route.fallback(headers=hdrs)
+                        await route.continue_(headers=hdrs)
                     else:
-                        await route.fallback()
+                        await route.continue_()
                 except Exception:  # noqa: BLE001
                     try:
-                        await route.fallback()
+                        await route.continue_()
                     except Exception:  # noqa: BLE001
                         pass
 
