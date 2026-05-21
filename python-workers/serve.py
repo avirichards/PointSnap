@@ -1116,33 +1116,39 @@ async def diag_ac_air_bounds(
         landed = await _nav(REDEEM_ROOT, "redeem_root")
         _step("nav_redeem_root_done", landed=landed)
 
-        if landed:
-            # fast_nav: skip the post-load sleep so the in-app nav (and the
-            # air-bounds XHR it triggers) happens BEFORE the ~10-20s window
-            # in which Firefox crashes on the redeem SPA.
-            await asyncio.sleep(1.5 if fast_nav else 8.0)
-            _step("spa_bootstrapped", fast_nav=bool(fast_nav))
+        # Full-jar diagnostic helper — dumps the complete document.cookie
+        # (un-truncated), full localStorage/sessionStorage keys, and a
+        # logged-in heuristic (does the page show "Sign in"?).
+        async def _dump_state(label: str) -> None:
             try:
-                out["spa_storage"] = await page.evaluate(
+                state = await page.evaluate(
                     """() => {
-                        const ls = {}, ss = {};
-                        try { for (let i=0;i<localStorage.length;i++){
-                            const k=localStorage.key(i);
-                            ls[k]=(localStorage.getItem(k)||'').slice(0,80);
-                        }} catch(e){}
-                        try { for (let i=0;i<sessionStorage.length;i++){
-                            ss[sessionStorage.key(i)]=1;
-                        }} catch(e){}
+                        const ls = [], ss = [];
+                        try { for (let i=0;i<localStorage.length;i++)
+                            ls.push(localStorage.key(i)); } catch(e){}
+                        try { for (let i=0;i<sessionStorage.length;i++)
+                            ss.push(sessionStorage.key(i)); } catch(e){}
+                        const bodyTxt = (document.body && document.body.innerText || '');
                         return {
-                            cookie: document.cookie.slice(0,500),
-                            localStorage_keys: Object.keys(ls),
-                            sessionStorage_keys: Object.keys(ss),
+                            cookie: document.cookie,
+                            cookie_names: document.cookie.split('; ')
+                                .map(p => p.split('=')[0]).filter(Boolean),
+                            localStorage_keys: ls,
+                            sessionStorage_keys: ss,
                             location: location.href,
+                            shows_signin: /\\bSign in\\b/.test(bodyTxt),
+                            has_glt: /glt_3_/.test(document.cookie),
                         };
                     }"""
                 )
+                out.setdefault("state_dumps", {})[label] = state
             except Exception as exc:  # noqa: BLE001
-                out["spa_storage_error"] = str(exc)[:200]
+                out.setdefault("state_dumps", {})[label] = {"error": str(exc)[:200]}
+
+        if landed:
+            await asyncio.sleep(1.5 if fast_nav else 8.0)
+            _step("spa_bootstrapped", fast_nav=bool(fast_nav))
+            await _dump_state("after_redeem_root")
             for sel in ("#onetrust-accept-btn-handler",
                         "#accept-recommended-btn-handler"):
                 try:
@@ -1160,24 +1166,39 @@ async def diag_ac_air_bounds(
                 await _nav(REDEEM_ROOT, "redeem_root_retry")
                 await asyncio.sleep(8.0)
 
-            # In-app SPA navigation to the availability route — no
-            # Akamai-protected document request fires.
-            spa_path = search_url.split("aircanada.com", 1)[1]
-            out["spa_path"] = spa_path
-            try:
-                await page.evaluate(
-                    """(p) => {
-                        window.history.pushState({}, '', p);
-                        window.dispatchEvent(new PopStateEvent(
-                            'popstate', {state: {}}));
-                    }""",
-                    spa_path,
-                )
-                nav_attempts.append({"step": "spa_inapp_nav", "path": spa_path})
-                _step("spa_inapp_nav")
-            except Exception as exc:  # noqa: BLE001
-                nav_attempts.append({
-                    "step": "spa_inapp_nav", "error": str(exc)[:200]})
+            # PRIMARY: navigate directly to the availability deep-link. The
+            # redeem-root load above warmed Akamai's _abck/bm_* cookies, so
+            # the deep-link (Akamai path-protected from cold) should now
+            # load. A real document navigation makes the Angular router
+            # actually run the availability/search route + fire air-bounds —
+            # unlike history.pushState, which Angular's Router ignores.
+            _step("nav_availability_begin")
+            avail_landed = await _nav(search_url, "availability_deeplink")
+            _step("nav_availability_done", landed=avail_landed)
+            await asyncio.sleep(6.0)
+            await _dump_state("after_availability")
+
+            # FALLBACK: if the deep-link bounced/was blocked, try the
+            # in-app History-API nudge from the redeem root.
+            if not avail_landed or "/availability/" not in (page.url or ""):
+                spa_path = search_url.split("aircanada.com", 1)[1]
+                out["spa_path"] = spa_path
+                try:
+                    await page.evaluate(
+                        """(p) => {
+                            window.history.pushState({}, '', p);
+                            window.dispatchEvent(new PopStateEvent(
+                                'popstate', {state: {}}));
+                        }""",
+                        spa_path,
+                    )
+                    nav_attempts.append({"step": "spa_inapp_nav", "path": spa_path})
+                    _step("spa_inapp_nav")
+                    await asyncio.sleep(6.0)
+                    await _dump_state("after_inapp_nav")
+                except Exception as exc:  # noqa: BLE001
+                    nav_attempts.append({
+                        "step": "spa_inapp_nav", "error": str(exc)[:200]})
         out["nav_attempts"] = nav_attempts
 
         # Poll for the air-bounds XHR.
