@@ -642,6 +642,108 @@ async def diag_sysinfo() -> JSONResponse:
     return JSONResponse(out)
 
 
+@app.get("/diag/tailscale")
+async def diag_tailscale() -> JSONResponse:
+    """Diagnose the worker's userspace Tailscale tunnel.
+
+    Read-only and SECRET-SAFE — it reports the *presence* and *length* of
+    `TAILSCALE_AUTHKEY` / `TAILSCALE_EXIT_NODE`, never their values. (The
+    repo is public; the auth key is a credential.)
+
+    The AC Aeroplan award search routes its Camoufox transport through a
+    residential Tailscale exit node (the user's home Mac). `entrypoint.sh`
+    backgrounds `tailscaled` (userspace-networking) + `tailscale up` and
+    writes their stdout/stderr to `/tmp/tailscaled.log` and
+    `/tmp/tailscale-up.log`. This endpoint surfaces all of that over HTTPS
+    so the tunnel can be debugged without `flyctl ssh` (which the sandbox
+    cannot reach).
+
+    Reports:
+      * env_vars  — whether each secret is set (bool) + its length (int).
+        `tailscale_enabled` mirrors what `_tailscale_proxy()` keys off.
+      * tailscaled_socket — whether `/var/run/tailscale/tailscaled.sock`
+        exists (the `tailscaled` daemon creates it on startup).
+      * tailscale_status — `tailscale status` CLI stdout/stderr/returncode
+        (the authoritative "is the tunnel up / which exit node" check).
+      * tailscale_processes — `ps` lines mentioning tailscale.
+      * logs — verbatim tail of the two entrypoint log files.
+    """
+    import subprocess
+    out: dict = {}
+
+    # --- env var PRESENCE only (never values) -------------------------------
+    authkey = os.environ.get("TAILSCALE_AUTHKEY")
+    exit_node = os.environ.get("TAILSCALE_EXIT_NODE")
+    socks_port = os.environ.get("TAILSCALE_SOCKS_PORT")
+    out["env_vars"] = {
+        "TAILSCALE_AUTHKEY_set": bool(authkey),
+        "TAILSCALE_AUTHKEY_len": len(authkey) if authkey else 0,
+        "TAILSCALE_EXIT_NODE_set": bool(exit_node),
+        "TAILSCALE_EXIT_NODE_len": len(exit_node) if exit_node else 0,
+        "TAILSCALE_SOCKS_PORT_set": bool(socks_port),
+        # `_tailscale_proxy()` returns a proxy iff TAILSCALE_AUTHKEY is set —
+        # so this is the single signal the AC transport keys off.
+        "tailscale_enabled": bool(authkey),
+    }
+
+    # --- tailscaled socket --------------------------------------------------
+    sock_path = "/var/run/tailscale/tailscaled.sock"
+    try:
+        out["tailscaled_socket"] = {
+            "path": sock_path,
+            "exists": os.path.exists(sock_path),
+        }
+    except Exception as exc:  # noqa: BLE001
+        out["tailscaled_socket"] = {"path": sock_path, "error": str(exc)[:200]}
+
+    # --- tailscale status (the authoritative tunnel state) ------------------
+    try:
+        st = subprocess.run(
+            ["/usr/local/bin/tailscale", "--socket=" + sock_path, "status"],
+            capture_output=True, text=True, timeout=15,
+        )
+        out["tailscale_status"] = {
+            "returncode": st.returncode,
+            "stdout": st.stdout[-4000:],
+            "stderr": st.stderr[-2000:],
+        }
+    except FileNotFoundError:
+        out["tailscale_status"] = {"error": "tailscale binary not found at /usr/local/bin/tailscale"}
+    except subprocess.TimeoutExpired:
+        out["tailscale_status"] = {"error": "tailscale status timed out after 15s"}
+    except Exception as exc:  # noqa: BLE001
+        out["tailscale_status"] = {"error": str(exc)[:300]}
+
+    # --- tailscale processes ------------------------------------------------
+    try:
+        ps = subprocess.run(
+            ["ps", "-eo", "pid,rss,args"],
+            capture_output=True, text=True, timeout=10,
+        )
+        out["tailscale_processes"] = [
+            ln for ln in ps.stdout.splitlines() if "tailscale" in ln.lower()
+        ]
+    except Exception as exc:  # noqa: BLE001
+        out["tailscale_processes_error"] = str(exc)[:200]
+
+    # --- entrypoint logs (verbatim tail) ------------------------------------
+    out["logs"] = {}
+    for label, path in (
+        ("tailscaled_log", "/tmp/tailscaled.log"),
+        ("tailscale_up_log", "/tmp/tailscale-up.log"),
+    ):
+        try:
+            if os.path.exists(path):
+                with open(path, errors="replace") as f:
+                    out["logs"][label] = f.read()[-6000:]
+            else:
+                out["logs"][label] = "(file does not exist)"
+        except Exception as exc:  # noqa: BLE001
+            out["logs"][label] = f"(read error: {str(exc)[:200]})"
+
+    return JSONResponse(out)
+
+
 def _firefox_crash_artifacts() -> list[dict]:
     """Find Firefox crash-report `.extra` files left by a crashed
     Camoufox/Playwright Firefox process. The `.extra` file is plaintext
