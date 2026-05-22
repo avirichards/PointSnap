@@ -159,7 +159,7 @@ User's BD account: rotates the visible API key after sessions for security.
 | **Bright Data Browser API (CDP)** | ✅ for non-Akamai sites, ❌ for AA, ❌ for any cookie injection | Session 5 morning / 15 | 9/11 airline homepages loaded clean (200 OK with HTML). AA returned 403 Access Denied on most IPs. **Session 15: BD Browser API is a MANAGED browser — it blocks ALL client-side cookie writes for the proxied domain. `add_cookies`, CDP `Network.setCookie`/`setCookies`, `Storage.setCookies`, and `document.cookie` all fail "Overriding X forbidden" (even into a provably-empty jar); a second `page.route` handler breaks the proxy tunnel (`ERR_TUNNEL_CONNECTION_FAILED`). A captured logged-in session CANNOT be replayed inside BD Browser API. Do not retry.** |
 | **Bright Data Web Unlocker (HTTP API)** | ⚠️ AA blocked on a zone setting | Session 13 | WU renders `mobile.aa.com/booking` (200, jar w/ `XSRF-TOKEN`+`JSESSIONID`, NO `spa_session_id`) + reaches AA's award POST (200). Every `www.aa.com` page 502s — stale `#weeklyCarousel` `expect_element` rule. The `x-unblock-expect` override that fixes it is OFF on the `pointsnap_webunlock` zone (`feature_not_active` — "Manual expect is not enabled"). AA award POST still `error 309` without `spa_session_id`; AA mints no cookies on the 309. **Fix: enable "Manual Expect" on the WU zone — then code works unchanged.** See Session 13 + blockers.md. |
 | **Bright Data Residential (proxy)** | ❌ POST blocked on business-only KYC | Session 17 | `BRIGHTDATA_RESIDENTIAL_URL` is set on the Fly worker; the proxy works for GET (BD geo test → real CA EastLink residential IP, `-country-ca` honoured). **But the zone is in Immediate (no-KYC) access mode, which rejects POST/PUT/DELETE — POST returns HTTP 402 `Residential Failed (bad_endpoint)`.** AC Aeroplan's air-bounds API is POST-only. Bright Data's "Full Access" KYC is **business-only** — the user is an individual, so KYC is not completable. Dead end for PointSnap. Also: BD MITMs TLS with its own cert → Firefox `SEC_ERROR_UNKNOWN_ISSUER` / HSTS error on some aircanada.com requests even with `ignore_https_errors`. **Superseded by Tailscale (Session 18).** |
-| **Tailscale exit node (userspace)** | 🚧 wired Session 18 | Session 18 | Replaces BD Residential as the AC residential-egress path. The worker image copies the `tailscale`/`tailscaled` binaries from `tailscale/tailscale:v1.96.5`; `entrypoint.sh` backgrounds `tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055` (no TUN device / no NET_ADMIN — cannot break the container) then a bounded `tailscale up --authkey=$TAILSCALE_AUTHKEY --exit-node=$TAILSCALE_EXIT_NODE`. The AC Camoufox transport's `proxy=` points at `socks5://127.0.0.1:1055`, so its traffic egresses from the user's home Mac (the exit node = a residential IP). **Strictly additive + fail-safe**: the entrypoint always `exec`s uvicorn; if the secrets are unset or the exit node is offline, only AC search degrades. Tailscale does NOT MITM TLS (real WireGuard tunnel) → no rogue cert, no HSTS wall — so it fixes BOTH Session 17 walls (the 402 *and* the HSTS `SEC_ERROR`). End-to-end verification pending the user's Fly secrets + a fresh AC session. |
+| **Tailscale exit node (userspace)** | ✅ routing VERIFIED working (Session 19) | Session 18-19 | Replaces BD Residential as the AC residential-egress path. The worker image copies the `tailscale`/`tailscaled` binaries from `tailscale/tailscale:v1.96.5`; `entrypoint.sh` backgrounds `tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055` (no TUN device / no NET_ADMIN — cannot break the container) then a bounded `tailscale up --authkey=$TAILSCALE_AUTHKEY --exit-node=$TAILSCALE_EXIT_NODE`. The AC Camoufox transport's `proxy=` points at `socks5://127.0.0.1:1055`, so its traffic egresses from the user's home Mac (the exit node = a residential IP). **Strictly additive + fail-safe**: the entrypoint always `exec`s uvicorn; if the secrets are unset or the exit node is offline, only AC search degrades. Tailscale does NOT MITM TLS (real WireGuard tunnel) → no rogue cert, no HSTS wall — so it fixes BOTH Session 17 walls (the 402 *and* the HSTS `SEC_ERROR`). **Session 19: VERIFIED end-to-end.** The Dockerfile/entrypoint/wiring were all correct from S18 — Tailscale was simply never running because the worker had not been redeployed since the user set the `TAILSCALE_AUTHKEY`/`TAILSCALE_EXIT_NODE` Fly secrets (the running machine predated the secrets). A trivial redeploy (the `/diag/tailscale` commit) cycled the machine onto a fresh image where `entrypoint.sh` re-ran with the secrets present; `tailscaled` came up, the worker joined the tailnet, the user's home Mac (`avis-mac-mini`, `100.79.73.91`) was selected as exit node. `/diag/ac_air_bounds` now reports `proxy:"tailscale_exit_node"` and AC's `geoCityName` cookie flipped `CHICAGO/IL` (Fly IAD) → `GARDENA/CA` (the user's residential ISP) — the air-bounds POST genuinely egresses from the home connection now. (The POST still 429s, but that is the stale-session `x-kpsdk-*`-not-minted issue, not a routing problem.) |
 | **CapSolver `AntiAkamaiBMTask`** | ❌ (deprecated) | Session 5 mid | CapSolver dropped Akamai support entirely — task type returns `ERROR_TYPE_NOT_SUPPORTED`. Their docs no longer list Akamai. |
 | **2Captcha** | ❌ (never supported BMP) | Session 5 mid | Public docs confirm only reCAPTCHA, AWS WAF, Cloudflare, Geetest. No Akamai. |
 | **Camoufox (Firefox-based stealth)** | 🚧 in progress | Session 5 late | Loads www.aa.com but Akamai serves the `sec-if-cpt-container` behavioral challenge interstitial. Sensor.js doesn't validate Camoufox-on-Fly-egress within 40s wait + mouse simulation. |
@@ -2053,3 +2053,122 @@ debug the tunnel from inside the container, read `/tmp/tailscaled.log` and
 | `3e93126` | feat(workers): add fail-safe userspace Tailscale to the worker image |
 | `48b0140` | feat(ac): route the AC Camoufox transport through the Tailscale exit node |
 | `bcc14e1` | docs(scraper): Session 18 — route AC Camoufox through a Tailscale exit node |
+
+---
+
+## Session 19 — 2026-05-22 — Tailscale wasn't running: a STALE-IMAGE problem, not a code bug
+
+Goal: diagnose + fix why Tailscale was not running on the Fly worker.
+Session 18 wired userspace Tailscale into the image but the post-deploy
+test showed `proxy:"none"` (no tunnel). The task brief enumerated three
+candidate causes: (a) the Tailscale Dockerfile build is failing → worker
+stuck on an old image, (b) the new image is live but `TAILSCALE_AUTHKEY`
+is not reaching the worker, (c) `tailscaled`/`tailscale up` is failing.
+
+### Root cause — none of (a)/(b)/(c). It was a stale machine.
+
+The real cause: **the running Fly machine had not been redeployed since
+the user set the `TAILSCALE_AUTHKEY` + `TAILSCALE_EXIT_NODE` Fly secrets.**
+Fly applies a secret change by restarting the machine, but the S18
+Tailscale-image deploy happened *before* the user added the secrets — and
+no deploy happened *after*. So the machine that was live at test time was
+running the new Tailscale-capable image but had been started with the
+secrets absent. `entrypoint.sh` checks `TAILSCALE_AUTHKEY` exactly once at
+container start; it was empty then, so the whole Tailscale block was
+skipped — `tailscaled` never launched. This is why `/diag/sysinfo`
+`top_processes` showed no `tailscaled` and `/diag/ac_air_bounds` reported
+`proxy:"none"`. The Dockerfile, `entrypoint.sh`, `_tailscale_proxy()`, and
+the AC transport wiring were **all correct as written in S18** — nothing
+in the repo needed a fix.
+
+The fix was therefore trivial: any push to `main` redeploys the worker,
+and a fresh container start re-runs `entrypoint.sh` with the (now
+present) secrets. The `/diag/tailscale` diagnostic commit doubled as that
+redeploy.
+
+### What was verified before concluding "stale image"
+
+Ruled out cause (a) — **the Dockerfile build is NOT failing.** Confirmed
+the `docker.io/tailscale/tailscale:v1.96.5` image tag exists on Docker Hub
+and has an `amd64` variant (Fly workers are amd64). Pulled the image's
+amd64 binary layer (`sha256:015709804b96…`) directly from the Docker
+registry and `tar -tzf | grep bin/` confirmed it contains **exactly**
+`/usr/local/bin/tailscaled` and `/usr/local/bin/tailscale` — the precise
+paths the Dockerfile `COPY --from=…` lines reference. The build is sound.
+
+Ruled out cause (b) — **the secrets ARE reaching the worker.** The new
+`/diag/tailscale` endpoint reported `TAILSCALE_AUTHKEY_set:true len:61`,
+`TAILSCALE_EXIT_NODE_set:true len:12`. The user had set the secrets
+correctly; they just hadn't taken effect on the old machine.
+
+Ruled out cause (c) — **`tailscaled`/`tailscale up` did NOT fail.** Once
+redeployed, `/tmp/tailscaled.log` showed a clean bring-up
+(`Switching ipn state Starting -> Running`, `active login:
+avirichards22@gmail.com`, `exit=100.79.73.91`). `/tmp/tailscale-up.log`
+was empty (== `tailscale up` succeeded with no error output).
+
+### The diagnostic — `/diag/tailscale` (commit `6081c03`)
+
+Added a read-only, secret-SAFE endpoint to `python-workers/serve.py`. It
+reports: env-var **presence + length only** (never values — the repo is
+public); the `tailscaled` socket existence; `tailscale status` CLI
+stdout/stderr/returncode; tailscale processes from `ps`; and the verbatim
+tail of `/tmp/tailscaled.log` + `/tmp/tailscale-up.log`. This is the
+permanent tool for debugging the tunnel over HTTPS (the sandbox cannot
+`flyctl ssh`).
+
+### Verification (2026-05-22, after the `6081c03` redeploy)
+
+- **`/health` stayed 200 throughout** — checked before the deploy, after
+  the deploy, and after the AC Camoufox test. The fail-safe entrypoint
+  held: the worker served `/health` + every other airline the whole time.
+- **`/diag/tailscale`** → `tailscale_status.returncode:0`, stdout:
+  ```
+  100.106.39.29  pointsnap-worker  avirichards22@  linux   -
+  100.79.73.91   avis-mac-mini     avirichards22@  macOS   active; exit node; direct […]:41641, tx 700840 rx 8485256
+  ```
+  `tailscaled` process present (PID 655, the full userspace-networking
+  command line). The worker is on the tailnet; the user's home Mac
+  (`avis-mac-mini`) is the selected, **active** exit node and is carrying
+  real traffic (8.4 MB rx).
+- **`/diag/ac_air_bounds?user_id=e9d28a3e-…&origin=YYZ&dest=YVR&date=2026-07-15&wait_s=5`**
+  → `"proxy":"tailscale_exit_node"` (was `"none"` in S18). AC's geo cookie
+  on the redeem root flipped from S18's `geoCityName=CHICAGO;
+  geoProvinceCode=IL` (Fly IAD data-center) to **`geoCityName=GARDENA;
+  geoProvinceCode=CA; geoCountryCode=US`** — Gardena, California, the
+  user's residential ISP location. **The AC traffic genuinely egresses
+  from the home connection now**, not the Fly data center.
+
+### What is NOT fixed (out of scope per the brief)
+
+The air-bounds POST still returns **HTTP 429** (both the SPA XHR and the
+`direct_fetch` probe). This is NOT a routing problem — `kpsdk_state`
+shows `has_KPSDK:false` / `has_kpsdk_ct_cookie:false`: the captured AC
+session (`session_expires_at 2026-05-22T15:34Z`, stale by test time) did
+not carry the logged-in SPA to the availability page, so AC's Kasada
+`p.js` never minted the `x-kpsdk-*` request stamps the air-bounds API
+requires. The brief explicitly scoped this session to **Tailscale routing
+only** (the SYS011 / stale-session issue is a separate, known problem).
+The real end-to-end award-row test still needs a **fresh AC session**
+captured immediately before the run — reconnect AC via the cockpit
+`/airlines` flow, then re-run the same `/diag/ac_air_bounds` call.
+
+### Lesson — a Fly secret only takes effect on the NEXT machine start
+
+If you add a Fly secret to support a feature, the feature's container
+code (`entrypoint.sh` here) only sees that secret on a **container start
+that happens after the secret was set**. `flyctl secrets set` restarts
+the machine, so a secret set *via flyctl* is live immediately — but if
+the secret is set in the dashboard, or set before the image that uses it
+is deployed, the running machine can be a generation behind. Symptom:
+"the code is right, the secret is set, but the feature acts as if the
+secret is missing." Fix: trigger any redeploy. Diagnostic tell:
+`/diag/tailscale` (or equivalent) showing the secret present *while* the
+dependent process is absent ⇒ the process started before the secret did.
+
+### Commit log (Session 19)
+
+| SHA | Message |
+|---|---|
+| `6081c03` | diag(tailscale): add /diag/tailscale endpoint to inspect the worker tunnel |
+| _(this entry)_ | docs(scraper): Session 19 — Tailscale was a stale-image problem, now verified working |
