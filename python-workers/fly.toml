@@ -1,0 +1,32 @@
+# Fly.io config for the PointSnap Python worker bridge.
+# `fly launch --no-deploy --name pointsnap-workers` generated this scaffold;
+# adjust app name + primary region for your account before `fly deploy`.
+
+app = "pointsnap-workers"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # Always-on: the auth-capture flow keeps a login session in worker
+  # memory across the user's MFA step; an auto-stopped machine would drop
+  # it mid-flow. Keep exactly one machine running.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+# Chromium (Patchright) OOMs on shared-cpu-1x:512mb (the default — every
+# login-required scrape timed out with HTTP 000 because chrome-headless
+# got killed mid-render). performance-2x requires minimum 4GB so we set
+# it explicitly; gives 2 vCPUs + 4GB. Bills per-second + auto_stop_machines
+# drops idle time → ~$10-20/mo at MVP traffic.
+[[vm]]
+  size = "performance-2x"
+  memory = "4gb"
+
+[env]
+  PORT = "8000"

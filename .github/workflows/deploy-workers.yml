@@ -1,0 +1,67 @@
+name: Deploy python-workers to Fly.io
+
+# Triggers on push to main, the active working branch, or session-4 branch
+# when python-workers/ or this workflow file changes. Re-run manually from
+# the Actions tab.
+on:
+  push:
+    branches:
+      - main
+      - claude/vs-scraper-day1-VlteK
+      - claude/review-scraper-strategy-CXHmM
+    paths:
+      - "python-workers/**"
+      - ".github/workflows/deploy-workers.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-workers
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Verify FLY_API_TOKEN
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::error::FLY_API_TOKEN secret is not set. Add it at Settings → Secrets and variables → Actions." >&2
+            exit 1
+          fi
+          flyctl auth whoami
+
+      - name: Deploy to Fly
+        working-directory: python-workers
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only --app pointsnap-workers --ha=false
+
+      - name: Smoke-test /health
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          set -eo pipefail
+          URL="https://pointsnap-workers.fly.dev/health"
+          for i in 1 2 3 4 5 6 7 8; do
+            echo "Attempt $i: GET $URL"
+            code=$(curl -s -o /tmp/health.json -w "%{http_code}" --max-time 15 "$URL" || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "Worker is healthy:"
+              cat /tmp/health.json
+              echo ""
+              exit 0
+            fi
+            echo "  HTTP $code — retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Worker did not become healthy after 80s. Inspect: flyctl logs --app pointsnap-workers" >&2
+          exit 1

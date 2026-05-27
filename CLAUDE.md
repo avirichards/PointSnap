@@ -6,146 +6,134 @@ This is mandatory and non-optional — it is the primary mechanism that gives Cl
 
 ---
 
+## UI / UX Design — Always Use the Apple HIG Skill
+
+**Whenever the task touches user-visible design** — building or modifying a page, component, layout, color scheme, typography, spacing, navigation pattern, form, table, mobile breakpoint, dark mode, motion, or accessibility behavior — invoke the `apple-hig` skill via the `Skill` tool **before writing the code**. This applies to web (Next.js / Tailwind / shadcn), responsive layouts, the spreadsheet, the search form, the wallet, the admin shell, and any future mobile app surface.
+
+The skill is "universal design expert grounded in Apple's HIG philosophy" — it covers any platform, not just iOS. Use it as the design lens for every PointSnap surface so the cockpit feels considered, dense-but-clear, and consistent. Apply HIG patterns even when ultimately styling with Tailwind/shadcn — the spacing rhythm, typographic hierarchy, color semantics, accessibility expectations, and interaction affordances all translate.
+
+Don't skip it for "small" UI changes. A badge color, a row-height tweak, a hover affordance — all benefit from the HIG check. The Phase 1 spreadsheet view especially deserves the audit since it's the marquee surface.
+
+---
+
 ## Git & Deployment Workflow (CRITICAL — READ FIRST)
 
 **This app is in production with live users. Protect the live site at all costs.**
 
 ### Branch structure
 
-- **`main`** — production. Vercel deploys from here. **Never push directly to `main`** (except on explicit "this is urgent" trigger).
-- **`dev`** — active staging / integration. Vercel previews from here. This is the target for merges — each conversation's work flows *through* `dev`, not directly *on* it.
-- **`claude/<slug>`** / **`feat/<topic>`** / **`fix/<topic>`** — short-lived per-conversation branches. Created inside an isolated worktree at the start of each conversation; merged into `dev` when the work is ready; deleted when the conversation ends. Kebab-case, short but specific.
+- **`main`** — production. Vercel auto-deploys this branch to the live site. **Never push directly to `main`** (except on explicit "this is urgent" trigger).
+- **`claude/<slug>`** / **`feat/<topic>`** / **`fix/<topic>`** — long-running or per-workstream working branches. Vercel previews every pushed branch automatically, so the feature branch itself serves as staging. Kebab-case, short but specific.
 
-**Never commit directly to `dev`, `main`, or someone else's feature branch.**
+There is **no `dev` branch** in this repo. The project is small, single-operator, and pre-real-user, so the simpler `feature branch → main` flow is enough. If a separate staging branch ever becomes useful (multi-developer phase, real-user phase), revisit this section then — don't preemptively reintroduce it.
+
+**Never commit directly to `main`, or to someone else's working branch.**
 
 Flow:
-1. Conversation starts → `EnterWorktree` creates a feature branch off `dev`. See §One worktree per conversation.
-2. Commit frequently as you work (after each logical milestone). Uncommitted work is fragile across tool restarts and refused by `ExitWorktree`.
-3. When the user says **"push it"** → push the feature branch (Vercel previews every pushed branch). Merge into `dev` only when the user explicitly asks to land the work.
-4. When the user says **"go live" / "push it live" / "merge to main"** → merge `dev` into `main`, push `main`, Vercel deploys production.
-5. When the conversation is done → `ExitWorktree` with `action: "remove"` once the branch is merged (if paused mid-flight, use `action: "keep"` so it can be resumed).
+1. Session starts → confirm/create the working branch. Default is to reuse the existing long-running working branch (which is normal for this project). Only create a new one when the user explicitly starts a separate workstream.
+2. Commit frequently as you work (after each logical milestone). Uncommitted work is fragile across tool restarts.
+3. When the user says **"push it"** → push the working branch. Vercel previews it automatically — share the preview URL.
+4. When the user says **"go live" / "push it live" / "merge to main"** → fast-forward (or merge) the working branch into `main`, push `main`. Vercel auto-deploys production.
+5. After a merge to main, ask the user whether the working branch should keep running for follow-up work or be deleted.
 
-After any merge to main:
-- Sync `dev` with `main` (`git merge main` on `dev`) so the preview branch doesn't drift behind production.
+### Working branch hygiene
 
-### One worktree per conversation
+The default working model is **one long-running working branch + occasional merges to main on explicit trigger**, not a fresh branch per Claude conversation. Commits accumulate on the working branch; the branch lives across many conversations.
 
-Claude Code runs multiple conversations against the same repository. A single working directory can only have one branch checked out — if two conversations share that directory and one runs `git checkout`, the other loses its files mid-work. This caused a "rates disappeared" incident once; don't repeat it.
+If multiple Claude conversations ever run against the same repo at once, switch to **worktree-per-conversation** (use `git worktree add` to give each conversation its own working directory + branch) — because two conversations sharing one working directory will fight over branch checkouts and lose work. With one conversation at a time (the current reality), a single working directory + single long-running working branch is fine.
 
-Use git worktrees to isolate each conversation. The branch-per-conversation rule becomes **worktree-per-conversation** — a stronger guarantee since worktrees hard-prevent concurrent branch conflicts, not just by convention.
+**At the start of any session that will touch code:**
+1. **Audit stale branches.** Run `git branch -a --no-merged main` to see what's hanging around. Surface unmerged branches to the user: *"N branches with unmerged work: X (N commits ahead), Y (N commits ahead). Want to land any before we start?"* Don't silently start fresh work on top of a graveyard — stale branches compound over time.
+2. **Confirm which working branch to use.** Almost always the existing long-running one. If the user is clearly starting a separate workstream (e.g. a hotfix while a feature is in flight), create a new one.
 
-**At the start of any conversation that will touch code:**
-1. **Audit stale branches first.** Run `git branch --no-merged dev` to see which feature branches still carry unmerged work. For each one, check uncommitted state (`git -C <worktree> status`), commits ahead of dev, and how old it is. Surface the list to the user before starting new work: *"Heads up, N branches behind dev from prior conversations: X (N commits), Y (N commits). Want to land any before we start, or leave them for now?"* Do not silently start fresh work on top of a graveyard — the longer stale branches sit, the harder the eventual consolidation. One day of drift is cheap; two weeks compounds.
-2. Call `EnterWorktree` to create a private working directory + branch. Branch should be named `claude/<short-feature-slug>` (or `feat/<topic>` / `fix/<topic>` for a human-named workstream). Use kebab-case, short but specific.
-3. That worktree is yours for the whole conversation — files, dev server, preview, everything stays isolated there.
-4. Never `git checkout <other-branch>` inside another conversation's worktree, and never `git checkout` branches that are already checked out elsewhere (git refuses anyway — a branch can only be checked out by one worktree at a time).
+**At the end of a workstream (not necessarily end of conversation):**
+1. Commit every change before stopping.
+2. Ask the user to pick an outcome: merge to `main` (complete + ready to ship), keep running (more work coming), or delete (dead end / abandoned).
 
-**Before ending the conversation:**
-1. Commit every change. `ExitWorktree` refuses to remove a worktree with uncommitted changes — that's the safety rail.
-2. **Explicitly ask the user to pick a landing outcome** before calling `ExitWorktree`. Don't default to "keep" silently — that's how branches silently accumulate. Three options:
-   - *Merge to `dev` now* → feature is complete, user wants preview on the main dev URL → merge, then `ExitWorktree` with `action: "remove"`.
-   - *Keep branch for continuation* → work is paused mid-flight and the next session will resume it → `ExitWorktree` with `action: "keep"`. Briefly note what's left.
-   - *Discard* → the work turned out to be a dead end → confirm explicitly, then `ExitWorktree` with `action: "remove"` and delete the branch.
-   If the user doesn't answer, default to "keep" but leave a clear note in the conversation transcript so the next start-of-conversation audit surfaces it.
-
-**Exceptions** (don't create a new worktree):
-- Read-only conversations (answering questions, searching code). Fine to work in the main repo dir.
-- Continuing an explicitly-in-progress conversation whose worktree already exists — reuse it.
+**Exceptions** (no branch ceremony needed):
+- Read-only conversations (answering questions, searching code).
 - Database-only work that doesn't modify source files.
 - Trivial single-file fixes the user explicitly requests against a named branch.
 
-When in doubt, ask the user what branch / worktree to use before editing.
-
-**When to merge back to `dev` vs. hold on the feature branch:**
-- Merge to `dev` when: the feature is complete AND the user wants to preview it, OR the user says "push it".
-- Hold on feature branch when: work is iterative and the user is still reviewing inside the current conversation — multiple commits will accumulate before merge. The Vercel preview URL still updates on pushes to the feature branch (Vercel previews every pushed branch), so you can share it without merging.
+When in doubt, ask the user.
 
 ### When the user says "push it to GitHub" or "push it":
-1. Push the **current feature branch** first (Vercel previews every pushed branch, so the user can review the exact WIP).
-2. If the user specifically asks to land the work, merge into `dev` and push `dev`.
-3. Never push to `main` directly.
+1. Push the **current working branch**. Vercel previews every pushed branch — share the preview URL.
+2. Do not merge to `main` unless the user explicitly says so.
 
 ### When the user says "push it live", "go live", or "merge to main":
-1. Ensure the feature branch is merged into `dev` (if not already).
-2. Merge `dev` → `main` and push `main`.
-3. Vercel automatically deploys to the live production site.
-4. After the merge, switch back to the feature branch (or `dev`) for any follow-up work.
+1. Fast-forward (or merge with `--no-ff` if non-FF) the working branch into `main`, push `main`.
+2. Vercel automatically deploys to the live production site.
+3. Ask the user whether to keep the working branch alive for follow-up work or delete it.
 
 ### When the user says "this is urgent, push straight to production":
-1. This is the ONLY time you push directly to `main`.
+1. This is the ONLY time you commit directly on `main`.
 2. Confirm with the user before doing it.
 
-### Database migrations — Claude applies, not CI
+### Database migrations — GitHub-integrated auto-apply on Supabase
 
-**User-facing rule:** the user says what they want changed; Claude does everything.
+> ⚠️ **STATUS (2026-05-21): the Supabase↔GitHub integration is NOT applying migrations.**
+> The production DB was found ~5 migrations behind the repo — the auto-apply
+> described below has not been running. Until the integration is reconnected in
+> the Supabase dashboard, apply committed migrations **manually via the Supabase
+> Management API**:
+> - `POST https://api.supabase.com/v1/projects/cgoyetahoktqupkcvrli/database/query`,
+>   body `{"query": "<migration SQL>"}`, header `Authorization: Bearer $SUPABASE_ACCESS_TOKEN`.
+> - `SUPABASE_ACCESS_TOKEN` is a Supabase Personal Access Token, kept as an
+>   environment variable — **never commit it to the repo**. If it is unset, ask
+>   the user (supabase.com → Account → Access Tokens).
+> - Use **curl** — `api.supabase.com` Cloudflare-blocks Python `urllib` (HTTP 403,
+>   error 1010). PointSnap Supabase project ref: `cgoyetahoktqupkcvrli`.
+> - The migrations are idempotent, so re-applying them once the integration is
+>   fixed is harmless.
+> All committed migrations through `20260520143000` were applied this way on
+> 2026-05-21, so the DB currently matches the repo.
 
-There is no CI migration workflow. Claude owns the full apply loop because the user is non-technical and a mismatch between the `supabase/migrations/` folder and the `supabase_migrations.schema_migrations` tracking table previously caused every CI run to go red. Claude prevents drift by applying + recording in the same session.
+**User-facing rule:** the user says what they want changed; Claude writes the migration file; pushing it to GitHub deploys it.
 
-**When a schema change is needed, Claude must do all of the following — in order — for every migration:**
+We use **Supabase's GitHub integration** (enabled when the project was created). The repo is connected to the Supabase project, and Supabase watches `supabase/migrations/`. On push:
+- **Preview branch**: pushing a migration to any non-`main` branch causes Supabase to spin up a preview database branch with the migration applied. That preview DB's URL can be wired into Vercel preview env vars for end-to-end testing before merge.
+- **Production apply**: merging to `main` causes Supabase to apply the migration to the production database.
 
-1. **Write the file** at `supabase/migrations/YYYYMMDDHHMMSS_short_description.sql`. Use a full **14-digit UTC timestamp** prefix (e.g. `20260418213055_add_foo_column.sql`), not an 8-digit date. This matches Supabase CLI convention and future-proofs the repo if CI is ever reinstated.
+This replaces the old "Claude applies via Management API + records in tracking table" flow. The drift incident on the previous project came from MIXING manual and CI migration paths. We now use exactly one path: **committed migration files via GitHub integration**, never manual SQL editor changes, never raw API DDL.
+
+**When a schema change is needed, Claude must:**
+
+1. **Write the file** at `supabase/migrations/YYYYMMDDHHMMSS_short_description.sql`. Use a full **14-digit UTC timestamp** prefix (e.g. `20260418213055_add_foo_column.sql`), not an 8-digit date. Matches Supabase CLI convention.
 2. **Write the SQL idempotently.** `CREATE OR REPLACE` for functions, `CREATE ... IF NOT EXISTS` for tables/indexes/types/policies, `DROP ... IF EXISTS` for removals. End each migration with `NOTIFY pgrst, 'reload schema';` if it changes anything PostgREST exposes.
-3. **Apply it to the live DB** via the Supabase Management API using the access token in `~/.claude/settings.json`:
-   ```
-   POST https://api.supabase.com/v1/projects/<project-ref>/database/query
-   { "query": "<full SQL>" }
-   ```
-   The project ref is in settings.json.
-4. **Record it in the tracking table** in a separate call, in the same session, before moving on:
-   ```sql
-   INSERT INTO supabase_migrations.schema_migrations (version)
-   VALUES ('YYYYMMDDHHMMSS')
-   ON CONFLICT (version) DO NOTHING;
-   ```
-   The version string must match the filename prefix exactly. This step is what keeps the tracking table in sync with the filesystem — skipping it is the cause of every past drift.
-5. **Verify** by re-reading the object(s) the migration touched (e.g., `pg_get_functiondef` for a function, `\d table` equivalent for a table) and, where meaningful, calling the RPC end-to-end with the anon key.
-6. **Commit** the `.sql` file to the current branch with a descriptive `fix(db):` / `feat(db):` message. Do **not** bundle schema commits with unrelated code changes.
-7. **Push** to `dev` per the normal branch rules above. Only merge to `main` on explicit user trigger phrases.
+3. **Commit** the `.sql` file to the current feature branch with a descriptive `fix(db):` / `feat(db):` message. Do **not** bundle schema commits with unrelated code changes — schema commits are the unit Supabase applies.
+4. **Push** the branch. Supabase auto-creates a preview DB branch with the migration applied. Surface the preview branch URL/anon key to the user so they can paste into Vercel preview env vars if the frontend needs the new schema.
+5. **Verify** by querying the preview branch via psycopg/postgres-js against the preview connection string (or, once configured, the Supabase MCP server). Catch FK/constraint/RLS failures here before they hit production.
+6. **Merge to main** only on explicit user trigger (`merge to main`, `push it live`). Supabase auto-applies the migration to production on merge. Watch the Supabase dashboard's "Branches" tab to confirm the merge applied cleanly.
 
-### Database branches — default for any non-trivial DB work
+**Things Claude must NEVER do** (would recreate the past drift):
+- Apply DDL via the Supabase SQL editor in the dashboard.
+- POST DDL to the Management API's `/database/query` endpoint outside of a committed migration file.
+- Manually insert/delete rows in `supabase_migrations.schema_migrations` — Supabase manages that table now.
+- Hand-rewrite the contents of an already-applied migration file. If a migration is wrong, write a NEW migration that fixes it forward.
 
-We have Supabase branching enabled (Pro tier). The rule is the same idea as the `dev` git branch for frontend work: **any time you are about to make a database change that isn't a one-line read-only tweak, do it on a branch first, not against production.**
+**Seed data + verification queries** are explicitly exempt from this — they don't change schema. Run `pnpm db:seed` ad-hoc, query the DB ad-hoc via psycopg/postgres-js/MCP — all fine, no commits required.
 
-**When to branch:**
-- Any new table, new column, or index on an existing table.
-- Any change to an RPC, trigger, or RLS policy.
-- Any migration that moves, copies, deletes, or renames existing data.
-- Any multi-step DB work where one step depends on another.
+### Database branches — Supabase auto-creates them per Git branch
 
-**When direct-to-prod is OK:**
-- Single-statement, trivially reversible changes the user specifically asked for as one-offs (e.g. bumping one config row, seeding a single lookup value).
-- `NOTIFY pgrst, 'reload schema';` and similar no-data-touching ops.
-- Read-only queries for investigation.
+Supabase's GitHub integration handles branching automatically: every Git branch that contains changes in `supabase/migrations/` gets its own preview database with the new schema applied. No manual branch creation required.
 
-**Branch workflow:**
+**What this changes operationally:**
+- Don't call `POST /v1/projects/<ref>/branches` manually — Supabase creates branches when migrations are pushed.
+- The preview branch's connection string + anon key are visible in the Supabase dashboard under **Branches**. Read them from there to share with the user.
+- Branches auto-delete when the Git branch is deleted/merged, so no manual cleanup billing risk.
+- For multi-step DB work, each commit on the feature branch updates the same preview DB — exactly like Vercel preview deploys.
 
-1. Create the branch via the Supabase Management API:
-   ```
-   POST https://api.supabase.com/v1/projects/<project-ref>/branches
-   { "branch_name": "<short-kebab-descriptor>" }
-   ```
-   The response returns a new `project_ref` specific to the branch. Record it — every subsequent SQL call for this work must use the branch's project_ref, not production's.
-2. Apply the migration(s) via `…/v1/projects/<branch-project-ref>/database/query`. Run verification queries against the branch. Seed any test data you need (branches clone schema + migrations, not production data).
-3. If the frontend needs to hit the branch, have the user set Vercel Preview env vars (`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`) to the branch's URL/anon key, scoped to the `dev` git branch. Provide the exact values — the user won't know them.
-4. When the user approves the changes, merge the branch:
-   ```
-   POST https://api.supabase.com/v1/branches/<branch-id>/merge
-   ```
-   Only migrations + edge functions merge; hand-seeded test data stays on the branch.
-5. Re-run the backend verification against production to confirm the merge landed cleanly.
-6. Delete the branch via `DELETE …/v1/branches/<branch-id>` so it stops being billed.
-
-**Rollback safety layers to write alongside every branch-flow migration:**
+**Rollback safety still applies to every migration:**
 - The migration SQL itself, idempotent (`IF NOT EXISTS` / `ON CONFLICT DO NOTHING`).
-- A matching rollback SQL at `supabase/rollbacks/<same-prefix>_rollback.sql` that drops what the migration added and un-records the version from `supabase_migrations.schema_migrations`.
-- For destructive migrations, write backup tables (`CREATE TABLE dashlink_backup_YYYYMMDD__foo AS SELECT …`) inside the same transaction, BEFORE the delete, so the rollback can re-insert.
-- For anything touching existing production rows, capture a JSON snapshot to `scripts/<feature>-pre-migration-snapshot.json` and commit it to the repo before starting.
+- A matching rollback SQL at `supabase/rollbacks/<same-prefix>_rollback.sql` that drops what the migration added.
+- For destructive migrations, capture backup tables (`CREATE TABLE pointsnap_backup_YYYYMMDD__foo AS SELECT …`) inside the same migration, BEFORE the delete, so the rollback can re-insert.
+- For anything touching existing production rows, capture a JSON snapshot to `scripts/<feature>-pre-migration-snapshot.json` and commit it before starting.
 
 **Other constraints:**
 - **Prefer additive changes** (new columns, new tables) over destructive ones. Split "add new thing" and "remove old thing" into two separate migrations applied in two separate sessions — the gap between them is the verification window.
-- If a migration must drop or rename existing user-visible data, pause and explicitly confirm with the user before applying, even in auto mode.
-- Never apply raw SQL that isn't also saved as a migration file — that is exactly how the tracking table drifted out of sync in the past.
-- Temp files containing the access token (e.g. `/tmp/*.json` used for `--data-binary`) must be deleted at the end of the task.
+- If a migration must drop or rename existing user-visible data, pause and explicitly confirm with the user before committing, even in auto mode.
+- The Supabase MCP server (when configured per session) is the preferred way to inspect schema, run verification queries, and view branch status. Falls back to psycopg/postgres-js using the connection string in `.env.local`.
 
 ---
 
@@ -306,6 +294,79 @@ Any test data created here must be deleted before step 4.
 - Any regressions or follow-ups discovered that aren't in scope for this session
 
 Verification is not a checkbox — it's the user's protection against bad production deploys. Treat it as first-class work, not an epilogue.
+
+### 12. Scraper Engineering Log — Auto-Logging Discipline (MANDATORY, NO REMINDERS)
+
+There is a running log at `tasks/scraper-log.md` that is the project's PERSISTENT MEMORY for scraper / anti-bot / transport work. You MUST read it before any scraper task and MUST update it continuously during scraper work. **The user should never have to tell you to "take notes" or "log this" — that's the default behavior for every scraper-related session.**
+
+#### When this rule activates (every time, without prompting)
+
+ANY task involving: scraping, anti-bot bypass, proxies, captcha solvers, browser automation (Patchright, Camoufox, Playwright), Bright Data, ScraperAPI, IPRoyal, CapSolver, 2Captcha, Hyper Solutions, Apify, plugins under `python-workers/<program>/`, `common/browser.py`, `common/scrape_client.py`, the `/diag/*` worker endpoints, Akamai, Imperva, DataDome, Cloudflare, Kasada — or anything else airline-/scrape-/bot-defense-adjacent.
+
+#### Step 1 — Read first (before any technical proposal)
+
+1. Open `tasks/scraper-log.md`.
+2. Read the "Quick reference: working state" table — know which plugins return real data vs which silently return `[]`.
+3. Read the "Tools / services tried" table — if a tool appears in the "failed" column, do NOT propose it again unless you can explain what's materially different this time (vendor added a new product, failure mode was a fixable bug rather than a fundamental limitation, a specific config wasn't tried, etc.).
+4. Read the most recent "Session log" entry — know what the previous session left in flight.
+5. Read the "Open angles, fully expanded" section — these are the prioritized next moves with hypothesis + steps + cost + risk for each.
+
+If you skip this and re-propose ScraperAPI, CapSolver-for-Akamai, or Patchright-against-AA, you have wasted the user's time and the log explicitly tells you why.
+
+#### Step 2 — Log as you go (not as a wrap-up)
+
+The wrong pattern: do 3 hours of work, then ask "should I update the log?" The right pattern: log incrementally as each meaningful event happens. Write a note BEFORE moving on to the next attempt.
+
+Every one of these triggers an immediate log update — without waiting for permission:
+- **Found a new endpoint, URL, or API shape** → log it with the exact URL/method/body/response shape
+- **A tool/service returned an unexpected response** → log the full error message (verbatim) + the HTTP status + body length + what request you sent
+- **A response status changed** (status code, response shape, error code) → log before/after
+- **A configuration parameter mattered** → log the exact param name + value that made the difference (`use_brightdata=True`, `wait_until="domcontentloaded"`, `headless="virtual"`, etc.)
+- **A migration moved a plugin's status** in the "Quick reference: working state" table → update the table inline
+- **A subagent returned research** → distill its findings into the log (don't just leave it in the agent output stream — that's ephemeral)
+- **An obscure flag/quirk was discovered** (BD's WU uses `body` not `data`, sensor.js path is randomized, AA's CSRF token format is `<uuid>`, etc.) → log it
+- **You wrote a one-off testing command that worked** → paste it into the "Useful testing commands" section
+- **A commit landed** → add it to the commit log table at the bottom of the chronicle
+- **An infrastructure quirk hit you** (Fly auto-stop, sandbox blocks port 9222, GitHub Actions cache miss, etc.) → log it in the "Deploy / infra learnings" section
+
+#### Step 3 — Log entries must be EXTREMELY detailed
+
+Not "tried Camoufox, didn't work." THAT IS USELESS. The kind of detail required:
+
+- **Exact verbatim error messages** (copy-paste, don't paraphrase): `'CapSolver createTask failed: {"errorCode": "ERROR_TYPE_NOT_SUPPORTED", "errorDescription": "unsupported captcha type, please check if the type is correct: AntiAkamaiBMTask", "errorId": 1}'`
+- **Sample request bodies + sample response bodies** with byte counts: "AA returned `{\"error\":\"309\",...}` (96 bytes) for any cookie/header combination; verified 6 variations, all identical."
+- **Exact config that mattered**: not "tweaked Camoufox" but `AsyncCamoufox(headless="virtual", humanize=True, block_webrtc=True, geoip=False, window=(1366, 768))`.
+- **Quantitative observations**: "page-load success rate ~33% morning of 2026-05-19 via BD Browser API with Referer trick, dropped to ~0% by evening as Akamai re-flagged BD's pool."
+- **The exact curl/Python command to reproduce** the test, copy-pasteable into the next session's terminal.
+- **What you tested vs what you DIDN'T test** (so the next session knows the negative space).
+- **Specific commit SHAs** that introduced or fixed something.
+
+A good log entry looks like a forensic post-mortem. A bad log entry looks like a tweet. Default to forensic.
+
+#### Step 4 — Specific sections to keep current
+
+- **"Quick reference: working state" table** — single source of truth for which plugins return real data. Update inline when a plugin's status flips (don't leave a plugin marked 🚧 if it's now ✅ working or vice versa).
+- **"Tools / services tried" table** — every tool/service evaluated, with verdict + date + reason. Move entries between rows when verdicts change.
+- **"Session log" (bottom)** — date-stamped chronological findings. Append a new section every meaningful session. Don't edit prior entries (they're a record of what was true at that time).
+- **Sample responses section** — verbatim HTML / JSON for each distinct response shape observed. New shape = new sample.
+- **"Useful testing commands" section** — every reusable curl/Python snippet. Future-you will paste these.
+- **"Open angles, fully expanded" section** — prioritized list of untested paths with hypothesis + steps + cost + risk. Promote to "tried" when tested; demote to "abandoned" with explanation when ruled out.
+- **"If you need to..." cookbook** — common debug scenarios with exact steps. Add a new entry whenever you figure out how to do something non-obvious.
+
+#### Step 5 — Verify your notes are detailed enough
+
+After any logging update, check: would a fresh Claude with NO conversation context, reading only `tasks/scraper-log.md`, be able to:
+- Identify which plugins are real vs broken? (yes if Quick reference table is current)
+- Avoid re-trying CapSolver for Akamai? (yes if Tools table mentions it's deprecated, with date)
+- Reproduce your last test? (yes if curl command + expected response are in the log)
+- Know what the next 3 untested angles are? (yes if Open angles section is current)
+- Understand the user's constraints (60-day cap, every-flight-every-carrier)? (yes if User constraints section is captured)
+
+If any of those is "no," your log isn't detailed enough yet. Fix it before moving on.
+
+#### Why this matters
+
+Earlier sessions spent literal hours rediscovering: ScraperAPI is broken, IPRoyal blocks aa.com at CONNECT, CapSolver dropped Akamai, Patchright fails sensor.js validation, BD WU's POST field is `body` not `data`, mobile.aa.com redirects to www.aa.com/homePage.do, AA serves three distinct Akamai response shapes by html_len, Camoufox+Fly gets behavioral challenge that doesn't clear in 40s. Every one of those is a learnable fact that should have been written down the first time. **The log is the memory the project doesn't otherwise have. Treat it as such.**
 
 
 ## Core Principles

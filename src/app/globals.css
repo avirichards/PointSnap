@@ -1,0 +1,164 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Cabin tints */
+  --color-cabin-y: var(--cabin-y);
+  --color-cabin-y-fg: var(--cabin-y-fg);
+  --color-cabin-w: var(--cabin-w);
+  --color-cabin-w-fg: var(--cabin-w-fg);
+  --color-cabin-j: var(--cabin-j);
+  --color-cabin-j-fg: var(--cabin-j-fg);
+  --color-cabin-f: var(--cabin-f);
+  --color-cabin-f-fg: var(--cabin-f-fg);
+
+  /* Freshness — bg/border use the bright accent, fg uses a contrast-adjusted text color (separate per theme so text reads in both modes) */
+  --color-fresh: var(--fresh);
+  --color-fresh-fg: var(--fresh-fg);
+  --color-stale: var(--stale);
+  --color-stale-fg: var(--stale-fg);
+  --color-stale-critical: var(--stale-critical);
+  --color-stale-critical-fg: var(--stale-critical-fg);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* Light theme — slate-based */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+
+  /* Cabin tints — Y neutral, W light blue, J stronger purple, F gold */
+  --cabin-y: oklch(0.985 0.004 247);
+  --cabin-y-fg: oklch(0.3 0.02 247);
+  --cabin-w: oklch(0.93 0.05 195);
+  --cabin-w-fg: oklch(0.3 0.12 195);
+  --cabin-j: oklch(0.78 0.12 285);
+  --cabin-j-fg: oklch(0.22 0.12 285);
+  --cabin-f: oklch(0.85 0.13 85);
+  --cabin-f-fg: oklch(0.3 0.16 60);
+
+  /* Freshness — light mode: darker fg tones so text passes WCAG AA against the card bg */
+  --fresh: oklch(0.7 0.18 145);
+  --fresh-fg: oklch(0.4 0.16 145);
+  --stale: oklch(0.78 0.18 75);
+  --stale-fg: oklch(0.45 0.16 75);
+  --stale-critical: oklch(0.65 0.21 25);
+  --stale-critical-fg: oklch(0.45 0.21 25);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.16 0.04 264);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.16 0.04 264);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.551 0.027 264.364);
+
+  /* Cabin tints — dark mode: more vivid (per teardown "make bolder than Seats.aero") */
+  --cabin-y: oklch(0.22 0.02 264);
+  --cabin-y-fg: oklch(0.85 0.02 247);
+  --cabin-w: oklch(0.32 0.1 195);
+  --cabin-w-fg: oklch(0.92 0.1 195);
+  --cabin-j: oklch(0.38 0.18 285);
+  --cabin-j-fg: oklch(0.95 0.08 285);
+  --cabin-f: oklch(0.5 0.18 85);
+  --cabin-f-fg: oklch(0.98 0.12 90);
+
+  --fresh: oklch(0.7 0.2 145);
+  --fresh-fg: oklch(0.85 0.2 145);
+  --stale: oklch(0.78 0.2 80);
+  --stale-fg: oklch(0.88 0.2 80);
+  --stale-critical: oklch(0.62 0.23 25);
+  --stale-critical-fg: oklch(0.78 0.23 25);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply h-full;
+    font-feature-settings: "rlig" 1, "calt" 1, "cv11" 1;
+  }
+  body {
+    @apply min-h-full bg-background text-foreground font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numeric tables — tabular nums for the spreadsheet */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbars but keep scrolling — for compact table chrome */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+}
