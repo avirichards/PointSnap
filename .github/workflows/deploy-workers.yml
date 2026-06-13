@@ -9,6 +9,7 @@ on:
       - main
       - claude/vs-scraper-day1-VlteK
       - claude/review-scraper-strategy-CXHmM
+      - claude/gifted-faraday-ldfwgx
     paths:
       - "python-workers/**"
       - ".github/workflows/deploy-workers.yml"
