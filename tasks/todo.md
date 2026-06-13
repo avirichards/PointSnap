@@ -1,3 +1,24 @@
+# PointSnap — Todo
+
+## Session 20 (2026-06-13) — Finish-the-project autonomous loop
+
+**Spec:** `docs/superpowers/specs/2026-06-13-finish-pointsnap-design.md`
+**Branch:** `claude/gifted-faraday-ldfwgx`
+**Done =** every program LIVE / USER-GATED / BLOCKED-WITH-FORENSICS + product surfaces complete + tests green + rule-11 verification + draft PR + user checklist.
+
+- [ ] 1. Deploy-path validation (add branch to deploy-workers.yml, verify deploy + VS/AS/B6 green)
+- [ ] 2. Full 13-plugin probe sweep (refresh truth table)
+- [ ] 3. UA deploy-verify (WU transport built, never verified)
+- [ ] 4. VS flight_number parser fix
+- [ ] 5. AA + DL: BD Browser API in-page XHR capture (Session-14 lead)
+- [ ] 6. AV LifeMiles probe (never classified)
+- [ ] 7. Calendar/GET-endpoint recon for remaining blocked siblings
+- [ ] 8. Auth-capture to USER-GATED (Clerk on /airlines, verify to login gate)
+- [ ] 9. Wallet + sweet-spots completion (apple-hig audit first)
+- [ ] 10. Rule-11 verification + KB drafts + handoff checklist + draft PR
+
+---
+
 # PointSnap Phase 0 Scaffold — Todo List
 
 **Session goal:** Scaffold Next.js 15 + TS + Tailwind + shadcn/ui + Drizzle + Postgres (Neon) + Redis (Upstash) + Clerk + Stripe; deploy full Phase 1 schema with V1 improvements baked in; seed 13 launch programs + reference data; build cross-program spreadsheet view with mocked JFK→NRT data, SSE streaming API, confidence/freshness badges, and mobile-first responsive table.
