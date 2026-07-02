@@ -20,7 +20,12 @@ export function SiteHeader() {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
+    // One-time sync of the toggle to the theme class the server already
+    // applied from the `theme` cookie. This is the canonical SSR-safe theme
+    // pattern; the react-hooks rule's suggested alternatives don't apply to a
+    // mount-time DOM read, so the synchronous set is intentional here.
     const initial = document.documentElement.classList.contains("dark");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDark(initial);
   }, []);
 

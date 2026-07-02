@@ -7,7 +7,7 @@ import {
   type PoolRow,
 } from "@/components/admin/account-pool-panel";
 import { db, schema } from "@/db";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 
 export const metadata = {
   title: "Admin — PointSnap",

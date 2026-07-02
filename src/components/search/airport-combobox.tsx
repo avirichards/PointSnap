@@ -69,6 +69,10 @@ export function AirportCombobox({
   useEffect(() => {
     if (!open) return;
     const q = query.trim();
+    // Synchronous resets/cache-hits below are intentional derived-state syncs
+    // driven by the query/open inputs; disable the effect-set rule for this
+    // debounce effect rather than deferring UI feedback a tick.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (q.length < 2) {
       setOptions([]);
       setLoading(false);
@@ -81,6 +85,7 @@ export function AirportCombobox({
       return;
     }
     setLoading(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
     const t = setTimeout(async () => {
       if (abortRef.current) abortRef.current.abort();
       const ac = new AbortController();
