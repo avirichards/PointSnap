@@ -131,7 +131,7 @@ def _extract_for_date(
                 segment_order=0,
                 operating_airline_iata="VS",
                 marketing_airline_iata="VS",
-                flight_number="CAL",  # calendar rollup — no flight number
+                flight_number="",  # month-calendar rollup — no specific flight number
                 origin_iata=origin,
                 dest_iata=dest,
                 depart_at=f"{target_date}T12:00:00Z",

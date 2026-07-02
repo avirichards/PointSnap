@@ -78,7 +78,7 @@ PointSnap/
 | Secret | What it's for | Source |
 |---|---|---|
 | `BRIGHTDATA_WSS_URL` | BD Browser API CDP WSS endpoint | User created `pointsnap` zone |
-| `BRIGHTDATA_API_KEY` | BD account API key for WU REST calls | `8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` |
+| `BRIGHTDATA_API_KEY` | BD account API key for WU REST calls | `REDACTED_BD_API_KEY` |
 | `CAPSOLVER_API_KEY` | CapSolver REST auth | User set in earlier session — CapSolver no longer useful (dropped Akamai) |
 | `DATABASE_URL` | Supabase Postgres connection string | User pasted from .env.local |
 | `IPROYAL_PROXY_HOST/PORT/USER/PASS` | IPRoyal residential proxies (VS/AS) | Earlier session |
@@ -543,7 +543,7 @@ python3 -c "import json; d=json.load(open('/tmp/d.json')); print(f'verdicts: {d.
 ```bash
 curl -s --max-time 90 -X POST https://api.brightdata.com/request \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920" \
+  -H "Authorization: Bearer REDACTED_BD_API_KEY" \
   -d '{
     "zone": "pointsnap_webunlock",
     "url": "https://www.aa.com/booking/api/search/itinerary",
@@ -592,7 +592,7 @@ curl -s https://pointsnap-workers.fly.dev/openapi.json | python3 -c "import json
 
 ### Browser API zone (the CDP one we've been using)
 - Name: `pointsnap`
-- WSS URL: `wss://brd-customer-hl_6f5ad35c-zone-pointsnap:n7h9hjvh70lp@brd.superproxy.io:9222`
+- WSS URL: `wss://brd-customer-hl_6f5ad35c-zone-pointsnap:REDACTED_BD_BROWSER_ZONE_PWD@brd.superproxy.io:9222`
 - Stored as Fly secret `BRIGHTDATA_WSS_URL`
 - CAPTCHA Solver: ON (no extra cost)
 - Premium domains: OFF (aa.com not on BD's premium list; toggling on for AA didn't change behavior)
@@ -603,14 +603,14 @@ curl -s https://pointsnap-workers.fly.dev/openapi.json | python3 -c "import json
 ### Web Unlocker zone (the HTTP-API one for raw POST)
 - Name: `pointsnap_webunlock`
 - API: `POST https://api.brightdata.com/request`
-- Auth: `Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` (account-level API key)
+- Auth: `Authorization: Bearer REDACTED_BD_API_KEY` (account-level API key)
 - Body format: `{"zone": "<zone>", "url": "<target>", "format": "raw"|"json", "method": "GET"|"POST", "body": "<string>", "headers": {...}}`
 - **Field-name gotcha:** POST body field is `body` (NOT `data` — `data` rejected with validation error)
 - HTML pages: WU hits `expect_element` selector wait for `#weeklyCarousel` (BD's stale AA detection). Times out at ~90s with `x-brd-error: captcha or protection page found`.
 - API endpoints: works directly. AA returns app error 309.
 
 ### Account API key (separate from zone passwords)
-- Value: `8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` (visible in BD popups during setup)
+- Value: `REDACTED_BD_API_KEY` (visible in BD popups during setup)
 - Used for: WU Bearer auth, BD's REST APIs
 - **Security:** in our chat transcript. User should rotate when done with this work.
 
@@ -836,7 +836,7 @@ WU_PAYLOAD=$(python3 -c 'import json; print(json.dumps({
   "headers": {"Content-Type":"application/json"}
 }))')
 curl -s -X POST https://api.brightdata.com/request \
-  -H "Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920" \
+  -H "Authorization: Bearer REDACTED_BD_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$WU_PAYLOAD"
 ```
@@ -925,7 +925,7 @@ User approved the multi-phase recovery plan (`/root/.claude/plans/knowing-everyt
 ### Bright Data Residential zone created
 User created zone `pointsnap_residential` in BD dashboard. Connection URL:
 ```
-http://brd-customer-hl_6f5ad35c-zone-pointsnap_residential:p96hs5z78sku@brd.superproxy.io:33335
+http://brd-customer-hl_6f5ad35c-zone-pointsnap_residential:REDACTED_BD_RESIDENTIAL_ZONE_PWD@brd.superproxy.io:33335
 ```
 (Credentials stored as Fly secret `BRIGHTDATA_RESIDENTIAL_URL` — NEVER committed.)
 

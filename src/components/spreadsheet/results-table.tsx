@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from "lucide-react";
 import type { Cabin, SearchResultRow } from "@/lib/types";
 import { CABIN_LABEL, CABIN_ORDER } from "@/lib/types";
-import { formatMiles } from "@/lib/effectiveCost";
 import { cn } from "@/lib/utils";
 import { CabinCell } from "./cabin-cell";
 import { LastSeenBadge } from "./last-seen-badge";
@@ -141,7 +140,9 @@ export function ResultsTable({
     });
   };
 
-  const SortIcon = ({ keyId }: { keyId: SortKey }) => {
+  // A called helper (not a `<Component/>`) so it doesn't trip the
+  // react-hooks/static-components rule while still closing over `sorts`.
+  const sortIcon = (keyId: SortKey) => {
     const s = sorts.find((x) => x.key === keyId);
     if (!s) return <ArrowUpDown className="size-3 opacity-30" aria-hidden />;
     return s.dir === "asc" ? (
@@ -163,14 +164,14 @@ export function ResultsTable({
               widthClass="w-[180px] min-w-[180px]"
               onClick={(e) => onHeaderClick("depart", e)}
             >
-              Depart <SortIcon keyId="depart" />
+              Depart {sortIcon("depart")}
             </Th>
             <Th
               sticky="left-[180px]"
               widthClass="w-[180px] min-w-[180px]"
               onClick={(e) => onHeaderClick("program", e)}
             >
-              Program <SortIcon keyId="program" />
+              Program {sortIcon("program")}
             </Th>
             <Th widthClass="w-[140px]">Route</Th>
             {CABIN_ORDER.map((c) => (
@@ -185,7 +186,7 @@ export function ResultsTable({
                   aria-label={`${CABIN_LABEL[c]} (${c})`}
                 >
                   {c}
-                  <SortIcon keyId={c} />
+                  {sortIcon(c)}
                 </span>
               </Th>
             ))}
@@ -193,25 +194,25 @@ export function ResultsTable({
               widthClass="w-[88px] text-right"
               onClick={(e) => onHeaderClick("duration", e)}
             >
-              Duration <SortIcon keyId="duration" />
+              Duration {sortIcon("duration")}
             </Th>
             <Th
               widthClass="w-[88px] text-center"
               onClick={(e) => onHeaderClick("stops", e)}
             >
-              Stops <SortIcon keyId="stops" />
+              Stops {sortIcon("stops")}
             </Th>
             <Th
               widthClass="w-[96px]"
               onClick={(e) => onHeaderClick("freshness", e)}
             >
-              Seen <SortIcon keyId="freshness" />
+              Seen {sortIcon("freshness")}
             </Th>
             <Th
               widthClass="w-[120px]"
               onClick={(e) => onHeaderClick("confidence", e)}
             >
-              Confidence <SortIcon keyId="confidence" />
+              Confidence {sortIcon("confidence")}
             </Th>
           </tr>
         </thead>
