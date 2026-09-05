@@ -1,5 +1,7 @@
 # Live data implementation and evidence
 
+Current summary: [airline access status](airline-access-status.md). The dated sections below are an experiment history; a later failure can narrow an earlier success. In particular, Ethiopian now has an intermittent local entry interruption, and Qantas remains locally accessible but denied from the tested hosted network.
+
 ## Verified September 5, 2026 (UTC)
 
 Live tests ran through the local Next.js `/api/search` SSE endpoint, not only standalone parsers:
@@ -260,3 +262,31 @@ Seven new regression tests cover all21 two-page fares, passenger amounts, cached
 GitHub Actions Linux/Node22 diagnostic run33984381515 independently reproduced Ethiopian ADD–NBO October5:2 itineraries/3 fares. American’s fresh anonymous homepage returned200, current itinerary API returned309, and normal form returned Challenge Validation, the same as local Node. Qantas default Node fetch still403.
 
 Follow-up run33985079120 tested the exact Qantas adapter with impit on hosted Linux. It returned403 after90ms, while Ethiopian again returned2 itineraries/3 fares. Qantas works in the local optimized Node22 server (16 itineraries/21 fares), but that does not establish hosted runtime access. Both GitHub CI runs for commit a057a35c passed; build success must not be confused with source connectivity. These diagnostics test GitHub's network, not Vercel's. Vercel’s existing preview is protected by SSO; no login or protection change was made.
+
+### All-source hosted audit and integrated fixes — September 5, 19:12 UTC
+
+Run33985791276 tested all eight enabled sources from GitHub Linux Node22. JetBlue16 itineraries/119 fares, Skywards partners4/4, Frontier25/175, Ethiopian2/3 and Virgin's one calendar row succeeded. Alaska returned a non-inventory response, Aeromexico403, and Qantas403. A successful workflow only means the diagnostic completed; individual source failures remain in its report.
+
+Run33986025497 compared fresh ordinary request headers and compatible HTTP transport. Alaska's browser header alone was insufficient; impit returned35 itineraries/68 fares. Aeromexico's ordinary full browser User-Agent returned11/100, while impit did not produce usable JSON. These changes are now integrated into the actual source implementations, with no member account, copied browser session or paid proxy. Alaska's optional cash quote uses the same compatible client; cash enrichment failure still cannot suppress award rows.
+
+The exact integrated commit382f3cb was then tested in run33986360339: Alaska35/68, JetBlue16/119, Skywards partners4/4, Frontier25/175, Aeromexico11/100, Ethiopian2/3 and one Virgin calendar row succeeded. Qantas remained403. Dates are October5,2026; one adult, routes as recorded in the diagnostic. Sanitized permanent evidence: [source results](evidence/anonymous-connectivity-2026-09-05.json) and [native transport stages](evidence/native-transport-2026-09-05.json). No keys or cookies are included.
+
+Actual browser acceptance on this code: Alaska filter shows35 itineraries/68 fares across25+10 rows. Aeromexico MEX–CUN shows11 itineraries/100 fares. AM556 Business retains Premier Basic14,800, Classic16,600 and Flex18,100 points, with original MXN943 and the estimated USD conversion visible. The official handoff retains route, date, one adult and points mode. The checked browser has no console errors. All147 tests, TypeScript, lint, optimized Node22 build, both GitHub CI runs and the Vercel preview build passed. Vercel source reachability is still unverified behind preview sign-in.
+
+After restarting the local optimized Node22 server with this exact build, its actual `/api/search` responses also returned completeAS35/68 in2.2seconds andAM11/100 in1.9seconds. Evidence: [compiled application API check](evidence/optimized-api-2026-09-05.json).
+
+### Final current native transport results
+
+- United's hosted token entry301 is a same-origin redirect, now followed by the diagnostic. The redirected anonymous token request succeeds200; FetchFlights returns428 verification. This resolves the redirect hypothesis but does not connect MileagePlus. Native UI sign-in and separate offered TrueBlue partner awards remain distinct.
+- Delta's hosted homepage and current booking bootstrap return200; its current GUEST GraphQL inventory returns444. The local compatible client previously returned an explicit challenge429. No native server source enabled.
+- Southwest's hosted homepage, current booking and public112.0.3 config all return200; actual award shopping remains403050700. No native source enabled.
+- American fresh Node, matching source contract, request-local cookie/CSRF/correlation, compatible HTTP, alternate official handoff, weekly endpoint and hosted Linux tests all remain documented failures at native inventory. The existing parser accepts40 itineraries/69 fares but is deliberately absent from the enabled source registry.
+- Ethiopian's local Node22/25 and fresh compatible entry now return200 with a Pardon Our Interruption page before any session identifier is issued. Hosted Node22 succeeds in the same period. This is an unresolved environmental reliability issue, not zero award seats.
+
+### Additional public flows beyond the original tracker
+
+LATAM's current US homepage exposes miles mode and dated public award offers. After normal airport selection did not commit in its form, the alternative published LAX–SCL October5–15 miles offer was followed through the actual browser. It redirected to the member login page before flight inventory. The advertised64,505-mile offer is a promotional minimum, not a complete live itinerary. This confirms the normal boundary described in [LATAM's official redemption guide](https://latampass.latam.com/en_us/redeem-miles/redeem-your-latam-pass-miles).
+
+Korean Air's [official booking entry](https://www.koreanair.com/contents/booking/book-and-manage?hl=en) leads to an anonymous Award Seat Availability page. It explicitly says data is updated once daily, is not real time, and covers up to360 days. The separate Mileage Booking button opens the native login dialog. No calendar marker was converted into a live flight quote.
+
+Further primary-source review found login-first redemption instructions for [TAP Miles&Go](https://www.flytap.com/en-gb/miles-and-go/use-miles/buy-ticket), [Air India Maharaja Club](https://www.airindia.com/content/air-india/language-masters/en/maharaja-club/faqs.html), [JAL Mileage Bank](https://faq-er-en.jal.co.jp/app/answers/detail/a_id/30419), [Thai Royal Orchid Plus](https://www.thaiairways.com/en-pk/content/help/faq), and [Royal Jordanian Royal Club](https://www.rj.com/en/royal-club/welcome-to-royal-club/program-overview). EVA's [actual award entry](https://booking.evaair.com/flyeva/eva/b2c/plan-your-journey/online-reservation/award-ticket/login.aspx?lang=en-global) is a member login form. These are documented public-flow limits, not claims that every private API or airline worldwide was tested.

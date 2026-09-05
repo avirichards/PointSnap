@@ -1,0 +1,119 @@
+{
+  "checkedAt": "2026-09-05T19:12:16.089Z",
+  "runtime": "v22.23.2",
+  "report": [
+    {
+      "program": "ET_SHEBAMILES",
+      "variant": "browser-header",
+      "date": "2026-10-05",
+      "elapsedMs": 2569,
+      "state": "success",
+      "itineraries": 2,
+      "fares": 3
+    },
+    {
+      "program": "ET_SHEBAMILES",
+      "variant": "compatible-http",
+      "date": "2026-10-05",
+      "elapsedMs": 3075,
+      "state": "success",
+      "itineraries": 2,
+      "fares": 3
+    },
+    {
+      "program": "UA_MP",
+      "variant": "host-network-current-anonymous",
+      "date": "2026-10-05",
+      "elapsedMs": 285,
+      "stages": [
+        {
+          "stage": "anonymous-token",
+          "status": 301,
+          "bytes": 0,
+          "challenge": false,
+          "errorCode": null,
+          "redirectTo": "https://www.united.com/api/svc/token/anonymous"
+        },
+        {
+          "stage": "anonymous-token-redirect",
+          "status": 200,
+          "bytes": 278,
+          "challenge": false,
+          "errorCode": null
+        },
+        {
+          "stage": "award-search",
+          "status": 428,
+          "bytes": 162,
+          "challenge": true,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "program": "DL_SKYMILES",
+      "variant": "host-network-current-guest",
+      "date": "2026-10-05",
+      "elapsedMs": 624,
+      "stages": [
+        {
+          "stage": "home",
+          "status": 200,
+          "bytes": 8222,
+          "challenge": false,
+          "errorCode": null
+        },
+        {
+          "stage": "booking-entry",
+          "status": 200,
+          "bytes": 32989,
+          "challenge": false,
+          "errorCode": null
+        },
+        {
+          "stage": "guest-award-offers",
+          "status": 444,
+          "bytes": 189,
+          "challenge": true,
+          "errorCode": null
+        }
+      ]
+    },
+    {
+      "program": "WN_RAPID",
+      "variant": "host-network-current-booker",
+      "date": "2026-10-05",
+      "elapsedMs": 516,
+      "stages": [
+        {
+          "stage": "home",
+          "status": 200,
+          "bytes": 7719,
+          "challenge": false,
+          "errorCode": null
+        },
+        {
+          "stage": "booking-entry",
+          "status": 200,
+          "bytes": 5553,
+          "challenge": false,
+          "errorCode": null
+        },
+        {
+          "stage": "public-current-config",
+          "status": 200,
+          "bytes": 562725,
+          "challenge": false,
+          "errorCode": null
+        },
+        {
+          "stage": "award-shopping",
+          "status": 403,
+          "bytes": 23,
+          "challenge": false,
+          "errorCode": 403050700
+        }
+      ]
+    }
+  ]
+}

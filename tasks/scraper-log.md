@@ -2,6 +2,8 @@
 
 > **Read this BEFORE attempting any scraper work.** Every session should append findings here. Past dead-ends are expensive to rediscover.
 
+> **Current September 2026 implementation:** start with [airline access status](../docs/airline-access-status.md), [live-data evidence](../docs/live-data.md) and [user requirements](user-requirements.md). The May architecture, paid-transport proposals and login assumptions below are historical and are superseded by the current anonymous Node pipeline and the user's no-new-subscription direction.
+
 ---
 
 ## Project anatomy + entry points (READ FIRST IF NEW TO PROJECT)
@@ -2252,3 +2254,13 @@ Browser-compatible transport did not resolve American Challenge Validation, Delt
 - Virgin Australia current native homepage's Use Velocity Points action opens a dialog and requests the official Velocity OAuth authorization entry. The dialog remained blank after saving necessary-only cookie choices. This tests the actual native entry in addition to prior Quick Compare documentation; no anonymous full award inventory obtained.
 - Fresh compatible transport: GOL's current anonymous search406, Turkish successful airport metadata/validation followed by denial HTML at full availability, Iberia anonymous app token200 followed by award403, Finnair full offer403. BA finder entry timed out. These do not imply universal login requirements.
 - SAS challenge403; Saudia and Etihad interruption pages despite200; Azul200 contains an explicit security challenge container, not its booking app. Copa200 now contains its actual current booking client and a public shopping handoff with isMiles=true. Following that distinct lead next.
+
+### Hosted integration, remaining native boundaries and wider review — September5
+
+- Copa follow-up completed: current public booker exposes anonymous miles mode, but the normal browser reaches verification and fresh server `/ibe/booking/get-id` initialization403. No inventory response and no native source enabled. This replaces the previous “following next” status.
+- All-eight hosted audit identified real Alaska/Aeromexico deployment regressions. Integrated Alaska impit transport and Aeromexico ordinary browser User-Agent. Hosted exact commit382f3cb now returnsAS35/68,AM11/100; B6,EK partner,F9,ET andVS calendar also succeed. QF still403. Full reports preserved under docs/evidence/ rather than only expiring Actions artifacts.
+- United same-origin token redirect301→200 followed; inventory428 persists. Delta current hosted GUEST444; Southwest current hosted shopping403050700. These resolve the remaining redirect/config/host hypotheses without converting errors to empty results.
+- Ethiopian fresh local entry now intermittently returns an interruption page before session creation, while hosted tests repeatedly succeed2/3. Keep that environmental limitation visible.
+- Actual application browser recheckedAS all35/68 across both pages andAM all11/100 with three Business fare choices, original MXN fees and USD conversion. No browser-console errors.147 tests, type/lint, optimized build, GitHub CI and Vercel preview build passed.
+- Broader gap review: LATAM's actual public miles-deal handoff redirects to login before flight inventory. Korean Air's public page is a daily cached calendar; real-time Mileage Booking opens login. Added separate documentation evidence for TAP,Air India,JAL,EVA,Thai andRoyal Jordanian without claiming these documents prove every API unavailable.
+- No further reproducible anonymous native transport was identified for the remaining denied/login-gated sources. Do not rerun identical denial probes as if they are progress. A new official public contract, authorized service access, changed ordinary site behavior or actual hosting access would justify a fresh experiment. All-airline coverage and remaining product work stay open.

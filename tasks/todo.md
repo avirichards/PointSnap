@@ -585,4 +585,9 @@ git commit -m "chore(scraper): retire ScraperAPI; document Bright Data CDP trans
 
 - [x] Qantas public cached flight inventory integrated; all pages, observed times, fees, mixed cabins and source limitations retained.
 - [x] Test compatible Qantas transport on hosted Linux: run33985079120 returned403, while Ethiopian passed. Qantas hosted access remains unresolved despite local optimized-server success.
-- [ ] Continue current Copa anonymous shopping flow and other distinct remaining leads. A successful homepage is insufficient; require actual dated award inventory.
+- [x] Follow the current Copa anonymous shopping flow through its actual browser and fresh server initialization. Both reach verification; no native feed enabled.
+- [x] Run all eight enabled sources on hosted Node22 and fix the measured Alaska/Aeromexico transport failures; exact integrated hosted results35/68 and11/100 verified.
+- [x] Finish United's same-origin token redirect investigation; token200, actual native award428. Hosted current Delta444 and Southwest403050700 also recorded.
+- [x] Preserve sanitized hosted evidence, actual frontend checks and all current limitations in the permanent access report.
+- [ ] Resolve native airline authorization/verification barriers and source reachability limits. No reproducible remaining anonymous path identified at this checkpoint; do not mark native coverage complete.
+- [ ] Verify actual Vercel runtime once its existing preview can be accessed. Build success and GitHub-network tests do not establish Vercel source connectivity.

@@ -1,0 +1,104 @@
+{
+  "checkedAt": "2026-09-05T19:12:08.145Z",
+  "runtime": "v22.23.2",
+  "report": [
+    {
+      "program": "AS_MILEAGEPLAN",
+      "date": "2026-10-05",
+      "elapsedMs": 2536,
+      "origin": "SEA",
+      "dest": "SFO",
+      "state": "success",
+      "itineraries": 35,
+      "calendarRows": 0,
+      "fares": 68,
+      "freshness": [
+        "live"
+      ]
+    },
+    {
+      "program": "B6_TRUEBLUE",
+      "date": "2026-10-05",
+      "elapsedMs": 1897,
+      "origin": "JFK",
+      "dest": "LAX",
+      "state": "success",
+      "itineraries": 16,
+      "calendarRows": 0,
+      "fares": 119,
+      "freshness": [
+        "live"
+      ]
+    },
+    {
+      "program": "VS_FLYING_CLUB",
+      "date": "2026-10-05",
+      "elapsedMs": 3998,
+      "origin": "JFK",
+      "dest": "LHR",
+      "state": "success",
+      "itineraries": 0,
+      "calendarRows": 1,
+      "fares": 0,
+      "freshness": [
+        "cached"
+      ]
+    },
+    {
+      "program": "EK_SKYWARDS",
+      "date": "2026-10-05",
+      "elapsedMs": 3833,
+      "origin": "MAN",
+      "dest": "ALC",
+      "state": "success",
+      "itineraries": 4,
+      "calendarRows": 0,
+      "fares": 4,
+      "freshness": [
+        "live"
+      ]
+    },
+    {
+      "program": "F9_FRONTIER_MILES",
+      "date": "2026-10-05",
+      "elapsedMs": 1075,
+      "origin": "DEN",
+      "dest": "LAS",
+      "state": "success",
+      "itineraries": 25,
+      "calendarRows": 0,
+      "fares": 175,
+      "freshness": [
+        "live"
+      ]
+    },
+    {
+      "program": "AM_CLUB_PREMIER",
+      "date": "2026-10-05",
+      "elapsedMs": 2010,
+      "origin": "MEX",
+      "dest": "CUN",
+      "state": "success",
+      "itineraries": 11,
+      "calendarRows": 0,
+      "fares": 100,
+      "freshness": [
+        "live"
+      ]
+    },
+    {
+      "program": "ET_SHEBAMILES",
+      "date": "2026-10-05",
+      "elapsedMs": 3208,
+      "state": "success",
+      "itineraries": 2,
+      "fares": 3
+    },
+    {
+      "program": "QF_FF",
+      "date": "2026-10-05",
+      "elapsedMs": 143,
+      "error": "Qantas reward finder is unavailable (HTTP 403)."
+    }
+  ]
+}
