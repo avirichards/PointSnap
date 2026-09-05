@@ -10,10 +10,10 @@ export const SOURCE_INFO: Record<
       "Individual itineraries and all supplied award fares, bookable with Alaska Atmos points.",
   },
   B6_TRUEBLUE: {
-    inventory: "calendar",
-    label: "Daily fare summary only",
+    inventory: "flights",
+    label: "JetBlue award flights",
     detail:
-      "Lowest recent daily price; cabin and individual flights are not reported.",
+      "Individual departures, connections and all supplied fare choices, with matching cash fares when available.",
   },
   VS_FLYING_CLUB: {
     inventory: "calendar",

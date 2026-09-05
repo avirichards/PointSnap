@@ -13,6 +13,7 @@ import { bookingUrl } from "@/lib/bookingHandoff";
 import { skywardsSearch } from "./skywards";
 import { frontierSearch } from "./frontier";
 import { aeromexicoSearch } from "./aeromexico";
+import { jetblueSearch } from "./jetblue";
 
 // These adapters read publicly accessible award-search responses; never execute
 // airline JavaScript or turn failed HTTP responses into invented availability.
@@ -279,50 +280,6 @@ export function parseAlaska(
   }
   return result;
 }
-export function parseJetBlue(
-  payload: unknown,
-  q: SearchQuery,
-  observedAt = new Date().toISOString(),
-): AwardResult[] {
-  const p = payload as {
-    currencyCode?: string;
-    outboundFares?: {
-      date: string;
-      amount: number;
-      tax: number;
-      seats: number;
-    }[];
-  };
-  if (!Array.isArray(p?.outboundFares) || p.currencyCode !== "USD")
-    throw new ProviderError("JetBlue returned an unexpected award response.");
-  const day = p.outboundFares.find((f) => f.date === q.departDate);
-  if (!day || !number(day.amount) || !number(day.seats) || day.seats < q.pax)
-    return [];
-  return [
-    {
-      id: `B6_${q.origin}_${q.dest}_${q.departDate}`,
-      programId: "B6_TRUEBLUE",
-      origin: q.origin,
-      destination: q.dest,
-      date: q.departDate,
-      kind: "calendar",
-      segments: [],
-      duration: null,
-      prices: {},
-      calendarQuote: {
-        points: day.amount,
-        cash: number(day.tax),
-        currency: "USD",
-        seats: day.seats,
-      },
-      source: "JetBlue",
-      freshness: "cached",
-      retrievedAt: observedAt,
-      observedAt,
-      bookingUrl: bookingUrl("B6_TRUEBLUE", q),
-    },
-  ];
-}
 export function parseVirgin(
   payload: unknown,
   q: SearchQuery,
@@ -384,6 +341,7 @@ export async function directSearch(
   if (program === "EK_SKYWARDS") return skywardsSearch(q, signal);
   if (program === "F9_FRONTIER_MILES") return frontierSearch(q, signal);
   if (program === "AM_CLUB_PREMIER") return aeromexicoSearch(q, signal);
+  if (program === "B6_TRUEBLUE") return jetblueSearch(q, signal, onRows);
   const headers = {
     "User-Agent": ua,
     Accept: "application/json",
@@ -432,31 +390,6 @@ export async function directSearch(
       }
     }
     return rows;
-  }
-  if (program === "B6_TRUEBLUE") {
-    const params = new URLSearchParams({
-      adult: String(q.pax),
-      child: "0",
-      infant: "0",
-      origin: q.origin,
-      destination: q.dest,
-      month: `${month.toLowerCase()} ${date.getUTCFullYear()}`,
-      fareType: "POINTS",
-      tripType: "ONE_WAY",
-    });
-    const res = await fetch(
-      `https://jbrest.jetblue.com/bff-service-v2/bestFares/?${params}`,
-      {
-        ...opts,
-        headers: { Accept: "application/json" },
-      },
-    );
-    if (!res.ok)
-      throw new ProviderError(
-        `JetBlue is unavailable (HTTP ${res.status}).`,
-        res.status,
-      );
-    return parseJetBlue(await res.json(), q);
   }
   const endpoint =
     "https://www.virginatlantic.com/travelplus/reward-seat-checker-api/";

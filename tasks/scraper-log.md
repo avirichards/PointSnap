@@ -2212,3 +2212,7 @@ Authorized Seats.aero Pro browser inspection confirmed successful JetBlue refres
 Ethiopian active metadata200; current anonymous GraphQL getSession403 security interruption. Earlier config404 was an inactive path. AF/KLM dated REWARD landings200 and anonymous session checks false; current shared client explicitly invokes login for reward search. Neither provides verified flight inventory. Exact local sanitized reports: work/agent-qantas/ethiopian-focused/REPORT.md and work/agent-us/flying-blue/REPORT.md. These findings describe tested paths only. No new adapter claimed.
 
 Code milestone0a72b75 passed GitHub frontend/Python checks and Vercel preview build; hosted runtime/data configuration still requires verification. Local work feed now records33 investigated flows, four scoped flight feeds and two calendar feeds.
+
+## 2026-09-05 — JetBlue full search connected
+
+The prior HTTP-only Client Challenge was not a hard access boundary. The current browser renders all16 JFK–LAX itineraries; the first10 are only a UI slice. Fresh `/booking/` HTML (without the `/flights` suffix) returns public config directly. Its application marker supports the current `cb-api.jetblue.com/cb-flight-search/v1/search/NGB` contract anonymously. Full response:119 award fares; all119 exact cash fares matched. PointSnap SSE, two adults:16/119/119 in2.6seconds. No member token, session cookie reuse, embedded static application key or paid service. New sanitized fixtures and15 tests; all101 frontend/contract tests pass. See docs/live-data.md.

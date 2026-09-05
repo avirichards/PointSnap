@@ -60,7 +60,7 @@ describe("multi-program orchestration", () => {
           programId: "B6_TRUEBLUE",
           state: "empty",
           source: "Direct airline",
-          inventory: "calendar",
+          inventory: "flights",
         }),
       }),
     );

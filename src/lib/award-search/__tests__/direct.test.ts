@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   parseAlaska,
-  parseJetBlue,
   parseVirgin,
   normalizeLiteral,
   directSearch,
@@ -10,8 +9,6 @@ import { parseQuery } from "../query";
 import { filterResults } from "../engine";
 import virgin from "../fixtures/virgin.json";
 import alaska from "../fixtures/alaska.json";
-import jetblue from "../fixtures/jetblue.json";
-import jetblueV2 from "../fixtures/jetblue-v2.json";
 import alaskaFull from "../fixtures/alaska-full.json";
 const q = {
   origin: "SEA",
@@ -90,30 +87,6 @@ describe("direct airline results", () => {
     expect(parseAlaska(html, { ...q, departDate: "2026-10-06" })).toEqual([]);
     expect(() => parseAlaska(html, { ...q, dest: "NRT" })).toThrow();
   });
-  it("represents daily prices without an invented schedule", () => {
-    const r = parseJetBlue(jetblue, { ...q, origin: "JFK", dest: "LAX" })[0];
-    expect(r.kind).toBe("calendar");
-    expect(r.segments).toEqual([]);
-    expect(r.duration).toBeNull();
-    expect(r.prices).toEqual({});
-    expect(r.calendarQuote?.cash).toBe(5.6);
-    expect(r.calendarQuote?.points).toBe(28800);
-    expect(r.freshness).toBe("cached");
-    expect(
-      filterResults([r], { query: { ...q, origin: "JFK", dest: "LAX" } }),
-    ).toHaveLength(1);
-  });
-  it("honors passenger availability and minimum cabin", () => {
-    expect(
-      parseJetBlue(jetblue, { ...q, origin: "JFK", dest: "LAX", pax: 9 }),
-    ).toEqual([]);
-    expect(
-      filterResults(
-        parseJetBlue(jetblue, { ...q, origin: "JFK", dest: "LAX" }),
-        { query: { ...q, origin: "JFK", dest: "LAX", minCabin: "J" } },
-      ),
-    ).toEqual([]);
-  });
   it("keeps unknown Virgin taxes unknown, not a made-up exchange rate", () => {
     const r = parseVirgin(
       [
@@ -136,25 +109,6 @@ describe("direct airline results", () => {
     )[0];
     expect(r.prices.J?.cash).toBeNull();
     expect(r.segments).toEqual([]);
-  });
-});
-describe("JetBlue current public calendar", () => {
-  afterEach(() => vi.unstubAllGlobals());
-  it("uses the current GET contract with party size and keeps the cabin unknown", async () => {
-    const fetcher = vi.fn().mockResolvedValue(Response.json(jetblueV2));
-    vi.stubGlobal("fetch", fetcher);
-    const result = await directSearch(
-      "B6_TRUEBLUE",
-      { ...q, origin: "JFK", dest: "LAX", pax: 2 },
-      new AbortController().signal,
-    );
-    const url = new URL(fetcher.mock.calls[0][0]);
-    expect(url.pathname).toBe("/bff-service-v2/bestFares/");
-    expect(url.searchParams.get("adult")).toBe("2");
-    expect(url.searchParams.get("fareType")).toBe("POINTS");
-    expect(url.searchParams.get("month")).toBe("october 2026");
-    expect(result[0].calendarQuote).toMatchObject({ points: 22400, cash: 5.6 });
-    expect(result[0].prices).toEqual({});
   });
 });
 describe("search validation", () => {

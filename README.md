@@ -21,7 +21,7 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 | Source | Returned data | Access |
 | --- | --- | --- |
 | Alaska Airlines / Atmos Rewards | Individual itineraries including available partners, per-person points, USD taxes, seats and matching cash fares | Direct public search |
-| JetBlue / TrueBlue | Lowest recent daily price, USD taxes, seats; cabin and exact flight unknown | Direct public calendar |
+| JetBlue / TrueBlue | All supplied itineraries and Base/regular/Flex fares; per-segment cabins, points, taxes and exact-fare cash comparisons | Direct public flight search |
 | Emirates Skywards partners | Individual easyJet and Jet2 flights, exact party miles; taxes included. Emirates-operated flights are not connected. | Direct public partner portal |
 | Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
 | Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |
@@ -31,7 +31,7 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 
 **Universal airline coverage is not complete.** Fresh requests were verified for all six direct sources on September 5, 2026. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
 
-The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” JetBlue and Virgin summaries appear separately from flight results and do not count as complete flight integrations. JetBlue does not identify the cabin. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
+The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” Virgin calendar summaries appear separately from flight results and do not count as complete flight integrations. JetBlue now returns complete itinerary and fare records for the audited searches. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
 
 ## Accounts and wallet
 

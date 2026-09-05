@@ -4,12 +4,12 @@ Starting point: `2f26dd6` (latest assessment branch). Delivery branch: `codex/fi
 
 - [x] Replace auth shells; verify identity; isolate wallet, staff pages and worker sessions.
 - [x] Make airport search usable without service credentials; validate requests and implement stream cancellation/retry, URL-driven searches and separate return-leg searches.
-- [x] Build and verify four scoped direct flight sources and two daily calendar sources; implement documented Seats.aero and AwardTool contracts with explicit per-program failure states and booking handoffs. No estimate rows.
+- [x] Build and verify five scoped direct flight sources and one daily calendar source; implement documented Seats.aero and AwardTool contracts with explicit per-program failure states and booking handoffs. No estimate rows.
 - [x] Implement manually maintained private wallet balances, expiry dates, card nicknames and per-party points/cash comparison.
 - [x] Replace legacy airline-login onboarding with app-owned program coverage; provide removal of previously saved sessions; keep legacy operator view read-only.
 - [x] Rebuild the interface for points enthusiasts, following the user's dark visual reference without copying the old UI. Add optional geographic exploration, slow automatic rotation, white route trails, drag-only rotation pause, release inertia, keyboard rotation and reduced-motion support. Fix drag text selection and mouse focus outline.
 - [x] Record user preferences in `tasks/product-brief.md` and draft knowledge-base copy for review.
-- [x] Verify 90 frontend/contract tests, 30 hermetic Python tests, wallet migration/RLS, live HTTP searches, typecheck, lint and optimized production build. Python also reports 1 optional transport skip and 1 intentionally excluded live test. Existing seed scripts have lint warnings.
+- [x] Verify 101 frontend/contract tests, 30 hermetic Python tests, wallet migration/RLS, live HTTP searches, typecheck, lint and optimized production build. Python also reports 1 optional transport skip and 1 intentionally excluded live test. Existing seed scripts have lint warnings.
 - [x] Commit the initial rebuild, push feature branch and open draft PR #4. CI/preview verification continues.
 - [ ] Expand direct airline coverage without paid subscriptions, per the latest user instruction.
 
@@ -22,11 +22,11 @@ Starting point: `2f26dd6` (latest assessment branch). Delivery branch: `codex/fi
 
 ## Deliberate limits
 
-The new flow does not use unverifiable transfer ratios or award-chart estimates. Bank-point transfers/bonuses, automatic balance sync, credit-card ingestion and legacy operator mutation tools are not implemented. JetBlue and Virgin supply calendar prices, not flight schedules. No user needs to connect a personal airline account for searching.
+The new flow does not use unverifiable transfer ratios or award-chart estimates. Bank-point transfers/bonuses, automatic balance sync, credit-card ingestion and legacy operator mutation tools are not implemented. Virgin still supplies calendar prices, not flight schedules. JetBlue now supplies individual itineraries and all eligible fare choices. No user needs to connect a personal airline account for searching.
 
 ## Complete flight-list acceptance requirement
 
-- [ ] JetBlue: retrieve and verify every matching flight option; calendar-only feed is incomplete.
+- [x] JetBlue: replace calendar-only feed with full anonymous search; audit all 16 itineraries /119 fares, all four transatlantic itineraries /28 fares, mixed-cabin references and exact cash matching. Completeness applies to verified source responses.
 - [ ] Virgin Atlantic: retrieve full dated itineraries; reward calendar is incomplete for this requirement.
 - [x] Alaska: preserve and audit all 35 returned itineraries / 68 fare options; verified local Show more behavior. Universal backend completeness is not claimed.
 - [ ] Remaining airlines: verify full flight lists, connections, cabins and pagination; failed/blocked endpoints and static calendars are not completed integrations.
@@ -41,3 +41,5 @@ The new flow does not use unverifiable transfer ratios or award-chart estimates.
 - [x] Add Aeromexico anonymous Classic/Dynamic awards: 11 itineraries / 98 fares verified through actual two-adult SSE search; 25 connecting itineraries / 237 fares independently verified.
 - [x] Build development-only live work dashboard and clarify request blocks versus login-required or unverified flows.
 - [x] Research authorized Seats.aero Pro UI and public frontend architecture; record limits of visible code and personal API access.
+
+- [x] September5 06:00UTC: JetBlue full connector verified through actual /api/search for two adults (16 itineraries,119 fares,119 cash matches in2.6s). 101 tests, typecheck, lint and optimized production build pass. Current investigation continues with Virgin Atlantic and previously inaccessible browser paths.
