@@ -13,7 +13,7 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +27,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Check fresh anonymous requests from hosted Node
-        run: pnpm exec tsx scripts/check-anonymous-connectivity.ts
+        run: pnpm exec tsx scripts/check-anonymous-connectivity.ts 2026-10-05 --programs=AS_MILEAGEPLAN,B6_TRUEBLUE,VS_FLYING_CLUB,EK_SKYWARDS,F9_FRONTIER_MILES,AM_CLUB_PREMIER,ET_SHEBAMILES,QF_FF
       - uses: actions/upload-artifact@v4
         with:
           name: anonymous-connectivity

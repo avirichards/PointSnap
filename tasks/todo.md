@@ -584,4 +584,5 @@ git commit -m "chore(scraper): retire ScraperAPI; document Bright Data CDP trans
 - [ ] Continue distinct American/United/remaining airline leads; do not equate partner coverage or browser-only success with native server connectivity.
 
 - [x] Qantas public cached flight inventory integrated; all pages, observed times, fees, mixed cabins and source limitations retained.
-- [ ] Verify compatible Qantas transport on hosted Linux after push; continue remaining airline access leads.
+- [x] Test compatible Qantas transport on hosted Linux: run33985079120 returned403, while Ethiopian passed. Qantas hosted access remains unresolved despite local optimized-server success.
+- [ ] Continue current Copa anonymous shopping flow and other distinct remaining leads. A successful homepage is insufficient; require actual dated award inventory.

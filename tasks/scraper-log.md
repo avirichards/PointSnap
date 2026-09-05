@@ -2245,4 +2245,10 @@ Browser-compatible transport did not resolve American Challenge Validation, Delt
 - Default Node/curl Qantas403 was a transport issue, not proof that public data was inaccessible. Fresh impit0.14.4 client returns cached flight inventory with no member credentials. Enabled QF_FF after actual SSE16/21 across two pages and real-browser fee/freshness/eligibility verification.
 - Native Qantas immediate Check availability is Turnstile-backed. Do not reuse browser challenge proofs in the server, refresh cached timestamps, or claim every Qantas route is covered.
 - AA impit matching client/correlation309/Challenge Validation; United fresh token200/search428; Delta current guest offer444. Hosted Linux AA run33984381515 produced the same309/challenge. Further identical retries are not new hypotheses.
-- Ethiopian live adapter also succeeds in hosted Node22. Qantas compatible hosted test added. All147 tests passed; targeted type/lint/build verification ongoing after final small fixes.
+- Ethiopian live adapter also succeeds in hosted Node22. All147 tests, type/lint, optimized Node22 build and GitHub CI passed. Local optimized-server Qantas16/21 also passed. Hosted compatible Qantas run33985079120 returned403; no hosted connectivity claim.
+
+### Continued public entry checks — September5
+
+- Virgin Australia current native homepage's Use Velocity Points action opens a dialog and requests the official Velocity OAuth authorization entry. The dialog remained blank after saving necessary-only cookie choices. This tests the actual native entry in addition to prior Quick Compare documentation; no anonymous full award inventory obtained.
+- Fresh compatible transport: GOL's current anonymous search406, Turkish successful airport metadata/validation followed by denial HTML at full availability, Iberia anonymous app token200 followed by award403, Finnair full offer403. BA finder entry timed out. These do not imply universal login requirements.
+- SAS challenge403; Saudia and Etihad interruption pages despite200; Azul200 contains an explicit security challenge container, not its booking app. Copa200 now contains its actual current booking client and a public shopping handoff with isMiles=true. Following that distinct lead next.

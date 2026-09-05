@@ -4,8 +4,15 @@ import { randomUUID } from "node:crypto";
 import { parseAmerican } from "../src/lib/award-search/american";
 import { ethiopianSearch } from "../src/lib/award-search/ethiopian";
 import { qantasSearch } from "../src/lib/award-search/qantas";
+import { directSearch } from "../src/lib/award-search/direct";
 
 const date = process.argv[2] ?? "2026-10-05";
+const programsArg = process.argv.find((value) =>
+  value.startsWith("--programs="),
+);
+const selected = programsArg
+  ? new Set(programsArg.slice("--programs=".length).split(","))
+  : null;
 const ua =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36";
 const report: Record<string, unknown>[] = [];
@@ -13,6 +20,7 @@ async function record(
   program: string,
   task: () => Promise<Record<string, unknown>>,
 ) {
+  if (selected && !selected.has(program)) return;
   const start = Date.now();
   let result: Record<string, unknown>;
   try {
@@ -28,6 +36,40 @@ async function record(
 }
 
 async function main() {
+  // One representative, fresh request per enabled source. The report separates
+  // calendar rows from flights and never labels a failed transport as empty.
+  for (const [program, origin, dest] of [
+    ["AS_MILEAGEPLAN", "SEA", "SFO"],
+    ["B6_TRUEBLUE", "JFK", "LAX"],
+    ["VS_FLYING_CLUB", "JFK", "LHR"],
+    ["EK_SKYWARDS", "MAN", "ALC"],
+    ["F9_FRONTIER_MILES", "DEN", "LAS"],
+    ["AM_CLUB_PREMIER", "MEX", "CUN"],
+  ]) {
+    await record(program, async () => {
+      const rows = await directSearch(
+        program,
+        { origin, dest, departDate: date, pax: 1, minCabin: "Y" },
+        AbortSignal.timeout(55000),
+      );
+      return {
+        origin,
+        dest,
+        state: rows.length ? "success" : "empty",
+        itineraries: rows.filter((row) => row.kind === "flight").length,
+        calendarRows: rows.filter((row) => row.kind === "calendar").length,
+        fares: rows.reduce(
+          (n, row) =>
+            n +
+            (row.kind === "flight"
+              ? (row.fares?.length ?? Object.keys(row.prices).length)
+              : 0),
+          0,
+        ),
+        freshness: [...new Set(rows.map((row) => row.freshness))],
+      };
+    });
+  }
   await record("ET_SHEBAMILES", async () => {
     const rows = await ethiopianSearch(
       { origin: "ADD", dest: "NBO", departDate: date, pax: 1, minCabin: "Y" },
@@ -79,7 +121,11 @@ async function main() {
                 Referer: `${base}/booking/search/find-flights`,
                 "X-CID": correlation,
                 ...(jar.has("XSRF-TOKEN")
-                  ? { "X-XSRF-TOKEN": decodeURIComponent(jar.get("XSRF-TOKEN")!) }
+                  ? {
+                      "X-XSRF-TOKEN": decodeURIComponent(
+                        jar.get("XSRF-TOKEN")!,
+                      ),
+                    }
                   : {}),
               }),
         },
@@ -109,7 +155,9 @@ async function main() {
         bytes: html.length,
         errorCode: data?.error ?? null,
         challenge:
-          /Challenge Validation|Pardon Our Interruption|Just a moment/.test(html),
+          /Challenge Validation|Pardon Our Interruption|Just a moment/.test(
+            html,
+          ),
         ...(parsed
           ? {
               itineraries: parsed.length,
@@ -173,7 +221,7 @@ async function main() {
     return { stages };
   });
 
-  await record("QF_FF", async () => {
+  await record("QF_DEFAULT_FETCH", async () => {
     const base = "https://flightrewardfinder.qantas.com";
     const response = await fetch(
       `${base}/api/search?${new URLSearchParams({ o: "SYD", d: "DXB", dr: `${date}I${date}`, p: "1" })}`,
@@ -202,7 +250,7 @@ async function main() {
     };
   });
 
-  await record("QF_FF_COMPATIBLE", async () => {
+  await record("QF_FF", async () => {
     const rows = await qantasSearch(
       { origin: "JFK", dest: "LHR", departDate: date, pax: 1, minCabin: "Y" },
       AbortSignal.timeout(55000),

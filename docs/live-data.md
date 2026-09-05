@@ -257,4 +257,6 @@ Seven new regression tests cover all21 two-page fares, passenger amounts, cached
 
 ### Hosted transport experiment
 
-GitHub Actions Linux/Node22 diagnostic run33984381515 independently reproduced Ethiopian ADD–NBO October5:2 itineraries/3 fares. American’s fresh anonymous homepage returned200, current itinerary API returned309, and normal form returned Challenge Validation, the same as local Node. Qantas default Node fetch still403. This run demonstrates hosted Linux connectivity, not Vercel’s production network. Compatible Qantas transport is included in the next diagnostic. Vercel’s existing preview is protected by SSO; no login or protection change was made.
+GitHub Actions Linux/Node22 diagnostic run33984381515 independently reproduced Ethiopian ADD–NBO October5:2 itineraries/3 fares. American’s fresh anonymous homepage returned200, current itinerary API returned309, and normal form returned Challenge Validation, the same as local Node. Qantas default Node fetch still403.
+
+Follow-up run33985079120 tested the exact Qantas adapter with impit on hosted Linux. It returned403 after90ms, while Ethiopian again returned2 itineraries/3 fares. Qantas works in the local optimized Node22 server (16 itineraries/21 fares), but that does not establish hosted runtime access. Both GitHub CI runs for commit a057a35c passed; build success must not be confused with source connectivity. These diagnostics test GitHub's network, not Vercel's. Vercel’s existing preview is protected by SSO; no login or protection change was made.
