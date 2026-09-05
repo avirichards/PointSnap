@@ -197,3 +197,9 @@ Turkish's currently published `homepage.searchAwardTicket` browser tool was test
 American's current public client also creates an ordinary `spa_session_id` UUID and sends the same value as its correlation header. Reproducing that normal bootstrap with a fresh app-owned UUID (not a copied browser/session credential) still returned itinerary error309; the current form POST returned200 with the title “Challenge Validation,” not flight results. HTTP200 alone must never mark this connection successful.
 
 Actual PointSnap browser verification of the EWR–LHR two-adult search showed all four United partner itineraries after the airline filter was applied. UA14 details retained the TrueBlue program, 40,000 + USD5.60 per person, 80,000 + USD11.20 for two, nine reported seats, local overnight times, and a JetBlue handoff with adults=2. The full search contained 40 itineraries across working sources; no native American fixture was inserted.
+
+## Further official browser entries (September 5, 08:25 UTC)
+
+British Airways' public Reward Flight Finder was tested with London and New York explicitly selected from its suggestions, October5 entered after city selection, one-way and one adult. Submit returned the same finder form without flight inventory. The browser also reported legacy web-component polyfill errors; this browser failure does not establish a permanent or global access block. Earlier app-owned form submission returned a high-demand page.
+
+Iberia's public Avios explorer displayed destination/date minima without sign-in. Its explicit “BOOKING WITH AVIOS” full-booking link then redirected to the Iberia login page. This confirms a membership gate in the tested native booking path, in addition to the previously recorded anonymous-app-token200/availability403 response. Explorer minima are not substituted for a full dated itinerary feed.
