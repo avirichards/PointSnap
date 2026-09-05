@@ -103,7 +103,7 @@ describe("progress reporter", () => {
     const before = await readFile(path, "utf8");
     await expect(
       run(process.execPath, [script, "update.json"], { cwd }),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ stderr: expect.stringContaining("ZodError") });
     expect(await readFile(path, "utf8")).toBe(before);
   });
 });

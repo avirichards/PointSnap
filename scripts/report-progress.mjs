@@ -2,11 +2,11 @@
 import { readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
-import { tsImport } from "tsx/esm/api";
-const { progressSchema } = await tsImport("../src/lib/build-progress.ts", {
-  parentURL: import.meta.url,
-  tsconfig: false,
-});
+import { require as tsRequire } from "tsx/cjs/api";
+const { progressSchema } = tsRequire(
+  "../src/lib/build-progress.ts",
+  import.meta.url,
+);
 const file = resolve("work/live-progress.json");
 const update = JSON.parse(await readFile(process.argv[2], "utf8"));
 const now = new Date().toISOString();
