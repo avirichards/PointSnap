@@ -10,7 +10,11 @@ if (!["chromium", "firefox", "webkit"].includes(configuredEngine))
   );
 const engine = configuredEngine as "chromium" | "firefox" | "webkit";
 const entry =
-  process.env.POINTSNAP_BROWSER_ENTRY === "direct" ? "direct" : "homepage";
+  process.env.POINTSNAP_BROWSER_ENTRY === "homepage-form"
+    ? "homepage-form"
+    : process.env.POINTSNAP_BROWSER_ENTRY === "direct"
+      ? "direct"
+      : "homepage";
 const runner = new AmericanBrowserRunner({ channel, headless, entry, engine });
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",

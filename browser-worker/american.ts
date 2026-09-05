@@ -97,7 +97,7 @@ export class AmericanBrowserRunner {
     private options: {
       channel?: string;
       headless?: boolean;
-      entry?: "homepage" | "direct";
+      entry?: "homepage" | "direct" | "homepage-form";
       engine?: "chromium" | "firefox" | "webkit";
     } = {},
   ) {}
@@ -191,42 +191,81 @@ export class AmericanBrowserRunner {
           stage,
           503,
         );
-      if (homepage) {
-        // Follow the airline's own published link so redirects and ordinary
-        // session initialization happen in the same anonymous browser.
-        await page.locator("#advBookingSearch").click();
-        mark("booking-form");
-      }
-      await page.locator("#trip-type").waitFor({ state: "visible" });
-      mark("route-and-passengers");
-      await page.locator("#trip-type").click();
-      await page.getByRole("option", { name: "One way", exact: true }).click();
-      for (const [input, checkbox, code] of [
-        ["matOriginAirport", "origin-nearby-airports", q.origin],
-        ["matDestinationAirport", "destination-nearby-airports", q.dest],
-      ]) {
-        await page.locator(`#${input}`).fill(code);
-        if (await page.locator(`#${checkbox}`).isChecked())
-          await page.locator(`label[for="${checkbox}"]`).click();
-        await page
-          .getByRole("option", { name: new RegExp(`^${code} -`) })
-          .click();
-        if ((await page.locator(`#${input}`).inputValue()) !== code)
-          throw new BrowserSearchError(
-            "American did not accept the requested airport.",
-            stage,
-          );
-      }
       const [year, month, day] = q.departDate.split("-");
-      await page
-        .locator("#matOneWayDatePicker")
-        .fill(`${month}/${day}/${year}`);
-      await page.locator("#matOneWayDatePicker").press("Tab");
-      await page.locator("#passenger-count").selectOption(String(q.pax));
-      if (!(await page.locator("#redeem-miles").isChecked()))
-        await page.locator("label[for='redeem-miles']").click();
-      await page.locator("#cabin").selectOption("SHOW_ALL");
-      await page.locator("#carriers").selectOption("ALL");
+      if (this.options.entry === "homepage-form") {
+        mark("homepage-route-and-passengers");
+        for (const id of [
+          "flightSearchForm.tripType.oneWay",
+          "flightSearchForm.tripType.redeemMiles",
+        ]) {
+          const label = page.locator(`label[for="${id}"]:visible`);
+          await label.waitFor({ state: "visible" });
+          if (!(await page.locator(`[id="${id}"]`).isChecked()))
+            await label.click();
+        }
+        for (const [id, code] of [
+          ["originAirport", q.origin],
+          ["destinationAirport", q.dest],
+        ]) {
+          const input = page.locator(
+            `[id="reservationFlightSearchForm.${id}"]:visible`,
+          );
+          await input.fill(code);
+          await input.press("Tab");
+          if ((await input.inputValue()) !== code)
+            throw new BrowserSearchError(
+              "American did not accept the requested airport.",
+              stage,
+            );
+        }
+        await page
+          .locator(
+            '[id="flightSearchForm.adultOrSeniorPassengerCount"]:visible',
+          )
+          .selectOption(String(q.pax));
+        await page
+          .locator("#aa-leavingOn:visible")
+          .fill(`${month}/${day}/${year}`);
+        await page.locator("#aa-leavingOn:visible").press("Tab");
+      } else {
+        if (homepage) {
+          // Follow the airline's own published link so redirects and ordinary
+          // session initialization happen in the same anonymous browser.
+          await page.locator("#advBookingSearch").click();
+          mark("booking-form");
+        }
+        await page.locator("#trip-type").waitFor({ state: "visible" });
+        mark("route-and-passengers");
+        await page.locator("#trip-type").click();
+        await page
+          .getByRole("option", { name: "One way", exact: true })
+          .click();
+        for (const [input, checkbox, code] of [
+          ["matOriginAirport", "origin-nearby-airports", q.origin],
+          ["matDestinationAirport", "destination-nearby-airports", q.dest],
+        ]) {
+          await page.locator(`#${input}`).fill(code);
+          if (await page.locator(`#${checkbox}`).isChecked())
+            await page.locator(`label[for="${checkbox}"]`).click();
+          await page
+            .getByRole("option", { name: new RegExp(`^${code} -`) })
+            .click();
+          if ((await page.locator(`#${input}`).inputValue()) !== code)
+            throw new BrowserSearchError(
+              "American did not accept the requested airport.",
+              stage,
+            );
+        }
+        await page
+          .locator("#matOneWayDatePicker")
+          .fill(`${month}/${day}/${year}`);
+        await page.locator("#matOneWayDatePicker").press("Tab");
+        await page.locator("#passenger-count").selectOption(String(q.pax));
+        if (!(await page.locator("#redeem-miles").isChecked()))
+          await page.locator("label[for='redeem-miles']").click();
+        await page.locator("#cabin").selectOption("SHOW_ALL");
+        await page.locator("#carriers").selectOption("ALL");
+      }
       mark("submit-search");
       await page.getByRole("button", { name: "Search", exact: true }).click();
       await page.waitForURL(/\/booking\/choose-flights\/1(?:\?|$)/, {

@@ -21,7 +21,11 @@ async function main() {
     }),
   );
   const entry =
-    process.env.POINTSNAP_BROWSER_ENTRY === "direct" ? "direct" : "homepage";
+    process.env.POINTSNAP_BROWSER_ENTRY === "homepage-form"
+      ? "homepage-form"
+      : process.env.POINTSNAP_BROWSER_ENTRY === "direct"
+        ? "direct"
+        : "homepage";
   const channel = process.env.POINTSNAP_BROWSER_CHANNEL || "chromium";
   const runner = new AmericanBrowserRunner({
     engine,

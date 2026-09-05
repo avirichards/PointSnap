@@ -2,10 +2,6 @@ name: American browser connectivity (explicit diagnostic)
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/browser-connectivity.yml
-      - browser-worker/probe.ts
 
 permissions:
   contents: read

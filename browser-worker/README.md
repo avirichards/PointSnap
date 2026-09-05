@@ -57,15 +57,17 @@ pnpm exec playwright install webkit firefox
 pnpm exec tsx browser-worker/probe.ts webkit 2026-10-05
 ```
 
-`POINTSNAP_BROWSER_ENGINE` accepts `chromium`, `webkit` or `firefox`. `POINTSNAP_BROWSER_CHANNEL=chrome` uses an already installed standard Chrome only with the Chromium engine. `POINTSNAP_BROWSER_HEADLESS=0` opens the worker's own temporary browser visibly. `POINTSNAP_BROWSER_ENTRY=direct` tests the direct advanced-booking entry instead of the normal homepage link. These are explicit diagnostic choices, not an automatic retry loop after denial.
+`POINTSNAP_BROWSER_ENGINE` accepts `chromium`, `webkit` or `firefox`. `POINTSNAP_BROWSER_CHANNEL=chrome` uses an already installed standard Chrome only with the Chromium engine. `POINTSNAP_BROWSER_HEADLESS=0` opens the worker's own temporary browser visibly. `POINTSNAP_BROWSER_ENTRY=direct` tests the direct advanced-booking entry instead of the normal homepage link. `POINTSNAP_BROWSER_ENTRY=homepage-form` submits the homepage booking widget itself. These are explicit diagnostic choices, not an automatic retry loop after denial.
 
 ## Request and correctness boundaries
 
 - The authenticated worker accepts only American airport/date/party queries, never arbitrary URLs or browser commands. It binds to loopback by default, limits request size and runs at most two searches with a bounded queue.
 - Each request creates and closes its own anonymous context. No personal browser profile, login cookies, challenge tokens, passwords or payment information are imported. Verification stops the search.
 - Cancellation, queue expiry and client disconnect close the request's context. Searches time out before PointSnap's outer streaming deadline.
-- Origin/destination autocomplete selections are checked and nearby-airport expansion is disabled. All cabins and airlines are requested; the shared engine applies the user's cabin filter afterward.
+- Advanced-form airport selections are checked, nearby-airport expansion is disabled, and all cabins/airlines are requested. The homepage-widget diagnostic uses the native widget defaults; its full fare scope must be reconciled before promotion. The shared engine applies the user's cabin filter afterward.
 - The native parser checks the requested route, date, party totals, live metadata, every itinerary/segment/fare, pagination flags and counts. The PointSnap bridge independently revalidates the returned payload, timestamp, query and counts.
 - Flight fixtures exist only in tests. Browser failure, login/verification, empty availability and complete results remain distinct. Sanitized diagnostics omit page HTML, cookies and session-bearing URLs.
 
 Before promoting this pilot, reconcile all native fares against the airline across multiple routes and party sizes, repeat after browser restart/idle periods, and prove the actual deployment runtime. This pilot currently falls short of those acceptance criteria.
+
+The separate `probe-southwest.ts` diagnostic navigates the official points booker in a fresh browser and records the actual shopping-response status and visible fare count. Its WebKit and Firefox attempts returned shopping403; it does not create an enabled Southwest source.

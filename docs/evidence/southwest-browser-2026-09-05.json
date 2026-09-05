@@ -1,0 +1,62 @@
+{
+  "scope": "Fresh anonymous browser navigation to Southwest\u2019s official DEN\u2013LAS October5 points booker. No complete native adapter enabled.",
+  "attempts": [
+    {
+      "at": "2026-09-05T23:03:56.368Z",
+      "engine": "firefox",
+      "platform": "darwin",
+      "route": "DEN\u2013LAS",
+      "date": "2026-10-05",
+      "pax": 1,
+      "elapsedMs": 4048,
+      "result": "error",
+      "shoppingStatus": 403,
+      "errorCode": "403050700",
+      "responseKeys": [
+        "code"
+      ],
+      "title": "Select Flights | Southwest Airlines",
+      "displayedFareButtons": 0,
+      "message": "A validated complete Southwest adapter is not enabled by this diagnostic.",
+      "stages": [
+        {
+          "stage": "document",
+          "elapsedMs": 1276,
+          "path": "/air/booking/select-depart.html",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2642,
+          "path": "/mpel/mpel_storage.html",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "at": "2026-09-05T23:02:58.804Z",
+      "engine": "webkit",
+      "platform": "darwin",
+      "route": "DEN\u2013LAS",
+      "date": "2026-10-05",
+      "pax": 1,
+      "elapsedMs": 2064,
+      "result": "unverified",
+      "shoppingStatus": 403,
+      "responseKeys": [
+        "code"
+      ],
+      "title": "Loading [booking page]",
+      "displayedFareButtons": 0,
+      "message": "A validated complete Southwest adapter is not enabled by this diagnostic.",
+      "stages": [
+        {
+          "stage": "document",
+          "elapsedMs": 919,
+          "path": "/air/booking/select-depart.html",
+          "status": 200
+        }
+      ]
+    }
+  ]
+}
