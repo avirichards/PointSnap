@@ -16,7 +16,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "test:live": "node scripts/check-live-search.mjs"
+    "test:live": "node scripts/check-live-search.mjs",
+    "browser:worker": "tsx browser-worker/start.ts",
+    "test:browser-live": "node scripts/check-browser-search.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.3.5",
@@ -46,6 +48,7 @@
     "lucide-react": "^1.16.0",
     "nanoid": "^5.1.11",
     "next": "16.2.6",
+    "playwright": "1.63.0",
     "postgres": "^3.4.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",

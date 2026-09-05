@@ -1,0 +1,46 @@
+name: American browser connectivity (explicit diagnostic)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/browser-connectivity.yml
+      - browser-worker/probe.ts
+
+permissions:
+  contents: read
+
+jobs:
+  browser-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install standard browser engines
+        run: pnpm exec playwright install --with-deps --no-shell chromium webkit firefox
+      - name: Chromium anonymous search
+        continue-on-error: true
+        run: pnpm exec tsx browser-worker/probe.ts chromium
+      - name: WebKit anonymous search
+        continue-on-error: true
+        run: pnpm exec tsx browser-worker/probe.ts webkit
+      - name: Firefox anonymous search
+        continue-on-error: true
+        run: pnpm exec tsx browser-worker/probe.ts firefox
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: american-browser-connectivity
+          path: work/browser-probes/*.json
+          if-no-files-found: error
+          retention-days: 7

@@ -4,6 +4,7 @@ import { awardToolPrograms, awardToolSearch } from "./awardtool";
 import { ProviderError, type ProviderContext, type AwardResult } from "./types";
 import { CABIN_ORDER } from "@/lib/types";
 import { SOURCE_INFO } from "./source-info";
+import { browserPrograms, browserSearch } from "./browser";
 export function hasPaidProvider() {
   return !!(process.env.SEATS_AERO_API_KEY || process.env.AWARDTOOL_API_KEY);
 }
@@ -12,6 +13,7 @@ export function providerCoverage() {
   return [
     ...new Set([
       ...DIRECT_PROGRAMS,
+      ...browserPrograms(),
       ...at,
       ...(process.env.SEATS_AERO_API_KEY ? Object.keys(SEATS_SOURCES) : []),
     ]),
@@ -63,11 +65,15 @@ export function filterResults(
 export async function runSearch(ids: string[], ctx: ProviderContext) {
   if (ctx.signal.aborted) return;
   ctx.emit({ type: "meta", programs: ids });
+  const browserIds = browserPrograms();
   const commercial: string[] = process.env.AWARDTOOL_API_KEY
     ? awardToolPrograms()
     : [];
   const batchIds = ids.filter(
-    (id) => !DIRECT_PROGRAMS.includes(id) && commercial.includes(id),
+    (id) =>
+      !DIRECT_PROGRAMS.includes(id) &&
+      !browserIds.includes(id) &&
+      commercial.includes(id),
   );
   const singles = ids.filter((id) => !batchIds.includes(id));
   let index = 0;
@@ -89,6 +95,7 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
       let source = "";
       if (
         !DIRECT_PROGRAMS.includes(id) &&
+        !browserIds.includes(id) &&
         !(process.env.SEATS_AERO_API_KEY && SEATS_SOURCES[id])
       ) {
         ctx.emit({
@@ -103,7 +110,10 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
       }
       try {
         let rows: AwardResult[];
-        if (DIRECT_PROGRAMS.includes(id)) {
+        if (browserIds.includes(id)) {
+          source = "American · browser pilot";
+          rows = await browserSearch(ctx.query, ctx.signal);
+        } else if (DIRECT_PROGRAMS.includes(id)) {
           try {
             source = "Direct airline";
             rows = await directSearch(id, ctx.query, ctx.signal, (early) => {

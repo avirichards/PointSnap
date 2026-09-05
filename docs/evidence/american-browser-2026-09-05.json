@@ -1,0 +1,373 @@
+{
+  "checkedAt": "2026-09-05T22:46:41.929316+00:00",
+  "scope": "American LAX\u2013AUS, September 7, 2026, one adult; real PointSnap API to separate anonymous browser worker. No live AA worker response obtained.",
+  "ordinaryBrowserReference": {
+    "itineraries": 40,
+    "fares": 72,
+    "cached": false,
+    "note": "New search in the existing anonymous in-app browser; not output from the dedicated worker."
+  },
+  "localAttempts": [
+    {
+      "variant": "chromium-headless",
+      "engine": "chromium",
+      "headless": true,
+      "entry": "direct",
+      "platform": "macOS arm64 / Node 22",
+      "at": "2026-09-05T22:26:30.349Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-09-07",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 19638,
+      "result": "error",
+      "status": 503,
+      "stage": "booking-form",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stages": [
+        {
+          "stage": "booking-form",
+          "elapsedMs": 4516
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4615,
+          "path": "/booking/search/find-flights",
+          "status": 403
+        }
+      ],
+      "title": "Access Denied",
+      "path": "/booking/search/find-flights",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    {
+      "variant": "chrome-headless",
+      "engine": "chrome",
+      "headless": true,
+      "entry": "direct",
+      "platform": "macOS arm64 / Node 22",
+      "at": "2026-09-05T22:31:41.621Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-09-07",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 20863,
+      "result": "error",
+      "status": 503,
+      "stage": "booking-form",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stages": [
+        {
+          "stage": "booking-form",
+          "elapsedMs": 5636
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5803,
+          "path": "/booking/search/find-flights",
+          "status": 403
+        }
+      ],
+      "title": "Access Denied",
+      "path": "/booking/search/find-flights",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    {
+      "variant": "chrome-visible",
+      "engine": "chrome",
+      "headless": false,
+      "entry": "direct",
+      "platform": "macOS arm64 / Node 22",
+      "at": "2026-09-05T22:32:37.125Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-09-07",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 18112,
+      "result": "error",
+      "status": 503,
+      "stage": "booking-form",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stages": [
+        {
+          "stage": "booking-form",
+          "elapsedMs": 1064
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1673,
+          "path": "/booking/search/find-flights",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5289,
+          "path": "/booking/search/find-flights",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6678,
+          "path": "/booking/search/find-flights",
+          "status": 403
+        }
+      ],
+      "title": "Access Denied",
+      "path": "/booking/search/find-flights",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    {
+      "variant": "chrome-visible-homepage",
+      "engine": "chrome",
+      "headless": false,
+      "entry": "homepage",
+      "platform": "macOS arm64 / Node 22",
+      "at": "2026-09-05T22:35:29.350Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-09-07",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 24476,
+      "result": "error",
+      "status": 503,
+      "stage": "booking-form",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 685
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1095,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4719,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6529,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 7405,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 9343,
+          "path": "/booking/find-flights",
+          "status": 403
+        },
+        {
+          "stage": "booking-form",
+          "elapsedMs": 9428
+        }
+      ],
+      "title": "Access Denied",
+      "path": "/booking/find-flights",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    {
+      "variant": "webkit-homepage",
+      "engine": "webkit",
+      "headless": true,
+      "entry": "homepage",
+      "platform": "macOS arm64 / Node 22",
+      "at": "2026-09-05T22:37:52.208Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-09-07",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 25410,
+      "result": "error",
+      "status": 503,
+      "stage": "read-flight-response",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 5794
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6388,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 7390,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 8303,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 9734,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 9990,
+          "path": "/booking/search/find-flights",
+          "status": 200
+        },
+        {
+          "stage": "booking-form",
+          "elapsedMs": 9996
+        },
+        {
+          "stage": "route-and-passengers",
+          "elapsedMs": 11782
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 14077
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 15376,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 15399
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 15694,
+          "path": "/challenge-assets/v7/captcha.html",
+          "status": 200
+        }
+      ],
+      "title": "Challenge Validation",
+      "path": "/booking/choose-flights/1",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    {
+      "variant": "firefox-homepage",
+      "engine": "firefox",
+      "headless": true,
+      "entry": "homepage",
+      "platform": "macOS arm64 / Node 22",
+      "at": "2026-09-05T22:39:31.058Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-09-07",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 23892,
+      "result": "error",
+      "status": 503,
+      "stage": "read-flight-response",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 2959
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3444,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4803,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5292,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6955,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 7239,
+          "path": "/booking/search/find-flights",
+          "status": 200
+        },
+        {
+          "stage": "booking-form",
+          "elapsedMs": 7280
+        },
+        {
+          "stage": "route-and-passengers",
+          "elapsedMs": 9958
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 12733
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 13845,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 13874
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 13980,
+          "path": "/challenge-assets/v7/captcha.html",
+          "status": 200
+        }
+      ],
+      "title": "Challenge Validation",
+      "path": "/booking/choose-flights/1",
+      "verification": true,
+      "errorType": "TimeoutError"
+    }
+  ],
+  "hostedStatus": "New full-browser Linux diagnostic prepared; not yet measured."
+}

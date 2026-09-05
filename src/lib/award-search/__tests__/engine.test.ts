@@ -3,6 +3,8 @@ const mock = vi.hoisted(() => ({
   direct: vi.fn(),
   seats: vi.fn(),
   batch: vi.fn(),
+  browser: vi.fn(),
+  browserIds: vi.fn(),
 }));
 vi.mock("../direct", () => ({
   directSearch: mock.direct,
@@ -16,7 +18,11 @@ vi.mock("../awardtool", () => ({
   awardToolSearch: mock.batch,
   awardToolPrograms: () => ["UA_MP"],
 }));
-import { runSearch } from "../engine";
+vi.mock("../browser", () => ({
+  browserSearch: mock.browser,
+  browserPrograms: mock.browserIds,
+}));
+import { providerCoverage, runSearch } from "../engine";
 import { ProviderError, type AwardEvent } from "../types";
 const q = {
   origin: "SEA",
@@ -30,6 +36,7 @@ beforeEach(() => {
   vi.stubEnv("SEATS_AERO_API_KEY", "");
   vi.stubEnv("AWARDTOOL_API_KEY", "");
   mock.direct.mockResolvedValue([]);
+  mock.browserIds.mockReturnValue([]);
 });
 afterEach(() => vi.unstubAllEnvs());
 async function run(ids: string[]) {
@@ -91,5 +98,37 @@ describe("multi-program orchestration", () => {
       emit: () => {},
     });
     expect(mock.direct).not.toHaveBeenCalled();
+  });
+  it("runs only an explicitly enabled American browser transport", async () => {
+    expect(providerCoverage()).not.toContain("AA_AADVANTAGE");
+    mock.browserIds.mockReturnValue(["AA_AADVANTAGE"]);
+    mock.browser.mockResolvedValue([]);
+    expect(providerCoverage()).toContain("AA_AADVANTAGE");
+    const events = await run(["AA_AADVANTAGE"]);
+    expect(mock.browser).toHaveBeenCalledWith(q, expect.any(AbortSignal));
+    expect(mock.direct).not.toHaveBeenCalled();
+    expect(events.at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: {
+        programId: "AA_AADVANTAGE",
+        state: "empty",
+        source: "American · browser pilot",
+      },
+    });
+  });
+  it("preserves browser verification as a source error", async () => {
+    mock.browserIds.mockReturnValue(["AA_AADVANTAGE"]);
+    mock.browser.mockRejectedValue(
+      new ProviderError("American requested browser verification.", 503),
+    );
+    const events = await run(["AA_AADVANTAGE"]);
+    expect(events.at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: {
+        state: "error",
+        message: "American requested browser verification.",
+      },
+    });
+    expect(events.some((e) => e.type === "results")).toBe(false);
   });
 });

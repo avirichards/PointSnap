@@ -9,8 +9,8 @@ import {
   type AwardSegment,
 } from "./types";
 
-// Candidate parser for AA's current public booking response. There is deliberately
-// no enabled transport: browser results do not prove unattended server access.
+// Native AA parser. The experimental browser transport is explicitly opt-in;
+// ordinary browser results alone do not establish unattended server access.
 type RecordValue = Record<string, unknown>;
 function invalid(reason: string): never {
   throw new ProviderError(
@@ -229,8 +229,12 @@ export function parseAmerican(
       invalid("an unfinished flight list");
   }
   const slices = array(source.slices);
-  if (source.totalCount !== undefined && source.totalCount !== slices.length)
-    invalid("an unfinished flight list");
+  for (const container of [source, meta])
+    if (
+      container.totalCount !== undefined &&
+      container.totalCount !== slices.length
+    )
+      invalid("an unfinished flight list");
   const seen = new Set<string>();
   return slices.map((entry) => {
     const slice = object(entry),
