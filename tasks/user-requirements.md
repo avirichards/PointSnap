@@ -7,6 +7,7 @@ Source: all user messages supplied in this task through September 5, 2026, inclu
 - [ ] Finish the entire app and keep investigating every airline until all practical access paths are exhausted. Treat a failed method as evidence about that method, not proof that an airline is impossible.
 - [ ] Search every available flight, connection, cabin and fare option for the chosen route, day and party. JetBlue was specifically called out for missing flights. Current JetBlue adapter now returns 16 JFK–LAX itineraries / 119 fares, including connections, with exact cash matches; maintain this completeness standard for every source.
 - [x] Users can search working direct sources without connecting their personal airline accounts.
+- [ ] Latest steering: account connections are acceptable as an alternative. Evaluate local browser companions, hosted user sessions, provider-account connections and commercial arrangements alongside anonymous access. Keep optional anonymous search as the preferred experience; do not imply that entering credentials guarantees full airline coverage.
 - [x] Keep calendar minima separate from individual-flight availability; partner coverage does not imply the native program is connected.
 - [ ] Connect remaining airlines without new paid data subscriptions, a commercial license, or paid scraping services. App-owned anonymous sessions are acceptable; access not reproducible in PointSnap is not marked enabled.
 - [x] Research the authorized Seats.aero Pro session and its publicly delivered code. Do not assume private backend code is available or use personal Pro access as a commercial feed.
@@ -141,6 +142,8 @@ The following ledger traces the user's requests in conversation order. Repeated 
 | 60 | Ask about American and United; American appeared close | Report the precise remaining transport gap. September 7 LAX–AUS native AA browser returned 40 itineraries including nonstop AA4945 at32,000 + USD5.60 and AA6409 at76,500 + USD5.60. Server booking entry still403 and itinerary309. Native United sign-in gate remains; offered United partner awards work through TrueBlue. |
 | 61 | Why did work stop? | Do not turn a status question or one failed access method into a task endpoint. Resume airline investigation against current, untested flows; keep the feed honest and continue useful independent work when a source is blocked. |
 | 62 | American seemed close; keep working until every airline is connected or every remaining idea has actually been exhausted | Prioritize American’s fresh-session transport gap. Keep distinct experiments and outstanding leads explicit. A failed endpoint alone is not evidence of exhaustion; continue airline work autonomously. |
+| 63 | What options remain? | Compare the actual access architectures and provider products, costs, traveler friction, freshness and remaining evidence gaps in docs/airline-access-options.md. |
+| 64 | Airline accounts may have to be connected; figure out all available options | Reopens authenticated and browser-assisted approaches for evaluation. No-account access remains preferred, not a prohibition on presenting connections. Review all choices without assuming a purchase, provider inquiry, account creation or successful connection. |
 
 ## Current completion boundary
 

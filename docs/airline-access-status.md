@@ -39,6 +39,8 @@ These are failures of the tested access paths, not proof of permanent impossibil
 
 ## Wider review and remaining options
 
+Latest user steering permits evaluating airline-account connections as an alternative to anonymous-only access. The [access-options assessment](airline-access-options.md) compares a local browser companion, hosted authenticated sessions, connected Seats.aero Pro access and commercial suppliers. These newly reopened paths remain unverified; this does not change the enabled-source counts below.
+
 Copa's newly discovered current anonymous miles booker also reaches verification: its fresh server initialization returns 403, and the normal browser displays a challenge. LATAM's actual published miles-deal link redirects to member login before flight choices. Korean Air's public availability page explicitly uses a daily cached snapshot; its real-time Mileage Booking button opens login. The detailed evidence table below distinguishes these browser findings from documentation-only reviews.
 
 The [Seats.aero public frontend](https://github.com/avirichards/PointSnap/blob/codex/finish-pointsnap/docs/live-data.md#seatsaero-research-using-the-authorized-pro-session) was inspected using the authorized Pro session. It calls Seats.aero's servers; it does not disclose their airline connector backend. Their official [Live Search documentation](https://developers.seats.aero/reference/live-search) requires commercial access. A personal Pro account does not provide that product's live-search API to PointSnap.
