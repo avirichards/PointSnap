@@ -84,4 +84,5 @@ export interface SearchQuery {
   returnDate?: string;
   pax: number;
   minCabin: Cabin;
+  flexDays?: number;
 }

@@ -99,7 +99,12 @@ function Workspace() {
   const activeParams = active
     ? queryParams({ ...active, returnDate: undefined }).toString()
     : null;
-  const stream = useAwardSearch(activeParams);
+  const windowParams = activeParams ? new URLSearchParams(activeParams) : null;
+  if (windowParams && query?.returnDate) {
+    if (isReturnLeg) windowParams.set("windowMin", query.departDate);
+    else windowParams.set("windowMax", query.returnDate);
+  }
+  const stream = useAwardSearch(windowParams?.toString() ?? null);
   useEffect(() => {
     const c = new AbortController();
     fetch("/api/coverage", { signal: c.signal })
@@ -322,6 +327,11 @@ function Workspace() {
                   <Map className="size-4" />
                   Route map
                 </Button>
+                {stream.loading && (
+                  <Button variant="outline" onClick={stream.stop}>
+                    Stop search
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   onClick={stream.retry}
@@ -353,23 +363,25 @@ function Workspace() {
                 may price differently.
               </p>
             )}
-            <NearbyDates
-              date={active!.departDate}
-              min={isReturnLeg ? query.departDate : undefined}
-              max={!isReturnLeg ? query.returnDate : undefined}
-              onChoose={(date) => {
-                if (date === active!.departDate) {
-                  stream.retry();
-                  return;
-                }
-                if (isReturnLeg)
-                  router.push(
-                    `/search?${queryParams({ ...query, returnDate: date })}`,
-                    { scroll: false },
-                  );
-                else search({ ...query, departDate: date });
-              }}
-            />
+            {!active?.flexDays && (
+              <NearbyDates
+                date={active!.departDate}
+                min={isReturnLeg ? query.departDate : undefined}
+                max={!isReturnLeg ? query.returnDate : undefined}
+                onChoose={(date) => {
+                  if (date === active!.departDate) {
+                    stream.retry();
+                    return;
+                  }
+                  if (isReturnLeg)
+                    router.push(
+                      `/search?${queryParams({ ...query, returnDate: date })}`,
+                      { scroll: false },
+                    );
+                  else search({ ...query, departDate: date });
+                }}
+              />
+            )}
             {stream.error && (
               <div
                 role="alert"
@@ -391,6 +403,8 @@ function Workspace() {
               pax={query.pax}
               minCabin={query.minCabin}
               loading={stream.loading}
+              dates={stream.dates}
+              dayStatus={stream.days}
             />
             <section className="rounded-xl border bg-card">
               <button
@@ -420,17 +434,19 @@ function Workspace() {
                     <li key={c.programId} className="p-4 text-sm">
                       <p className="font-medium">{programName(c.programId)}</p>
                       <p className="text-muted-foreground mt-1">
-                        {c.state === "success"
-                          ? c.inventory === "calendar"
-                            ? "Daily fare summary only"
-                            : "Individual flights received"
-                          : c.state === "empty"
+                        {c.state === "partial"
+                          ? "Some dates checked; others incomplete"
+                          : c.state === "success"
                             ? c.inventory === "calendar"
-                              ? "No matching calendar price returned"
-                              : "No matching flights returned"
-                            : c.state === "pending"
-                              ? "Searching…"
-                              : (c.message ?? "Unavailable")}
+                              ? "Daily fare summary only"
+                              : "Individual flights received"
+                            : c.state === "empty"
+                              ? c.inventory === "calendar"
+                                ? "No matching calendar price returned"
+                                : "No matching flights returned"
+                              : c.state === "pending"
+                                ? "Searching…"
+                                : (c.message ?? "Unavailable")}
                       </p>
                       {c.message &&
                         (c.state === "success" || c.state === "empty") && (

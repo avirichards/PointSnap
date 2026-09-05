@@ -21,7 +21,7 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 | Source | Returned data | Access |
 | --- | --- | --- |
 | Alaska Airlines / Atmos Rewards | Individual itineraries including available partners, per-person points, USD taxes, seats and matching cash fares | Direct public search |
-| JetBlue / TrueBlue | All supplied itineraries and Base/regular/Flex fares; per-segment cabins, points, taxes and exact-fare cash comparisons | Direct public flight search |
+| JetBlue / TrueBlue | Supplied JetBlue/partner itineraries and fare families; per-segment cabins, points, taxes and exact-fare cash comparisons when matched | Direct public flight search |
 | Emirates Skywards partners | Individual easyJet and Jet2 flights, exact party miles; taxes included. Emirates-operated flights are not connected. | Direct public partner portal |
 | Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
 | Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |
@@ -32,6 +32,14 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 **Universal airline coverage is not complete.** Fresh requests were verified for all six direct sources on September 5, 2026. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
 
 The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” Virgin calendar summaries appear separately from flight results and do not count as complete flight integrations. JetBlue now returns complete itinerary and fare records for the audited searches. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
+
+## Search and comparison
+
+One physical itinerary groups matching booking programs and every supplied fare. Cabin, stops, points/fees, airlines, programs and times are available directly; All filters includes connections, aircraft, fare names/classes, refundable/mixed-cabin controls, seat counts, source age, wallet affordability and exact cash value. Click table column headings to sort in either direction; mobile uses flight cards. Compact is the default layout, with Roomy and a remembered AM/PM or 24-hour clock in Display preferences.
+
+Choose an exact date or ±1–7 days. Two date requests run at a time, beginning with the chosen date; results stream into day-price tiles and a combined list. Stop cancels remaining work while preserving received results. Failed dates and programs remain explicit, and range searches remain subject to the server quota. Each direction of a return journey is still priced separately.
+
+Fees automatically display in the visitor's country currency where hosting geolocation is available, then fall back to browser region/USD. A manual choice is remembered. Estimated FX amounts retain the airline's original charge and rate date in details; fees are filtered/sorted in the display currency. Value per point is explicitly USD cents and requires a matching USD cash fare. See [reference-data notes](docs/third-party-data.md).
 
 ## Accounts and wallet
 

@@ -149,6 +149,24 @@ export function SearchForm({
           <option value="F">First</option>
         </select>
       </div>
+      <div className="grid gap-2">
+        <Label htmlFor="flex-days" className="mono-label">
+          Date flexibility
+        </Label>
+        <select
+          id="flex-days"
+          className="search-native-select"
+          value={draft.flexDays ?? 0}
+          onChange={(e) => change({ flexDays: Number(e.target.value) })}
+        >
+          <option value="0">Exact date</option>
+          {[1, 2, 3, 5, 7].map((n) => (
+            <option key={n} value={n}>
+              ± {n} day{n > 1 ? "s" : ""} ({n * 2 + 1} total)
+            </option>
+          ))}
+        </select>
+      </div>
       <Button
         type="submit"
         className="search-submit h-11"

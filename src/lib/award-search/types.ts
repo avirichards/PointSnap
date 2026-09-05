@@ -1,5 +1,6 @@
 import type { Cabin, SearchQuery } from "@/lib/types";
 export type CoverageState =
+  | "partial"
   | "pending"
   | "success"
   | "empty"
@@ -15,6 +16,7 @@ export interface Coverage {
 export interface AwardPrice {
   fareId?: string;
   fareName?: string;
+  bookingClasses?: string[];
   refundable?: boolean | null;
   segmentCabins?: (Cabin | null)[];
   cabin: Cabin;
@@ -45,6 +47,8 @@ export interface AwardSegment {
   airline: string;
   airlineName?: string | null;
   operatedBy?: string | null;
+  operatingAirline?: string | null;
+  operatingFlightNumber?: string | null;
   flightNumber: string;
   aircraft?: string | null;
   cabin?: Cabin | null;

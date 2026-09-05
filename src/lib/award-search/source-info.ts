@@ -11,9 +11,9 @@ export const SOURCE_INFO: Record<
   },
   B6_TRUEBLUE: {
     inventory: "flights",
-    label: "JetBlue award flights",
+    label: "JetBlue & offered partner awards",
     detail:
-      "Individual departures, connections and all supplied fare choices, with matching cash fares when available.",
+      "Individual departures and supplied fares bookable with TrueBlue points, including offered United and Etihad partner flights. Exact-fare cash matches when available.",
   },
   VS_FLYING_CLUB: {
     inventory: "calendar",

@@ -1,3 +1,4 @@
+import { AIRLINES } from "@/db/seed/airlines";
 import { createHash } from "node:crypto";
 import { bookingUrl } from "@/lib/bookingHandoff";
 import { CABIN_ORDER, type Cabin, type SearchQuery } from "@/lib/types";
@@ -124,6 +125,7 @@ interface ParsedFare {
   brand: string;
   cabin: Cabin;
   segmentCabins: Cabin[];
+  bookingClasses: string[];
   points: number | null;
   cash: number;
   currency: string;
@@ -202,8 +204,10 @@ function parseInventory(
         departure: depart,
         arrival: arrive,
         airline,
-        airlineName: airline === "B6" ? "JetBlue" : null,
-        operatedBy: operating,
+        airlineName: AIRLINES.find((a) => a.iata === airline)?.name ?? null,
+        operatedBy:
+          AIRLINES.find((a) => a.iata === operating)?.name ?? operating,
+        operatingAirline: operating?.length === 2 ? operating : null,
         flightNumber: `${airline}${flight}`,
         aircraft:
           typeof segment.aircraft === "string" ? segment.aircraft : null,
@@ -279,6 +283,7 @@ function parseInventory(
         brand,
         cabin: code,
         segmentCabins,
+        bookingClasses: segmentFares.map((s) => s.split(":")[0]),
         points,
         cash,
         currency,
@@ -304,6 +309,7 @@ export function parseJetBlueFlights(
         refundable: refundability(fare.brand),
         cabin: fare.cabin,
         segmentCabins: fare.segmentCabins,
+        bookingClasses: fare.bookingClasses,
         points: fare.points!,
         cash: fare.cash,
         currency: fare.currency,

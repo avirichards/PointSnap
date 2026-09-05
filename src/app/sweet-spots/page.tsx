@@ -20,7 +20,7 @@ const routes = [
     place: "Los Angeles",
     copy: "From New York mornings to Pacific sunsets. See what your points can do.",
     source: "JetBlue",
-    kind: "Daily award calendar",
+    kind: "Individual flight results",
   },
   {
     from: "JFK",

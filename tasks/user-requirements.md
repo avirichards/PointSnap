@@ -1,0 +1,151 @@
+# PointSnap — consolidated user requirements
+
+Source: all user messages supplied in this task through September 5, 2026, including screenshots, browser comments, preference replies, and the request to reconcile the whole chat. This is the continuing scope; a newer UX request never replaces the live-search mission. Recorded does not mean implemented; checked implementation items still have the verification limits described below.
+
+## Priority 1 — live award coverage
+
+- [ ] Finish the entire app and keep investigating every airline until all practical access paths are exhausted. Treat a failed method as evidence about that method, not proof that an airline is impossible.
+- [ ] Search every available flight, connection, cabin and fare option for the chosen route, day and party. JetBlue was specifically called out for missing flights. Current JetBlue adapter now returns 16 JFK–LAX itineraries / 119 fares, including connections, with exact cash matches; maintain this completeness standard for every source.
+- [x] Users can search working direct sources without connecting their personal airline accounts.
+- [x] Keep calendar minima separate from individual-flight availability; partner coverage does not imply the native program is connected.
+- [ ] Connect remaining airlines without new paid data subscriptions, a commercial license, or paid scraping services. App-owned anonymous sessions are acceptable; access not reproducible in PointSnap is not marked enabled.
+- [x] Research the authorized Seats.aero Pro session and its publicly delivered code. Do not assume private backend code is available or use personal Pro access as a commercial feed.
+- [x] Provide an actual live work feed per airline at /build-progress, including evidence and next attempts. Keep it accurate as investigation continues.
+- [x] Calculate cents per point only from a matching cash itinerary/cabin/fare and known same-currency award fees. Alaska and JetBlue supported; expand when providers supply comparable quotes.
+
+## Priority 2 — intuitive depth and comparison
+
+- [x] Show the same physical itinerary once, with all programs and their points/fees/fare choices together. Match all segments and exact times; keep uncertain matches separate.
+- [ ] Implement advanced sorting and filters inspired by the actual Seats.aero interface: programs, airlines, alliances, transfer partners, points, taxes, seats, cabin, weekday, stops, duration, departure/arrival windows, aircraft, fare classes and connection airports.
+- [ ] Go further where reliable source fields permit: exact cash value, mixed-cabin controls, freshness, refundable awards, party costs, wallet affordability and useful comparison presets.
+- [x] Click a column header to sort; repeated clicks reverse direction. Expose keyboard-accessible buttons and aria-sort.
+- [x] True flexible-date ±N-day search, not just links to rerun one date: stream all requested dates, show day prices and day/program failures, preserve partial results and cancel queued work.
+- [ ] Optional connection-exit / hidden-city comparison: label full-ticket destination and unused segments, genuine same-program/cabin price comparison, and baggage/onward-ticket/rerouting/entry/program-rule risks. Never quietly mix these into ordinary travel or invent prices.
+- [ ] Originate and implement useful improvements, rather than asking the user to design the product or delivering ideas only.
+- [x] Save search criteria locally and provide adjacent-day navigation. Enhance into the true range experience above.
+
+## Visual and globe direction
+
+- [x] Independent UI overhaul for airline/points geeks; reference conveys a dark, atmospheric, spatial style, not a mandatory copied layout. Practical usability takes precedence over decoration.
+- [x] Slow autonomous globe rotation with modern whitish glowing route trails.
+- [x] Remove all controls below the globe; rotation pauses only while grabbed, not on hover. Route trails continue during dragging.
+- [x] Add release inertia, then resume autonomous spin.
+- [x] Prevent drag text selection and unwanted pointer focus rectangle; preserve keyboard access and reduced-motion support.
+
+## Working agreement
+
+- [x] Keep every user instruction recorded, including browser annotation fixes; reconcile this log as features are verified.
+- [x] Work autonomously without more questions; user is stepping away and authorized the necessary project work.
+- [x] Choose an efficient working method. Earlier agents performed regional access research; current work is direct. Follow current delegation instructions.
+- [x] User selected Max; no need to claim an assistant-driven model change.
+- [ ] Do not call the app fully complete or all airlines connected while coverage or production readiness remains unresolved. Finish concrete work and report external limits accurately.
+
+## Automatic local currency (latest screenshot feedback)
+
+- [x] Detect visitor country from trusted hosting geolocation; local/browser-region fallback when no IP country is available. Convert award fees to that country's currency automatically, with a remembered manual override.
+- [x] Use actual fetched exchange rates, show estimated converted amounts and rate date, preserve original ticketing currency/amount in booking details, and apply the same conversion to fee filters/sorting. Never label MXN as USD or invent a rate when unavailable.
+
+## Frontend usability and QA (latest steering)
+
+- [x] Keep cabin, stops, points/fees, airlines, booking programs and times in the main filter bar; put specialist controls behind All filters.
+- [ ] Continue inspecting the actual rendered frontend after every UI change, including desktop/mobile layout, interaction, empty/loading/error states. This is a continuing acceptance condition, not a once-completed task. The user explicitly requests real browser QA; do not substitute source-code reasoning for this check.
+
+### Verified September5 06:45UTC
+
+Desktop browser: bidirectional Departs column changed first departure00:35→23:59; ≤20,000 points plus ≤USD100 fees left six matching itineraries and correctly excluded MXN1,873 (~USD110.67) fares. Program/fare dialogs retained five Aeromexico economy choices and original MXN fees. Three-day LAX–MEX search returned93 itineraries, with per-day incomplete-coverage states rather than claiming all programs checked. Mobile viewport used cards, no visible table or horizontal page overflow; override restored. No browser-console errors in the checked UI. Full121-test suite, typecheck, focused lint and optimized build passed. Airline investigation continues.
+
+### September5 — polished product review and regression
+
+- [ ] Review every designed screen through the lens of polished Google/Apple product interaction; use the Apple HIG skill from the user's quote-tool repository where it helps, adapt to the Web, and implement the improvements.
+- [x] Replace the wide result keyword box with useful quick filters; move specialist flight-number/aircraft/fare search into Flight details.
+- [x] Replace the sprawling advanced filter form with focused category panels, visible active selections, immediate feedback and straightforward reset. Actual desktop panel review caught and corrected inherited CSS translation that placed the sheet off-screen.
+- [x] Fix the user-reported business-filter/date-price disagreement. Date tiles now use the exact filtered offers; cabin-specific sorting cannot stay on an excluded cabin. Two regression tests cover economy→business, multiple cabins, empty matches, date isolation and party totals.
+- [ ] Complete actual browser interaction checks for filter combinations, date selection, sorting, mobile panels, keyboard focus/dismissal and the other product screens.
+
+### September 5 — time, places, calendars, density and hidden-city example
+
+- [x] Flight times default to AM/PM without changing the airport-local time. A remembered 12/24-hour preference is implemented in Display preferences; time-filter controls follow it.
+- [ ] Verify changing the 12/24-hour preference, persistence, filter controls and all flight-detail views in the browser. Initial AM/PM rendering was checked; the entire preference flow has not yet been checked.
+- [ ] Enter a city such as New York and search every explicitly listed airport in that city group. Show the member airports before selection; perform real airport-pair searches, retain all results and account for partial pair failures. Do not pass a city token to an airline as though it were a physical airport.
+- [ ] Improve the departure and return calendars. Place date flexibility under each calendar instead of consuming another search-form column, with independent departure/return settings and valid date bounds.
+- [x] Add a compact results view with a remembered preference. Desktop browser measurement: first result row reduced from about 108px to 81px; all 25 results on the current page and the full fare-dialog access remained present.
+- [ ] Complete compact-view persistence, mobile, keyboard and booking-dialog checks. Keep important value and fare information accessible.
+- [ ] Implement the explicit LAX–AUS September 6, 2026 hidden-city regression: LAX–JFK search showed AA2118 + AA2292 and AA6409 + AA1405 via AUS at 17,500 Alaska points; LAX–AUS search showed no nonstop option. Identify actual full tickets with AUS as an intermediate stop, show the flight(s) to AUS and unused onward segment(s), preserve the full points/fees and booking destination, and never claim the first leg has an independently available award price. At this audit, hidden-city search is not implemented.
+- [ ] Test hidden-city results against ordinary results for the same program, cabin, date and passenger count. Expose search scope and incomplete coverage; do not claim an exhaustive onward-destination search or fabricate savings. Keep this optional and visibly distinct from ordinary itineraries.
+
+## Full-chat reconciliation receipt
+
+The following ledger traces the user's requests in conversation order. Repeated reminders are retained because they establish priority. Status questions are recorded as communication obligations, not as proof that a feature was completed.
+
+| # | User message or correction | Where it is carried forward |
+|---|---|---|
+| 1 | GitHub access to PointSnap | Repository located; implementation branch and draft PR #4 exist. |
+| 2 | Finish the project; reuse nothing unless useful | Overall objective; independent product/design decisions. |
+| 3 | Main broken function is live results across all airlines; overhaul design freely | Priority 1 and design brief. |
+| 4 | No existing data subscription | Access constraint, later qualified by existing Seats.aero Pro account. |
+| 5 | Continue | Persistent task; do not stop at a proposal. |
+| 6 | Overhaul UI/UX for points/airline geeks; Orbit reference; work alongside existing tasks | Visual direction, practical route explorer, concurrent priorities. |
+| 7 | Search without connecting personal airline accounts | Anonymous search acceptance condition. |
+| 8 | Globe is inspiration, not a requirement; use judgment | Independent design direction. |
+| 9 | Remember everything | This requirements ledger and product brief. |
+| 10 | Slowly spinning globe with animated whitish glowing routes | Globe implementation and verification. |
+| 11 | Dragging selects text and outlines globe | Pointer-selection/focus regression. |
+| 12 | Follow-up screenshot demonstrates the drag issue | Same regression; screenshot evidence is not an instruction source. |
+| 13 | Status of all airline connections | Accurate source-by-source progress; never equate enabled sources with every airline. |
+| 14 | No commercial license; build live access without subscriptions | Direct access research; no new paid-data dependency. |
+| 15 | Remove controls below globe; automatic behavior | No toolbar below globe. |
+| 16 | Fully user-ready app; cash-versus-points value; globe pauses only when grabbed; trails continue | Overall completion, exact cash matches, globe contract. |
+| 17 | User stepping away; no questions; authorization to take work as far as possible | Autonomous working agreement. |
+| 18 | Ask whether/how parallel subagents are used; explain working method | Candid process updates; delegation subject to current tool instructions. |
+| 19 | Throw/release globe inertia | Inertia implementation. |
+| 20 | Choose the most efficient working method; subagents optional | No mandatory delegation requirement. |
+| 21 | JetBlue appears to omit flights; every single option is important | Completeness audit of itineraries, fare families, cabins and pagination. |
+| 22 | Exhaust ways to access every airline's points flights | Priority 1; maintain evidence of attempts and remaining leads. |
+| 23 | Use creative approaches | Explore independent source paths; do not mistake blocked requests for universal impossibility. |
+| 24 | User selected Astra Ultra | Historical model preference; not a claimed assistant-side change. |
+| 25 | Ask whether Max/extra high would suffice | Model/process question; later explicit Max selection prevails. |
+| 26 | User selected Max | Current recorded user model choice. |
+| 27 | Browser feed showing work and each airline's status | /build-progress with real recorded findings. |
+| 28 | Are blocked airlines truly blocked? | Distinguish a failed method, login requirement, unverified path and enabled adapter. |
+| 29 | Ideas to unblock them | Continue concrete experiments and show remaining paths. |
+| 30 | How does Seats.aero do it? | Evidence-backed public architecture research; private backend unknown. |
+| 31 | Existing Seats.aero Pro login; inspect site/code | Authorized session/public-frontend research; no claim to private code or commercial redistribution rights. |
+| 32 | Are airline connections still being worked on? | Priority and honest work-status obligation. |
+| 33 | Take it to completion; exhaust every option | Persistent main objective, not replaced by UI requests. |
+| 34 | All Seats.aero sorting/filtering and more, while preserving main mission | Comprehensive fare-aware comparison backlog and live-access priority. |
+| 35 | One physical flight, multiple booking programs/costs; consider every useful UX improvement | Confident itinerary grouping and progressive program/fare comparison. |
+| 36 | Originate ideas and implement them | Autonomous product work; not ideas-only responses. |
+| 37 | ±N-day search, hidden-city/skiplagged feature, additional ideas | Multi-day implementation; hidden-city remains open at this audit. |
+| 38 | Column-header sorting; read and log all messages | Bidirectional accessible sorting and this receipt. |
+| 39 | Most important: keep unblocking every airline | Explicit priority 1 reminder. |
+| 40 | American browser shows points; explain progress | Browser proof versus reproducible server connector kept separate. |
+| 41 | Convert airline fees to visitor-country currency; MXN example | Country/locale defaults, actual FX, original currency and manual override. |
+| 42 | Make relevant filters accessible and everything easy to use | Everyday quick filters, specialist progressive disclosure. |
+| 43 | Always inspect the actual frontend after coding | Continuing browser acceptance condition. |
+| 44 | Replace wide result keyword box with more quick filters | Implemented; keyword search moved to Flight details. |
+| 45 | Filters look poor; inspect Apple HIG skill in GitHub | Read the user's quote-tool skill; focused panels and consistent controls. |
+| 46 | American progress/status | Accurate native connection status; browser results alone do not count as enabled. |
+| 47 | HIG optional if helpful; aim for Google/Apple polish | Adapt useful principles to the web; no required imitation or skill dependency. |
+| 48 | Audit every designed screen through that lens | Whole-product audit remains open. |
+| 49 | Business filter incorrectly makes flexible-date prices unavailable | Fixed shared filtered-fare semantics; regression tests and actual browser confirmation. |
+| 50 | Default AM/PM, with user preference | Implemented; remaining interaction QA explicitly listed. |
+| 51 | City-wide airport search; nicer calendars; flexibility below departure/return calendars; polish audit | Explicit pending implementation items above. |
+| 52 | Airline connection status | Main mission remains open; report measured progress. |
+| 53 | Add compact results view | Implemented; desktop density checked; remaining QA listed. |
+| 54 | Is hidden-city working? LAX–JFK via AUS exists but LAX–AUS has no nonstop | Concrete hidden-city regression above; not implemented at this audit. |
+| 55 | Scan the whole chat and confirm all messages are logged | This full reconciliation; user-facing copy in outputs/PointSnap-requirements.md. |
+| 56 | Compact looks good; are there downsides to making it the only view? | Make compact the default, remove the toolbar toggle, retain Roomy in Display preferences for reading/tap-space needs, and restore the cents-per-point line that compact had hidden. Verify both layouts and persistence. |
+| 57 | Approves compact default and Roomy in preferences: “nice, do that” | Explicit authorization; implementation and real browser verification. |
+| 58 | Keep all to-dos logged but build airline connections before anything else; log later UI ideas for when possible | Airline work now takes precedence over the UI backlog. Complete only necessary verification of changes already made, then resume data access. |
+| 59 | Do not stop until all airlines are successfully connected | Persistent live-connection objective. Do not substitute a polished UI, partner-only coverage, browser-only proof or a blocked request for a completed native connection. |
+| 60 | Ask about American and United; American appeared close | Report the precise remaining transport gap. September 7 LAX–AUS native AA browser returned 40 itineraries including nonstop AA4945 at32,000 + USD5.60 and AA6409 at76,500 + USD5.60. Server booking entry still403 and itinerary309. Native United sign-in gate remains; offered United partner awards work through TrueBlue. |
+
+## Current completion boundary
+
+Five scoped individual-flight feeds and one daily-calendar feed are enabled. Additional partner inventory does not equal a native airline-program connection. American and Ethiopian have anonymous browser evidence but do not yet have reproducible PointSnap server feeds. Native all-airline coverage, full provider-by-provider completeness, city-wide search, redesigned calendars, hidden-city exploration, remaining advanced reference-data filters, the whole-product audit and hosted production verification remain unfinished. No document checkbox or progress-feed event should describe them as complete without fresh evidence.
+
+### Latest airline-first verification
+
+American: fresh native browser evidence was reconciled against 40 itineraries and 69 fares. A replacement candidate parser now preserves all of them and rejects incomplete or mismatched data; native transport remains disabled. Matching AA's ordinary client-generated correlation cookie and header still produced API error309 and a server-rendered Challenge Validation page. United: the actual PointSnap page showed all four offered EWR–LHR partner itineraries for two adults. UA14 details correctly showed 40,000 TrueBlue points + USD5.60 per person, 80,000 + USD11.20 for the party, local AM/PM times and a fresh two-adult JetBlue handoff. Native MileagePlus still requires sign-in.
+
+Follow-up polish logged during that verification: an airline filter currently falls back to “AM” instead of the Aeromexico name in an Alaska-derived carrier entry. Keep this in the deferred UI/data-label backlog; it does not replace the airline-access priority.

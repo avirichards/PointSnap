@@ -55,7 +55,7 @@ export function bookingUrl(program: string, q: SearchQuery) {
   if (program === "B6_TRUEBLUE")
     return `${base}?${new URLSearchParams({ from: q.origin, to: q.dest, depart: q.departDate, isMultiCity: "false", noOfRoute: "1", adults: String(q.pax), children: "0", infants: "0", usePoints: "true" })}`;
   if (program === "VS_FLYING_CLUB")
-    return `${base}results/month?${new URLSearchParams({ origin: q.origin, destination: q.dest, month: q.departDate.slice(0, 7) })}`;
+    return `${base}results/month?${new URLSearchParams({ origin: q.origin, destination: q.dest, month: q.departDate.slice(5, 7), year: q.departDate.slice(0, 4) })}`;
   if (program === "QF_FF")
     return `${base}?${new URLSearchParams({ o: q.origin, d: q.dest, dr: `${q.departDate}I${q.departDate}`, p: String(q.pax) })}`;
   if (program === "AM_CLUB_PREMIER")

@@ -161,6 +161,9 @@ describe("Virgin live session", () => {
     );
     expect(rows[0].prices.Y?.points).toBe(39000);
     expect(rows[0].prices.J?.points).toBe(255000);
+    const handoff = new URL(rows[0].bookingUrl);
+    expect(handoff.searchParams.get("month")).toBe("10");
+    expect(handoff.searchParams.get("year")).toBe("2026");
     expect(mock.mock.calls[1][1].headers.Cookie).toBe("session=transient");
     expect(mock.mock.calls[1][1].redirect).toBe("error");
   });

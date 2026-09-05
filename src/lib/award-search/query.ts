@@ -15,6 +15,7 @@ export const querySchema = z
       .regex(/^[A-Z]{3}$/),
     departDate: z.iso.date(),
     returnDate: z.iso.date().optional(),
+    flexDays: z.coerce.number().int().min(0).max(7).optional(),
     pax: z.coerce.number().int().min(1).max(9).default(1),
     minCabin: z.enum(["Y", "W", "J", "F"]).default("Y"),
   })
@@ -60,6 +61,7 @@ export function queryParams(q: SearchQuery) {
     departDate: q.departDate,
     pax: String(q.pax),
     minCabin: q.minCabin,
+    ...(q.flexDays ? { flexDays: String(q.flexDays) } : {}),
     ...(q.returnDate ? { returnDate: q.returnDate } : {}),
   });
 }

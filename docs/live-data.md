@@ -155,3 +155,45 @@ Ethiopian’s current official booking app and versioned metadata return200 with
 Air France and KLM source-derived JFK–CDG October5, Economy, one-adult REWARD landings both return200 normal HTML with header/footer state only. Anonymous session checks return `isLoggedIn:false`. Their matching current search modules explicitly require login for `bookingFlow === REWARD`, preserve the search context, and invoke the login flow. No full-flight response was obtained or enabled. This verifies the member gate in the tested application, not that every conceivable data path requires authentication.
 
 Code milestone `0a72b75` passed GitHub frontend/Python checks and Vercel preview build. The preview remains authentication-protected; successful deployment does not verify airline reachability or hosted auth/migration behavior. Source access and universal completeness remain unfinished.
+
+## Virgin Atlantic current full-search boundary (September5 06:09UTC)
+
+The dedicated `/advanced-search/reward-flight` page rendered a functioning anonymous search form. Submitting JFK–LHR October5, one adult, one-way, Reward Seats redirected to `identity.virginatlantic.com` Flying Club login before inventory. The redirect state identifies the current `/en-US/flights/search/slice` journey with `awardSearch=true`. No account was used. The current calendar client expects separate `month=10` and `year=2026`; PointSnap’s former `month=2026-10` handoff produced a malformed query and has been corrected. This is a verified normal-flow login gate, not evidence that every possible public partner source is unavailable.
+
+## United current browser requirement (September5 06:08UTC)
+
+The EWR–LHR October5 award results page loaded with Miles selected, recognized route/date/one adult and an initial sign-in dialog. After dismissing that dialog, it displayed “Continue shopping?” and explicitly required sign-in to see flight results with miles; only cash search, sign-in or home navigation were offered. This newly verifies the current normal-flow membership gate. It does not turn anonymous token issuance or partner awards into native United availability.
+
+## American anonymous browser / server comparison (September5 06:30UTC)
+
+The current `/booking/search/find-flights` form, with one-way, Redeem miles, JFK–LAX October5 and one adult, rendered 40 award itineraries without login. Public SSR `script#ng-state` contains all 40 slices with full segment schedules and economy/premium/business/first product prices. AA171 at06:00 showed27,500 economy /40,000 premium /133,000 business plusUSD5.60. The current Angular client submits `searchRequest` by ordinary form POST to `/booking/choose-flights/1?sid=<fresh browser UUID>`; award search initialization is a no-op (only revenue uses the separate experience initializer). Fresh app-owned home sessions followed by the current form POST returned Challenge Validation; source-derived JSON itinerary requests returned error309. Browser visibility is therefore established, but an app connector remains unverified. No account cookies, security challenge solutions or browser-issued session identifiers were copied into PointSnap.
+
+## United-operated flights through TrueBlue (September5 06:38UTC)
+
+Fresh calls through the working JetBlue adapter returned9 LAX–MEX itineraries and5 EWR–LHR itineraries for October5, one adult, all operated by United. These are TrueBlue partner awards, not MileagePlus inventory. EWR–LHR includes UA934 at08:20. Exact cash-fare identity did not match these partner award products, so no value-per-point is invented. Coverage is proven for these responses, not all United routes or every MileagePlus fare.
+
+## Additional browser/server verification (September5 07:00UTC)
+
+American's source-derived JSON request still returned error309 with a fresh public home session and the matching X-XSRF-TOKEN header. This rules out the omitted normal CSRF header as the sole cause; the browser-rendered awards are not yet a reproducible application source.
+
+Ethiopian's ordinary anonymous booking form successfully returned an ADD–NBO October5 one-adult Economy award at11,000 ShebaMiles, departing23:35 and arriving01:40 the next day, with one reported seat. No login was used. This changes the browser finding from unverified to inventory visible. A separate fresh app-owned normal booking initialization request to the current /api/graphql still returned HTTP403 before air search; no native connector is enabled and fees/full-cabin/party completeness remain unverified.
+
+## Additional partner and browser checks (September 5)
+
+Fresh TrueBlue JFK–AUH October 5 returned two Etihad-operated itineraries. EY2 was 45,700 TrueBlue points plus USD7, with nine seats reported. LAX–TPE on the same date returned three United-operated connecting itineraries and no China Airlines awards. This verifies additional Etihad partner coverage in the existing TrueBlue connector, not a native Etihad Guest connection, and does not establish China Airlines availability on other dates.
+
+The ordinary Turkish award form loaded anonymously, but entering the origin triggered an explicit Press & Hold human-verification challenge before a search could complete. The challenge was not solved. Combined with the earlier valid anonymous request schema and denied inventory response, this is a current access barrier rather than proof that every Turkish award search requires a member account.
+
+American native browser LAX–AUS September 7 returned40 itineraries, including nonstop AA4945 at32,000 AAdvantage miles + USD5.60 (16:09–21:21) and AA6409 at76,500 + USD5.60 (09:05–14:19). This confirms native inventory absent from the current partner-feed results. A new fresh app-owned chain—home, current booking entry, dated API with the matching normal CSRF token—returns200,403,then error309 respectively. A separate standard HTTP/2 client was denied at the homepage. The failure is present before the inventory request, not simply a missing fare parser. No trusted edge headers, browser credentials, security tokens or challenge solutions were copied or forged.
+
+## American completeness candidate and further United checks (September 5, 08:00 UTC)
+
+A fresh normal American search returned 40 itineraries and 69 available award fares for LAX–AUS September 7, one adult. Its current response places pricing on the itinerary, not the first segment. The obsolete Python implementation caps output at six itineraries and does not match this response contract; the new search engine does not use that implementation. A new TypeScript candidate parser and sanitized 40-itinerary fixture now preserve every supplied fare, partner flight, local timestamp, overnight arrival, regional-carrier disclosure and decimal fee. Zero in AA's low-seat-count field remains unknown when `productAvailable` is true. Invalid/partial responses, incorrect passenger totals, ambiguous cabins and broken connections fail explicitly. This parser is **not an enabled live source**; a fresh public search deeplink also returned403 after homepage200. No test fixture is inserted into user search results.
+
+Working TrueBlue partner searches additionally returned two United SFO–TPE itineraries for one adult (UA871: 55,000 points + USD5.60) and four United EWR–LHR itineraries for two adults (UA14: 40,000 points + USD5.60 per person), all for October5. This is confirmed partner-program coverage, not native MileagePlus access. The native United browser still explicitly requires sign-in. No China Airlines award was returned in the tested SFO–TPE response; this is not evidence of unavailability on other dates/routes.
+
+Turkish's currently published `homepage.searchAwardTicket` browser tool was tested through its supported interface for IST–LHR October5, one adult, economy. It returned a technical error; the page displayed human verification and the availability-validation request reported403. No challenge was solved and no Turkish inventory was enabled.
+
+American's current public client also creates an ordinary `spa_session_id` UUID and sends the same value as its correlation header. Reproducing that normal bootstrap with a fresh app-owned UUID (not a copied browser/session credential) still returned itinerary error309; the current form POST returned200 with the title “Challenge Validation,” not flight results. HTTP200 alone must never mark this connection successful.
+
+Actual PointSnap browser verification of the EWR–LHR two-adult search showed all four United partner itineraries after the airline filter was applied. UA14 details retained the TrueBlue program, 40,000 + USD5.60 per person, 80,000 + USD11.20 for two, nine reported seats, local overnight times, and a JetBlue handoff with adults=2. The full search contained 40 itineraries across working sources; no native American fixture was inserted.

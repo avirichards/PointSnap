@@ -1,21 +1,34 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
-import {
-  ArrowUpRight,
-  ArrowRight,
-  Plane,
-  Clock3,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { useState, useMemo, useEffect, Fragment } from "react";
+import { ArrowUpRight, ArrowRight, Plane, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  DisplayCurrencyProvider,
+  useDisplayCurrency,
+  Money,
+  DisplayPreferences,
+} from "./display-currency";
+import { useCompactResults } from "./result-density";
+import { useTimeFormat } from "./time-preference";
+import { ResultFilterBar } from "./result-filters";
+import {
+  defaultFilters,
+  groupFlights,
+  filterGroups,
+  sortGroups,
+  compareOffers,
+  lowestFareForDate,
+  activeSortCabin,
+  type FlightGroup,
+  type SortOrder,
+} from "@/lib/award-search/comparison";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { AIRLINES } from "@/db/seed/airlines";
 import { PROGRAMS } from "@/lib/programs";
 import { CABIN_ORDER, CABIN_LABEL, type Cabin } from "@/lib/types";
 import type {
@@ -28,10 +41,18 @@ import { centsPerPoint, pointsForParty } from "@/lib/award-search/value";
 export const programName = (id: string) =>
   PROGRAMS.find((p) => p.id === id)?.name ?? id;
 const airlines = (row: AwardResult) =>
-  [...new Set(row.segments.map((s) => s.airlineName).filter(Boolean))].join(
-    " + ",
-  );
-const time = (s: string | null) => (s ? s.slice(11, 16) : "—");
+  [
+    ...new Set(
+      row.segments
+        .map(
+          (s) =>
+            s.airlineName ??
+            AIRLINES.find((a) => a.iata === s.airline)?.name ??
+            s.airline,
+        )
+        .filter(Boolean),
+    ),
+  ].join(" + ");
 const duration = (n: number | null) =>
   n === null ? "Schedule on airline" : `${Math.floor(n / 60)}h ${n % 60}m`;
 const points = (n: number) => new Intl.NumberFormat("en-US").format(n);
@@ -47,74 +68,50 @@ export function cashLabel(
     return `${(p.cash * multiplier).toFixed(2)} ${p.currency}`;
   }
 }
-function Price({
-  price,
-  fareCount = 1,
-  onClick,
-}: {
-  price?: AwardPrice;
-  fareCount?: number;
-  onClick: () => void;
-}) {
-  if (!price) return <span className="text-muted-foreground/50 px-3">—</span>;
-  const value = centsPerPoint(price);
+export function AwardResults(props: Parameters<typeof Results>[0]) {
   return (
-    <button
-      onClick={onClick}
-      className={`award-price ${price.cabin === "J" ? "award-price-business" : ""} ${price.cabin === "F" ? "award-price-first" : ""}`}
-      aria-label={`${CABIN_LABEL[price.cabin]} ${points(price.points)} points, ${cashLabel(price)}.${value !== null ? ` ${value.toFixed(2)} cents per point.` : ""} View details.`}
-    >
-      <strong className="tabular-nums text-base">{points(price.points)}</strong>
-      <span className="text-xs opacity-75 mt-1">
-        {price.cash !== null && !price.feesIncludedInPoints ? "+ " : ""}
-        {cashLabel(price)}
-      </span>
-      {price.partyPoints !== undefined && (price.quotedPassengers ?? 1) > 1 && (
-        <span className="text-xs mt-1">Average per person</span>
-      )}
-      {price.mixedCabin && <span className="text-xs mt-1">Mixed cabin</span>}
-      {fareCount > 1 && (
-        <span className="text-xs mt-1">{fareCount} fare options</span>
-      )}
-      {value !== null && (
-        <span className="text-xs mt-1 font-medium">
-          {value.toFixed(2)}¢ / point
-        </span>
-      )}
-    </button>
+    <DisplayCurrencyProvider>
+      <Results {...props} />
+    </DisplayCurrencyProvider>
   );
 }
-export function AwardResults({
+function Results({
   rows: allRows,
   pax,
-  coverage,
   loading,
-  minCabin,
+  dates = [],
+  dayStatus = [],
 }: {
   rows: AwardResult[];
   pax: number;
   coverage: Coverage[];
   loading: boolean;
   minCabin: Cabin;
+  dates?: string[];
+  dayStatus?: { date: string; state: string; message?: string }[];
 }) {
-  const rows = useMemo(
-    () => allRows.filter((r) => r.kind === "flight"),
-    [allRows],
-  );
+  const fx = useDisplayCurrency();
+  const { time } = useTimeFormat();
+  const [compact] = useCompactResults();
+  const groups = useMemo(() => groupFlights(allRows), [allRows]);
   const calendars = useMemo(
     () => allRows.filter((r) => r.kind === "calendar"),
     [allRows],
   );
-  const [selected, setSelected] = useState<{
-    row: AwardResult;
-    cabin: Cabin;
-  } | null>(null);
-  const [sort, setSort] = useState("points");
-  const [cabin, setCabin] = useState<Cabin>(minCabin);
-  const [nonstop, setNonstop] = useState(false);
-  const [filter, setFilter] = useState("");
-  const [program, setProgram] = useState("all");
-  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [filters, setFilters] = useState(defaultFilters);
+  const [sort, setSort] = useState<SortOrder>("points"),
+    [descending, setDescending] = useState(false),
+    [requestedSortCabin, setSortCabin] = useState<Cabin | null>(null);
+  const sortCabin = activeSortCabin(filters.cabins, requestedSortCabin);
+  const [selected, setSelected] = useState<{ id: string; cabin: Cabin } | null>(
+      null,
+    ),
+    [detail, setDetail] = useState<string | null>(null);
+  const [wallet, setWallet] = useState<WalletData | null>(null),
+    [day, setDay] = useState("all"),
+    [page, setPage] = useState(0),
+    [pageSize, setPageSize] = useState(25),
+    [party, setParty] = useState(false);
   useEffect(() => {
     const c = new AbortController();
     fetch("/api/wallet", { signal: c.signal, cache: "no-store" })
@@ -123,272 +120,375 @@ export function AwardResults({
       .catch(() => {});
     return () => c.abort();
   }, []);
+  const balances = useMemo(
+    () =>
+      Object.fromEntries(
+        wallet?.entries.map((e) => [e.asset_id, e.balance]) ?? [],
+      ),
+    [wallet],
+  );
+  const matching = useMemo(
+    () =>
+      filterGroups(
+        groups,
+        { ...filters, feeCurrency: fx.currency },
+        pax,
+        balances,
+        fx.now,
+        fx.rates,
+      ),
+    [groups, filters, pax, balances, fx.currency, fx.rates, fx.now],
+  );
   const visible = useMemo(
     () =>
-      rows
-        .filter(
-          (r) =>
-            (program === "all" || r.programId === program) &&
-            (!nonstop || (r.kind === "flight" && r.segments.length === 1)) &&
-            `${programName(r.programId)} ${r.segments.map((s) => `${s.flightNumber} ${s.airlineName ?? ""} ${s.operatedBy ?? ""}`).join(" ")}`
-              .toLowerCase()
-              .includes(filter.toLowerCase()),
-        )
-        .sort((a, b) => {
-          if (sort === "value")
-            return (
-              (centsPerPoint(b.prices[cabin]) ?? -Infinity) -
-                (centsPerPoint(a.prices[cabin]) ?? -Infinity) ||
-              a.id.localeCompare(b.id)
-            );
-          if (sort === "duration")
-            return (a.duration ?? Infinity) - (b.duration ?? Infinity);
-          if (sort === "depart")
-            return (a.segments[0]?.departure ?? "z").localeCompare(
-              b.segments[0]?.departure ?? "z",
-            );
-          const ac = a.prices[cabin]?.points ?? Infinity,
-            bc = b.prices[cabin]?.points ?? Infinity;
-          return ac - bc || a.id.localeCompare(b.id);
-        }),
-    [rows, nonstop, filter, program, sort, cabin],
+      sortGroups(
+        matching.filter((g) => day === "all" || g.row.date === day),
+        sort,
+        fx.currency,
+        descending,
+        sortCabin,
+        fx.rates,
+      ),
+    [matching, day, sort, fx.currency, fx.rates, descending, sortCabin],
   );
-  const success = coverage.filter(
-    (c) =>
-      c.inventory !== "calendar" &&
-      (c.state === "success" || c.state === "empty"),
-  ).length;
+  const currentPage = Math.min(
+      page,
+      Math.max(0, Math.ceil(visible.length / pageSize) - 1),
+    ),
+    shown = visible.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  const selectedGroup = visible.find((g) => g.id === selected?.id),
+    selectedOffers =
+      selectedGroup?.offers.filter((o) => o.price.cabin === selected?.cabin) ??
+      [];
+  const detailedRow = selectedOffers.find((o) => o.row.id === detail)?.row;
+  const checked = new Set(groups.flatMap((g) => g.programs)).size;
+  function changeSort(next: SortOrder, cabin: Cabin | null = null) {
+    if (sort === next && sortCabin === cabin) setDescending(!descending);
+    else {
+      setSort(next);
+      setSortCabin(cabin);
+      setDescending(["value", "freshness", "programs"].includes(next));
+    }
+    setPage(0);
+  }
+  const header = (
+    label: string,
+    key: SortOrder,
+    cabin: Cabin | null = null,
+  ) => (
+    <th
+      scope="col"
+      className="px-3 py-3 text-left font-normal"
+      aria-sort={
+        sort === key && sortCabin === cabin
+          ? descending
+            ? "descending"
+            : "ascending"
+          : "none"
+      }
+    >
+      <button
+        className="min-h-10 flex items-center gap-1 hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-40 disabled:cursor-default"
+        disabled={
+          !!cabin &&
+          filters.cabins.length > 0 &&
+          !filters.cabins.includes(cabin)
+        }
+        onClick={() => changeSort(key, cabin)}
+      >
+        {label}
+        <span aria-hidden>
+          {sort === key && sortCabin === cabin
+            ? descending
+              ? "↓"
+              : "↑"
+            : "↕"}
+        </span>
+      </button>
+    </th>
+  );
+  function open(g: FlightGroup, c: Cabin) {
+    setSelected({ id: g.id, cabin: c });
+    const ids = [
+      ...new Set(
+        g.offers.filter((o) => o.price.cabin === c).map((o) => o.row.id),
+      ),
+    ];
+    setDetail(ids.length === 1 ? ids[0] : null);
+  }
+  const best = (g: FlightGroup, c: Cabin) =>
+    [...g.offers]
+      .filter((o) => o.price.cabin === c)
+      .sort((a, b) => compareOffers(a, b, "points"))[0];
+  const cell = (g: FlightGroup, c: Cabin) => {
+    const offer = best(g, c);
+    if (!offer) return <span className="text-muted-foreground/50">—</span>;
+    const n = new Set(
+      g.offers.filter((o) => o.price.cabin === c).map((o) => o.row.programId),
+    ).size;
+    return (
+      <button
+        onClick={() => open(g, c)}
+        className={`award-price ${c === "J" ? "award-price-business" : c === "F" ? "award-price-first" : ""}`}
+        aria-label={`Compare ${CABIN_LABEL[c]} on ${g.row.segments.map((s) => s.flightNumber).join(", ")}, from ${points(party ? pointsForParty(offer.price, pax) : offer.price.points)} points`}
+      >
+        <strong className="tabular-nums">
+          {points(
+            party ? pointsForParty(offer.price, pax) : offer.price.points,
+          )}
+        </strong>
+        <span className="text-xs mt-1">
+          <Money price={offer.price} multiplier={party ? pax : 1} />
+        </span>
+        <span className="price-program text-[11px] text-muted-foreground mt-1">
+          {n > 1 ? `${n} programs` : programName(offer.row.programId)}
+        </span>
+        {offer.price.mixedCabin && (
+          <span className="text-xs mt-1">Mixed cabin</span>
+        )}
+        {centsPerPoint(offer.price) !== null && (
+          <span className="price-value text-xs mt-1">
+            {centsPerPoint(offer.price)!.toFixed(2)}¢ USD / point
+          </span>
+        )}
+      </button>
+    );
+  };
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section
+      className="award-results space-y-4"
+      data-density={compact ? "compact" : "comfortable"}
+    >
+      <div className="flex flex-wrap justify-between gap-3 items-end">
         <div>
-          <p className="eyebrow">AWARD AVAILABILITY</p>
-          <h2 className="text-xl font-semibold mt-1">
-            {rows.length
+          <h2 className="text-2xl font-semibold mt-1">
+            {groups.length
               ? `${visible.length} flight itinerar${visible.length === 1 ? "y" : "ies"}`
               : loading
                 ? "Checking your options…"
                 : "Your results"}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Prices per person, one way. {success} flight source
-            {success === 1 ? "" : "s"} responded
-            {loading ? " so far." : "."}
+          <p className="text-sm text-muted-foreground mt-2">
+            {visible.reduce((n, g) => n + g.offers.length, 0)} fare choices ·{" "}
+            {checked} flight source{checked === 1 ? "" : "s"} with results
           </p>
         </div>
-        <span className="text-sm text-muted-foreground">
-          {pax} passenger{pax > 1 ? "s" : ""} · available cabins shown
-        </span>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3">
-        <SlidersHorizontal
-          className="size-4 text-muted-foreground mr-1"
-          aria-hidden
-        />
-        <label className="sr-only" htmlFor="result-filter">
-          Filter by airline or flight
-        </label>
-        <Input
-          id="result-filter"
-          placeholder="Airline or flight number"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="w-full sm:w-52"
-        />
-        <label className="sr-only" htmlFor="program-filter">
-          Ticketing program
-        </label>
-        <select
-          id="program-filter"
-          className="result-select"
-          value={program}
-          onChange={(e) => setProgram(e.target.value)}
-        >
-          <option value="all">All programs</option>
-          {[...new Set(rows.map((r) => r.programId))].map((id) => (
-            <option key={id} value={id}>
-              {programName(id)}
-            </option>
-          ))}
-        </select>
-        <Button
-          variant={nonstop ? "secondary" : "outline"}
-          onClick={() => setNonstop(!nonstop)}
-          aria-pressed={nonstop}
-        >
-          Nonstop
-        </Button>
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <label
-            className="text-sm text-muted-foreground"
-            htmlFor="result-sort"
-          >
-            Sort
-          </label>
-          <select
-            id="result-sort"
-            className="result-select"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="points">Fewest points</option>
-            <option value="value">Best value per point</option>
-            <option value="duration">Shortest journey</option>
-            <option value="depart">Departure time</option>
-          </select>
-          {(sort === "points" || sort === "value") && (
-            <select
-              aria-label="Cabin to sort by"
-              className="result-select"
-              value={cabin}
-              onChange={(e) => setCabin(e.target.value as Cabin)}
-            >
-              {CABIN_ORDER.map((c) => (
-                <option key={c} value={c}>
-                  {CABIN_LABEL[c]}
-                </option>
-              ))}
-            </select>
+        <div className="flex items-center gap-4">
+          <DisplayPreferences />
+          {pax > 1 && (
+            <label className="flex items-center gap-2 text-sm min-h-11">
+              <input
+                type="checkbox"
+                className="accent-primary"
+                checked={party}
+                onChange={(e) => setParty(e.target.checked)}
+              />
+              Show totals for {pax} adult{pax > 1 ? "s" : ""}
+            </label>
           )}
         </div>
       </div>
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="md:hidden divide-y">
-          {visible.map((r) => (
-            <article key={r.id} className="p-4 space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="airline-tile">
-                  {PROGRAMS.find((p) => p.id === r.programId)?.iata ?? "✈"}
-                </span>
-                <div>
-                  <h3 className="font-semibold">
-                    {airlines(r) || programName(r.programId)}
-                  </h3>
-                  {airlines(r) && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Book with {programName(r.programId)}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {r.kind === "calendar"
-                      ? "Daily award calendar"
-                      : r.segments.map((s) => s.flightNumber).join(" · ")}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-medium tabular-nums">
-                  {r.kind === "calendar"
-                    ? `${r.origin} → ${r.destination}`
-                    : `${time(r.segments[0]?.departure)} → ${time(r.segments.at(-1)?.arrival ?? null)}`}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {r.kind === "calendar"
-                    ? "Choose flight on airline"
-                    : `${duration(r.duration)} · ${r.segments.length === 1 ? "Nonstop" : `${r.segments.length - 1} stops`}`}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {CABIN_ORDER.filter((c) => r.prices[c]).map((c) => (
-                  <div key={c}>
-                    <p className="text-xs text-muted-foreground mb-1.5">
-                      {CABIN_LABEL[c]}
-                    </p>
-                    <Price
-                      price={r.prices[c]}
-                      fareCount={r.fares?.filter((p) => p.cabin === c).length}
-                      onClick={() => setSelected({ row: r, cabin: c })}
-                    />
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {r.freshness === "live"
-                  ? "Checked live"
-                  : "Previously observed"}{" "}
-                · {r.source}
-                {r.kind === "flight" ? " · Local airport times" : ""}
-              </p>
-            </article>
-          ))}
+      <ResultFilterBar
+        value={{ ...filters, feeCurrency: fx.currency }}
+        onChange={(f) => {
+          setFilters(f);
+          setPage(0);
+        }}
+        groups={groups}
+        walletAvailable={Object.keys(balances).length > 0}
+        matchingCount={visible.length}
+      />
+      {dates.length > 1 && (
+        <div className="rounded-xl border bg-card p-3">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <span className="text-sm font-medium">Your date window</span>
+            <button
+              onClick={() => {
+                setDay("all");
+                setPage(0);
+              }}
+              className={`text-xs rounded-full border px-3 py-2 ${day === "all" ? "border-primary text-primary" : ""}`}
+            >
+              All {dates.length} days
+            </button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {dates.map((date) => {
+              const lowest = lowestFareForDate(matching, date, pax, party);
+              const status = dayStatus.find((d) => d.date === date);
+              return (
+                <button
+                  key={date}
+                  onClick={() => {
+                    setDay(date);
+                    setPage(0);
+                  }}
+                  aria-pressed={day === date}
+                  className={`min-w-28 rounded-lg border p-3 text-left ${day === date ? "border-primary bg-primary/10" : "hover:bg-muted/40"}`}
+                >
+                  <span className="block text-xs text-muted-foreground">
+                    {new Date(date + "T12:00:00Z").toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      timeZone: "UTC",
+                    })}
+                  </span>
+                  <strong className="block tabular-nums mt-2 text-sm">
+                    {lowest !== null
+                      ? `${points(lowest.points)} pts`
+                      : status?.state === "complete"
+                        ? "No matches returned"
+                        : status?.state === "error"
+                          ? "No matches returned"
+                          : status?.state === "cancelled"
+                            ? "Stopped"
+                            : "Checking…"}
+                  </strong>
+                  <span className="block text-[10px] text-muted-foreground mt-1">
+                    {lowest && (
+                      <span className="block mb-1">
+                        {CABIN_LABEL[lowest.cabin]}
+                      </span>
+                    )}
+                    {status?.state === "complete"
+                      ? "Connected sources checked"
+                      : status?.state === "error"
+                        ? "Incomplete coverage"
+                        : (status?.state ?? "Queued")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Lowest matching fare · {party ? "party total" : "per person"} before
+            fees · current filters apply. Incomplete coverage means some sources
+            could not be checked.
+          </p>
         </div>
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b bg-muted/40 text-muted-foreground">
-                <th className="text-left px-5 py-4 font-medium min-w-64">
-                  Flight & program
-                </th>
-                <th className="text-left py-4 px-3 font-medium">Journey</th>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+        <p>
+          {party ? `Totals for ${pax} adults` : "Prices per person"} · one way ·
+          local airport times. Points from different programs have different
+          values.
+        </p>
+        <div className="flex items-center gap-2">
+          <label htmlFor="result-sort">Sort</label>
+          <select
+            id="result-sort"
+            className="rounded-md border bg-background p-2 text-foreground"
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value as SortOrder);
+              setSortCabin(null);
+              setDescending(
+                ["value", "freshness", "programs"].includes(e.target.value),
+              );
+              setPage(0);
+            }}
+          >
+            {[
+              ["points", "Fewest points"],
+              ["fees", `Lowest fees (${fx.currency})`],
+              ["value", "Best value (USD cents)"],
+              ["duration", "Shortest journey"],
+              ["depart", "Departure"],
+              ["arrive", "Arrival"],
+              ["stops", "Fewest stops"],
+              ["freshness", "Freshest observation"],
+              ["programs", "Most booking programs"],
+            ].map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <button
+            className="rounded-md border p-2 min-w-10"
+            aria-label={
+              descending
+                ? "Change to ascending sort"
+                : "Change to descending sort"
+            }
+            onClick={() => setDescending(!descending)}
+          >
+            {descending ? "↓" : "↑"}
+          </button>
+        </div>
+      </div>
+      <div className="rounded-xl border bg-card overflow-hidden hidden md:block">
+        <div className="overflow-x-auto">
+          <table className="award-table w-full text-sm min-w-[1000px]">
+            <caption className="sr-only">
+              Award itineraries with booking programs grouped together. Click a
+              column heading to sort, or a cabin price to compare booking
+              options.
+            </caption>
+            <thead className="text-xs text-muted-foreground border-b bg-muted/20">
+              <tr>
+                {header("Flight / programs", "programs")}
+                {header("Departs", "depart")}
+                {header("Arrives", "arrive")}
+                {header("Duration", "duration")}
                 {CABIN_ORDER.map((c) => (
-                  <th key={c} className="py-4 px-3 text-left font-medium">
-                    {CABIN_LABEL[c]}
-                  </th>
+                  <Fragment key={c}>
+                    {header(CABIN_LABEL[c], "points", c)}
+                  </Fragment>
                 ))}
               </tr>
             </thead>
-            <tbody>
-              {visible.map((r) => (
-                <tr
-                  key={r.id}
-                  className="border-b last:border-0 hover:bg-muted/20 transition-colors"
-                >
-                  <td className="px-5 py-5">
-                    <div className="flex items-center gap-3">
-                      <span className="airline-tile">
-                        {PROGRAMS.find((p) => p.id === r.programId)?.iata ??
-                          "✈"}
-                      </span>
-                      <div>
-                        <p className="font-semibold">
-                          {airlines(r) || programName(r.programId)}
-                        </p>
-                        {airlines(r) && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Book with {programName(r.programId)}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {r.kind === "calendar"
-                            ? "Daily award calendar"
-                            : r.segments.map((s) => s.flightNumber).join(" · ")}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2 ml-[52px]">
-                      <span
-                        className={`inline-block size-1.5 rounded-full mr-1.5 ${r.freshness === "live" ? "bg-emerald-500" : "bg-amber-500"}`}
-                      />
-                      {r.freshness === "live"
-                        ? "Checked live"
-                        : "Previously observed"}{" "}
-                      · {r.source}
+            <tbody className="divide-y">
+              {shown.map((g) => (
+                <tr key={g.id} className="hover:bg-muted/10">
+                  <td className="px-4 py-5 min-w-44">
+                    <p className="font-medium">
+                      {airlines(g.row) ||
+                        g.row.segments.map((s) => s.airline).join(" + ")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {g.row.segments.map((s) => s.flightNumber).join(" · ")}
+                    </p>
+                    <p className="booking-count text-xs text-primary mt-2">
+                      {g.programs.length} booking program
+                      {g.programs.length > 1 ? "s" : ""} · {g.offers.length}{" "}
+                      fare{g.offers.length > 1 ? "s" : ""}
                     </p>
                   </td>
                   <td className="px-3 py-4">
-                    <p className="font-medium tabular-nums whitespace-nowrap">
-                      {r.kind === "calendar"
-                        ? `${r.origin} → ${r.destination}`
-                        : `${time(r.segments[0]?.departure)} → ${time(r.segments.at(-1)?.arrival ?? null)}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1.5">
-                      {r.kind === "calendar"
-                        ? "Choose flight on airline"
-                        : `${duration(r.duration)} · ${r.segments.length === 1 ? "Nonstop" : `${r.segments.length - 1} stop${r.segments.length > 2 ? "s" : ""}`}`}
+                    <p className="font-medium tabular-nums">
+                      {time(g.row.segments[0]?.departure)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {r.kind === "flight"
-                        ? "Local airport times"
-                        : "Exact flight not supplied"}
+                      {g.row.origin} · {g.row.date.slice(5)}
+                    </p>
+                  </td>
+                  <td className="px-3 py-4">
+                    <p className="font-medium tabular-nums">
+                      {time(g.row.segments.at(-1)?.arrival ?? null)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {g.row.destination} ·{" "}
+                      {g.row.segments.at(-1)?.arrival?.slice(5, 10) ?? "—"}
+                    </p>
+                  </td>
+                  <td className="px-3 py-4">
+                    <p className="whitespace-nowrap">
+                      {duration(g.row.duration)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {g.row.segments.length === 1
+                        ? "Nonstop"
+                        : g.row.segments
+                            .slice(0, -1)
+                            .map((s) => s.destination)
+                            .join(" · ")}
                     </p>
                   </td>
                   {CABIN_ORDER.map((c) => (
-                    <td key={c} className="px-2 py-3 align-middle">
-                      <Price
-                        price={r.prices[c]}
-                        fareCount={r.fares?.filter((p) => p.cabin === c).length}
-                        onClick={() => setSelected({ row: r, cabin: c })}
-                      />
+                    <td key={c} className="px-2 py-3">
+                      {cell(g, c)}
                     </td>
                   ))}
                 </tr>
@@ -396,72 +496,264 @@ export function AwardResults({
             </tbody>
           </table>
         </div>
-        {loading && !rows.length && (
-          <div className="p-8 space-y-4" role="status">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="h-16 rounded-lg bg-muted animate-pulse motion-reduce:animate-none"
-              />
-            ))}
-            <p className="text-sm text-muted-foreground">
-              Checking award prices directly with connected sources…
-            </p>
-          </div>
-        )}
-        {!loading && !visible.length && (
-          <div className="p-10 text-center space-y-3">
-            <Plane className="size-7 mx-auto text-muted-foreground" />
-            <p className="font-medium">
-              {rows.length
-                ? "No results match these filters."
-                : "No individual flights returned for this search."}
-            </p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              {rows.length
-                ? "Try another cabin or remove a filter."
-                : calendars.length
-                  ? "Daily fare summaries are available below. These sources have not supplied individual departures."
-                  : "Try nearby airports or another date. Check program coverage below to see which sources responded."}
-            </p>
-            {rows.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setFilter("");
-                  setProgram("all");
-                  setNonstop(false);
-                }}
-              >
-                <X className="size-4" />
-                Reset filters
-              </Button>
-            )}
-          </div>
-        )}
       </div>
-      {calendars.length > 0 && <CalendarSummaries rows={calendars} pax={pax} />}
+      <div className="grid gap-3 md:hidden">
+        {shown.map((g) => (
+          <article key={g.id} className="rounded-xl border bg-card p-4">
+            <div className="flex justify-between gap-2">
+              <div>
+                <p className="font-medium">
+                  {airlines(g.row) ||
+                    g.row.segments.map((s) => s.airline).join(" + ")}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {g.row.segments.map((s) => s.flightNumber).join(" · ")}
+                </p>
+              </div>
+              <span className="text-xs text-primary">
+                {g.programs.length} program{g.programs.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <p className="mt-4 text-lg tabular-nums">
+              {time(g.row.segments[0]?.departure)} →{" "}
+              {time(g.row.segments.at(-1)?.arrival ?? null)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {g.row.date} · {duration(g.row.duration)} ·{" "}
+              {g.row.segments.length === 1
+                ? "Nonstop"
+                : `via ${g.row.segments
+                    .slice(0, -1)
+                    .map((s) => s.destination)
+                    .join(", ")}`}
+            </p>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              {CABIN_ORDER.filter((c) => best(g, c)).map((c) => (
+                <div key={c}>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {CABIN_LABEL[c]}
+                  </p>
+                  {cell(g, c)}
+                </div>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+      {loading && !groups.length && (
+        <div className="rounded-xl border p-8 space-y-4" role="status">
+          <div className="h-20 rounded-lg bg-muted animate-pulse motion-reduce:animate-none" />
+          <p className="text-sm text-muted-foreground">
+            Checking connected award sources. Flights appear as each source
+            responds.
+          </p>
+        </div>
+      )}
+      {!loading && !visible.length && (
+        <div className="rounded-xl border p-10 text-center space-y-3">
+          <Plane className="size-7 mx-auto text-muted-foreground" />
+          <p className="font-medium">
+            {groups.length
+              ? "No fares match these filters."
+              : "No individual flights returned."}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {groups.length
+              ? "Clear a filter or choose another date."
+              : "Check source coverage below. Unavailable programs have not confirmed an absence of seats."}
+          </p>
+          {groups.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFilters(defaultFilters());
+                setDay("all");
+              }}
+            >
+              Reset filters & dates
+            </Button>
+          )}
+        </div>
+      )}
+      {visible.length > 0 && (
+        <div className="flex flex-wrap justify-between items-center gap-3 text-sm">
+          <span className="text-muted-foreground">
+            {currentPage * pageSize + 1}–
+            {Math.min((currentPage + 1) * pageSize, visible.length)} of{" "}
+            {visible.length} itineraries. Every matching fare remains available.
+          </span>
+          <div className="flex items-center gap-2">
+            <select
+              aria-label="Itineraries per page"
+              className="rounded-md border bg-background p-2"
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(0);
+              }}
+            >
+              {[25, 50, 100].map((n) => (
+                <option key={n} value={n}>
+                  {n} / page
+                </option>
+              ))}
+            </select>
+            <Button
+              variant="outline"
+              disabled={currentPage === 0}
+              onClick={() => setPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              disabled={(currentPage + 1) * pageSize >= visible.length}
+              onClick={() => setPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+      {calendars.length > 0 && (
+        <CalendarSummaries
+          rows={calendars.filter((r) => day === "all" || r.date === day)}
+          pax={pax}
+        />
+      )}
       <Dialog
-        open={!!selected}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null);
+        open={!!selectedGroup}
+        onOpenChange={(o) => {
+          if (!o) {
+            setSelected(null);
+            setDetail(null);
+          }
         }}
       >
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          {selected && (
-            <Details
-              key={`${selected.row.id}:${selected.cabin}`}
-              row={rows.find((r) => r.id === selected.row.id) ?? selected.row}
-              cabin={selected.cabin}
-              pax={pax}
-              wallet={wallet}
-            />
-          )}
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          {selectedGroup &&
+            selected &&
+            (detailedRow ? (
+              <>
+                <Button
+                  variant="ghost"
+                  className="justify-start mr-8"
+                  onClick={() => setDetail(null)}
+                >
+                  ← Compare booking programs
+                </Button>
+                <Details
+                  key={`${detail}:${selected.cabin}`}
+                  row={{
+                    ...detailedRow,
+                    fares: selectedOffers
+                      .filter((o) => o.row.id === detail)
+                      .map((o) => o.price),
+                    prices: {
+                      [selected.cabin]: selectedOffers
+                        .filter((o) => o.row.id === detail)
+                        .sort((a, b) => a.price.points - b.price.points)[0]
+                        ?.price,
+                    },
+                  }}
+                  cabin={selected.cabin}
+                  pax={pax}
+                  wallet={wallet}
+                />
+              </>
+            ) : (
+              <div className="space-y-5">
+                <div>
+                  <p className="eyebrow">COMPARE WAYS TO BOOK</p>
+                  <DialogTitle className="text-2xl mt-2">
+                    {selectedGroup.row.origin} → {selectedGroup.row.destination}
+                  </DialogTitle>
+                  <DialogDescription className="mt-2">
+                    {selectedGroup.row.date} · {CABIN_LABEL[selected.cabin]} ·{" "}
+                    {selectedGroup.row.segments
+                      .map((s) => s.flightNumber)
+                      .join(" + ")}
+                    . Same flights; each program sets its own price and
+                    conditions.
+                  </DialogDescription>
+                </div>
+                <div className="space-y-3">
+                  {[...new Set(selectedOffers.map((o) => o.row.id))].map(
+                    (id) => {
+                      const offers = selectedOffers
+                          .filter((o) => o.row.id === id)
+                          .sort((a, b) => compareOffers(a, b, "points")),
+                        first = offers[0],
+                        p = first.price,
+                        value = centsPerPoint(p);
+                      return (
+                        <article key={id} className="rounded-xl border p-4">
+                          <div className="flex flex-wrap gap-4 justify-between">
+                            <div>
+                              <h3 className="font-medium">
+                                {programName(first.row.programId)}
+                              </h3>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {offers.length} matching fare
+                                {offers.length > 1 ? "s" : ""} ·{" "}
+                                {first.row.freshness === "live"
+                                  ? "Checked live"
+                                  : "Cached observation"}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {first.row.source} ·{" "}
+                                {new Date(
+                                  first.row.observedAt,
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <strong className="text-xl tabular-nums">
+                                {points(
+                                  party ? pointsForParty(p, pax) : p.points,
+                                )}
+                              </strong>
+                              <span className="text-xs text-muted-foreground ml-1">
+                                points{offers.length > 1 ? " from" : ""}
+                              </span>
+                              <p className="text-sm mt-1">
+                                <Money price={p} multiplier={party ? pax : 1} />
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {party ? `For ${pax} adults` : "Per person"}
+                                {value !== null
+                                  ? ` · ${value.toFixed(2)}¢ USD / point`
+                                  : ""}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            className="mt-4 w-full"
+                            variant="outline"
+                            onClick={() => setDetail(id)}
+                          >
+                            Compare {offers.length} fare
+                            {offers.length > 1 ? "s" : ""} & booking details{" "}
+                            <ArrowRight className="size-4" />
+                          </Button>
+                        </article>
+                      );
+                    },
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Only programs and fares returned by this search are shown.
+                  Availability can change before ticketing; confirm before
+                  transferring points.
+                </p>
+              </div>
+            ))}
         </DialogContent>
       </Dialog>
     </section>
   );
 }
+
 function CalendarSummaries({
   rows,
   pax,
@@ -518,12 +810,12 @@ function CalendarSummaries({
                       </strong>
                       <p className="text-xs text-muted-foreground mt-1">
                         {quote.cash !== null ? "+ " : ""}
-                        {cashLabel(quote)} · per person
+                        <Money price={quote} /> · per person
                       </p>
                       {pax > 1 && (
                         <p className="text-xs text-muted-foreground mt-1">
                           {points(quote.points * pax)} points +{" "}
-                          {cashLabel(quote, pax)} for {pax}
+                          <Money price={quote} multiplier={pax} /> for {pax}
                         </p>
                       )}
                     </dd>
@@ -562,6 +854,7 @@ function Details({
   pax: number;
   wallet: WalletData | null;
 }) {
+  const { time, format: timeFormat } = useTimeFormat();
   const [copied, setCopied] = useState(false);
   const [fareId, setFareId] = useState(row.prices[cabin]?.fareId);
   const options = row.fares?.filter((p) => p.cabin === cabin) ?? [];
@@ -614,7 +907,7 @@ function Details({
               <span className="text-sm text-right tabular-nums">
                 {points(option.points)} points
                 <span className="block text-xs text-muted-foreground">
-                  + {cashLabel(option)} / person
+                  + <Money price={option} /> / person
                 </span>
               </span>
             </label>
@@ -632,7 +925,9 @@ function Details({
           <p className="text-sm text-muted-foreground">
             Taxes & fees for your party
           </p>
-          <p className="text-xl font-semibold mt-1">{cashLabel(price, pax)}</p>
+          <p className="text-xl font-semibold mt-1">
+            <Money price={price} multiplier={pax} original />
+          </p>
         </div>
       </div>
       {price.mixedCabin && (
@@ -661,14 +956,14 @@ function Details({
                 Cash fare for your party
               </p>
               <p className="text-lg font-medium mt-1">
-                {cashLabel(
-                  {
-                    ...price,
+                <Money
+                  price={{
                     cash: price.cashFare.amount,
                     currency: price.cashFare.currency,
-                  },
-                  pax,
-                )}
+                  }}
+                  multiplier={pax}
+                  original
+                />
               </p>
             </div>
           </div>
@@ -686,7 +981,8 @@ function Details({
                 ? " · refundable"
                 : ""}
             . Fare rules and included benefits can differ. Checked{" "}
-            {new Date(price.cashFare.observedAt).toLocaleTimeString([], {
+            {new Date(price.cashFare.observedAt).toLocaleTimeString("en-US", {
+              hour12: timeFormat === "12h",
               hour: "numeric",
               minute: "2-digit",
             })}
