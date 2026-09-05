@@ -27,11 +27,11 @@ export default function ProgramsPage() {
         <div className="mt-6 rounded-xl border bg-card p-5 flex items-start gap-3">
           <Globe2 className="size-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground">
-            Alaska returns individual flights. JetBlue and Virgin Atlantic
-            return daily fare summaries, not complete flight lists. Alaska may
-            also return partner flights bookable with Alaska points. Complete
-            coverage of every airline and fare has not been verified. Skywards
-            currently searches easyJet and Jet2 partner awards only.
+            Alaska, Aeromexico and Frontier supply individual award flights.
+            Skywards supplies easyJet and Jet2 partner awards. JetBlue and Virgin
+            Atlantic provide daily fare summaries. Each connection covers the
+            inventory its source makes available; every airline and fare has not
+            yet been verified.
           </p>
         </div>
         <section
