@@ -369,5 +369,258 @@
       "errorType": "TimeoutError"
     }
   ],
-  "hostedStatus": "New full-browser Linux diagnostic prepared; not yet measured."
+  "hostedStatus": "First run: Firefox submits the search then reaches verification; WebKit loops at homepage; Chromium fails to launch before any airline request. Follow-up uses the installed standard Chrome and a direct WebKit booking entry.",
+  "hostedAttempts": [
+    {
+      "at": "2026-09-05T22:48:53.399Z",
+      "engine": "chromium",
+      "platform": "linux",
+      "architecture": "x64",
+      "headless": true,
+      "entry": "homepage",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 204,
+      "result": "error",
+      "message": "American's browser search could not complete at launch. No availability was inferred.",
+      "stage": "launch",
+      "status": 502,
+      "stages": [],
+      "title": "",
+      "verification": false,
+      "errorType": "Error"
+    },
+    {
+      "at": "2026-09-05T22:49:32.563Z",
+      "engine": "firefox",
+      "platform": "linux",
+      "architecture": "x64",
+      "headless": true,
+      "entry": "homepage",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 21183,
+      "result": "error",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stage": "read-flight-response",
+      "status": 503,
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 724
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1009,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2638,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3467,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5111,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5320,
+          "path": "/booking/search/find-flights",
+          "status": 200
+        },
+        {
+          "stage": "booking-form",
+          "elapsedMs": 5354
+        },
+        {
+          "stage": "route-and-passengers",
+          "elapsedMs": 6968
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 9296
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 10796,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 10823
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 10878,
+          "path": "/challenge-assets/v7/captcha.html",
+          "status": 200
+        }
+      ],
+      "title": "Challenge Validation",
+      "path": "/booking/choose-flights/1",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    {
+      "at": "2026-09-05T22:49:10.672Z",
+      "engine": "webkit",
+      "platform": "linux",
+      "architecture": "x64",
+      "headless": true,
+      "entry": "homepage",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 16635,
+      "result": "error",
+      "message": "American's browser search could not complete at homepage. No availability was inferred.",
+      "stage": "homepage",
+      "status": 502,
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 1047
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1314,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3234,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4236,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4976,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5729,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6787,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 7551,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 8291,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 9152,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 9893,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 10788,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 11622,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 12402,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 13194,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 14100,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 15089,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 15726,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 16415,
+          "path": "/",
+          "status": 200
+        }
+      ],
+      "title": "",
+      "path": "/",
+      "verification": false,
+      "errorType": "TimeoutError"
+    }
+  ],
+  "hostedRun": "https://github.com/avirichards/PointSnap/actions/runs/33996918552"
 }

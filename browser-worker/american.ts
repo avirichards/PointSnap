@@ -274,6 +274,16 @@ export class AmericanBrowserRunner {
         path: page ? new URL(page.url()).pathname : undefined,
         verification,
         errorType: error instanceof Error ? error.name : "UnknownError",
+        launchIssue:
+          stage === "launch" && error instanceof Error
+            ? /sandbox/i.test(error.message)
+              ? "sandbox-unavailable"
+              : /executable.*doesn.t exist|browser.*not found/i.test(
+                    error.message,
+                  )
+                ? "browser-not-installed"
+                : "browser-launch-failed"
+            : undefined,
       };
       // Raw browser errors can contain session-bearing URLs; keep them private.
       if (signal.aborted)

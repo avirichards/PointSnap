@@ -50,7 +50,7 @@ POINTSNAP_TEST_URL=http://localhost:3000 pnpm test:browser-live LAX AUS 2026-10-
 
 This exercises PointSnap's real streaming API and exits unsuccessfully for a source failure even when the HTTP stream itself completed. It prints only the query, coverage, counts and elapsed time. It does not use recorded flight fixtures.
 
-The separate `browser-worker/probe.ts` diagnostic exercises the same browser driver directly. The optional GitHub workflow runs it on hosted Linux across Chromium, WebKit and Firefox. Each engine runs once in sequence; source failure is stored in its evidence JSON and is not a claim of connectivity merely because the diagnostic job uploaded its artifact.
+The separate `browser-worker/probe.ts` diagnostic exercises the same browser driver directly. The optional GitHub workflow tests selected standard engines on hosted Linux. Each selected engine runs once in sequence; source failure is stored in its evidence JSON and is not a claim of connectivity merely because the diagnostic job uploaded its artifact.
 
 ```sh
 pnpm exec playwright install webkit firefox

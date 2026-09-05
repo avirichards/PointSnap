@@ -20,10 +20,14 @@ async function main() {
       minCabin: "Y",
     }),
   );
+  const entry =
+    process.env.POINTSNAP_BROWSER_ENTRY === "direct" ? "direct" : "homepage";
+  const channel = process.env.POINTSNAP_BROWSER_CHANNEL || "chromium";
   const runner = new AmericanBrowserRunner({
     engine,
     headless: true,
-    entry: "homepage",
+    entry,
+    channel,
   });
   const started = Date.now();
   let report: Record<string, unknown>;
@@ -59,7 +63,8 @@ async function main() {
     platform: process.platform,
     architecture: process.arch,
     headless: true,
-    entry: "homepage",
+    entry,
+    channel: engine === "chromium" ? channel : undefined,
     query: q,
     elapsedMs: Date.now() - started,
     ...report,

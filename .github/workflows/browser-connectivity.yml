@@ -28,15 +28,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Install standard browser engines
         run: pnpm exec playwright install --with-deps --no-shell chromium webkit firefox
-      - name: Chromium anonymous search
+      - name: Installed Chrome anonymous search
         continue-on-error: true
+        env:
+          POINTSNAP_BROWSER_CHANNEL: chrome
         run: pnpm exec tsx browser-worker/probe.ts chromium
-      - name: WebKit anonymous search
+      - name: WebKit direct booking entry
         continue-on-error: true
+        env:
+          POINTSNAP_BROWSER_ENTRY: direct
         run: pnpm exec tsx browser-worker/probe.ts webkit
-      - name: Firefox anonymous search
-        continue-on-error: true
-        run: pnpm exec tsx browser-worker/probe.ts firefox
       - uses: actions/upload-artifact@v4
         if: always()
         with:
