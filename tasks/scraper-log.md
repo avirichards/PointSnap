@@ -2205,3 +2205,10 @@ Full European follow-up: Turkish real anonymous flag and validation succeed, ful
 Frontier enabled after actual PointSnap SSE returned25 itineraries/175 fares for DEN–LAS October5, two adults. Aeromexico enabled after actual SSE returned11/98 for MEX–CUN, two adults; independent connector verified GDL–CUN25/237. All eligible source families retained, fees and party semantics verified. Sources use fresh anonymous requests without personal airline sessions. Ninety automated frontend/contract tests passed. See docs/live-data.md for scope and exact evidence.
 
 Authorized Seats.aero Pro browser inspection confirmed successful JetBlue refresh and mixed cached/live search display. Public client code delegates airline queries to Seats.aero backend services; airline connector implementation remains private in the inspected surface. No personal key installed as shared application data. Current LifeMiles configuration confirms required login in its active redemption flow. Live work dashboard updated with these findings.
+
+
+## 2026-09-05 — final two unverified flow checks
+
+Ethiopian active metadata200; current anonymous GraphQL getSession403 security interruption. Earlier config404 was an inactive path. AF/KLM dated REWARD landings200 and anonymous session checks false; current shared client explicitly invokes login for reward search. Neither provides verified flight inventory. Exact local sanitized reports: work/agent-qantas/ethiopian-focused/REPORT.md and work/agent-us/flying-blue/REPORT.md. These findings describe tested paths only. No new adapter claimed.
+
+Code milestone0a72b75 passed GitHub frontend/Python checks and Vercel preview build; hosted runtime/data configuration still requires verification. Local work feed now records33 investigated flows, four scoped flight feeds and two calendar feeds.
