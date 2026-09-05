@@ -21,6 +21,11 @@ export function filterResults(
   ctx: Pick<ProviderContext, "query">,
 ) {
   const { query: q } = ctx;
+  const accepts = (p: NonNullable<AwardResult["fares"]>[number]) =>
+    Number.isFinite(p.points) &&
+    p.points > 0 &&
+    CABIN_ORDER.indexOf(p.cabin) >= CABIN_ORDER.indexOf(q.minCabin) &&
+    (p.seats === null || p.seats >= q.pax);
   return rows
     .filter(
       (r) =>
@@ -30,6 +35,16 @@ export function filterResults(
     )
     .map((r) => ({
       ...r,
+      fares: r.fares?.filter(accepts),
+      calendarQuote:
+        r.kind === "calendar" &&
+        q.minCabin === "Y" &&
+        r.calendarQuote &&
+        Number.isFinite(r.calendarQuote.points) &&
+        r.calendarQuote.points > 0 &&
+        (r.calendarQuote.seats === null || r.calendarQuote.seats >= q.pax)
+          ? r.calendarQuote
+          : undefined,
       prices: Object.fromEntries(
         Object.entries(r.prices).filter(
           ([c, p]) =>
@@ -42,7 +57,7 @@ export function filterResults(
         ),
       ),
     }))
-    .filter((r) => Object.keys(r.prices).length > 0);
+    .filter((r) => Object.keys(r.prices).length > 0 || !!r.calendarQuote);
 }
 export async function runSearch(ids: string[], ctx: ProviderContext) {
   if (ctx.signal.aborted) return;
@@ -90,7 +105,11 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
         if (DIRECT_PROGRAMS.includes(id)) {
           try {
             source = "Direct airline";
-            rows = await directSearch(id, ctx.query, ctx.signal);
+            rows = await directSearch(id, ctx.query, ctx.signal, (early) => {
+              const rows = filterResults(early, ctx);
+              if (rows.length && !ctx.signal.aborted)
+                ctx.emit({ type: "results", rows });
+            });
           } catch (error) {
             if (ctx.signal.aborted) throw error;
             if (process.env.SEATS_AERO_API_KEY && SEATS_SOURCES[id]) {
@@ -110,6 +129,11 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
             programId: id,
             state: rows.length ? "success" : "empty",
             source,
+            inventory:
+              source === "Direct airline" &&
+              (id === "B6_TRUEBLUE" || id === "VS_FLYING_CLUB")
+                ? "calendar"
+                : "flights",
           },
         });
       } catch (error) {

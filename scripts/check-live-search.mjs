@@ -30,7 +30,7 @@ for (const [programs, origin, dest] of routes) {
       .filter((s) => s.startsWith("data: "))
       .map((s) => JSON.parse(s.slice(6)));
     const coverage = events.find((e) => e.type === "coverage")?.coverage;
-    const rows = events.flatMap((e) => (e.type === "results" ? e.rows : []));
+    const rows = [...new Map(events.flatMap((e) => (e.type === "results" ? e.rows : [])).map(row => [row.id, row])).values()];
     if (
       !events.some((e) => e.type === "complete") ||
       !["success", "empty"].includes(coverage?.state)
@@ -44,6 +44,7 @@ for (const [programs, origin, dest] of routes) {
         date,
         state: coverage.state,
         rows: rows.length,
+        cashCompared: rows.filter(row => Object.values(row.prices).some(price => price.cashFare)).length,
         ms: Date.now() - started,
         first: rows[0] ? { kind: rows[0].kind, prices: rows[0].prices } : null,
       }),

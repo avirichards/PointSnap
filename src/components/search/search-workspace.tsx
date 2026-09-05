@@ -23,6 +23,8 @@ import { useAwardSearch } from "@/hooks/use-award-search";
 import { parseQuery, queryParams } from "@/lib/award-search/query";
 import type { SearchQuery } from "@/lib/types";
 import { AIRPORTS } from "@/db/seed/airports";
+import { SavedSearches, NearbyDates } from "./search-tools";
+import { bookingUrl } from "@/lib/bookingHandoff";
 const RouteGlobe = dynamic(
   () => import("@/components/map/route-globe").then((m) => m.RouteGlobe),
   {
@@ -83,8 +85,9 @@ function Workspace() {
     }
   }, [raw, params]);
   const query = parsed && parsed !== "invalid" ? parsed : null;
+  const isReturnLeg = returnLeg && !!query?.returnDate;
   const active =
-    query && returnLeg && query.returnDate
+    query && isReturnLeg && query.returnDate
       ? {
           ...query,
           origin: query.dest,
@@ -176,6 +179,7 @@ function Workspace() {
             onSubmit={search}
           />
         </section>
+        <SavedSearches query={query} />
         {parsed === "invalid" && (
           <p
             role="alert"
@@ -305,7 +309,7 @@ function Workspace() {
                     onClick={() => setReturnLeg(!returnLeg)}
                   >
                     <ArrowLeftRight className="size-4" />
-                    {returnLeg ? "Show outbound" : "Show return"}
+                    {isReturnLeg ? "Show outbound" : "Show return"}
                   </Button>
                 )}
               </div>
@@ -349,6 +353,23 @@ function Workspace() {
                 may price differently.
               </p>
             )}
+            <NearbyDates
+              date={active!.departDate}
+              min={isReturnLeg ? query.departDate : undefined}
+              max={!isReturnLeg ? query.returnDate : undefined}
+              onChoose={(date) => {
+                if (date === active!.departDate) {
+                  stream.retry();
+                  return;
+                }
+                if (isReturnLeg)
+                  router.push(
+                    `/search?${queryParams({ ...query, returnDate: date })}`,
+                    { scroll: false },
+                  );
+                else search({ ...query, departDate: date });
+              }}
+            />
             {stream.error && (
               <div
                 role="alert"
@@ -364,7 +385,7 @@ function Workspace() {
               </div>
             )}
             <AwardResults
-              key={`${active!.origin}-${active!.dest}-${active!.departDate}`}
+              key={activeParams}
               rows={stream.rows}
               coverage={stream.coverage}
               pax={query.pax}
@@ -400,13 +421,27 @@ function Workspace() {
                       <p className="font-medium">{programName(c.programId)}</p>
                       <p className="text-muted-foreground mt-1">
                         {c.state === "success"
-                          ? "Results received"
+                          ? c.inventory === "calendar"
+                            ? "Daily fare summary only"
+                            : "Individual flights received"
                           : c.state === "empty"
-                            ? "No matching awards returned"
+                            ? c.inventory === "calendar"
+                              ? "No matching calendar price returned"
+                              : "No matching flights returned"
                             : c.state === "pending"
                               ? "Searching…"
                               : (c.message ?? "Unavailable")}
                       </p>
+                      {(c.state === "error" || c.state === "unavailable") && (
+                        <a
+                          href={bookingUrl(c.programId, active!)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block mt-2 text-sm underline underline-offset-4"
+                        >
+                          Check on airline website ↗
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>

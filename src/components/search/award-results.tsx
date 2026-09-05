@@ -24,13 +24,21 @@ import type {
   Coverage,
 } from "@/lib/award-search/types";
 import type { WalletData } from "@/lib/wallet";
+import { centsPerPoint } from "@/lib/award-search/value";
 export const programName = (id: string) =>
   PROGRAMS.find((p) => p.id === id)?.name ?? id;
+const airlines = (row: AwardResult) =>
+  [...new Set(row.segments.map((s) => s.airlineName).filter(Boolean))].join(
+    " + ",
+  );
 const time = (s: string | null) => (s ? s.slice(11, 16) : "—");
 const duration = (n: number | null) =>
   n === null ? "Schedule on airline" : `${Math.floor(n / 60)}h ${n % 60}m`;
 const points = (n: number) => new Intl.NumberFormat("en-US").format(n);
-export function cashLabel(p: AwardPrice, multiplier = 1) {
+export function cashLabel(
+  p: Pick<AwardPrice, "cash" | "currency">,
+  multiplier = 1,
+) {
   if (p.cash === null || !p.currency) return "Fees not reported";
   try {
     return `${new Intl.NumberFormat("en-US", { style: "currency", currency: p.currency, maximumFractionDigits: 2 }).format(p.cash * multiplier)} ${p.currency}`;
@@ -40,17 +48,20 @@ export function cashLabel(p: AwardPrice, multiplier = 1) {
 }
 function Price({
   price,
+  fareCount = 1,
   onClick,
 }: {
   price?: AwardPrice;
+  fareCount?: number;
   onClick: () => void;
 }) {
   if (!price) return <span className="text-muted-foreground/50 px-3">—</span>;
+  const value = centsPerPoint(price);
   return (
     <button
       onClick={onClick}
       className={`award-price ${price.cabin === "J" ? "award-price-business" : ""} ${price.cabin === "F" ? "award-price-first" : ""}`}
-      aria-label={`${CABIN_LABEL[price.cabin]} ${points(price.points)} points, ${cashLabel(price)}. View details.`}
+      aria-label={`${CABIN_LABEL[price.cabin]} ${points(price.points)} points, ${cashLabel(price)}.${value !== null ? ` ${value.toFixed(2)} cents per point.` : ""} View details.`}
     >
       <strong className="tabular-nums text-base">{points(price.points)}</strong>
       <span className="text-xs opacity-75 mt-1">
@@ -58,11 +69,19 @@ function Price({
         {cashLabel(price)}
       </span>
       {price.mixedCabin && <span className="text-xs mt-1">Mixed cabin</span>}
+      {fareCount > 1 && (
+        <span className="text-xs mt-1">{fareCount} fare options</span>
+      )}
+      {value !== null && (
+        <span className="text-xs mt-1 font-medium">
+          {value.toFixed(2)}¢ / point
+        </span>
+      )}
     </button>
   );
 }
 export function AwardResults({
-  rows,
+  rows: allRows,
   pax,
   coverage,
   loading,
@@ -74,6 +93,14 @@ export function AwardResults({
   loading: boolean;
   minCabin: Cabin;
 }) {
+  const rows = useMemo(
+    () => allRows.filter((r) => r.kind === "flight"),
+    [allRows],
+  );
+  const calendars = useMemo(
+    () => allRows.filter((r) => r.kind === "calendar"),
+    [allRows],
+  );
   const [selected, setSelected] = useState<{
     row: AwardResult;
     cabin: Cabin;
@@ -99,11 +126,17 @@ export function AwardResults({
           (r) =>
             (program === "all" || r.programId === program) &&
             (!nonstop || (r.kind === "flight" && r.segments.length === 1)) &&
-            `${programName(r.programId)} ${r.segments.map((s) => s.flightNumber).join(" ")}`
+            `${programName(r.programId)} ${r.segments.map((s) => `${s.flightNumber} ${s.airlineName ?? ""} ${s.operatedBy ?? ""}`).join(" ")}`
               .toLowerCase()
               .includes(filter.toLowerCase()),
         )
         .sort((a, b) => {
+          if (sort === "value")
+            return (
+              (centsPerPoint(b.prices[cabin]) ?? -Infinity) -
+                (centsPerPoint(a.prices[cabin]) ?? -Infinity) ||
+              a.id.localeCompare(b.id)
+            );
           if (sort === "duration")
             return (a.duration ?? Infinity) - (b.duration ?? Infinity);
           if (sort === "depart")
@@ -117,7 +150,9 @@ export function AwardResults({
     [rows, nonstop, filter, program, sort, cabin],
   );
   const success = coverage.filter(
-    (c) => c.state === "success" || c.state === "empty",
+    (c) =>
+      c.inventory !== "calendar" &&
+      (c.state === "success" || c.state === "empty"),
   ).length;
   return (
     <section className="space-y-4">
@@ -126,13 +161,14 @@ export function AwardResults({
           <p className="eyebrow">AWARD AVAILABILITY</p>
           <h2 className="text-xl font-semibold mt-1">
             {rows.length
-              ? `${visible.length} ways to go`
+              ? `${visible.length} flight itinerar${visible.length === 1 ? "y" : "ies"}`
               : loading
                 ? "Checking your options…"
                 : "Your results"}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Prices per person, one way. {success} programs checked
+            Prices per person, one way. {success} flight source
+            {success === 1 ? "" : "s"} responded
             {loading ? " so far." : "."}
           </p>
         </div>
@@ -192,10 +228,11 @@ export function AwardResults({
             onChange={(e) => setSort(e.target.value)}
           >
             <option value="points">Fewest points</option>
+            <option value="value">Best value per point</option>
             <option value="duration">Shortest journey</option>
             <option value="depart">Departure time</option>
           </select>
-          {sort === "points" && (
+          {(sort === "points" || sort === "value") && (
             <select
               aria-label="Cabin to sort by"
               className="result-select"
@@ -220,7 +257,14 @@ export function AwardResults({
                   {PROGRAMS.find((p) => p.id === r.programId)?.iata ?? "✈"}
                 </span>
                 <div>
-                  <h3 className="font-semibold">{programName(r.programId)}</h3>
+                  <h3 className="font-semibold">
+                    {airlines(r) || programName(r.programId)}
+                  </h3>
+                  {airlines(r) && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Book with {programName(r.programId)}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">
                     {r.kind === "calendar"
                       ? "Daily award calendar"
@@ -248,6 +292,7 @@ export function AwardResults({
                     </p>
                     <Price
                       price={r.prices[c]}
+                      fareCount={r.fares?.filter((p) => p.cabin === c).length}
                       onClick={() => setSelected({ row: r, cabin: c })}
                     />
                   </div>
@@ -292,8 +337,13 @@ export function AwardResults({
                       </span>
                       <div>
                         <p className="font-semibold">
-                          {programName(r.programId)}
+                          {airlines(r) || programName(r.programId)}
                         </p>
+                        {airlines(r) && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Book with {programName(r.programId)}
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {r.kind === "calendar"
                             ? "Daily award calendar"
@@ -332,6 +382,7 @@ export function AwardResults({
                     <td key={c} className="px-2 py-3 align-middle">
                       <Price
                         price={r.prices[c]}
+                        fareCount={r.fares?.filter((p) => p.cabin === c).length}
                         onClick={() => setSelected({ row: r, cabin: c })}
                       />
                     </td>
@@ -360,12 +411,14 @@ export function AwardResults({
             <p className="font-medium">
               {rows.length
                 ? "No results match these filters."
-                : "No award results returned for this search."}
+                : "No individual flights returned for this search."}
             </p>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
               {rows.length
                 ? "Try another cabin or remove a filter."
-                : "Try nearby airports or another date. Check program coverage below to see which sources responded."}
+                : calendars.length
+                  ? "Daily fare summaries are available below. These sources have not supplied individual departures."
+                  : "Try nearby airports or another date. Check program coverage below to see which sources responded."}
             </p>
             {rows.length > 0 && (
               <Button
@@ -383,6 +436,7 @@ export function AwardResults({
           </div>
         )}
       </div>
+      {calendars.length > 0 && <CalendarSummaries rows={calendars} pax={pax} />}
       <Dialog
         open={!!selected}
         onOpenChange={(open) => {
@@ -392,7 +446,8 @@ export function AwardResults({
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           {selected && (
             <Details
-              row={selected.row}
+              key={`${selected.row.id}:${selected.cabin}`}
+              row={rows.find((r) => r.id === selected.row.id) ?? selected.row}
               cabin={selected.cabin}
               pax={pax}
               wallet={wallet}
@@ -400,6 +455,95 @@ export function AwardResults({
           )}
         </DialogContent>
       </Dialog>
+    </section>
+  );
+}
+function CalendarSummaries({
+  rows,
+  pax,
+}: {
+  rows: AwardResult[];
+  pax: number;
+}) {
+  return (
+    <section
+      aria-labelledby="calendar-summary-heading"
+      className="rounded-xl border bg-card p-5 space-y-4"
+    >
+      <div>
+        <p className="eyebrow">DAILY FARE SUMMARIES</p>
+        <h3
+          id="calendar-summary-heading"
+          className="text-lg font-semibold mt-1"
+        >
+          A starting point for your search
+        </h3>
+        <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
+          These calendars report daily prices, not every flight. Departure
+          times, connections and fare choices are not supplied. Confirm
+          availability with the airline.
+        </p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {rows.map((row) => {
+          const quotes = row.calendarQuote
+            ? [{ ...row.calendarQuote, label: "Cabin not reported" }]
+            : CABIN_ORDER.flatMap((c) =>
+                row.prices[c]
+                  ? [{ ...row.prices[c]!, label: CABIN_LABEL[c] }]
+                  : [],
+              );
+          return (
+            <article key={row.id} className="rounded-lg border p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h4 className="font-medium">{programName(row.programId)}</h4>
+                <span className="text-xs text-muted-foreground">
+                  {row.origin} → {row.destination}
+                </span>
+              </div>
+              <dl className="space-y-3">
+                {quotes.map((quote) => (
+                  <div
+                    key={quote.label}
+                    className="flex items-start justify-between gap-4 text-sm"
+                  >
+                    <dt className="text-muted-foreground">{quote.label}</dt>
+                    <dd className="text-right">
+                      <strong className="font-medium tabular-nums">
+                        From {points(quote.points)} points
+                      </strong>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {quote.cash !== null ? "+ " : ""}
+                        {cashLabel(quote)} · per person
+                      </p>
+                      {pax > 1 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {points(quote.points * pax)} points +{" "}
+                          {cashLabel(quote, pax)} for {pax}
+                        </p>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-xs text-muted-foreground">
+                {row.programId === "B6_TRUEBLUE"
+                  ? "Lowest recent fare; cabin and exact flight are unknown."
+                  : "Calendar availability; fees and exact flights are not reported."}
+              </p>
+              <a
+                href={row.bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline"
+              >
+                Choose a flight on the airline{" "}
+                <ArrowUpRight className="size-4" />
+              </a>
+            </article>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -415,7 +559,10 @@ function Details({
   wallet: WalletData | null;
 }) {
   const [copied, setCopied] = useState(false);
-  const price = row.prices[cabin]!;
+  const [fareId, setFareId] = useState(row.prices[cabin]?.fareId);
+  const options = row.fares?.filter((p) => p.cabin === cabin) ?? [];
+  const price = options.find((p) => p.fareId === fareId) ?? row.prices[cabin]!;
+  const value = centsPerPoint(price);
   const balance = wallet?.entries.find(
     (e) => e.asset_id === row.programId,
   )?.balance;
@@ -432,6 +579,40 @@ function Details({
           {pax > 1 ? "s" : ""} · one way
         </DialogDescription>
       </div>
+      {options.length > 0 && (
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium mb-2">
+            {options.length === 1 ? "Award fare" : "Choose an award fare"}
+          </legend>
+          {options.map((option) => (
+            <label
+              key={option.fareId}
+              className={`flex items-center gap-3 rounded-lg border p-3 min-h-11 cursor-pointer ${price.fareId === option.fareId ? "border-primary/50 bg-primary/5" : ""}`}
+            >
+              <input
+                type="radio"
+                name="award-fare"
+                checked={price.fareId === option.fareId}
+                onChange={() => {
+                  setFareId(option.fareId);
+                  setCopied(false);
+                }}
+                className="accent-primary"
+              />
+              <span className="flex-1 text-sm capitalize">
+                {option.fareName ?? CABIN_LABEL[option.cabin]}
+                {option.mixedCabin ? " · mixed cabin" : ""}
+              </span>
+              <span className="text-sm text-right tabular-nums">
+                {points(option.points)} points
+                <p className="text-xs text-muted-foreground">
+                  + {cashLabel(option)} / person
+                </p>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      )}
       <div className="rounded-xl bg-muted/50 p-5 grid gap-4 grid-cols-2">
         <div>
           <p className="text-sm text-muted-foreground">Points for your party</p>
@@ -451,6 +632,61 @@ function Details({
           Mixed cabin: part of this journey is in a lower cabin. Check each
           segment before booking.
         </p>
+      )}
+      {value !== null && price.cashFare && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Value per point</p>
+              <p className="text-2xl font-semibold tabular-nums mt-1">
+                {value.toFixed(2)}¢
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">
+                Cash fare for your party
+              </p>
+              <p className="text-lg font-medium mt-1">
+                {cashLabel(
+                  {
+                    ...price,
+                    cash: price.cashFare.amount,
+                    currency: price.cashFare.currency,
+                  },
+                  pax,
+                )}
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Compared with the lowest cash fare on the same flights in{" "}
+            {CABIN_LABEL[cabin].toLowerCase()}. Cash price minus award fees,
+            divided by points.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Cash fare:{" "}
+            <span className="capitalize">{price.cashFare.fareName}</span>
+            {price.cashFare.refundable === false
+              ? " · nonrefundable"
+              : price.cashFare.refundable
+                ? " · refundable"
+                : ""}
+            . Fare rules and included benefits can differ. Checked{" "}
+            {new Date(price.cashFare.observedAt).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+            .
+          </p>
+          <a
+            className="inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
+            href={price.cashFare.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Compare cash fares <ArrowUpRight className="size-3.5" />
+          </a>
+        </div>
       )}
       {row.kind === "calendar" ? (
         <p className="text-muted-foreground">
@@ -476,8 +712,15 @@ function Details({
                   : ""}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
+                {s.operatedBy
+                  ? `${s.operatedBy} · `
+                  : s.airlineName
+                    ? `${s.airlineName} · `
+                    : ""}
                 {s.aircraft ?? "Aircraft not reported"}
-                {s.cabin ? ` · ${CABIN_LABEL[s.cabin]}` : ""}
+                {price.segmentCabins?.[i] || s.cabin
+                  ? ` · ${CABIN_LABEL[price.segmentCabins?.[i] ?? s.cabin!]}`
+                  : ""}
               </p>
             </li>
           ))}

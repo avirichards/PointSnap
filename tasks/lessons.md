@@ -55,3 +55,5 @@ ScraperAPI's proxy port terminates TLS at their server and re-presents their own
 - 2026-09-05: Design for airline/points enthusiasts from a clean slate. The supplied dark globe reference is a direction; any map interaction must help route selection and preserve fast comparison.
 
 - 2026-09-05: Draggable SVG maps must disable native text selection and prevent pointer-down focus/selection defaults. Preserve a visible keyboard-only focus state; avoid a mouse-triggered rectangular outline around the globe.
+
+- User's core requirement is complete flight-level inventory, not just an endpoint that returns a daily award price. Mark calendar integrations as partial, separate them from flight lists, and explicitly verify completeness/pagination/cabins before describing an airline as connected and complete.

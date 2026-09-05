@@ -11,6 +11,8 @@ import { filterResults } from "../engine";
 import virgin from "../fixtures/virgin.json";
 import alaska from "../fixtures/alaska.json";
 import jetblue from "../fixtures/jetblue.json";
+import jetblueV2 from "../fixtures/jetblue-v2.json";
+import alaskaFull from "../fixtures/alaska-full.json";
 const q = {
   origin: "SEA",
   dest: "SFO",
@@ -20,6 +22,49 @@ const q = {
 };
 const html = `<script>__sveltekit_new.resolve(2, () => [{entry:{label:'no flights'}}])</script><script>__sveltekit_new.resolve(1, () => ${JSON.stringify(alaska)})</script>`;
 describe("direct airline results", () => {
+  it("preserves every supplied itinerary and award fare, including a lower-cabin first leg", () => {
+    const rows = parseAlaska(
+      `<script>__sveltekit_app.resolve(1, () => ${JSON.stringify(alaskaFull)})</script>`,
+      q,
+    );
+    expect(rows).toHaveLength(35);
+    expect(rows.flatMap((r) => r.fares ?? [])).toHaveLength(68);
+    expect(rows.filter((r) => r.segments.length === 2)).toHaveLength(26);
+    const mixed = rows.find(
+      (r) =>
+        r.segments.map((s) => s.flightNumber).join("/") === "AS1390/AA2673",
+    )!;
+    expect(mixed.prices.F).toMatchObject({
+      points: 20000,
+      cash: 25.6,
+      mixedCabin: true,
+      segmentCabins: ["Y", "F"],
+      fareId: "REFUNDABLE_FIRST",
+    });
+    expect(mixed.prices.Y).toMatchObject({
+      points: 12500,
+      cash: 25.6,
+      mixedCabin: false,
+    });
+    const premium = filterResults([mixed], {
+      query: { ...q, minCabin: "F" },
+    })[0];
+    expect(premium.fares).toHaveLength(1);
+    expect(premium.prices.Y).toBeUndefined();
+  });
+  it("retains multiple fare families in the same cabin", () => {
+    const fixture = structuredClone(alaskaFull);
+    const sol = fixture[0].rows[0].solutions;
+    Object.assign(sol, {
+      MAIN_ALTERNATIVE: { ...sol.REFUNDABLE_MAIN, atmosPoints: 22000 },
+    });
+    const rows = parseAlaska(
+      `<script>__sveltekit_app.resolve(1, () => ${JSON.stringify(fixture)})</script>`,
+      q,
+    );
+    expect(rows[0].fares?.filter((p) => p.cabin === "Y")).toHaveLength(2);
+    expect(rows[0].prices.Y?.points).toBe(20000);
+  });
   it("finds flight data independent of SvelteKit promise ID", () => {
     const rows = parseAlaska(html, q);
     expect(rows).toHaveLength(2);
@@ -50,8 +95,13 @@ describe("direct airline results", () => {
     expect(r.kind).toBe("calendar");
     expect(r.segments).toEqual([]);
     expect(r.duration).toBeNull();
-    expect(r.prices.Y?.cash).toBe(5.6);
-    expect(r.prices.Y?.points).toBe(28800);
+    expect(r.prices).toEqual({});
+    expect(r.calendarQuote?.cash).toBe(5.6);
+    expect(r.calendarQuote?.points).toBe(28800);
+    expect(r.freshness).toBe("cached");
+    expect(
+      filterResults([r], { query: { ...q, origin: "JFK", dest: "LAX" } }),
+    ).toHaveLength(1);
   });
   it("honors passenger availability and minimum cabin", () => {
     expect(
@@ -86,6 +136,25 @@ describe("direct airline results", () => {
     )[0];
     expect(r.prices.J?.cash).toBeNull();
     expect(r.segments).toEqual([]);
+  });
+});
+describe("JetBlue current public calendar", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("uses the current GET contract with party size and keeps the cabin unknown", async () => {
+    const fetcher = vi.fn().mockResolvedValue(Response.json(jetblueV2));
+    vi.stubGlobal("fetch", fetcher);
+    const result = await directSearch(
+      "B6_TRUEBLUE",
+      { ...q, origin: "JFK", dest: "LAX", pax: 2 },
+      new AbortController().signal,
+    );
+    const url = new URL(fetcher.mock.calls[0][0]);
+    expect(url.pathname).toBe("/bff-service-v2/bestFares/");
+    expect(url.searchParams.get("adult")).toBe("2");
+    expect(url.searchParams.get("fareType")).toBe("POINTS");
+    expect(url.searchParams.get("month")).toBe("october 2026");
+    expect(result[0].calendarQuote).toMatchObject({ points: 22400, cash: 5.6 });
+    expect(result[0].prices).toEqual({});
   });
 });
 describe("search validation", () => {
@@ -142,17 +211,15 @@ describe("Virgin live session", () => {
     expect(mock.mock.calls[1][1].redirect).toBe("error");
   });
   it("rejects redirects that would leak session cookies", async () => {
-    const mock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(null, {
-          status: 303,
-          headers: {
-            location: "https://other.test/result",
-            "set-cookie": "session=private",
-          },
-        }),
-      );
+    const mock = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 303,
+        headers: {
+          location: "https://other.test/result",
+          "set-cookie": "session=private",
+        },
+      }),
+    );
     vi.stubGlobal("fetch", mock);
     await expect(
       directSearch("VS_FLYING_CLUB", q, new AbortController().signal),

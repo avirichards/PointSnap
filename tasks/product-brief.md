@@ -15,4 +15,12 @@ This brief records the user's current requirements and takes precedence over ass
 
 Implementation direction: a dark award-search workspace with compact search controls, an optional interactive route explorer before searching, a practical cabin-comparison table after searching, clear provider coverage, and a private points wallet. Search remains fully usable without the map.
 
-Latest animation request: the globe should rotate slowly on its own, with modern white glowing route trails and moving points from airport to airport. Pause on manual interaction, provide play/pause, and respect reduced-motion settings. This enhancement remains subordinate to fast searching and accurate data.
+Current globe behavior: slow automatic rotation; white glowing route trails animate continuously, including during dragging. No controls below the globe and no hover/focus pause. Grabbing pauses rotation; release adds velocity-based inertia that decays smoothly into automatic rotation. Respect reduced-motion preferences. Prevent drag text selection and pointer focus rectangles while retaining keyboard access.
+
+Current access constraint: no paid data subscriptions or commercial license. Investigate and implement direct, subscription-free airline search integrations. Broad live coverage remains unfinished until verified. No end-user airline login is needed to search PointSnap.
+
+Autonomy: user is stepping away; do not ask further questions. Take the full product as far as possible, including useful features such as cash-versus-points value, saved searches and nearby-date navigation. Preserve facts about coverage and source restrictions.
+
+Coordination: user asked about parallel airline subagents, then expressly left the working method to our judgment. Three independent airline investigations now run in parallel; root owns shared application integration, UI and verification. Use delegation only where it helps.
+
+Critical completeness requirement (latest user instruction): live search must retrieve every flight option the airline offers for the selected route/date/travelers, including connections and available cabins, subject only to explicit user filters. A lowest daily fare, limited sample, cached summary, first page or handful of departures does NOT complete an airline integration. JetBlue's current calendar-only feed explicitly fails this acceptance requirement. Track completeness separately from simple endpoint reachability. Verify pagination, all returned itineraries, cabins, fare families and source limitations before claiming an airline complete. Calendar summaries must be separate from flight lists and cannot count as full flight coverage.

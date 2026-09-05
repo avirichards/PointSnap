@@ -6,8 +6,9 @@ import {
   ProviderError,
   type AwardResult,
   type AwardPrice,
+  type AwardSegment,
 } from "./types";
-import type { SearchQuery } from "@/lib/types";
+import { CABIN_ORDER, type SearchQuery } from "@/lib/types";
 import { bookingUrl } from "@/lib/bookingHandoff";
 
 // These adapters read publicly accessible award-search responses; never execute
@@ -51,15 +52,25 @@ export function normalizeLiteral(input: string): string {
 }
 const hash = (s: string) =>
   createHash("sha256").update(s).digest("hex").slice(0, 24);
-export function parseAlaska(
-  html: string,
-  q: SearchQuery,
-  observedAt = new Date().toISOString(),
-): AwardResult[] {
+interface AlaskaSolution {
+  cabins?: string[];
+  atmosPoints?: number;
+  milesPoints?: number;
+  grandTotal?: number;
+  seatsRemaining?: number;
+  mixedCabin?: boolean;
+  refundable?: boolean;
+}
+interface AlaskaRow {
+  segments: Record<string, unknown>[];
+  solutions?: Record<string, AlaskaSolution>;
+  duration?: number;
+}
+function alaskaRows(html: string, q: SearchQuery): AlaskaRow[] {
   const pattern =
     /__sveltekit_[a-z0-9_]+\.resolve\(\s*\d+\s*,\s*\(\s*\)\s*=>\s*(.*?)\s*\)\s*<\/script>/gs;
   let found = false;
-  const result: AwardResult[] = [];
+  const result: AlaskaRow[] = [];
   for (const match of html.matchAll(pattern)) {
     if (
       !match[1].includes("departureStation") ||
@@ -83,84 +94,7 @@ export function parseAlaska(
       found = true;
       for (const row of top.rows) {
         if (!Array.isArray(row.segments) || !row.segments.length) continue;
-        const segments = row.segments.map((s: Record<string, unknown>) => {
-          const pc = s.publishingCarrier as
-            { carrierCode?: string; flightNumber?: string } | undefined;
-          return {
-            origin: String(s.departureStation ?? ""),
-            destination: String(s.arrivalStation ?? ""),
-            departure:
-              typeof s.departureTime === "string" ? s.departureTime : null,
-            arrival: typeof s.arrivalTime === "string" ? s.arrivalTime : null,
-            airline: pc?.carrierCode ?? "",
-            flightNumber: `${pc?.carrierCode ?? ""}${pc?.flightNumber ?? ""}`,
-            aircraft: typeof s.aircraft === "string" ? s.aircraft : null,
-          };
-        });
-        if (
-          segments[0].departure?.slice(0, 10) !== q.departDate ||
-          segments[0].origin !== q.origin ||
-          segments.at(-1)?.destination !== q.dest
-        )
-          continue;
-        const prices: AwardResult["prices"] = {};
-        for (const raw of Object.values(row.solutions ?? {})) {
-          const sol = raw as {
-            cabins?: string[];
-            atmosPoints?: number;
-            milesPoints?: number;
-            grandTotal?: number;
-            seatsRemaining?: number;
-            mixedCabin?: boolean;
-          };
-          const code = cabin(sol.cabins?.[0]);
-          const points = number(sol.atmosPoints ?? sol.milesPoints);
-          const seats = number(sol.seatsRemaining);
-          if (
-            !code ||
-            !points ||
-            (seats !== null && seats > 0 && seats < q.pax)
-          )
-            continue;
-          const price: AwardPrice = {
-            cabin: code,
-            points,
-            cash: number(sol.grandTotal),
-            currency: "USD",
-            seats: seats && seats > 0 ? seats : null,
-            mixedCabin: !!sol.mixedCabin,
-          };
-          const previous = prices[code];
-          if (
-            !previous ||
-            points < previous.points ||
-            (points === previous.points &&
-              (price.cash ?? Infinity) < (previous.cash ?? Infinity))
-          )
-            prices[code] = price;
-        }
-        if (!Object.keys(prices).length) continue;
-        const key = segments
-          .map(
-            (s: { flightNumber: string; departure: string | null }) =>
-              `${s.flightNumber}@${s.departure}`,
-          )
-          .join("|");
-        result.push({
-          id: `AS_${hash(key)}`,
-          programId: "AS_MILEAGEPLAN",
-          origin: q.origin,
-          destination: q.dest,
-          date: q.departDate,
-          kind: "flight",
-          segments,
-          duration: number(row.duration),
-          prices,
-          source: "Alaska Airlines",
-          freshness: "live",
-          observedAt,
-          bookingUrl: bookingUrl("AS_MILEAGEPLAN", q),
-        });
+        result.push(row);
       }
     }
   }
@@ -168,6 +102,175 @@ export function parseAlaska(
     throw new ProviderError(
       "Alaska changed its search response or is temporarily blocking searches.",
     );
+  return result;
+}
+function alaskaSegments(row: AlaskaRow): AwardSegment[] {
+  return row.segments.map((s: Record<string, unknown>) => {
+    const pc = s.publishingCarrier as
+      | {
+          carrierCode?: string;
+          flightNumber?: string;
+          carrierFullName?: string;
+        }
+      | undefined;
+    return {
+      origin: String(s.departureStation ?? ""),
+      destination: String(s.arrivalStation ?? ""),
+      departure: typeof s.departureTime === "string" ? s.departureTime : null,
+      arrival: typeof s.arrivalTime === "string" ? s.arrivalTime : null,
+      airline: pc?.carrierCode ?? "",
+      airlineName: pc?.carrierFullName ?? null,
+      operatedBy:
+        typeof s.operationalDisclosure === "string"
+          ? s.operationalDisclosure
+          : null,
+      flightNumber: `${pc?.carrierCode ?? ""}${pc?.flightNumber ?? ""}`,
+      aircraft: typeof s.aircraft === "string" ? s.aircraft : null,
+    };
+  });
+}
+
+function matchesRoute(segments: AwardSegment[], q: SearchQuery) {
+  return (
+    segments[0]?.departure?.slice(0, 10) === q.departDate &&
+    segments[0]?.origin === q.origin &&
+    segments.at(-1)?.destination === q.dest
+  );
+}
+function flightKey(segments: AwardSegment[]) {
+  return segments
+    .map(
+      (s) =>
+        `${s.flightNumber}:${s.origin}:${s.destination}@${s.departure}/${s.arrival}`,
+    )
+    .join("|");
+}
+export function alaskaCashUrl(q: SearchQuery) {
+  const url = new URL(bookingUrl("AS_MILEAGEPLAN", q));
+  url.searchParams.set("ShoppingMethod", "online");
+  url.searchParams.delete("awardType");
+  return url.toString();
+}
+export function attachAlaskaCash(
+  awards: AwardResult[],
+  html: string,
+  q: SearchQuery,
+  observedAt = new Date().toISOString(),
+): AwardResult[] {
+  const fares = new Map<string, NonNullable<AwardPrice["cashFare"]>>();
+  for (const row of alaskaRows(html, q)) {
+    const segments = alaskaSegments(row);
+    if (!matchesRoute(segments, q)) continue;
+    for (const [name, sol] of Object.entries(row.solutions ?? {})) {
+      const code = cabin(sol.cabins?.[0]);
+      const amount = number(sol.grandTotal),
+        seats = number(sol.seatsRemaining);
+      if (
+        !code ||
+        amount === null ||
+        amount <= 0 ||
+        sol.mixedCabin ||
+        sol.cabins?.some((c) => cabin(c) !== code) ||
+        number(sol.atmosPoints ?? sol.milesPoints) ||
+        (seats !== null && seats > 0 && seats < q.pax)
+      )
+        continue;
+      const key = `${flightKey(segments)}:${code}`;
+      if (amount >= (fares.get(key)?.amount ?? Infinity)) continue;
+      fares.set(key, {
+        amount,
+        currency: "USD",
+        fareName: name.replaceAll("_", " ").toLowerCase(),
+        refundable: typeof sol.refundable === "boolean" ? sol.refundable : null,
+        observedAt,
+        bookingUrl: alaskaCashUrl(q),
+      });
+    }
+  }
+  return awards.map((row) => {
+    const enrich = (price: AwardPrice) => {
+      const cashFare =
+        row.kind === "flight" && !price.mixedCabin
+          ? fares.get(`${flightKey(row.segments)}:${price.cabin}`)
+          : undefined;
+      return cashFare ? { ...price, cashFare } : price;
+    };
+    return {
+      ...row,
+      prices: Object.fromEntries(
+        Object.entries(row.prices).map(([code, price]) => [
+          code,
+          enrich(price),
+        ]),
+      ),
+      fares: row.fares?.map(enrich),
+    };
+  });
+}
+export function parseAlaska(
+  html: string,
+  q: SearchQuery,
+  observedAt = new Date().toISOString(),
+): AwardResult[] {
+  const result: AwardResult[] = [];
+  for (const row of alaskaRows(html, q)) {
+    const segments = alaskaSegments(row);
+    if (!matchesRoute(segments, q)) continue;
+    const prices: AwardResult["prices"] = {};
+    const fares: AwardPrice[] = [];
+    for (const [fareId, sol] of Object.entries(row.solutions ?? {})) {
+      const segmentCabins = (sol.cabins ?? []).map(cabin);
+      const code = CABIN_ORDER.findLast((c) => segmentCabins.includes(c));
+      const points = number(sol.atmosPoints ?? sol.milesPoints);
+      const seats = number(sol.seatsRemaining);
+      if (!code || !points || (seats !== null && seats > 0 && seats < q.pax))
+        continue;
+      const price: AwardPrice = {
+        fareId,
+        fareName: fareId.replaceAll("_", " ").toLowerCase(),
+        refundable: typeof sol.refundable === "boolean" ? sol.refundable : null,
+        segmentCabins,
+        cabin: code,
+        points,
+        cash: number(sol.grandTotal),
+        currency: "USD",
+        seats: seats && seats > 0 ? seats : null,
+        mixedCabin: !!sol.mixedCabin || segmentCabins.some((c) => c !== code),
+      };
+      fares.push(price);
+      const previous = prices[code];
+      if (
+        !previous ||
+        points < previous.points ||
+        (points === previous.points &&
+          (price.cash ?? Infinity) < (previous.cash ?? Infinity))
+      )
+        prices[code] = price;
+    }
+    if (!Object.keys(prices).length) continue;
+    const key = segments
+      .map(
+        (s: { flightNumber: string; departure: string | null }) =>
+          `${s.flightNumber}@${s.departure}`,
+      )
+      .join("|");
+    result.push({
+      id: `AS_${hash(key)}`,
+      programId: "AS_MILEAGEPLAN",
+      origin: q.origin,
+      destination: q.dest,
+      date: q.departDate,
+      kind: "flight",
+      segments,
+      duration: number(row.duration),
+      prices,
+      fares,
+      source: "Alaska Airlines",
+      freshness: "live",
+      observedAt,
+      bookingUrl: bookingUrl("AS_MILEAGEPLAN", q),
+    });
+  }
   return result;
 }
 export function parseJetBlue(
@@ -199,18 +302,16 @@ export function parseJetBlue(
       kind: "calendar",
       segments: [],
       duration: null,
-      prices: {
-        Y: {
-          cabin: "Y",
-          points: day.amount,
-          cash: number(day.tax),
-          currency: "USD",
-          seats: day.seats,
-          mixedCabin: false,
-        },
+      prices: {},
+      calendarQuote: {
+        points: day.amount,
+        cash: number(day.tax),
+        currency: "USD",
+        seats: day.seats,
       },
       source: "JetBlue",
-      freshness: "live",
+      freshness: "cached",
+      retrievedAt: observedAt,
       observedAt,
       bookingUrl: bookingUrl("B6_TRUEBLUE", q),
     },
@@ -260,7 +361,8 @@ export function parseVirgin(
           duration: null,
           prices,
           source: "Virgin Atlantic",
-          freshness: "live",
+          freshness: "cached",
+          retrievedAt: observedAt,
           observedAt,
           bookingUrl: bookingUrl("VS_FLYING_CLUB", q),
         },
@@ -271,6 +373,7 @@ export async function directSearch(
   program: string,
   q: SearchQuery,
   signal: AbortSignal,
+  onRows?: (rows: AwardResult[]) => void,
 ): Promise<AwardResult[]> {
   const headers = {
     "User-Agent": ua,
@@ -286,6 +389,18 @@ export async function directSearch(
     cache: "no-store" as const,
   };
   if (program === "AS_MILEAGEPLAN") {
+    // Cash enrichment must never suppress a valid award result or delay its first display.
+    const cashTask = fetch(alaskaCashUrl(q), {
+      ...opts,
+      signal: AbortSignal.any([signal, AbortSignal.timeout(18000)]),
+      headers: { "User-Agent": ua },
+    })
+      .then(async (res) =>
+        res.ok
+          ? { html: await res.text(), at: new Date().toISOString() }
+          : null,
+      )
+      .catch(() => null);
     const res = await fetch(bookingUrl(program, q), {
       ...opts,
       headers: { "User-Agent": ua },
@@ -295,24 +410,36 @@ export async function directSearch(
         `Alaska is unavailable (HTTP ${res.status}).`,
         res.status,
       );
-    return parseAlaska(await res.text(), q);
+    const rows = parseAlaska(await res.text(), q);
+    if (signal.aborted) throw signal.reason;
+    onRows?.(rows);
+    const cash = await cashTask;
+    if (signal.aborted) throw signal.reason;
+    if (cash) {
+      try {
+        return attachAlaskaCash(rows, cash.html, q, cash.at);
+      } catch {
+        /* Airline cash search may be blocked or change independently. */
+      }
+    }
+    return rows;
   }
   if (program === "B6_TRUEBLUE") {
+    const params = new URLSearchParams({
+      adult: String(q.pax),
+      child: "0",
+      infant: "0",
+      origin: q.origin,
+      destination: q.dest,
+      month: `${month.toLowerCase()} ${date.getUTCFullYear()}`,
+      fareType: "POINTS",
+      tripType: "ONE_WAY",
+    });
     const res = await fetch(
-      "https://jbrest.jetblue.com/bff/bff-service/bestFares/",
+      `https://jbrest.jetblue.com/bff-service-v2/bestFares/?${params}`,
       {
         ...opts,
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          origin: q.origin,
-          destination: q.dest,
-          month: `${month} ${date.getUTCFullYear()}`,
-          fareType: "POINTS",
-          tripType: "ONE_WAY",
-          adult: q.pax,
-          currency: "USD",
-        }),
+        headers: { Accept: "application/json" },
       },
     );
     if (!res.ok)

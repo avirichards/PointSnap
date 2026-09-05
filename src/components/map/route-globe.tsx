@@ -16,7 +16,6 @@ import {
 } from "d3-geo";
 import { feature } from "topojson-client";
 import world from "world-atlas/land-110m.json";
-import { Minus, Plus, LocateFixed, Move, Pause, Play } from "lucide-react";
 import { AIRPORTS } from "@/db/seed/airports";
 const topology = world as unknown as Parameters<typeof feature>[0];
 const land = feature(topology, topology.objects.land);
@@ -59,6 +58,7 @@ export function routeDistance(origin: string, destination: string) {
     : null;
 }
 const motionQuery = "(prefers-reduced-motion: reduce)";
+const rotationSpeed = 0.00135; // Degrees per millisecond.
 function subscribeMotion(listener: () => void) {
   const query = window.matchMedia(motionQuery);
   query.addEventListener("change", listener);
@@ -84,18 +84,27 @@ export function RouteGlobe({
     [from, to],
   );
   const [offset, setOffset] = useState<[number, number]>([0, 0]);
-  const [zoom, setZoom] = useState(1);
-  const [playing, setPlaying] = useState(true);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [focusedAirport, setFocusedAirport] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const reducedMotion = useSyncExternalStore(
     subscribeMotion,
     () => window.matchMedia(motionQuery).matches,
     () => true,
   );
-  const animating = playing && !reducedMotion;
+  const drag = useRef<{
+    x: number;
+    y: number;
+    offset: [number, number];
+    lastX: number;
+    lastY: number;
+    lastAt: number;
+    velocity: [number, number];
+  } | null>(null);
+  const coast = useRef<[number, number]>([rotationSpeed, 0]);
   const elapsedRef = useRef(0);
   useEffect(() => {
-    if (!animating) return;
+    if (reducedMotion) return;
     let frame = 0,
       last = 0;
     const tick = (now: number) => {
@@ -111,36 +120,63 @@ export function RouteGlobe({
       const step = Math.min(delta, 80);
       elapsedRef.current += step;
       setElapsed(elapsedRef.current);
-      setOffset((old) => [old[0] + step * 0.00135, old[1]]);
+      if (!drag.current) {
+        // Frame-independent damping blends the throw back into automatic rotation.
+        const decay = Math.exp(-step / 950);
+        const [vx, vy] = coast.current;
+        const dx =
+          rotationSpeed * step + (vx - rotationSpeed) * 950 * (1 - decay);
+        const dy = vy * 950 * (1 - decay);
+        coast.current = [
+          rotationSpeed + (vx - rotationSpeed) * decay,
+          vy * decay,
+        ];
+        setOffset((old) => [
+          old[0] + dx,
+          Math.max(-75 - center[1], Math.min(75 - center[1], old[1] + dy)),
+        ]);
+      }
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [animating]);
+  }, [reducedMotion, center]);
   const [hover, setHover] = useState("");
-  const drag = useRef<{
-    x: number;
-    y: number;
-    offset: [number, number];
-  } | null>(null);
   const view: [number, number] = [
-    center[0] + offset[0],
+    ((((center[0] + offset[0] + 180) % 360) + 360) % 360) - 180,
     Math.max(-75, Math.min(75, center[1] + offset[1])),
   ];
   const projection = geoOrthographic()
     .rotate([-view[0], -view[1], 0])
-    .scale(214 * zoom)
+    .scale(214)
     .translate([300, 260])
     .clipAngle(90);
   const path = geoPath(projection);
   const visible = AIRPORTS.filter(
     (a) => hubs.includes(a.iata) || a.iata === origin || a.iata === destination,
   ).filter((a) => geoDistance(coordinates(a), view) < Math.PI / 2 - 0.025);
+  const focusedIsVisible = visible.some((a) => a.iata === focusedAirport);
+  useEffect(() => {
+    // Rotation keeps running. Return focus to the stable globe before a
+    // focused marker leaves the visible hemisphere, instead of losing it.
+    if (focusedAirport && !focusedIsVisible)
+      svgRef.current?.focus({ preventScroll: true });
+  }, [focusedAirport, focusedIsVisible]);
+  const markers =
+    focusedAirport && !focusedIsVisible
+      ? [...visible, ...AIRPORTS.filter((a) => a.iata === focusedAirport)]
+      : visible;
   const routes = useMemo(() => {
     const pairs: [[string, string], ...[string, string][]] = [
       [origin, destination],
       ["JFK", "LHR"],
       ["JFK", "LAX"],
       ["SEA", "SFO"],
+      ["LHR", "DXB"],
+      ["DXB", "SIN"],
+      ["SIN", "SYD"],
+      ["HND", "LAX"],
+      ["SFO", "HNL"],
+      ["GRU", "LHR"],
     ];
     const seen = new Set<string>();
     return pairs.flatMap(([a, b], index) => {
@@ -159,8 +195,6 @@ export function RouteGlobe({
     });
   }, [origin, destination]);
   const labels = new Set([origin, destination, hover]);
-  const control =
-    "inline-flex size-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground";
   return (
     <div className="route-globe">
       <div className="globe-coordinate mono-label">
@@ -170,6 +204,7 @@ export function RouteGlobe({
         </span>
       </div>
       <svg
+        ref={svgRef}
         viewBox="0 0 600 520"
         className="globe-svg"
         role="group"
@@ -184,8 +219,8 @@ export function RouteGlobe({
           };
           if (delta[e.key]) {
             e.preventDefault();
-            setPlaying(false);
             const d = delta[e.key];
+            coast.current = [rotationSpeed, 0];
             setOffset((old) => [old[0] + d[0], old[1] + d[1]]);
           }
         }}
@@ -198,24 +233,65 @@ export function RouteGlobe({
             e.currentTarget.contains(selection.anchorNode)
           )
             selection.removeAllRanges();
-          setPlaying(false);
-          drag.current = { x: e.clientX, y: e.clientY, offset };
+          coast.current = [0, 0];
+          drag.current = {
+            x: e.clientX,
+            y: e.clientY,
+            offset,
+            lastX: e.clientX,
+            lastY: e.clientY,
+            lastAt: e.timeStamp,
+            velocity: [0, 0],
+          };
           e.currentTarget.setPointerCapture(e.pointerId);
         }}
         onPointerMove={(e) => {
           if (drag.current) {
             const d = drag.current;
             const scale = 600 / e.currentTarget.getBoundingClientRect().width;
+            const dt = Math.max(1, e.timeStamp - d.lastAt);
+            const blend = 1 - Math.exp(-dt / 35);
+            const vx = Math.max(
+              -0.18,
+              Math.min(0.18, (-(e.clientX - d.lastX) * scale * 0.28) / dt),
+            );
+            const vy = Math.max(
+              -0.12,
+              Math.min(0.12, ((e.clientY - d.lastY) * scale * 0.28) / dt),
+            );
+            d.velocity = [
+              d.velocity[0] + (vx - d.velocity[0]) * blend,
+              d.velocity[1] + (vy - d.velocity[1]) * blend,
+            ];
+            d.lastX = e.clientX;
+            d.lastY = e.clientY;
+            d.lastAt = e.timeStamp;
             setOffset([
               d.offset[0] - (e.clientX - d.x) * scale * 0.28,
-              d.offset[1] + (e.clientY - d.y) * scale * 0.28,
+              Math.max(
+                -75 - center[1],
+                Math.min(
+                  75 - center[1],
+                  d.offset[1] + (e.clientY - d.y) * scale * 0.28,
+                ),
+              ),
             ]);
           }
         }}
-        onPointerUp={() => {
+        onPointerUp={(e) => {
+          const d = drag.current;
+          coast.current =
+            d && !reducedMotion && e.timeStamp - d.lastAt < 100
+              ? d.velocity
+              : [rotationSpeed, 0];
           drag.current = null;
         }}
         onPointerCancel={() => {
+          coast.current = [rotationSpeed, 0];
+          drag.current = null;
+        }}
+        onLostPointerCapture={() => {
+          if (drag.current) coast.current = [rotationSpeed, 0];
           drag.current = null;
         }}
       >
@@ -244,7 +320,7 @@ export function RouteGlobe({
             <feGaussianBlur stdDeviation="3" />
           </filter>
         </defs>
-        <circle cx="300" cy="260" r={241 * zoom} fill={`url(#${uid}halo)`} />
+        <circle cx="300" cy="260" r={241} fill={`url(#${uid}halo)`} />
         <path
           d={path({ type: "Sphere" }) ?? ""}
           fill={`url(#${uid}ocean)`}
@@ -330,7 +406,7 @@ export function RouteGlobe({
             </g>
           );
         })}
-        {visible.map((a) => {
+        {markers.map((a) => {
           const [x, y] = projection(coordinates(a))!;
           const selected = a.iata === origin || a.iata === destination;
           const label = labels.has(a.iata);
@@ -358,9 +434,12 @@ export function RouteGlobe({
               onMouseLeave={() => setHover("")}
               onFocus={() => {
                 setHover(a.iata);
-                setPlaying(false);
+                setFocusedAirport(a.iata);
               }}
-              onBlur={() => setHover("")}
+              onBlur={() => {
+                setHover("");
+                setFocusedAirport("");
+              }}
             >
               <circle r="14" fill="transparent" />
               <circle
@@ -414,59 +493,6 @@ export function RouteGlobe({
           );
         })}
       </svg>
-      <div className="globe-controls">
-        <button
-          className={control}
-          aria-label={
-            animating ? "Pause globe animation" : "Play globe animation"
-          }
-          aria-pressed={animating}
-          disabled={reducedMotion}
-          title={
-            reducedMotion
-              ? "Animation follows your reduced-motion preference"
-              : animating
-                ? "Pause rotation and routes"
-                : "Resume rotation and routes"
-          }
-          onClick={() => setPlaying(!playing)}
-        >
-          {animating ? (
-            <Pause className="size-3.5" />
-          ) : (
-            <Play className="size-3.5" />
-          )}
-        </button>
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Move className="size-3" />
-          Drag to explore
-        </span>
-        <span className="h-4 border-l mx-2" />
-        <button
-          className={control}
-          aria-label="Zoom out"
-          onClick={() => setZoom((z) => Math.max(0.8, z - 0.1))}
-        >
-          <Minus className="size-3.5" />
-        </button>
-        <button
-          className={control}
-          aria-label="Zoom in"
-          onClick={() => setZoom((z) => Math.min(1.2, z + 0.1))}
-        >
-          <Plus className="size-3.5" />
-        </button>
-        <button
-          className={control}
-          aria-label="Center on selected route"
-          onClick={() => {
-            setOffset([0, 0]);
-            setZoom(1);
-          }}
-        >
-          <LocateFixed className="size-3.5" />
-        </button>
-      </div>
     </div>
   );
 }

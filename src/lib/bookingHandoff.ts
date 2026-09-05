@@ -22,7 +22,7 @@ export const BOOKING_SITES: Record<string, string> = {
   EY_GUEST: "https://www.etihad.com/",
   SK_EUROBONUS: "https://www.flysas.com/",
   AY_FINNAIR_PLUS: "https://www.finnair.com/",
-  QF_FF: "https://www.qantas.com/",
+  QF_FF: "https://flightrewardfinder.qantas.com/",
   QR_PRIVILEGE: "https://www.qatarairways.com/",
   SV_ALFURSAN: "https://www.saudia.com/",
   SQ_KRISFLYER: "https://www.singaporeair.com/",
@@ -38,5 +38,7 @@ export function bookingUrl(program: string, q: SearchQuery) {
     return `${base}?${new URLSearchParams({ from: q.origin, to: q.dest, depart: q.departDate, isMultiCity: "false", noOfRoute: "1", adults: String(q.pax), children: "0", infants: "0", usePoints: "true" })}`;
   if (program === "VS_FLYING_CLUB")
     return `${base}results/month?${new URLSearchParams({ origin: q.origin, destination: q.dest, month: q.departDate.slice(0, 7) })}`;
+  if (program === "QF_FF")
+    return `${base}?${new URLSearchParams({ o: q.origin, d: q.dest, dr: `${q.departDate}I${q.departDate}`, p: String(q.pax) })}`;
   return base;
 }

@@ -1,0 +1,1844 @@
+[
+  {
+    "departureStation": "SEA",
+    "arrivalStation": "SFO",
+    "rows": [
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T06:39:00-07:00",
+            "arrivalTime": "2026-10-05T08:49:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 725,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 8 Passenger"
+          }
+        ],
+        "duration": 130,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 42500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SAN",
+            "departureTime": "2026-10-05T07:04:00-07:00",
+            "arrivalTime": "2026-10-05T10:06:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1401,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "SAN",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T10:55:00-07:00",
+            "arrivalTime": "2026-10-05T12:41:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 770,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 337,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 17500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T07:10:00-07:00",
+            "arrivalTime": "2026-10-05T10:10:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AA",
+              "flightNumber": 6219,
+              "carrierFullName": "American Airlines"
+            },
+            "operationalDisclosure": "Operated by Skywest Airlines as American Eagle",
+            "aircraft": "Embraer 175"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T11:00:00-07:00",
+            "arrivalTime": "2026-10-05T12:35:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AA",
+              "flightNumber": 2072,
+              "carrierFullName": "American Airlines"
+            },
+            "operationalDisclosure": "Operated by American Airlines",
+            "aircraft": "Boeing 737-800 Passenger"
+          }
+        ],
+        "duration": 325,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 25000,
+            "milesPoints": null,
+            "grandTotal": 25.6,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "PSP",
+            "departureTime": "2026-10-05T07:40:00-07:00",
+            "arrivalTime": "2026-10-05T10:35:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 610,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "PSP",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T12:58:00-07:00",
+            "arrivalTime": "2026-10-05T14:38:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 3462,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Skywest Airlines as AlaskaSkyWest",
+            "aircraft": "Embraer 175"
+          }
+        ],
+        "duration": 418,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T08:20:00-07:00",
+            "arrivalTime": "2026-10-05T11:22:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1306,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T14:27:00-07:00",
+            "arrivalTime": "2026-10-05T15:52:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1411,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 8 Passenger"
+          }
+        ],
+        "duration": 452,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 7500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAS",
+            "departureTime": "2026-10-05T08:23:00-07:00",
+            "arrivalTime": "2026-10-05T11:12:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 612,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          },
+          {
+            "departureStation": "LAS",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T12:17:00-07:00",
+            "arrivalTime": "2026-10-05T13:59:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 565,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 336,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 47500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 2,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 17500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 5,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "PDX",
+            "departureTime": "2026-10-05T08:40:00-07:00",
+            "arrivalTime": "2026-10-05T09:47:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 279,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "PDX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T10:48:00-07:00",
+            "arrivalTime": "2026-10-05T12:48:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1403,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 248,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 55000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 2,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 17500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 5,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SAN",
+            "departureTime": "2026-10-05T08:49:00-07:00",
+            "arrivalTime": "2026-10-05T11:50:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1367,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "SAN",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T13:10:00-07:00",
+            "arrivalTime": "2026-10-05T14:51:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 2494,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Horizon Air as AlaskaHorizon",
+            "aircraft": "Embraer 175"
+          }
+        ],
+        "duration": 362,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 55000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 17500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T09:59:00-07:00",
+            "arrivalTime": "2026-10-05T12:26:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 528,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 147,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T10:07:00-07:00",
+            "arrivalTime": "2026-10-05T13:05:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 496,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T14:27:00-07:00",
+            "arrivalTime": "2026-10-05T15:52:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1411,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 8 Passenger"
+          }
+        ],
+        "duration": 345,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 7500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T10:07:00-07:00",
+            "arrivalTime": "2026-10-05T13:05:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 496,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T15:37:00-07:00",
+            "arrivalTime": "2026-10-05T17:00:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 91,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 413,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 7500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "GEG",
+            "departureTime": "2026-10-05T11:32:00-07:00",
+            "arrivalTime": "2026-10-05T12:54:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 454,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-700 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "GEG",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T13:57:00-07:00",
+            "arrivalTime": "2026-10-05T16:12:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 2411,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Horizon Air as AlaskaHorizon",
+            "aircraft": "Embraer 175"
+          }
+        ],
+        "duration": 280,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T11:33:00-07:00",
+            "arrivalTime": "2026-10-05T14:34:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 487,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T15:37:00-07:00",
+            "arrivalTime": "2026-10-05T17:00:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 91,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 327,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 5,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 4,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T11:33:00-07:00",
+            "arrivalTime": "2026-10-05T14:34:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 487,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T17:25:00-07:00",
+            "arrivalTime": "2026-10-05T18:50:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 361,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          }
+        ],
+        "duration": 437,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 4,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T11:54:00-07:00",
+            "arrivalTime": "2026-10-05T14:23:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 655,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 149,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 5,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAS",
+            "departureTime": "2026-10-05T12:11:00-07:00",
+            "arrivalTime": "2026-10-05T15:00:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 738,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 8 Passenger"
+          },
+          {
+            "departureStation": "LAS",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T16:27:00-07:00",
+            "arrivalTime": "2026-10-05T18:10:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 634,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 359,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 17500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "PDX",
+            "departureTime": "2026-10-05T12:13:00-07:00",
+            "arrivalTime": "2026-10-05T13:24:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 488,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "PDX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T14:53:00-07:00",
+            "arrivalTime": "2026-10-05T16:47:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 236,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 274,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 47500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 6,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 22500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T13:37:00-07:00",
+            "arrivalTime": "2026-10-05T16:32:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AA",
+              "flightNumber": 4988,
+              "carrierFullName": "American Airlines"
+            },
+            "operationalDisclosure": "Operated by Skywest Airlines as American Eagle",
+            "aircraft": "Embraer 175"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T19:50:00-07:00",
+            "arrivalTime": "2026-10-05T21:17:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1364,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 460,
+        "solutions": {
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 25.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T13:55:00-07:00",
+            "arrivalTime": "2026-10-05T16:08:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 688,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          }
+        ],
+        "duration": 133,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 42500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 6,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T14:19:00-07:00",
+            "arrivalTime": "2026-10-05T17:03:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 696,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T19:50:00-07:00",
+            "arrivalTime": "2026-10-05T21:17:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1364,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 418,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 7500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "PSP",
+            "departureTime": "2026-10-05T14:27:00-07:00",
+            "arrivalTime": "2026-10-05T17:11:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 322,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "PSP",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T19:12:00-07:00",
+            "arrivalTime": "2026-10-05T20:43:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 2401,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Horizon Air as AlaskaHorizon",
+            "aircraft": "Embraer 175"
+          }
+        ],
+        "duration": 376,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 47500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 4,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SAN",
+            "departureTime": "2026-10-05T14:59:00-07:00",
+            "arrivalTime": "2026-10-05T17:52:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 765,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "SAN",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T18:51:00-07:00",
+            "arrivalTime": "2026-10-05T20:33:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 453,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 334,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 47500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 2,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 17500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 5,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T15:20:00-07:00",
+            "arrivalTime": "2026-10-05T17:59:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1300,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 8 Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T19:50:00-07:00",
+            "arrivalTime": "2026-10-05T21:17:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1364,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 357,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAS",
+            "departureTime": "2026-10-05T15:33:00-07:00",
+            "arrivalTime": "2026-10-05T18:09:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 552,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAS",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T20:49:00-07:00",
+            "arrivalTime": "2026-10-05T22:27:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 613,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 414,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 5,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T15:44:00-07:00",
+            "arrivalTime": "2026-10-05T18:01:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 680,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 137,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 42500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 4,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "PDX",
+            "departureTime": "2026-10-05T15:54:00-07:00",
+            "arrivalTime": "2026-10-05T16:50:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 2348,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Horizon Air as AlaskaHorizon",
+            "aircraft": "Embraer 175"
+          },
+          {
+            "departureStation": "PDX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T17:48:00-07:00",
+            "arrivalTime": "2026-10-05T19:47:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1393,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          }
+        ],
+        "duration": 233,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 22500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "RDM",
+            "departureTime": "2026-10-05T16:17:00-07:00",
+            "arrivalTime": "2026-10-05T17:29:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 3435,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Skywest Airlines as AlaskaSkyWest",
+            "aircraft": "Embraer 175"
+          },
+          {
+            "departureStation": "RDM",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T18:22:00-07:00",
+            "arrivalTime": "2026-10-05T20:10:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 3361,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Skywest Airlines as AlaskaSkyWest",
+            "aircraft": "Embraer 175"
+          }
+        ],
+        "duration": 233,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 22500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SAN",
+            "departureTime": "2026-10-05T16:54:00-07:00",
+            "arrivalTime": "2026-10-05T19:43:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 791,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          },
+          {
+            "departureStation": "SAN",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T20:55:00-07:00",
+            "arrivalTime": "2026-10-05T22:40:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1331,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 346,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 2,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAX",
+            "departureTime": "2026-10-05T17:04:00-07:00",
+            "arrivalTime": "2026-10-05T19:48:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1390,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T22:02:00-07:00",
+            "arrivalTime": "2026-10-05T23:37:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AA",
+              "flightNumber": 2673,
+              "carrierFullName": "American Airlines"
+            },
+            "operationalDisclosure": "Operated by American Airlines",
+            "aircraft": "Boeing 737-800 Passenger"
+          }
+        ],
+        "duration": 393,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "COACH",
+              "FIRST"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 25.6,
+            "seatsRemaining": 9,
+            "mixedCabin": true,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 25.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "LAS",
+            "departureTime": "2026-10-05T17:20:00-07:00",
+            "arrivalTime": "2026-10-05T19:53:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 678,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          },
+          {
+            "departureStation": "LAS",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T20:49:00-07:00",
+            "arrivalTime": "2026-10-05T22:27:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 613,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 307,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 12500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "PDX",
+            "departureTime": "2026-10-05T17:58:00-07:00",
+            "arrivalTime": "2026-10-05T18:55:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 2436,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Horizon Air as AlaskaHorizon",
+            "aircraft": "Embraer 175"
+          },
+          {
+            "departureStation": "PDX",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T19:37:00-07:00",
+            "arrivalTime": "2026-10-05T21:27:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 2112,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Horizon Air as AlaskaHorizon",
+            "aircraft": "Embraer 175"
+          }
+        ],
+        "duration": 209,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "atmosPoints": 37500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "atmosPoints": 22500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T17:59:00-07:00",
+            "arrivalTime": "2026-10-05T20:17:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1385,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-800 (Winglets) Passenger"
+          }
+        ],
+        "duration": 138,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 27500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 20000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T19:36:00-07:00",
+            "arrivalTime": "2026-10-05T21:49:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 619,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 133,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 22500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 15000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T20:36:00-07:00",
+            "arrivalTime": "2026-10-05T22:49:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 590,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger"
+          }
+        ],
+        "duration": 133,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 22500,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 6,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 15000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T21:36:00-07:00",
+            "arrivalTime": "2026-10-05T23:52:00-07:00",
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 410,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "operationalDisclosure": "Operated by Alaska",
+            "aircraft": "Boeing 737 MAX 9 Passenger"
+          }
+        ],
+        "duration": 136,
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "atmosPoints": 15000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 6,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "atmosPoints": 5000,
+            "milesPoints": null,
+            "grandTotal": 5.6,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": true
+          }
+        }
+      }
+    ]
+  }
+]

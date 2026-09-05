@@ -20,17 +20,16 @@ export default function ProgramsPage() {
           <span className="text-muted-foreground">One place to compare.</span>
         </h1>
         <p className="mt-4 max-w-2xl text-muted-foreground">
-          {enabled.length} program connections are enabled. Availability depends
-          on the route, date, and cabin. Every search shows which programs
-          responded.
+          Search without connecting an airline account. {enabled.length} data
+          sources are enabled, with their coverage shown below.
         </p>
         <div className="mt-6 rounded-xl border bg-card p-5 flex items-start gap-3">
           <Globe2 className="size-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground">
             Alaska returns individual flights. JetBlue and Virgin Atlantic
-            return daily award prices; you choose the exact flight with the
-            airline. Programs without a data connection can be searched on their
-            official sites.
+            return daily fare summaries, not complete flight lists. Alaska may
+            also return partner flights bookable with Alaska points. Complete
+            coverage of every airline and fare has not been verified.
           </p>
         </div>
         <section
@@ -57,7 +56,9 @@ export default function ProgramsPage() {
                   {enabled.includes(p.id) ? (
                     <>
                       <Check className="size-4 text-primary" />
-                      Search connection enabled
+                      {p.id === "B6_TRUEBLUE" || p.id === "VS_FLYING_CLUB"
+                        ? "Daily fare summary only"
+                        : "Individual flight source"}
                     </>
                   ) : (
                     <>Data connection needed</>

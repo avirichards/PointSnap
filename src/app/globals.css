@@ -520,14 +520,6 @@ select:focus-visible {
 .globe-coordinate span {
   letter-spacing: 0;
 }
-.globe-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-top: -18px;
-  position: relative;
-}
 .globe-placeholder {
   min-height: 450px;
   display: flex;
@@ -704,9 +696,6 @@ select:focus-visible {
   }
   .globe-coordinate {
     top: 14px;
-  }
-  .globe-controls {
-    margin-top: -10px;
   }
   .route-shortcuts {
     display: block;

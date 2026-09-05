@@ -1,19 +1,36 @@
 import type { Cabin, SearchQuery } from "@/lib/types";
 export type CoverageState =
-  "pending" | "success" | "empty" | "unavailable" | "error";
+  | "pending"
+  | "success"
+  | "empty"
+  | "unavailable"
+  | "error";
 export interface Coverage {
   programId: string;
   state: CoverageState;
   message?: string;
   source?: string;
+  inventory?: "flights" | "calendar";
 }
 export interface AwardPrice {
+  fareId?: string;
+  fareName?: string;
+  refundable?: boolean | null;
+  segmentCabins?: (Cabin | null)[];
   cabin: Cabin;
   points: number;
   cash: number | null;
   currency: string | null;
   seats: number | null;
   mixedCabin: boolean;
+  cashFare?: {
+    amount: number;
+    currency: string;
+    fareName: string;
+    refundable: boolean | null;
+    observedAt: string;
+    bookingUrl: string;
+  };
   transferOptions?: { currencyId: string; points: number; bonusPct: number }[];
 }
 export interface AwardSegment {
@@ -22,6 +39,8 @@ export interface AwardSegment {
   departure: string | null;
   arrival: string | null;
   airline: string;
+  airlineName?: string | null;
+  operatedBy?: string | null;
   flightNumber: string;
   aircraft?: string | null;
   cabin?: Cabin | null;
@@ -36,6 +55,11 @@ export interface AwardResult {
   segments: AwardSegment[];
   duration: number | null;
   prices: Partial<Record<Cabin, AwardPrice>>;
+  // Preserve every source fare, including multiple fare families in a cabin.
+  fares?: AwardPrice[];
+  // A daily summary whose source does not identify a cabin or an itinerary.
+  calendarQuote?: Pick<AwardPrice, "points" | "cash" | "currency" | "seats">;
+  retrievedAt?: string;
   source: string;
   freshness: "live" | "cached";
   observedAt: string;
