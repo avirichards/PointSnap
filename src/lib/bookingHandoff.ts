@@ -18,7 +18,7 @@ export const BOOKING_SITES: Record<string, string> = {
   AD_AZUL_TUDOAZUL: "https://www.voeazul.com.br/",
   CM_CONNECTMILES: "https://www.copaair.com/",
   EK_SKYWARDS: "https://www.emirates.com/",
-  ET_SHEBAMILES: "https://www.ethiopianairlines.com/",
+  ET_SHEBAMILES: "https://dxbooking.ethiopianairlines.com/dx/ETDX/",
   EY_GUEST: "https://www.etihad.com/",
   SK_EUROBONUS: "https://www.flysas.com/",
   AY_FINNAIR_PLUS: "https://www.finnair.com/",
@@ -60,6 +60,10 @@ export function bookingUrl(program: string, q: SearchQuery) {
     return `${base}?${new URLSearchParams({ o: q.origin, d: q.dest, dr: `${q.departDate}I${q.departDate}`, p: String(q.pax) })}`;
   if (program === "AM_CLUB_PREMIER")
     return `${base}?${new URLSearchParams({ itinerary: `${q.origin}_${q.dest}_${q.departDate}`, travelers: `A${q.pax}_C0_I0_PH0_PC0`, amrpoints: "true" })}`;
+  if (program === "ET_SHEBAMILES") {
+    const [year, month, day] = q.departDate.split("-");
+    return `${base}#/home?${new URLSearchParams({ journeyType: "one-way", origin: q.origin, destination: q.dest, date: `${month}-${day}-${year}`, class: q.minCabin === "Y" ? "Economy" : "Business", ADT: String(q.pax), CHD: "0", INF: "0", locale: "en-GB", awardBooking: "true" })}`;
+  }
   if (program === "F9_FRONTIER_MILES") {
     const date = new Date(`${q.departDate}T12:00:00Z`);
     const month = date.toLocaleString("en-US", {

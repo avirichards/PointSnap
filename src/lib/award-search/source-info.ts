@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  ET_SHEBAMILES: {
+    inventory: "flights",
+    label: "Ethiopian ShebaMiles award flights",
+    detail:
+      "Individual itineraries and supplied Economy and Business awards, including connections and stops on the same flight. Cash fees are not reported by this search response.",
+  },
   AS_MILEAGEPLAN: {
     inventory: "flights",
     label: "Alaska & offered partner awards",

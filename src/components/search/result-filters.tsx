@@ -1,4 +1,5 @@
 "use client";
+import { stopAirports } from "@/lib/award-search/stops";
 
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import {
@@ -295,11 +296,10 @@ export function ResultFilterBar({
   ].sort((a, b) => a.name.localeCompare(b.name));
   const connections = [
     ...new Set(
-      groups.flatMap((g) =>
-        g.row.segments
-          .slice(0, -1)
-          .flatMap((s, i) => [s.destination, g.row.segments[i + 1].origin]),
-      ),
+      groups.flatMap((g) => [
+        ...stopAirports(g.row),
+        ...g.row.segments.slice(1).map((s) => s.origin),
+      ]),
     ),
   ].sort();
   const transfers = [

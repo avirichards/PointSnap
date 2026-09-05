@@ -4,6 +4,7 @@ import { CABIN_ORDER } from "@/lib/types";
 import type { AwardPrice, AwardResult } from "./types";
 import { centsPerPoint, pointsForParty } from "./value";
 import { PROGRAMS } from "@/lib/programs";
+import { stopAirports, stopCount } from "./stops";
 export type SortOrder =
   | "points"
   | "value"
@@ -221,10 +222,7 @@ export function matchesOffer(
     )
   )
     return false;
-  if (
-    !below(r.segments.length - 1, f.maxStops) ||
-    !below(r.duration, f.maxDuration, 60)
-  )
+  if (!below(stopCount(r), f.maxStops) || !below(r.duration, f.maxDuration, 60))
     return false;
   const waits = layovers(r);
   if (f.minLayover !== "" && waits.some((n) => !above(n, f.minLayover)))
@@ -240,9 +238,10 @@ export function matchesOffer(
     )
   )
     return false;
-  const connections = r.segments
-    .slice(0, -1)
-    .flatMap((s, i) => [s.destination, r.segments[i + 1].origin]);
+  const connections = [
+    ...stopAirports(r),
+    ...r.segments.slice(1).map((s) => s.origin),
+  ];
   if (f.via && !tokens(f.via).some((t) => connections.includes(t)))
     return false;
   if (f.avoid && tokens(f.avoid).some((t) => connections.includes(t)))
@@ -398,7 +397,7 @@ export function sortGroups(
       return values.length ? Math.max(...values) : null;
     }
     if (sort === "duration") return g.row.duration;
-    if (sort === "stops") return g.row.segments.length - 1;
+    if (sort === "stops") return stopCount(g.row);
     if (sort === "programs") return g.programs.length;
     if (sort === "freshness") {
       const ts = g.offers

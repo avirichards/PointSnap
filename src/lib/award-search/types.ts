@@ -1,11 +1,6 @@
 import type { Cabin, SearchQuery } from "@/lib/types";
 export type CoverageState =
-  | "partial"
-  | "pending"
-  | "success"
-  | "empty"
-  | "unavailable"
-  | "error";
+  "partial" | "pending" | "success" | "empty" | "unavailable" | "error";
 export interface Coverage {
   programId: string;
   state: CoverageState;
@@ -52,6 +47,13 @@ export interface AwardSegment {
   flightNumber: string;
   aircraft?: string | null;
   cabin?: Cabin | null;
+  /** Intermediate stops on the same flight, distinct from a connection. */
+  technicalStops?: {
+    airport: string;
+    arrival: string | null;
+    departure: string | null;
+    duration: number | null;
+  }[];
 }
 export interface AwardResult {
   id: string;

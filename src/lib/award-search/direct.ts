@@ -14,6 +14,7 @@ import { skywardsSearch } from "./skywards";
 import { frontierSearch } from "./frontier";
 import { aeromexicoSearch } from "./aeromexico";
 import { jetblueSearch } from "./jetblue";
+import { ethiopianSearch } from "./ethiopian";
 
 // These adapters read publicly accessible award-search responses; never execute
 // airline JavaScript or turn failed HTTP responses into invented availability.
@@ -24,6 +25,7 @@ export const DIRECT_PROGRAMS = [
   "EK_SKYWARDS",
   "F9_FRONTIER_MILES",
   "AM_CLUB_PREMIER",
+  "ET_SHEBAMILES",
 ];
 const ua = "Mozilla/5.0 (compatible; PointSnap/1.0)";
 export function normalizeLiteral(input: string): string {
@@ -342,6 +344,7 @@ export async function directSearch(
   if (program === "F9_FRONTIER_MILES") return frontierSearch(q, signal);
   if (program === "AM_CLUB_PREMIER") return aeromexicoSearch(q, signal);
   if (program === "B6_TRUEBLUE") return jetblueSearch(q, signal, onRows);
+  if (program === "ET_SHEBAMILES") return ethiopianSearch(q, signal, onRows);
   const headers = {
     "User-Agent": ua,
     Accept: "application/json",

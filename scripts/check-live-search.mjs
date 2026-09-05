@@ -10,6 +10,7 @@ const routes = [
   ["EK_SKYWARDS", "MAN", "ALC"],
   ["F9_FRONTIER_MILES", "DEN", "LAS"],
   ["AM_CLUB_PREMIER", "MEX", "CUN"],
+  ["ET_SHEBAMILES", "ADD", "NBO"],
 ];
 let failed = false;
 for (const [programs, origin, dest] of routes) {

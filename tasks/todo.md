@@ -572,3 +572,13 @@ git commit -m "chore(scraper): retire ScraperAPI; document Bright Data CDP trans
 - **Per-account login pools** (BA, AC, AA — see `creds_for()` in `browser.py:208-239`) untested with CDP session model. If login flows fail in Phase 5, may need a per-plugin workaround (login + token-extract → re-attach to subsequent goto).
 - **Parser repair (Phase 6) is the dominant cost** of this migration in human-hours. Don't underestimate.
 - **Eventual VS/AS migration to Bright Data** can happen later if IPRoyal breaks. Not needed now.
+
+
+## Current airline-first continuation (September5,2026; supersedes older paid-transport assumptions)
+
+- [x] Ethiopian fresh anonymous transport reproduced in Node.
+- [x] Preserve all observed offers/references, both cabins, passenger totals, unknown taxes and technical stops.
+- [x] Integrate source and verify real SSE + browser, including selected-cabin handoff.
+- [x] Add eight meaningful regression tests (140 total passed).
+- [ ] Finish production build/CI and hosted transport verification for Ethiopian milestone.
+- [ ] Continue distinct American/United/remaining airline leads; do not equate partner coverage or browser-only success with native server connectivity.

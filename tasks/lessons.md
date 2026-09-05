@@ -57,3 +57,10 @@ ScraperAPI's proxy port terminates TLS at their server and re-presents their own
 - 2026-09-05: Draggable SVG maps must disable native text selection and prevent pointer-down focus/selection defaults. Preserve a visible keyboard-only focus state; avoid a mouse-triggered rectangular outline around the globe.
 
 - User's core requirement is complete flight-level inventory, not just an endpoint that returns a daily award price. Mark calendar integrations as partial, separate them from flight lists, and explicitly verify completeness/pagination/cabins before describing an airline as connected and complete.
+
+
+## Status questions during ongoing airline work
+
+The user explicitly prioritizes airline access and asked not to stop until connections work or all remaining practical ideas are exhausted. Answer status questions briefly, then resume concrete work in the same turn. One denied endpoint, a browser-only proof, or a passing parser fixture is not overall completion. Record distinct attempts, response evidence and open leads, and keep the live feed aligned with actual activity.
+
+- Airline response graphs can reuse flight segments by reference and count same-flight technical stops. Completeness checks must resolve references and compare every native itinerary before enabling a source. Passenger-total quotes and missing tax amounts require explicit normalization; verify the selected cabin survives booking handoff in the real browser.

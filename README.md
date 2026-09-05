@@ -22,6 +22,7 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 | --- | --- | --- |
 | Alaska Airlines / Atmos Rewards | Individual itineraries including available partners, per-person points, USD taxes, seats and matching cash fares | Direct public search |
 | JetBlue / TrueBlue | Supplied JetBlue/partner itineraries and fare families; per-segment cabins, points, taxes and exact-fare cash comparisons when matched | Direct public flight search |
+| Ethiopian ShebaMiles | Economy and Business itineraries, all supplied fares, exact passenger totals and same-flight stops; cash fees unreported. | Direct anonymous airline search |
 | Emirates Skywards partners | Individual easyJet and Jet2 flights, exact party miles; taxes included. Emirates-operated flights are not connected. | Direct public partner portal |
 | Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
 | Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |

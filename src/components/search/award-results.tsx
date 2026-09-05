@@ -38,6 +38,8 @@ import type {
 } from "@/lib/award-search/types";
 import type { WalletData } from "@/lib/wallet";
 import { centsPerPoint, pointsForParty } from "@/lib/award-search/value";
+import { stopAirports, stopCount } from "@/lib/award-search/stops";
+import { bookingUrl } from "@/lib/bookingHandoff";
 export const programName = (id: string) =>
   PROGRAMS.find((p) => p.id === id)?.name ?? id;
 const airlines = (row: AwardResult) =>
@@ -198,11 +200,7 @@ function Results({
       >
         {label}
         <span aria-hidden>
-          {sort === key && sortCabin === cabin
-            ? descending
-              ? "↓"
-              : "↑"
-            : "↕"}
+          {sort === key && sortCabin === cabin ? (descending ? "↓" : "↑") : "↕"}
         </span>
       </button>
     </th>
@@ -478,12 +476,9 @@ function Results({
                       {duration(g.row.duration)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {g.row.segments.length === 1
+                      {stopCount(g.row) === 0
                         ? "Nonstop"
-                        : g.row.segments
-                            .slice(0, -1)
-                            .map((s) => s.destination)
-                            .join(" · ")}
+                        : stopAirports(g.row).join(" · ")}
                     </p>
                   </td>
                   {CABIN_ORDER.map((c) => (
@@ -520,12 +515,9 @@ function Results({
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               {g.row.date} · {duration(g.row.duration)} ·{" "}
-              {g.row.segments.length === 1
+              {stopCount(g.row) === 0
                 ? "Nonstop"
-                : `via ${g.row.segments
-                    .slice(0, -1)
-                    .map((s) => s.destination)
-                    .join(", ")}`}
+                : `via ${stopAirports(g.row).join(", ")}`}
             </p>
             <div className="grid grid-cols-2 gap-2 mt-4">
               {CABIN_ORDER.filter((c) => best(g, c)).map((c) => (
@@ -859,6 +851,16 @@ function Details({
   const [fareId, setFareId] = useState(row.prices[cabin]?.fareId);
   const options = row.fares?.filter((p) => p.cabin === cabin) ?? [];
   const price = options.find((p) => p.fareId === fareId) ?? row.prices[cabin]!;
+  const continueUrl =
+    row.programId === "ET_SHEBAMILES"
+      ? bookingUrl(row.programId, {
+          origin: row.origin,
+          dest: row.destination,
+          departDate: row.date,
+          pax,
+          minCabin: price.cabin,
+        })
+      : row.bookingUrl;
   const value = centsPerPoint(price);
   const balance = wallet?.entries.find(
     (e) => e.asset_id === row.programId,
@@ -1036,6 +1038,18 @@ function Details({
                     ? ` · ${CABIN_LABEL[s.cabin]}`
                     : ""}
               </p>
+              {s.technicalStops?.map((stop) => (
+                <p
+                  key={stop.airport}
+                  className="text-sm text-muted-foreground mt-2"
+                >
+                  Stop in {stop.airport} on the same flight ·{" "}
+                  {time(stop.arrival)} – {time(stop.departure)}
+                  {stop.duration !== null
+                    ? ` · ${duration(stop.duration)}`
+                    : ""}
+                </p>
+              ))}
             </li>
           ))}
         </ol>
@@ -1070,7 +1084,7 @@ function Details({
       </div>
       <div className="flex flex-wrap gap-3">
         <Button asChild className="h-11 flex-1">
-          <a href={row.bookingUrl} target="_blank" rel="noopener noreferrer">
+          <a href={continueUrl} target="_blank" rel="noopener noreferrer">
             Continue with airline <ArrowUpRight className="size-4" />
           </a>
         </Button>
@@ -1080,7 +1094,7 @@ function Details({
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(
-                `${programName(row.programId)}: ${row.origin} to ${row.destination}, ${row.date}, ${CABIN_LABEL[cabin]}, ${pax} passengers. ${points(pointsForParty(price, pax))} points; ${cashLabel(price, pax)}. Flights: ${row.segments.map((s) => s.flightNumber).join(", ") || "choose on airline"}. ${row.bookingUrl}`,
+                `${programName(row.programId)}: ${row.origin} to ${row.destination}, ${row.date}, ${CABIN_LABEL[cabin]}, ${pax} passengers. ${points(pointsForParty(price, pax))} points; ${cashLabel(price, pax)}. Flights: ${row.segments.map((s) => s.flightNumber).join(", ") || "choose on airline"}. ${continueUrl}`,
               );
               setCopied(true);
             } catch {
