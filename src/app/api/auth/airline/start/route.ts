@@ -1,3 +1,4 @@
+import { workerHeaders, workerConfigured } from "@/lib/worker";
 /**
  * POST /api/auth/airline/start
  *
@@ -37,10 +38,12 @@ interface WorkerStartResponse {
 }
 
 export async function POST(req: NextRequest) {
+  const userId = await resolveUserId(req);
+  if (!userId) return noUserResponse();
   const base = process.env.PYTHON_WORKER_URL;
-  if (!base) {
+  if (!base || !workerConfigured()) {
     return Response.json(
-      { message: "PYTHON_WORKER_URL not configured" },
+      { message: "Airline services are not configured yet." },
       { status: 501 },
     );
   }
@@ -52,7 +55,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ message: "invalid JSON body" }, { status: 400 });
   }
 
-  if (typeof body.programId !== "string" || body.programId.length === 0) {
+  if (!body || typeof body.programId !== "string" || body.programId.length === 0) {
     return Response.json({ message: "programId required" }, { status: 400 });
   }
   if (typeof body.username !== "string" || body.username.length === 0) {
@@ -62,19 +65,19 @@ export async function POST(req: NextRequest) {
     return Response.json({ message: "password required" }, { status: 400 });
   }
 
-  const userId = resolveUserId(req, body.userId);
-  if (!userId) return noUserResponse();
-
   // Worker takes program + user_id as QUERY params; credentials in the body.
   const url =
     `${base.replace(/\/$/, "")}/auth/start?` +
-    new URLSearchParams({ program: body.programId, user_id: userId }).toString();
+    new URLSearchParams({
+      program: body.programId,
+      user_id: userId,
+    }).toString();
 
   let res: Response;
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...workerHeaders(userId) },
       body: JSON.stringify({
         username: body.username,
         password: body.password,

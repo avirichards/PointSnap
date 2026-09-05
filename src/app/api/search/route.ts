@@ -1,139 +1,106 @@
+import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
-import type {
-  SearchQuery,
-  SearchResultRow,
-  SearchStreamEvent,
-} from "@/lib/types";
-
+import { parseQuery, selectedPrograms } from "@/lib/award-search/query";
+import { hasPaidProvider, runSearch } from "@/lib/award-search/engine";
+import { allowSearch } from "@/lib/award-search/limit";
+import { currentUser } from "@/lib/supabase/server";
+import type { AwardEvent } from "@/lib/award-search/types";
 export const runtime = "nodejs";
-
-const PROGRAMS: readonly string[] = [
-  "VS_FLYING_CLUB",
-  "AS_MILEAGEPLAN",
-  "BA_AVIOS",
-  "AV_LIFEMILES",
-  "AF_FLYINGBLUE",
-  "UA_MP",
-  "TK_MILES_SMILES",
-  "NH_ANA",
-  "AA_AADVANTAGE",
-  "DL_SKYMILES",
-  "CX_CATHAY",
-  "AC_AEROPLAN",
-  "LH_MILES_MORE",
-] as const;
-
-const WORKER_TIMEOUT_MS = 60_000;
-
-async function fetchWorkerResults(
-  programId: string,
-  query: SearchQuery,
-): Promise<SearchResultRow[]> {
-  const base = process.env.PYTHON_WORKER_URL;
-  if (!base) return [];
-  const url =
-    `${base.replace(/\/$/, "")}/search?` +
-    new URLSearchParams({
-      program: programId,
-      origin: query.origin,
-      dest: query.dest,
-      date: query.departDate,
-      pax: String(query.pax),
-      minCabin: query.minCabin,
-    }).toString();
-
-  const ctrl = new AbortController();
-  const timeout = setTimeout(() => ctrl.abort(), WORKER_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal });
-    if (!res.ok) {
-      console.warn(`worker ${programId} returned ${res.status}`);
-      return [];
-    }
-    const json = (await res.json()) as { rows?: SearchResultRow[] };
-    return Array.isArray(json.rows) ? json.rows : [];
-  } catch (err) {
-    console.warn(`worker ${programId} fetch failed:`, err);
-    return [];
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function send(
-  controller: ReadableStreamDefaultController<Uint8Array>,
-  event: SearchStreamEvent,
-) {
-  controller.enqueue(
-    new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`),
-  );
-}
-
+export const maxDuration = 120;
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const query: SearchQuery = {
-    origin: (searchParams.get("origin") ?? "JFK").toUpperCase(),
-    dest: (searchParams.get("dest") ?? "LHR").toUpperCase(),
-    departDate:
-      searchParams.get("departDate") ??
-      new Date(Date.now() + 14 * 86400_000).toISOString().slice(0, 10),
-    returnDate: searchParams.get("returnDate") ?? undefined,
-    pax: Math.max(1, Number(searchParams.get("pax") ?? "1")),
-    minCabin: (searchParams.get("minCabin") ?? "Y") as SearchQuery["minCabin"],
-  };
-
+  let query, ids;
+  try {
+    query = parseQuery(req.nextUrl.searchParams);
+    ids = selectedPrograms(req.nextUrl.searchParams);
+  } catch {
+    return Response.json(
+      {
+        message:
+          "Choose two different airports, valid travel dates, and 1–9 passengers.",
+      },
+      { status: 400 },
+    );
+  }
+  const paid = hasPaidProvider();
+  const user = await currentUser();
+  if (paid && !user)
+    return Response.json(
+      { message: "Sign in to search connected award-data services." },
+      { status: 401 },
+    );
+  const identity =
+    user?.id ??
+    createHash("sha256")
+      .update(req.headers.get("x-forwarded-for")?.split(",")[0] ?? "local")
+      .digest("hex")
+      .slice(0, 24);
+  try {
+    if (!(await allowSearch(identity, paid)))
+      return Response.json(
+        { message: "Search limit reached. Please try again in 10 minutes." },
+        { status: 429 },
+      );
+  } catch {
+    return Response.json(
+      { message: "Search is temporarily unavailable. Please try again later." },
+      { status: 503 },
+    );
+  }
+  const cancel = new AbortController();
+  const signal = AbortSignal.any([
+    req.signal,
+    cancel.signal,
+    AbortSignal.timeout(110000),
+  ]);
+  const started = Date.now();
+  let closed = false;
+  const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const start = Date.now();
-      const searchId = `s_${start.toString(36)}`;
-
-      send(controller, {
-        type: "meta",
-        searchId,
-        programs: [...PROGRAMS],
-        pax: query.pax,
-      });
-
-      let totalRows = 0;
-
-      const tasks = PROGRAMS.map(async (programId) => {
-        const rows = await fetchWorkerResults(programId, query);
-        if (rows.length > 0) {
-          totalRows += rows.length;
-          send(controller, { type: "partial", programId, rows });
-          send(controller, {
-            type: "program_done",
-            programId,
-            status: "success",
+      const emit = (event: AwardEvent) => {
+        if (!closed && !signal.aborted)
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
+          );
+      };
+      const heartbeat = setInterval(() => {
+        if (!closed && !signal.aborted)
+          controller.enqueue(encoder.encode(": keepalive\n\n"));
+      }, 10000);
+      try {
+        await runSearch(ids, { query, signal, emit });
+        if (!signal.aborted)
+          emit({ type: "complete", durationMs: Date.now() - started });
+      } catch {
+        if (!signal.aborted)
+          emit({
+            type: "error",
+            message:
+              "Search interrupted. Results already received remain available.",
           });
-        } else {
-          send(controller, {
-            type: "program_done",
-            programId,
-            status: "partial",
-          });
+      } finally {
+        clearInterval(heartbeat);
+        if (!closed) {
+          if (signal.aborted && !req.signal.aborted)
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: "error", message: "Search timed out. Results already received remain available." })}\n\n`,
+              ),
+            );
+          closed = true;
+          controller.close();
         }
-      });
-
-      await Promise.all(tasks);
-
-      send(controller, {
-        type: "complete",
-        totalRows,
-        durationMs: Date.now() - start,
-      });
-      controller.close();
+      }
     },
     cancel() {
-      // Client disconnected — nothing to clean up.
+      closed = true;
+      cancel.abort();
     },
   });
-
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
+      "Cache-Control": "private, no-store, no-transform",
       "X-Accel-Buffering": "no",
     },
   });

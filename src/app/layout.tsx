@@ -17,11 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "PointSnap — the points cockpit",
+    default: "PointSnap — Award intelligence",
     template: "%s · PointSnap",
   },
   description:
-    "Accuracy-first award flight search across every major program. Spreadsheet UX, confidence scoring, wallet-aware pricing.",
+    "Search live award-flight availability from connected airlines. Compare points, taxes and cabin options in one workspace.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -30,7 +30,6 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/icon.svg",
-    apple: "/apple-touch-icon.png",
   },
 };
 

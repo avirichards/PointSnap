@@ -2172,3 +2172,7 @@ dependent process is absent ⇒ the process started before the secret did.
 |---|---|
 | `6081c03` | diag(tailscale): add /diag/tailscale endpoint to inspect the worker tunnel |
 | _(this entry)_ | docs(scraper): Session 19 — Tailscale was a stale-image problem, now verified working |
+
+## 2026-09-05 — New app-owned search pipeline
+
+The new `/api/search` uses TypeScript direct adapters and optional app-owned Seats.aero/AwardTool integrations, independent of the historical Python plugin status tables above. Travelers do not connect their own airline accounts. Alaska, JetBlue and Virgin Atlantic returned live data through the local Next.js endpoint; exact observations, response-shape fixes, official commercial contracts and outstanding external verification are recorded in `docs/live-data.md`. Reproduce with `pnpm test:live 2026-10-05` while the local server runs; use a future date when revisiting. The commercial providers have fixture coverage but no actual API subscription was available, so broader live coverage is not verified. The redesign preserves per-source failures and calendar-vs-flight distinctions.

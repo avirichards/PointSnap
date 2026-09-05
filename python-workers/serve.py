@@ -18,6 +18,7 @@ from typing import Callable, Coroutine
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
+from common.security import WorkerSecurityMiddleware
 from fastapi.responses import JSONResponse
 
 from common.db import write_results, writeback_skipped
@@ -49,6 +50,7 @@ load_dotenv()
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="pointsnap-workers", version="0.1.0")
+app.add_middleware(WorkerSecurityMiddleware)
 
 # Phase 2.5 user-initiated auth-capture routes (T5' tier).
 # /auth/start, /auth/status, /auth/finalize — see auth/capture.py.

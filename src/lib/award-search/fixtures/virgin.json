@@ -1,0 +1,61 @@
+[
+  {
+    "date": "2026-10-01",
+    "minPrice": 121.4,
+    "currency": "GBP",
+    "minAwardPointsTotal": 6000,
+    "seats": {
+      "awardEconomy": {
+        "cabinPointsValue": 0,
+        "isSaverAward": false,
+        "cabinClassSeatCount": 100,
+        "cabinClassSeatCountString": "100+"
+      },
+      "awardComfortPlusPremiumEconomy": {
+        "cabinPointsValue": 0,
+        "isSaverAward": false,
+        "cabinClassSeatCount": 50,
+        "cabinClassSeatCountString": "50+"
+      },
+      "awardBusiness": {
+        "cabinPointsValue": 0,
+        "isSaverAward": false,
+        "cabinClassSeatCount": 50,
+        "cabinClassSeatCountString": "50+"
+      }
+    },
+    "pointsDays": [
+      {
+        "date": "2026-10-05",
+        "minPrice": 121.4,
+        "currency": "GBP",
+        "minAwardPointsTotal": 39000,
+        "seats": {
+          "awardEconomy": {
+            "cabinPointsValue": 39000,
+            "isSaverAward": false,
+            "cabinClassSeatCount": 9,
+            "cabinClassSeatCountString": "9+"
+          },
+          "awardComfortPlusPremiumEconomy": {
+            "cabinPointsValue": 62000,
+            "isSaverAward": false,
+            "cabinClassSeatCount": 9,
+            "cabinClassSeatCountString": "9+"
+          },
+          "awardBusiness": {
+            "cabinPointsValue": 255000,
+            "isSaverAward": false,
+            "cabinClassSeatCount": 9,
+            "cabinClassSeatCountString": "9+"
+          }
+        }
+      }
+    ],
+    "month": "OCTOBER",
+    "year": "2026",
+    "totalAwardsSeatsForMonth": 200,
+    "originPrettyName": null,
+    "destinationPrettyName": null
+  }
+]

@@ -1,143 +1,147 @@
 "use client";
-
 import { useMemo, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, Loader2 } from "lucide-react";
 import type { Cabin, SearchQuery } from "@/lib/types";
 import { AirportCombobox } from "./airport-combobox";
-import { useProgramWindows } from "@/hooks/use-program-windows";
-
-interface SearchFormProps {
+interface Props {
   initialQuery: SearchQuery;
   onSubmit: (q: SearchQuery) => void;
+  onDraftChange?: (q: SearchQuery) => void;
   isStreaming?: boolean;
 }
-
-/** Local `YYYY-MM-DD` for today — the earliest a search can depart. */
-function todayIso(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormProps) {
-  const [origin, setOrigin] = useState(initialQuery.origin);
-  const [dest, setDest] = useState(initialQuery.dest);
-  const [departDate, setDepartDate] = useState(initialQuery.departDate);
-  const [pax, setPax] = useState(initialQuery.pax);
-  const [minCabin, setMinCabin] = useState<Cabin>(initialQuery.minCabin);
-
-  // Phase 4 — the search fans out to every program at once, so the
-  // calendar allows any date in-window for at least one program: the MAX
-  // of all per-program booking windows. `maxDate` is null until the
-  // worker metadata loads (or if the worker is unreachable), in which
-  // case the picker stays unbounded.
-  const { maxDate, maxDaysOut } = useProgramWindows();
-  const minDate = useMemo(() => todayIso(), []);
-  const departMax = maxDate();
-  const windowDays = maxDaysOut();
-  // A previously-saved query (URL param, back/forward) can sit past the
-  // window. Flag it so the hint explains why a search might return empty
-  // rather than silently failing.
-  const departOutOfWindow = departMax !== null && departDate > departMax;
-
-  const submit = (e: FormEvent) => {
+export function SearchForm({
+  initialQuery,
+  onSubmit,
+  onDraftChange,
+  isStreaming,
+}: Props) {
+  const [draft, setDraft] = useState(initialQuery);
+  const [message, setMessage] = useState("");
+  const dates = useMemo(() => {
+    const today = new Date();
+    const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
+    return {
+      min: local,
+      max: new Date(today.getTime() + 366 * 86400000)
+        .toISOString()
+        .slice(0, 10),
+    };
+  }, []);
+  function change(patch: Partial<SearchQuery>) {
+    const next = { ...draft, ...patch };
+    setDraft(next);
+    onDraftChange?.(next);
+  }
+  function submit(e: FormEvent) {
     e.preventDefault();
-    onSubmit({
-      origin: origin.toUpperCase().slice(0, 3),
-      dest: dest.toUpperCase().slice(0, 3),
-      departDate,
-      pax,
-      minCabin,
-    });
-  };
-
+    if (
+      !/^[A-Z]{3}$/.test(draft.origin) ||
+      !/^[A-Z]{3}$/.test(draft.dest) ||
+      draft.origin === draft.dest
+    ) {
+      setMessage("Choose two different airports.");
+      return;
+    }
+    if (draft.returnDate && draft.returnDate < draft.departDate) {
+      setMessage("Return date must follow departure.");
+      return;
+    }
+    setMessage("");
+    onSubmit(draft);
+  }
   return (
-    <form
-      onSubmit={submit}
-      className="grid grid-cols-2 md:grid-cols-[120px_120px_1fr_80px_120px_auto] gap-2 md:gap-3 items-end"
-    >
-      <div className="grid gap-1.5">
-        <Label htmlFor="origin" className="text-xs text-muted-foreground uppercase tracking-wider">
-          From
+    <form onSubmit={submit} className="award-search-form">
+      <div className="grid gap-2">
+        <Label htmlFor="origin" className="mono-label">
+          Departure
         </Label>
         <AirportCombobox
           id="origin"
-          value={origin}
-          onChange={(iata) => setOrigin(iata)}
-          placeholder="From"
+          value={draft.origin}
+          onChange={(origin) => change({ origin })}
+          placeholder="Airport or city"
         />
       </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="dest" className="text-xs text-muted-foreground uppercase tracking-wider">
-          To
+      <button
+        type="button"
+        className="swap-airports"
+        aria-label="Swap departure and destination"
+        onClick={() => change({ origin: draft.dest, dest: draft.origin })}
+      >
+        <ArrowLeftRight className="size-3.5" />
+      </button>
+      <div className="grid gap-2">
+        <Label htmlFor="dest" className="mono-label">
+          Destination
         </Label>
         <AirportCombobox
           id="dest"
-          value={dest}
-          onChange={(iata) => setDest(iata)}
-          placeholder="To"
+          value={draft.dest}
+          onChange={(dest) => change({ dest })}
+          placeholder="Airport or city"
         />
       </div>
-      <div className="grid gap-1.5 col-span-2 md:col-span-1">
-        <Label htmlFor="depart" className="text-xs text-muted-foreground uppercase tracking-wider">
-          Depart
+      <div className="grid gap-2">
+        <Label htmlFor="depart" className="mono-label">
+          Departure date
         </Label>
         <Input
           id="depart"
           type="date"
-          value={departDate}
-          onChange={(e) => setDepartDate(e.target.value)}
-          min={minDate}
-          max={departMax ?? undefined}
-          aria-describedby={windowDays !== null ? "depart-hint" : undefined}
-          className="tabular-nums text-base"
+          value={draft.departDate}
+          onChange={(e) => change({ departDate: e.target.value })}
+          min={dates.min}
+          max={dates.max}
           required
         />
-        {departOutOfWindow ? (
-          <p
-            id="depart-hint"
-            role="status"
-            className="text-xs text-amber-600 dark:text-amber-500"
-          >
-            Past every airline’s booking window — most programs won’t
-            return results this far out.
-          </p>
-        ) : windowDays !== null ? (
-          <p id="depart-hint" className="text-xs text-muted-foreground">
-            Airlines open awards up to ~{windowDays} days out.
-          </p>
-        ) : null}
       </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="pax" className="text-xs text-muted-foreground uppercase tracking-wider">
-          Passengers
+      <div className="grid gap-2">
+        <Label htmlFor="return-date" className="mono-label">
+          Return{" "}
+          <span className="normal-case tracking-normal opacity-65">
+            optional
+          </span>
         </Label>
         <Input
-          id="pax"
-          type="number"
-          min={1}
-          max={9}
-          value={pax}
-          onChange={(e) => setPax(Math.max(1, Number(e.target.value)))}
-          className="tabular-nums text-base"
-          aria-label="Number of passengers"
-          required
+          id="return-date"
+          type="date"
+          value={draft.returnDate ?? ""}
+          onChange={(e) => change({ returnDate: e.target.value || undefined })}
+          min={draft.departDate}
+          max={dates.max}
         />
       </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="cabin" className="text-xs text-muted-foreground uppercase tracking-wider">
-          Min cabin
+      <div className="grid gap-2">
+        <Label htmlFor="pax" className="mono-label">
+          Travelers
+        </Label>
+        <select
+          id="pax"
+          className="search-native-select"
+          value={draft.pax}
+          onChange={(e) => change({ pax: Number(e.target.value) })}
+        >
+          {Array.from({ length: 9 }, (_, i) => (
+            <option key={i + 1} value={i + 1}>
+              {i + 1} adult{i ? "s" : ""}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="cabin" className="mono-label">
+          Minimum cabin
         </Label>
         <select
           id="cabin"
-          value={minCabin}
-          onChange={(e) => setMinCabin(e.target.value as Cabin)}
-          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="search-native-select"
+          value={draft.minCabin}
+          onChange={(e) => change({ minCabin: e.target.value as Cabin })}
         >
           <option value="Y">Economy</option>
           <option value="W">Premium</option>
@@ -147,18 +151,21 @@ export function SearchForm({ initialQuery, onSubmit, isStreaming }: SearchFormPr
       </div>
       <Button
         type="submit"
-        size="lg"
-        className="col-span-2 md:col-span-1 h-11"
+        className="search-submit h-11"
         disabled={isStreaming}
         aria-busy={isStreaming || undefined}
       >
         {isStreaming ? (
-          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
-        ) : (
-          <Search className="size-4" aria-hidden />
-        )}
-        {isStreaming ? "Searching…" : "Search"}
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+        ) : null}
+        {isStreaming ? "Searching" : "Find awards"}
+        <ArrowRight className="size-4" />
       </Button>
+      {message && (
+        <p role="alert" className="col-span-full text-sm text-destructive">
+          {message}
+        </p>
+      )}
     </form>
   );
 }

@@ -1,3 +1,5 @@
+import { noUserResponse, resolveUserId } from "../_userId";
+import { workerHeaders, workerConfigured } from "@/lib/worker";
 /**
  * GET /api/auth/airline/status?sessionId=...
  *
@@ -32,10 +34,12 @@ interface WorkerStatusResponse {
 }
 
 export async function GET(req: NextRequest) {
+  const userId = await resolveUserId(req);
+  if (!userId) return noUserResponse();
   const base = process.env.PYTHON_WORKER_URL;
-  if (!base) {
+  if (!base || !workerConfigured()) {
     return Response.json(
-      { message: "PYTHON_WORKER_URL not configured" },
+      { message: "Airline services are not configured yet." },
       { status: 501 },
     );
   }
@@ -50,6 +54,8 @@ export async function GET(req: NextRequest) {
   try {
     res = await fetch(url, {
       method: "GET",
+      headers: workerHeaders(userId),
+      cache: "no-store",
       signal: AbortSignal.timeout(8_000),
     });
   } catch (err) {

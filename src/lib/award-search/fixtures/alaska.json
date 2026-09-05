@@ -1,0 +1,86 @@
+[
+  {
+    "departureStation": "SEA",
+    "arrivalStation": "SFO",
+    "rows": [
+      {
+        "duration": 130,
+        "segments": [
+          {
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 725,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "aircraft": "Boeing 737 MAX 8 Passenger",
+            "departureTime": "2026-10-05T06:39:00-07:00",
+            "arrivalTime": "2026-10-05T08:49:00-07:00"
+          }
+        ],
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "grandTotal": 5.6,
+            "atmosPoints": 42500,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "cabins": ["FIRST"]
+          },
+          "REFUNDABLE_MAIN": {
+            "grandTotal": 5.6,
+            "atmosPoints": 20000,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "cabins": ["COACH"]
+          }
+        }
+      },
+      {
+        "duration": 337,
+        "segments": [
+          {
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1401,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "departureStation": "SEA",
+            "arrivalStation": "SAN",
+            "aircraft": "Boeing 737-900 (Winglets) Passenger",
+            "departureTime": "2026-10-05T07:04:00-07:00",
+            "arrivalTime": "2026-10-05T10:06:00-07:00"
+          },
+          {
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 770,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "departureStation": "SAN",
+            "arrivalStation": "SFO",
+            "aircraft": "Boeing 737 MAX 9 Passenger",
+            "departureTime": "2026-10-05T10:55:00-07:00",
+            "arrivalTime": "2026-10-05T12:41:00-07:00"
+          }
+        ],
+        "solutions": {
+          "REFUNDABLE_FIRST": {
+            "grandTotal": 5.6,
+            "atmosPoints": 37500,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "cabins": ["FIRST", "FIRST"]
+          },
+          "REFUNDABLE_MAIN": {
+            "grandTotal": 5.6,
+            "atmosPoints": 17500,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "cabins": ["COACH", "COACH"]
+          }
+        }
+      }
+    ]
+  }
+]

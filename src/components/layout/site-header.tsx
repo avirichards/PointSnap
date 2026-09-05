@@ -1,23 +1,46 @@
 "use client";
 
 import Link from "next/link";
+import { browserSupabase } from "@/lib/supabase/client";
 import { usePathname } from "next/navigation";
-import { Moon, Sun, Wallet, Sparkles, Search, Shield, LogIn, Star, KeyRound } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Wallet,
+  Search,
+  Shield,
+  LogIn,
+  Star,
+  KeyRound,
+  Radar,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/search", label: "Search", icon: Search },
-  { href: "/sweet-spots", label: "Sweet spots", icon: Star },
+  { href: "/sweet-spots", label: "Explore", icon: Star },
   { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/airlines", label: "My Airlines", icon: KeyRound },
+  { href: "/airlines", label: "Programs", icon: KeyRound },
   { href: "/admin", label: "Admin", icon: Shield },
 ] as const;
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(true);
+  const [account, setAccount] = useState<{
+    email: string;
+    isStaff: boolean;
+  } | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/account", { signal: controller.signal, cache: "no-store" })
+      .then((r) => r.json())
+      .then(setAccount)
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     // One-time sync of the toggle to the theme class the server already
@@ -37,22 +60,29 @@ export function SiteHeader() {
   };
 
   const isActive = (href: string) =>
-    href === "/search" ? pathname === "/" || pathname.startsWith("/search") : pathname.startsWith(href);
+    href === "/search"
+      ? pathname === "/" || pathname.startsWith("/search")
+      : pathname.startsWith(href);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-3 md:px-6">
-        <Link href="/search" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="inline-flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Sparkles className="size-4" aria-hidden />
+      <div className="mx-auto flex min-h-14 flex-wrap py-2 max-w-screen-2xl items-center gap-4 px-3 md:px-6">
+        <Link
+          href="/search"
+          className="flex items-center gap-2 font-semibold tracking-tight"
+        >
+          <span className="inline-flex size-7 items-center justify-center rounded-md text-primary">
+            <Radar className="size-7 stroke-[1.25]" aria-hidden />
           </span>
-          PointSnap
-          <span className="hidden sm:inline text-xs font-normal text-muted-foreground">
-            the points cockpit
+          <span className="tracking-[.1em] text-sm uppercase">PointSnap</span>
+          <span className="hidden lg:inline text-xs font-normal text-muted-foreground">
+            Award intelligence
           </span>
         </Link>
         <nav className="ml-auto flex items-center gap-1" aria-label="Primary">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+          {NAV_ITEMS.filter(
+            (item) => item.href !== "/admin" || account?.isStaff,
+          ).map(({ href, label, icon: Icon }) => (
             <Button
               key={href}
               variant={isActive(href) ? "secondary" : "ghost"}
@@ -70,17 +100,30 @@ export function SiteHeader() {
               </Link>
             </Button>
           ))}
-          <Button
-            variant="outline"
-            size="default"
-            className="px-3 sm:px-4"
-            asChild
-          >
-            <Link href="/sign-in" aria-label="Sign in">
-              <LogIn className="size-4" aria-hidden />
-              <span className="hidden sm:inline">Sign in</span>
-            </Link>
-          </Button>
+          {account ? (
+            <Button
+              variant="outline"
+              aria-label="Sign out"
+              onClick={async () => {
+                const result = await browserSupabase()?.auth.signOut();
+                if (!result?.error) window.location.assign("/");
+              }}
+            >
+              Sign out
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="default"
+              className="px-3 sm:px-4"
+              asChild
+            >
+              <Link href="/sign-in" aria-label="Sign in">
+                <LogIn className="size-4" aria-hidden />
+                <span className="hidden sm:inline">Sign in</span>
+              </Link>
+            </Button>
+          )}
           <Toggle
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             pressed={isDark}

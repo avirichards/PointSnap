@@ -1,18 +1,19 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
- * One-shot seed endpoint. Hit once after Neon migrations have been applied.
+ * One-shot seed endpoint. Hit once after legacy database migrations have been applied.
  * Idempotent — safe to re-run; all inserts use ON CONFLICT DO NOTHING.
  *
- * Auth: `?token=<SEED_TOKEN>` query param must match env var `SEED_TOKEN`.
+ * Auth: `Authorization: Bearer <SEED_TOKEN>` must match env var `SEED_TOKEN`.
  * If SEED_TOKEN is not set in the environment, the endpoint returns 503 and
  * refuses to run (fail-safe). Set SEED_TOKEN in Vercel env vars before calling.
  */
-export async function GET(req: NextRequest) {
-  const token = new URL(req.url).searchParams.get("token");
+export async function POST(req: NextRequest) {
+  const token = req.headers.get("authorization")?.replace(/^Bearer /, "") ?? "";
   const expected = process.env.SEED_TOKEN;
 
   if (!expected) {
@@ -21,7 +22,10 @@ export async function GET(req: NextRequest) {
       { status: 503 },
     );
   }
-  if (token !== expected) {
+  if (
+    Buffer.byteLength(token) !== Buffer.byteLength(expected) ||
+    !timingSafeEqual(Buffer.from(token), Buffer.from(expected))
+  ) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

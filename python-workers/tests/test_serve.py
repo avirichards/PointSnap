@@ -18,7 +18,12 @@ from fastapi.testclient import TestClient  # noqa: E402
 import serve  # noqa: E402
 from common.types import CabinPrice, NormalizedResult, ResultSegment  # noqa: E402
 
-client = TestClient(serve.app)
+client = TestClient(serve.app, headers={"Authorization": "Bearer test-worker-token"})
+
+@pytest.fixture(autouse=True)
+def worker_key(monkeypatch):
+    monkeypatch.setenv("POINTSNAP_WORKER_TOKEN", "test-worker-token")
+
 
 
 def _fixed_row() -> NormalizedResult:

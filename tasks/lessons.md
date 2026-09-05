@@ -50,3 +50,8 @@ ScraperAPI's proxy port terminates TLS at their server and re-presents their own
 ### Two layers to fix per stuck plugin
 1. **Network access** — ScraperAPI proxy + premium for hard sites. Done.
 2. **Parse layer** — each plugin's XHR endpoint / form selector / response shape was written speculatively against historical AwardWiz references and never tested against live responses. Even with the page loading, scrapers return `rows: []` because the parsers don't match current API shapes. This is real iteration work per plugin (~30-60 min each), not infrastructure.
+
+- 2026-09-05: PointSnap searches must use app-owned data access. Never require travelers to connect personal airline accounts to search. Distinguish provider coverage from user account connections in every UI label.
+- 2026-09-05: Design for airline/points enthusiasts from a clean slate. The supplied dark globe reference is a direction; any map interaction must help route selection and preserve fast comparison.
+
+- 2026-09-05: Draggable SVG maps must disable native text selection and prevent pointer-down focus/selection defaults. Preserve a visible keyboard-only focus state; avoid a mouse-triggered rectangular outline around the globe.

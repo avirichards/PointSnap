@@ -46,3 +46,8 @@ next-env.d.ts
 # Python worker local venvs
 .venv/
 python-workers/.venv/
+
+# Local probes and Python caches
+/work/
+__pycache__/
+.pytest_cache/
