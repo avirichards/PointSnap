@@ -2,6 +2,11 @@
 import { readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
+import { tsImport } from "tsx/esm/api";
+const { progressSchema } = await tsImport("../src/lib/build-progress.ts", {
+  parentURL: import.meta.url,
+  tsconfig: false,
+});
 const file = resolve("work/live-progress.json");
 const update = JSON.parse(await readFile(process.argv[2], "utf8"));
 const now = new Date().toISOString();
@@ -34,9 +39,12 @@ const next = {
     ...previous.events,
   ].slice(0, 150),
 };
+// Validate the entire merged snapshot before touching the last good report.
+// A malformed event must not make the follow-along endpoint return503.
+const validated = progressSchema.parse(next);
 await mkdir(dirname(file), { recursive: true });
 const temporary = file + ".tmp";
-await writeFile(temporary, JSON.stringify(next, null, 2) + "\n");
+await writeFile(temporary, JSON.stringify(validated, null, 2) + "\n");
 await rename(temporary, file);
 console.log(
   `Updated live progress: ${next.airlines.length} programs, ${next.events.length} events.`,
