@@ -192,6 +192,12 @@ export function RouteGlobe({
         onPointerDown={(e) => {
           if (e.button !== 0) return;
           e.preventDefault(); // Drag the map without selecting SVG labels or focusing its box.
+          const selection = window.getSelection();
+          if (
+            selection?.anchorNode &&
+            e.currentTarget.contains(selection.anchorNode)
+          )
+            selection.removeAllRanges();
           setPlaying(false);
           drag.current = { x: e.clientX, y: e.clientY, offset };
           e.currentTarget.setPointerCapture(e.pointerId);
