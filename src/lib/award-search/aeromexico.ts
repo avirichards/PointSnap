@@ -271,6 +271,9 @@ export async function aeromexicoSearch(
   const signal = AbortSignal.any([outerSignal, AbortSignal.timeout(45000)]);
   const bookingUrl = aeromexicoBookingUrl(q);
   const headers = {
+    // The public metadata endpoint rejects Node's default UA on hosted Linux.
+    "User-Agent":
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
     Accept: "application/json",
     "Content-Type": "application/json",
     Authorization: publicAuthorization,

@@ -50,6 +50,7 @@ function freshSession() {
     stage: string,
     urlString: string,
     init: RequestInit = {},
+    redirects = 0,
   ) {
     const url = new URL(urlString);
     const cookie = [...cookies.values()]
@@ -125,7 +126,27 @@ function freshSession() {
           text,
         ),
       errorCode: data?.code ?? data?.error ?? null,
+      ...(response.headers.get("location")
+        ? {
+            redirectTo: (() => {
+              const to = new URL(response.headers.get("location")!, url);
+              return to.origin + to.pathname;
+            })(),
+          }
+        : {}),
     });
+    // A normal same-origin GET redirect can be followed with this request's
+    // own cookie jar. Never move authorization headers to another origin.
+    if (
+      [301, 302, 303, 307, 308].includes(response.status) &&
+      response.headers.get("location") &&
+      (!init.method || init.method === "GET") &&
+      redirects < 3
+    ) {
+      const target = new URL(response.headers.get("location")!, url);
+      if (target.origin === url.origin && target.protocol === "https:")
+        return request(stage + "-redirect", target.href, init, redirects + 1);
+    }
     return { response, text, data };
   }
   return { request, stages };
@@ -135,11 +156,7 @@ async function main() {
   await mkdir("work", { recursive: true });
   // Runs serially in this diagnostic process. The application itself is never
   // changed by these transport overrides; working cookies remain request-local.
-  for (const [program, origin, dest] of [
-    ["AS_MILEAGEPLAN", "SEA", "SFO"],
-    ["AM_CLUB_PREMIER", "MEX", "CUN"],
-    ["ET_SHEBAMILES", "ADD", "NBO"],
-  ]) {
+  for (const [program, origin, dest] of [["ET_SHEBAMILES", "ADD", "NBO"]]) {
     for (const variant of ["browser-header", "compatible-http"]) {
       await record(program, variant, async () => {
         const client = new Impit({ browser: "chrome", timeout: 45000 });

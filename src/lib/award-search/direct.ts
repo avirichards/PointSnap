@@ -1,5 +1,6 @@
 import JSON5 from "json5";
 import { createHash } from "node:crypto";
+import { Impit } from "impit";
 import {
   cabin,
   number,
@@ -362,21 +363,29 @@ export async function directSearch(
     cache: "no-store" as const,
   };
   if (program === "AS_MILEAGEPLAN") {
+    // Native fetch returned a non-inventory document from hosted Linux.
+    // This fresh compatible client preserves the complete public SSR response.
+    const client = new Impit({ browser: "chrome", timeout: 30000 });
+    const alaskaHeaders = {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    };
     // Cash enrichment must never suppress a valid award result or delay its first display.
-    const cashTask = fetch(alaskaCashUrl(q), {
-      ...opts,
-      signal: AbortSignal.any([signal, AbortSignal.timeout(18000)]),
-      headers: { "User-Agent": ua },
-    })
+    const cashTask = client
+      .fetch(alaskaCashUrl(q), {
+        ...opts,
+        signal: AbortSignal.any([signal, AbortSignal.timeout(18000)]),
+        headers: alaskaHeaders,
+      })
       .then(async (res) =>
         res.ok
           ? { html: await res.text(), at: new Date().toISOString() }
           : null,
       )
       .catch(() => null);
-    const res = await fetch(bookingUrl(program, q), {
+    const res = await client.fetch(bookingUrl(program, q), {
       ...opts,
-      headers: { "User-Agent": ua },
+      headers: alaskaHeaders,
     });
     if (!res.ok)
       throw new ProviderError(

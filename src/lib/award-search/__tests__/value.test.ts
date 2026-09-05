@@ -13,8 +13,14 @@ const q = {
 const html = (value: unknown) =>
   `<script>__sveltekit_app.resolve(1, () => ${JSON.stringify(value)})</script>`;
 const awards = () => parseAlaska(html(alaska), q);
+const { request } = vi.hoisted(() => ({ request: vi.fn() }));
+vi.mock("impit", () => ({
+  Impit: class {
+    fetch = request;
+  },
+}));
 describe("actual flight cash comparison", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => vi.resetAllMocks());
   it("matches complete itineraries and same cabin; uses the lowest fare", () => {
     const rows = attachAlaskaCash(awards(), html(cash), q);
     const row = rows.find((r) => r.segments[0].flightNumber === "AS725")!;
@@ -59,13 +65,10 @@ describe("actual flight cash comparison", () => {
     ).toBe(true);
   });
   it("keeps award results when cash search fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (url: string | URL) =>
-        String(url).includes("onlineaward")
-          ? new Response(html(alaska))
-          : new Response("Unavailable", { status: 503 }),
-      ),
+    request.mockImplementation(async (url: string | URL) =>
+      String(url).includes("onlineaward")
+        ? new Response(html(alaska))
+        : new Response("Unavailable", { status: 503 }),
     );
     const early = vi.fn();
     const result = await directSearch(
