@@ -10,6 +10,9 @@ import {
 } from "./types";
 import { CABIN_ORDER, type SearchQuery } from "@/lib/types";
 import { bookingUrl } from "@/lib/bookingHandoff";
+import { skywardsSearch } from "./skywards";
+import { frontierSearch } from "./frontier";
+import { aeromexicoSearch } from "./aeromexico";
 
 // These adapters read publicly accessible award-search responses; never execute
 // airline JavaScript or turn failed HTTP responses into invented availability.
@@ -17,6 +20,9 @@ export const DIRECT_PROGRAMS = [
   "AS_MILEAGEPLAN",
   "B6_TRUEBLUE",
   "VS_FLYING_CLUB",
+  "EK_SKYWARDS",
+  "F9_FRONTIER_MILES",
+  "AM_CLUB_PREMIER",
 ];
 const ua = "Mozilla/5.0 (compatible; PointSnap/1.0)";
 export function normalizeLiteral(input: string): string {
@@ -375,6 +381,9 @@ export async function directSearch(
   signal: AbortSignal,
   onRows?: (rows: AwardResult[]) => void,
 ): Promise<AwardResult[]> {
+  if (program === "EK_SKYWARDS") return skywardsSearch(q, signal);
+  if (program === "F9_FRONTIER_MILES") return frontierSearch(q, signal);
+  if (program === "AM_CLUB_PREMIER") return aeromexicoSearch(q, signal);
   const headers = {
     "User-Agent": ua,
     Accept: "application/json",

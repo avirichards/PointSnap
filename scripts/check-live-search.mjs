@@ -7,6 +7,9 @@ const routes = [
   ["AS_MILEAGEPLAN", "SEA", "SFO"],
   ["B6_TRUEBLUE", "JFK", "LAX"],
   ["VS_FLYING_CLUB", "JFK", "LHR"],
+  ["EK_SKYWARDS", "MAN", "ALC"],
+  ["F9_FRONTIER_MILES", "DEN", "LAS"],
+  ["AM_CLUB_PREMIER", "MEX", "CUN"],
 ];
 let failed = false;
 for (const [programs, origin, dest] of routes) {
@@ -30,7 +33,13 @@ for (const [programs, origin, dest] of routes) {
       .filter((s) => s.startsWith("data: "))
       .map((s) => JSON.parse(s.slice(6)));
     const coverage = events.find((e) => e.type === "coverage")?.coverage;
-    const rows = [...new Map(events.flatMap((e) => (e.type === "results" ? e.rows : [])).map(row => [row.id, row])).values()];
+    const rows = [
+      ...new Map(
+        events
+          .flatMap((e) => (e.type === "results" ? e.rows : []))
+          .map((row) => [row.id, row]),
+      ).values(),
+    ];
     if (
       !events.some((e) => e.type === "complete") ||
       !["success", "empty"].includes(coverage?.state)
@@ -44,9 +53,26 @@ for (const [programs, origin, dest] of routes) {
         date,
         state: coverage.state,
         rows: rows.length,
-        cashCompared: rows.filter(row => Object.values(row.prices).some(price => price.cashFare)).length,
+        inventory: coverage.inventory,
+        awardFares: rows.reduce(
+          (n, row) =>
+            n +
+            (row.kind === "flight"
+              ? (row.fares?.length ?? Object.keys(row.prices).length)
+              : 0),
+          0,
+        ),
+        cashCompared: rows.filter((row) =>
+          Object.values(row.prices).some((price) => price.cashFare),
+        ).length,
         ms: Date.now() - started,
-        first: rows[0] ? { kind: rows[0].kind, prices: rows[0].prices } : null,
+        first: rows[0]
+          ? {
+              kind: rows[0].kind,
+              prices: rows[0].prices,
+              calendarQuote: rows[0].calendarQuote,
+            }
+          : null,
       }),
     );
   } catch (error) {

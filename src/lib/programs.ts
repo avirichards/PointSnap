@@ -66,11 +66,13 @@ export const PROGRAM_IDS = [
   "SQ_KRISFLYER",
   "G3_GOL_SMILES",
   "VA_VELOCITY",
+  "F9_FRONTIER_MILES",
 ] as const;
 
 export type ProgramId = (typeof PROGRAM_IDS)[number];
 
 export const PROGRAMS: readonly ProgramCatalogEntry[] = [
+  { id: "F9_FRONTIER_MILES", iata: "F9", name: "Frontier Miles", country: "us", authRequired: "optional" },
   // Existing 13
   {
     id: "AC_AEROPLAN",
@@ -167,7 +169,7 @@ export const PROGRAMS: readonly ProgramCatalogEntry[] = [
   {
     id: "AM_CLUB_PREMIER",
     iata: "AM",
-    name: "Aeromexico Club Premier",
+    name: "Aeromexico Rewards",
     country: "mx",
     authRequired: "optional",
   },

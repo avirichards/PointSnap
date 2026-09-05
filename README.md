@@ -14,7 +14,7 @@ cp .env.local.example .env.local
 pnpm dev
 ```
 
-Open http://localhost:3000. All environment values may stay blank to use the three direct sources. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
+Open http://localhost:3000. All environment values may stay blank to use the six direct sources. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
 
 ## Live coverage
 
@@ -22,11 +22,14 @@ Open http://localhost:3000. All environment values may stay blank to use the thr
 | --- | --- | --- |
 | Alaska Airlines / Atmos Rewards | Individual itineraries including available partners, per-person points, USD taxes, seats and matching cash fares | Direct public search |
 | JetBlue / TrueBlue | Lowest recent daily price, USD taxes, seats; cabin and exact flight unknown | Direct public calendar |
+| Emirates Skywards partners | Individual easyJet and Jet2 flights, exact party miles; taxes included. Emirates-operated flights are not connected. | Direct public partner portal |
 | Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
+| Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |
+| Aeromexico Rewards | Individual itineraries and supplied Classic/Dynamic fares; per-person points and MXN cash fees | Direct public search |
 | Seats.aero | Individual award itineraries for its supported programs | App-owned commercial Live Search key |
 | AwardTool | Individual award itineraries for contract-enabled programs | App-owned API key |
 
-**Universal airline coverage is not complete.** Fresh requests were verified for the first three sources on September 5, 2026. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
+**Universal airline coverage is not complete.** Fresh requests were verified for all six direct sources on September 5, 2026. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
 
 The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” JetBlue and Virgin summaries appear separately from flight results and do not count as complete flight integrations. JetBlue does not identify the cabin. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
 
@@ -91,3 +94,9 @@ Alaska cash search runs alongside award search. Awards stream immediately; match
 Value in USD cents per point = `(lowest matching cash fare − award taxes/fees) / award points × 100`. Cash fare names and refundability are shown because the cheapest fare (including Saver) may have different rules or benefits. This does not include the value of miles earned on a paid ticket. No cash comparison is invented for calendar-only results or unknown taxes.
 
 Saved searches contain criteria only and stay on the current device. Opening one requests new results; they are not price alerts or reserved seats.
+
+Skywards partner quotes preserve the exact party total. Per-person values for multiple adults are averages and can be fractional because the source rounds the party price. Search currently supports adults; no child quote is synthesized. The partner portal supplies all pricing after an incremental search; the adapter accumulates every response, including its terminal response, and prices every matching result in batches.
+
+Frontier preserves cash-versus-miles bundle alternatives. A bundle named Business does not establish a business-class cabin; ambiguous seat types are explicitly unconfirmed. International Frontier currency is not verified. Aeromexico retains all supplied fare families, with AM Plus correctly treated as extra-legroom Economy. Source cash charges already include supplied taxes and fees and are not added twice.
+
+The development-only `/build-progress` page shows the local work log, updated via `node scripts/report-progress.mjs work/progress-update.json`. Its API reads only the fixed ignored `work/live-progress.json` file; both routes return 404 outside development. It is a follow-along work log, not automated global airline monitoring.

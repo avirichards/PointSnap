@@ -3,6 +3,7 @@ import { SEATS_SOURCES, seatsSearch } from "./seats";
 import { awardToolPrograms, awardToolSearch } from "./awardtool";
 import { ProviderError, type ProviderContext, type AwardResult } from "./types";
 import { CABIN_ORDER } from "@/lib/types";
+import { SOURCE_INFO } from "./source-info";
 export function hasPaidProvider() {
   return !!(process.env.SEATS_AERO_API_KEY || process.env.AWARDTOOL_API_KEY);
 }
@@ -129,10 +130,11 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
             programId: id,
             state: rows.length ? "success" : "empty",
             source,
+            message:
+              source === "Direct airline" ? SOURCE_INFO[id]?.detail : undefined,
             inventory:
-              source === "Direct airline" &&
-              (id === "B6_TRUEBLUE" || id === "VS_FLYING_CLUB")
-                ? "calendar"
+              source === "Direct airline"
+                ? (SOURCE_INFO[id]?.inventory ?? "flights")
                 : "flights",
           },
         });

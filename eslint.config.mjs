@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     // legitimately use require()) and generated Drizzle SQL are not app source.
     ".claude/**",
     "drizzle/**",
+    // Local investigation artifacts and downloaded vendor bundles.
+    "work/**",
   ]),
 ]);
 

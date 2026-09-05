@@ -5,6 +5,7 @@ import { PROGRAMS } from "@/lib/programs";
 import { providerCoverage } from "@/lib/award-search/engine";
 import { bookingUrl } from "@/lib/bookingHandoff";
 import { workerConfigured } from "@/lib/worker";
+import { SOURCE_INFO } from "@/lib/award-search/source-info";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Programs — PointSnap" };
 export default function ProgramsPage() {
@@ -29,7 +30,8 @@ export default function ProgramsPage() {
             Alaska returns individual flights. JetBlue and Virgin Atlantic
             return daily fare summaries, not complete flight lists. Alaska may
             also return partner flights bookable with Alaska points. Complete
-            coverage of every airline and fare has not been verified.
+            coverage of every airline and fare has not been verified. Skywards
+            currently searches easyJet and Jet2 partner awards only.
           </p>
         </div>
         <section
@@ -56,9 +58,7 @@ export default function ProgramsPage() {
                   {enabled.includes(p.id) ? (
                     <>
                       <Check className="size-4 text-primary" />
-                      {p.id === "B6_TRUEBLUE" || p.id === "VS_FLYING_CLUB"
-                        ? "Daily fare summary only"
-                        : "Individual flight source"}
+                      {SOURCE_INFO[p.id]?.label ?? "Individual flight source"}
                     </>
                   ) : (
                     <>Data connection needed</>

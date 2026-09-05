@@ -46,18 +46,18 @@ const shortcuts = [
     program: "Alaska · Individual flights",
   },
   {
-    origin: "JFK",
-    dest: "LAX",
-    city: "Los Angeles",
-    name: "Coast to coast",
-    program: "JetBlue · Daily calendar",
+    origin: "LGW",
+    dest: "AMS",
+    city: "Amsterdam",
+    name: "Across the Channel",
+    program: "Skywards · easyJet flights",
   },
   {
-    origin: "JFK",
-    dest: "LHR",
-    city: "London",
-    name: "Across the Atlantic",
-    program: "Virgin Atlantic · Daily calendar",
+    origin: "MAN",
+    dest: "ALC",
+    city: "Alicante",
+    name: "A little Mediterranean sun",
+    program: "Skywards · easyJet & Jet2 flights",
   },
 ];
 function Workspace() {
@@ -432,6 +432,12 @@ function Workspace() {
                               ? "Searching…"
                               : (c.message ?? "Unavailable")}
                       </p>
+                      {c.message &&
+                        (c.state === "success" || c.state === "empty") && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {c.message}
+                          </p>
+                        )}
                       {(c.state === "error" || c.state === "unavailable") && (
                         <a
                           href={bookingUrl(c.programId, active!)}

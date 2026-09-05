@@ -24,7 +24,7 @@ import type {
   Coverage,
 } from "@/lib/award-search/types";
 import type { WalletData } from "@/lib/wallet";
-import { centsPerPoint } from "@/lib/award-search/value";
+import { centsPerPoint, pointsForParty } from "@/lib/award-search/value";
 export const programName = (id: string) =>
   PROGRAMS.find((p) => p.id === id)?.name ?? id;
 const airlines = (row: AwardResult) =>
@@ -36,9 +36,10 @@ const duration = (n: number | null) =>
   n === null ? "Schedule on airline" : `${Math.floor(n / 60)}h ${n % 60}m`;
 const points = (n: number) => new Intl.NumberFormat("en-US").format(n);
 export function cashLabel(
-  p: Pick<AwardPrice, "cash" | "currency">,
+  p: Pick<AwardPrice, "cash" | "currency" | "feesIncludedInPoints">,
   multiplier = 1,
 ) {
+  if (p.feesIncludedInPoints) return "Taxes included in miles";
   if (p.cash === null || !p.currency) return "Fees not reported";
   try {
     return `${new Intl.NumberFormat("en-US", { style: "currency", currency: p.currency, maximumFractionDigits: 2 }).format(p.cash * multiplier)} ${p.currency}`;
@@ -65,9 +66,12 @@ function Price({
     >
       <strong className="tabular-nums text-base">{points(price.points)}</strong>
       <span className="text-xs opacity-75 mt-1">
-        {price.cash !== null ? "+ " : ""}
+        {price.cash !== null && !price.feesIncludedInPoints ? "+ " : ""}
         {cashLabel(price)}
       </span>
+      {price.partyPoints !== undefined && (price.quotedPassengers ?? 1) > 1 && (
+        <span className="text-xs mt-1">Average per person</span>
+      )}
       {price.mixedCabin && <span className="text-xs mt-1">Mixed cabin</span>}
       {fareCount > 1 && (
         <span className="text-xs mt-1">{fareCount} fare options</span>
@@ -575,7 +579,11 @@ function Details({
           {row.destination}
         </DialogTitle>
         <DialogDescription className="mt-2">
-          {row.date} · {CABIN_LABEL[cabin]} · {pax} passenger
+          {row.date} ·{" "}
+          {price.cabinUnconfirmed
+            ? "Seat type not confirmed"
+            : CABIN_LABEL[cabin]}{" "}
+          · {pax} passenger
           {pax > 1 ? "s" : ""} · one way
         </DialogDescription>
       </div>
@@ -605,9 +613,9 @@ function Details({
               </span>
               <span className="text-sm text-right tabular-nums">
                 {points(option.points)} points
-                <p className="text-xs text-muted-foreground">
+                <span className="block text-xs text-muted-foreground">
                   + {cashLabel(option)} / person
-                </p>
+                </span>
               </span>
             </label>
           ))}
@@ -617,7 +625,7 @@ function Details({
         <div>
           <p className="text-sm text-muted-foreground">Points for your party</p>
           <p className="text-2xl font-semibold mt-1 tabular-nums">
-            {points(price.points * pax)}
+            {points(pointsForParty(price, pax))}
           </p>
         </div>
         <div>
@@ -631,6 +639,12 @@ function Details({
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           Mixed cabin: part of this journey is in a lower cabin. Check each
           segment before booking.
+        </p>
+      )}
+      {price.cabinUnconfirmed && (
+        <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+          This is a named fare bundle. Its exact seat type is not supplied for
+          this flight; confirm the seat and included benefits with the airline.
         </p>
       )}
       {value !== null && price.cashFare && (
@@ -718,9 +732,13 @@ function Details({
                     ? `${s.airlineName} · `
                     : ""}
                 {s.aircraft ?? "Aircraft not reported"}
-                {price.segmentCabins?.[i] || s.cabin
-                  ? ` · ${CABIN_LABEL[price.segmentCabins?.[i] ?? s.cabin!]}`
-                  : ""}
+                {price.segmentCabins
+                  ? price.segmentCabins[i]
+                    ? ` · ${CABIN_LABEL[price.segmentCabins[i]!]}`
+                    : " · Cabin not reported"
+                  : s.cabin
+                    ? ` · ${CABIN_LABEL[s.cabin]}`
+                    : ""}
               </p>
             </li>
           ))}
@@ -744,9 +762,9 @@ function Details({
         {balance !== undefined && (
           <p className="text-foreground font-medium">
             Your wallet: {points(balance)} points.{" "}
-            {balance >= price.points * pax
+            {balance >= pointsForParty(price, pax)
               ? "Enough points for this award."
-              : `${points(price.points * pax - balance)} more points needed.`}
+              : `${points(pointsForParty(price, pax) - balance)} more points needed.`}
           </p>
         )}
         <p>
@@ -766,7 +784,7 @@ function Details({
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(
-                `${programName(row.programId)}: ${row.origin} to ${row.destination}, ${row.date}, ${CABIN_LABEL[cabin]}, ${pax} passengers. ${points(price.points * pax)} points + ${cashLabel(price, pax)}. Flights: ${row.segments.map((s) => s.flightNumber).join(", ") || "choose on airline"}. ${row.bookingUrl}`,
+                `${programName(row.programId)}: ${row.origin} to ${row.destination}, ${row.date}, ${CABIN_LABEL[cabin]}, ${pax} passengers. ${points(pointsForParty(price, pax))} points; ${cashLabel(price, pax)}. Flights: ${row.segments.map((s) => s.flightNumber).join(", ") || "choose on airline"}. ${row.bookingUrl}`,
               );
               setCopied(true);
             } catch {

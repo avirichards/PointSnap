@@ -21,3 +21,9 @@ Editorial status: draft for user review; not published to the knowledge base.
 Daily fare summaries now have their own section below individual flight results. They are leads for choosing a date, not a complete list of departures. JetBlue does not report a cabin; Virgin does report cabins but does not provide individual schedules or exact fees. Open the airline to choose a flight.
 
 Click a cabin price to see all supplied award fare choices for that itinerary, the cabin on each leg, and mixed-cabin warnings. Prices at the top of the comparison table are the lowest supplied fare in each cabin.
+
+Skywards can now search easyJet and Jet2 partner awards without an airline login. Taxes are included in the quoted miles. For multiple adults, the comparison price is the average per person; flight details show the exact party total. Emirates-operated flights are not covered by this connection. Booking continues on the official partner portal, where the member signs in to redeem.
+
+Development follow-along: the local Live work page shows current airline investigations, verified source scope, blockers and a timestamped activity feed. It refreshes every three seconds while open. The airline search itself remains available through Open the app.
+
+Frontier domestic awards include all supplied bundle/payment choices. A bundle named Business may have unconfirmed seat type; it is not automatically a business-class fare. Aeromexico awards show Classic and Dynamic fare choices with charges in Mexican pesos. AM Plus remains an Economy fare.

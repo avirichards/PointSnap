@@ -19,6 +19,10 @@ export interface AwardPrice {
   segmentCabins?: (Cabin | null)[];
   cabin: Cabin;
   points: number;
+  partyPoints?: number;
+  quotedPassengers?: number;
+  feesIncludedInPoints?: boolean;
+  cabinUnconfirmed?: boolean;
   cash: number | null;
   currency: string | null;
   seats: number | null;

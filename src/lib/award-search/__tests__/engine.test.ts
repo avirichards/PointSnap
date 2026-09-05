@@ -53,15 +53,17 @@ describe("multi-program orchestration", () => {
         message: "Temporarily blocked",
       },
     });
-    expect(events).toContainEqual({
-      type: "coverage",
-      coverage: {
-        programId: "B6_TRUEBLUE",
-        state: "empty",
-        source: "Direct airline",
-        inventory: "calendar",
-      },
-    });
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        type: "coverage",
+        coverage: expect.objectContaining({
+          programId: "B6_TRUEBLUE",
+          state: "empty",
+          source: "Direct airline",
+          inventory: "calendar",
+        }),
+      }),
+    );
     expect(
       events.filter(
         (e) => e.type === "coverage" && e.coverage.state === "unavailable",
