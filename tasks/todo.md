@@ -580,5 +580,8 @@ git commit -m "chore(scraper): retire ScraperAPI; document Bright Data CDP trans
 - [x] Preserve all observed offers/references, both cabins, passenger totals, unknown taxes and technical stops.
 - [x] Integrate source and verify real SSE + browser, including selected-cabin handoff.
 - [x] Add eight meaningful regression tests (140 total passed).
-- [ ] Finish production build/CI and hosted transport verification for Ethiopian milestone.
+- [x] Ethiopian production build/CI passed; fresh hosted Linux Node22 transport verified. Vercel runtime remains behind preview SSO.
 - [ ] Continue distinct American/United/remaining airline leads; do not equate partner coverage or browser-only success with native server connectivity.
+
+- [x] Qantas public cached flight inventory integrated; all pages, observed times, fees, mixed cabins and source limitations retained.
+- [ ] Verify compatible Qantas transport on hosted Linux after push; continue remaining airline access leads.

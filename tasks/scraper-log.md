@@ -2238,3 +2238,11 @@ Browser-compatible transport did not resolve American Challenge Validation, Delt
 - Verified both native cabins, one/two adults, international connections and all supplied itinerary/brand variants. Resolved Sabre shared `@ref` segments; retained technical stops separately. Miles are party totals; cash taxes absent, not zero.
 - Actual PointSnap SSE ADD–NBO October7 two adults: four itineraries/five fares,4.2seconds. Ordinary airline browser one-adult Economy: four results; parser retains all four. PointSnap browser verified party totals, BLZ same-flight stop detail and selected-cabin booking handoff. ET enabled in direct program registry and local live feed.
 - AA same new header experiment still309/Challenge Validation; DL fresh homepage+booking200/offer444; UA anonymous token200/search428. Continue remaining distinct leads; no all-airline completion claim.
+
+
+### Qantas compatible transport and hosted AA test — September5
+
+- Default Node/curl Qantas403 was a transport issue, not proof that public data was inaccessible. Fresh impit0.14.4 client returns cached flight inventory with no member credentials. Enabled QF_FF after actual SSE16/21 across two pages and real-browser fee/freshness/eligibility verification.
+- Native Qantas immediate Check availability is Turnstile-backed. Do not reuse browser challenge proofs in the server, refresh cached timestamps, or claim every Qantas route is covered.
+- AA impit matching client/correlation309/Challenge Validation; United fresh token200/search428; Delta current guest offer444. Hosted Linux AA run33984381515 produced the same309/challenge. Further identical retries are not new hypotheses.
+- Ethiopian live adapter also succeeds in hosted Node22. Qantas compatible hosted test added. All147 tests passed; targeted type/lint/build verification ongoing after final small fixes.

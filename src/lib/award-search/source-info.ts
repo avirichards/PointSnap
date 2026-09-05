@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  QF_FF: {
+    inventory: "flights",
+    label: "Qantas & offered partner rewards · cached",
+    detail:
+      "Cached Classic Reward itineraries on routes covered by Qantas's public finder, with source observation times. Australian domestic routes are not covered. Same-flight stops may be omitted. Recheck availability on Qantas before booking.",
+  },
   ET_SHEBAMILES: {
     inventory: "flights",
     label: "Ethiopian ShebaMiles award flights",

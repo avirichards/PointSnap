@@ -14,7 +14,7 @@ cp .env.local.example .env.local
 pnpm dev
 ```
 
-Open http://localhost:3000. All environment values may stay blank to use the six direct sources. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
+Open http://localhost:3000. All environment values may stay blank to use the eight direct sources: six live flight feeds, Qantas cached flight inventory and Virgin Atlantic's daily calendar. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
 
 ## Live coverage
 
@@ -23,6 +23,7 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 | Alaska Airlines / Atmos Rewards | Individual itineraries including available partners, per-person points, USD taxes, seats and matching cash fares | Direct public search |
 | JetBlue / TrueBlue | Supplied JetBlue/partner itineraries and fare families; per-segment cabins, points, taxes and exact-fare cash comparisons when matched | Direct public flight search |
 | Ethiopian ShebaMiles | Economy and Business itineraries, all supplied fares, exact passenger totals and same-flight stops; cash fees unreported. | Direct anonymous airline search |
+| Qantas Frequent Flyer | Cached Classic Reward itineraries and offered partners, all result pages and original timestamps; Australian domestic routes excluded; same-flight stops may be omitted | Public finder; browser recheck before booking |
 | Emirates Skywards partners | Individual easyJet and Jet2 flights, exact party miles; taxes included. Emirates-operated flights are not connected. | Direct public partner portal |
 | Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
 | Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |
@@ -30,7 +31,7 @@ Open http://localhost:3000. All environment values may stay blank to use the six
 | Seats.aero | Individual award itineraries for its supported programs | App-owned commercial Live Search key |
 | AwardTool | Individual award itineraries for contract-enabled programs | App-owned API key |
 
-**Universal airline coverage is not complete.** Fresh requests were verified for all six direct sources on September 5, 2026. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
+**Universal airline coverage is not complete.** The eight source connections were verified on September 5, 2026; requesting cached Qantas inventory does not turn it into live availability. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
 
 The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” Virgin calendar summaries appear separately from flight results and do not count as complete flight integrations. JetBlue now returns complete itinerary and fare records for the audited searches. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
 

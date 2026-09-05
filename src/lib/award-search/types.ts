@@ -1,6 +1,11 @@
 import type { Cabin, SearchQuery } from "@/lib/types";
 export type CoverageState =
-  "partial" | "pending" | "success" | "empty" | "unavailable" | "error";
+  | "partial"
+  | "pending"
+  | "success"
+  | "empty"
+  | "unavailable"
+  | "error";
 export interface Coverage {
   programId: string;
   state: CoverageState;
@@ -23,6 +28,8 @@ export interface AwardPrice {
   cash: number | null;
   currency: string | null;
   seats: number | null;
+  seatCountLabel?: string;
+  bookingNotes?: string[];
   mixedCabin: boolean;
   cashFare?: {
     amount: number;
@@ -64,6 +71,8 @@ export interface AwardResult {
   kind: "flight" | "calendar";
   segments: AwardSegment[];
   duration: number | null;
+  /** The source supplies flight changes but may omit same-flight stops. */
+  stopDetailsUnconfirmed?: boolean;
   prices: Partial<Record<Cabin, AwardPrice>>;
   // Preserve every source fare, including multiple fare families in a cabin.
   fares?: AwardPrice[];

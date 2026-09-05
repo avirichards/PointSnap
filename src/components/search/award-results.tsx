@@ -38,7 +38,7 @@ import type {
 } from "@/lib/award-search/types";
 import type { WalletData } from "@/lib/wallet";
 import { centsPerPoint, pointsForParty } from "@/lib/award-search/value";
-import { stopAirports, stopCount } from "@/lib/award-search/stops";
+import { stopSummary } from "@/lib/award-search/stops";
 import { bookingUrl } from "@/lib/bookingHandoff";
 export const programName = (id: string) =>
   PROGRAMS.find((p) => p.id === id)?.name ?? id;
@@ -200,7 +200,11 @@ function Results({
       >
         {label}
         <span aria-hidden>
-          {sort === key && sortCabin === cabin ? (descending ? "↓" : "↑") : "↕"}
+          {sort === key && sortCabin === cabin
+            ? descending
+              ? "↓"
+              : "↑"
+            : "↕"}
         </span>
       </button>
     </th>
@@ -241,6 +245,14 @@ function Results({
         <span className="price-program text-[11px] text-muted-foreground mt-1">
           {n > 1 ? `${n} programs` : programName(offer.row.programId)}
         </span>
+        {offer.row.freshness === "cached" && (
+          <span className="text-[11px] text-muted-foreground mt-1">
+            Cached · recheck
+          </span>
+        )}
+        {!!offer.price.bookingNotes?.length && (
+          <span className="text-[11px] mt-1">Eligibility applies</span>
+        )}
         {offer.price.mixedCabin && (
           <span className="text-xs mt-1">Mixed cabin</span>
         )}
@@ -476,9 +488,7 @@ function Results({
                       {duration(g.row.duration)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {stopCount(g.row) === 0
-                        ? "Nonstop"
-                        : stopAirports(g.row).join(" · ")}
+                      {stopSummary(g.row)}
                     </p>
                   </td>
                   {CABIN_ORDER.map((c) => (
@@ -514,10 +524,7 @@ function Results({
               {time(g.row.segments.at(-1)?.arrival ?? null)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {g.row.date} · {duration(g.row.duration)} ·{" "}
-              {stopCount(g.row) === 0
-                ? "Nonstop"
-                : `via ${stopAirports(g.row).join(", ")}`}
+              {g.row.date} · {duration(g.row.duration)} · {stopSummary(g.row)}
             </p>
             <div className="grid grid-cols-2 gap-2 mt-4">
               {CABIN_ORDER.filter((c) => best(g, c)).map((c) => (
@@ -934,8 +941,22 @@ function Details({
       </div>
       {price.mixedCabin && (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-          Mixed cabin: part of this journey is in a lower cabin. Check each
-          segment before booking.
+          Mixed cabin: this journey uses different cabins. Check each segment
+          before booking.
+        </p>
+      )}
+      {price.bookingNotes?.map((note) => (
+        <p
+          key={note}
+          className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+        >
+          {note}
+        </p>
+      ))}
+      {row.stopDetailsUnconfirmed && (
+        <p className="rounded-lg border p-3 text-sm text-muted-foreground">
+          This source reports connections but may omit intermediate stops on the
+          same flight. Confirm all stops on the airline’s itinerary.
         </p>
       )}
       {price.cabinUnconfirmed && (
@@ -1061,9 +1082,10 @@ function Details({
             ? duration(row.duration)
             : "Calendar availability"}{" "}
           ·{" "}
-          {price.seats === null
-            ? "Seat count not reported"
-            : `${price.seats} seat${price.seats === 1 ? "" : "s"} reported`}
+          {price.seatCountLabel ??
+            (price.seats === null
+              ? "Seat count not reported"
+              : `${price.seats} seat${price.seats === 1 ? "" : "s"} reported`)}
         </p>
         <p>
           Observed {new Date(row.observedAt).toLocaleString()} through{" "}

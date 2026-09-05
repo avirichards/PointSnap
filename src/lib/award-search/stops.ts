@@ -16,3 +16,10 @@ export function stopCount(row: AwardResult): number {
     )
   );
 }
+
+export function stopSummary(row: AwardResult): string {
+  const airports = stopAirports(row).join(" · ");
+  if (row.stopDetailsUnconfirmed)
+    return airports ? `${airports} · check stops` : "Direct · check stops";
+  return airports || "Nonstop";
+}

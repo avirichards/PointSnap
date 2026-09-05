@@ -222,7 +222,10 @@ export function matchesOffer(
     )
   )
     return false;
-  if (!below(stopCount(r), f.maxStops) || !below(r.duration, f.maxDuration, 60))
+  if (
+    !below(r.stopDetailsUnconfirmed ? null : stopCount(r), f.maxStops) ||
+    !below(r.duration, f.maxDuration, 60)
+  )
     return false;
   const waits = layovers(r);
   if (f.minLayover !== "" && waits.some((n) => !above(n, f.minLayover)))
@@ -397,7 +400,8 @@ export function sortGroups(
       return values.length ? Math.max(...values) : null;
     }
     if (sort === "duration") return g.row.duration;
-    if (sort === "stops") return stopCount(g.row);
+    if (sort === "stops")
+      return g.row.stopDetailsUnconfirmed ? null : stopCount(g.row);
     if (sort === "programs") return g.programs.length;
     if (sort === "freshness") {
       const ts = g.offers

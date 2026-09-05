@@ -1,0 +1,739 @@
+{
+  "flights": [
+    {
+      "id": 3935927727,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T19:10:00",
+      "arrivesAt": "2026-10-06T07:20:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 10 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 28200,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543651,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 58200,
+          "seats": 6,
+          "tax": 1579,
+          "currency": "US$",
+          "rbd": "P",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543652,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T19:10:00",
+          "arrivesAt": "2026-10-06T07:20:00",
+          "duration": "07h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA180",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927731,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T19:35:00",
+      "arrivesAt": "2026-10-06T07:45:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 10 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 28200,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543659,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 58200,
+          "seats": 6,
+          "tax": 1579,
+          "currency": "US$",
+          "rbd": "P",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543660,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T19:35:00",
+          "arrivesAt": "2026-10-06T07:45:00",
+          "duration": "07h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA176",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927742,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T21:40:00",
+      "arrivesAt": "2026-10-06T09:50:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 10 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 28200,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543675,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 58200,
+          "seats": 6,
+          "tax": 1579,
+          "currency": "US$",
+          "rbd": "P",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543677,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T21:40:00",
+          "arrivesAt": "2026-10-06T09:50:00",
+          "duration": "07h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA114",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927738,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T20:55:00",
+      "arrivesAt": "2026-10-06T09:10:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 15 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 28200,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543670,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 58200,
+          "seats": 6,
+          "tax": 1579,
+          "currency": "US$",
+          "rbd": "P",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543671,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T20:55:00",
+          "arrivesAt": "2026-10-06T09:10:00",
+          "duration": "07h 15m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA172",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927722,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T18:40:00",
+      "arrivesAt": "2026-10-06T06:50:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 10 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": null,
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 58200,
+          "seats": 5,
+          "tax": 1579,
+          "currency": "US$",
+          "rbd": "P",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543645,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T18:40:00",
+          "arrivesAt": "2026-10-06T06:50:00",
+          "duration": "07h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA174",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927735,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T20:20:00",
+      "arrivesAt": "2026-10-06T08:30:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 10 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": null,
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 58200,
+          "seats": 3,
+          "tax": 1579,
+          "currency": "US$",
+          "rbd": "P",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543665,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T20:20:00",
+          "arrivesAt": "2026-10-06T08:30:00",
+          "duration": "07h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA116",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927680,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T09:35:00",
+      "arrivesAt": "2026-10-05T21:40:00",
+      "arrivalDayOffset": 0,
+      "duration": "7 hours 5 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 23300,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543581,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T09:35:00",
+          "arrivesAt": "2026-10-05T21:40:00",
+          "duration": "07h 05m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA142",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927729,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T19:15:00",
+      "arrivesAt": "2026-10-06T07:20:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 5 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 23300,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543656,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T19:15:00",
+          "arrivesAt": "2026-10-06T07:20:00",
+          "duration": "07h 05m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA106",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "787",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927715,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T18:10:00",
+      "arrivesAt": "2026-10-06T06:25:00",
+      "arrivalDayOffset": 1,
+      "duration": "7 hours 15 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 23300,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543634,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T18:10:00",
+          "arrivesAt": "2026-10-06T06:25:00",
+          "duration": "07h 15m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA100",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "787",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927692,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T16:20:00",
+      "arrivesAt": "2026-10-06T09:30:00",
+      "arrivalDayOffset": 1,
+      "duration": "12 hours 10 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 54800,
+          "seats": 2,
+          "tax": 370,
+          "currency": "US$",
+          "rbd": "T, U",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543599,
+          "mixedCabinClasses": [
+            "Economy",
+            "Business"
+          ]
+        },
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 82100,
+          "seats": 2,
+          "tax": 1605,
+          "currency": "US$",
+          "rbd": "X, U",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543604,
+          "mixedCabinClasses": [
+            "PremiumEconomy",
+            "Business"
+          ]
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T16:20:00",
+          "arrivesAt": "2026-10-06T05:35:00",
+          "duration": "07h 15m",
+          "layoverDuration": "02h 30m",
+          "flightNumber": "AA94",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "777",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "MAD",
+            "name": "Madrid",
+            "city": "Madrid"
+          }
+        },
+        {
+          "departsAt": "2026-10-06T08:05:00",
+          "arrivesAt": "2026-10-06T09:30:00",
+          "duration": "02h 25m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "IB713",
+          "operatedBy": "Iberia",
+          "airlineCode": "IB",
+          "iconAirlineCode": "IB",
+          "equipment": "A320",
+          "origin": {
+            "code": "MAD",
+            "name": "Madrid",
+            "city": "Madrid"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "maxKnownPage": 2
+  },
+  "routeDecision": {
+    "blocked": false
+  }
+}

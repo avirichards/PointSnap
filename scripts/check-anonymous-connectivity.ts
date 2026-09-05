@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { parseAmerican } from "../src/lib/award-search/american";
 import { ethiopianSearch } from "../src/lib/award-search/ethiopian";
+import { qantasSearch } from "../src/lib/award-search/qantas";
 
 const date = process.argv[2] ?? "2026-10-05";
 const ua =
@@ -198,6 +199,19 @@ async function main() {
       bytes: text.length,
       jsonKeys: keys,
       challenge: /Just a moment|challenge-platform/.test(text),
+    };
+  });
+
+  await record("QF_FF_COMPATIBLE", async () => {
+    const rows = await qantasSearch(
+      { origin: "JFK", dest: "LHR", departDate: date, pax: 1, minCabin: "Y" },
+      AbortSignal.timeout(55000),
+    );
+    return {
+      state: "success",
+      itineraries: rows.length,
+      fares: rows.reduce((n, row) => n + (row.fares?.length ?? 0), 0),
+      freshness: [...new Set(rows.map((row) => row.freshness))],
     };
   });
 

@@ -64,3 +64,8 @@ ScraperAPI's proxy port terminates TLS at their server and re-presents their own
 The user explicitly prioritizes airline access and asked not to stop until connections work or all remaining practical ideas are exhausted. Answer status questions briefly, then resume concrete work in the same turn. One denied endpoint, a browser-only proof, or a passing parser fixture is not overall completion. Record distinct attempts, response evidence and open leads, and keep the live feed aligned with actual activity.
 
 - Airline response graphs can reuse flight segments by reference and count same-flight technical stops. Completeness checks must resolve references and compare every native itinerary before enabling a source. Passenger-total quotes and missing tax amounts require explicit normalization; verify the selected cabin survives booking handoff in the real browser.
+
+
+- Qantas: public cached search can work through a compatible Node HTTP client while default fetch returns403. Test transport separately from login and data-contract hypotheses. Keep original observation times; a successful fetch is not a live availability check.
+- Never equate a source’s “direct” count with nonstop: QF1 SYD–LHR is a single represented flight with an omitted intermediate stop. Preserve data and disclose uncertainty rather than inventing segments or offering a false nonstop match.
+- An isolated tsx diagnostic in this CommonJS package must wrap await calls in async main; a typecheck alone does not verify its runtime entry.
