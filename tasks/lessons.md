@@ -2,6 +2,8 @@
 
 ## Current connection lessons — September 2026
 
+Azul's public points-offer handoff yielded real anonymous inventory where its homepage failed, but fresh queries did not reproduce it. Keep browser access evidence separate from an enabled native connection. Public airport pickers can change a selection asynchronously: verify final fields and the actual request, not just a successful option click. Exclude nearby-airport alternatives from exact-route counts, retain account-holder pricing conditions and never confuse remaining aircraft capacity with award-fare seats.
+
 SAS reuses the app-owned ordinary Chrome lifecycle successfully after earlier HTTP/managed-browser failures. Its regular points response contains a cash reference total distinct from the actual tax copayment; verify selected-cart prices. Some international visible fare titles are blank while accessible fare-rule labels are correct. Internal cabin codes are airline-specific: SAS Y can be European Business or long-haul Premium. Record unknown segment cabins instead of guessing.
 
 The user explicitly approved a coverage-first pass: establish and verify native airline connections through PointSnap, then move to the next airline. Fix incorrect data and failures that prevent normal searches now; defer substantial hosting, load optimization and long-running reliability qualification until after the connection pass. Do not keep American in extended deployment experiments while other native connectors are still missing. Final completeness and public-release requirements remain unchanged.

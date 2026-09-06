@@ -299,3 +299,9 @@ Plain anonymous HTTP still returns 403. Earlier managed-browser failures remain 
 Validation: 245 tests across 31 files, TypeScript, focused lint and an optimized Node 22 build passed. All 87 user requirement groups and earlier unresolved native airlines remain open where not proved complete. The next anonymous opportunity is Azul in the same app-owned ordinary Chrome runtime; its earlier browser results did not establish a working collector.
 
 The normal multi-source CPH–ARN search also completed: 100 grouped itineraries / 505 fare choices from five sources in 153.0 seconds. SAS SK402 appears once, with EuroBonus at 10,000 points and Delta SkyMiles at 15,000, each retaining its own taxes. The combined nonstop filter shows 14 itineraries / 60 fare choices. This proves integration with partner-program comparison; it does not qualify the slower full-search latency for release.
+
+## September 6 — Azul access evidence and priority confirmation
+
+The coverage-first decision is confirmed in the current plan, playbook, requirement87 and readable goal copy. The active goal already references that plan; no goal edit or scope reduction is needed. All87 requirement groups remain logged.
+
+Own ordinary Chrome now has one native anonymous Azul inventory response via the official public points-offer handoff: VCP–LIS December1, three source journeys /30 payment choices, including an explicitly separate OPO alternative. Fresh normal searches still fail; the corrected clean-page VCP–SDU two-adult query confirms inventory403. Route alternatives, account-holder discounts, cash fees and aircraft-versus-award seat counts are recorded for future normalization. No native Azul source is enabled and no all-airline milestone is marked complete. See [current Azul evidence](../docs/evidence/azul-anonymous-2026-09-06.json).

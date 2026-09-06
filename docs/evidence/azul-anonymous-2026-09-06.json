@@ -1,0 +1,367 @@
+{
+  "checkedAt": "2026-09-06T10:44:15.935Z",
+  "programId": "AD_AZUL_TUDOAZUL",
+  "method": "App-owned ordinary Chrome, anonymous official public search",
+  "query": {
+    "origin": "VCP",
+    "dest": "SDU",
+    "departDate": "2026-10-05",
+    "pax": 1
+  },
+  "entryStatus": 200,
+  "bookingInitializationStatus": 200,
+  "submittedRequest": {
+    "criteria": [
+      {
+        "departureStation": "VCP",
+        "arrivalStation": "SDU",
+        "std": "10/05/2026",
+        "departureDate": "2026-10-05"
+      }
+    ],
+    "passengers": [
+      {
+        "type": "ADT",
+        "count": "1",
+        "companionPass": false
+      }
+    ],
+    "flexibleDays": {
+      "daysToLeft": "3",
+      "daysToRight": "3"
+    },
+    "currencyCode": "BRL"
+  },
+  "inventoryObservation": [
+    {
+      "stage": "inventory-extra-response",
+      "status": 200
+    },
+    {
+      "stage": "inventory-extra-response",
+      "status": 403
+    },
+    {
+      "host": "b2c-api.voeazul.com.br",
+      "path": "/tudoAzulReservationAvailability/api/tudoazul/reservation/availability/v6/availability",
+      "type": "xhr",
+      "error": "net::ERR_FAILED"
+    },
+    {
+      "stage": "inventory-loading-failed",
+      "errorText": "net::ERR_FAILED",
+      "corsErrorStatus": {
+        "corsError": "MissingAllowOriginHeader",
+        "failedParameter": ""
+      }
+    }
+  ],
+  "result": "Own Chrome has one real anonymous native inventory response via a public booking handoff, but ordinary fresh queries do not reproduce it. This is browser-level access evidence; no Azul native PointSnap connector is enabled.",
+  "implementationCorrection": "Earlier origin click was intercepted by an English cookie banner; accepting both real settings labels fixed the ordinary form flow.",
+  "next": "Compare the verified public booking form in the remaining ordinary supported browser runtime, using exact request validation. Retain the native response for normalization and eligibility work if repeat access becomes available. Continue the broader airline connection pass; do not rerun identical failed Chrome queries or substitute marketing minima for flights.",
+  "publicHandoff": {
+    "checkedAt": "2026-09-06T10:28:14.280Z",
+    "entry": "https://passagens.voeazul.com.br/pt/pontos",
+    "action": "Open the published VCP–LIS December 1 points offer, confirm the actual points/one-way/one-adult form, then Reserve agora.",
+    "marketingPricesAreCached": true,
+    "marketingFreshness": "The official page describes offers collected over the previous 48 hours; those marketing prices are not the native inventory below.",
+    "inventoryStatus": 200,
+    "request": {
+      "criteria": [
+        {
+          "departureStation": "VCP",
+          "arrivalStation": "LIS",
+          "std": "12/01/2026",
+          "departureDate": "2026-12-01"
+        }
+      ],
+      "passengers": [
+        {
+          "type": "ADT",
+          "count": "1",
+          "companionPass": false
+        }
+      ],
+      "flexibleDays": {
+        "daysToLeft": "3",
+        "daysToRight": "3"
+      },
+      "currencyCode": "BRL"
+    },
+    "anonymous": true,
+    "returnedJourneys": 3,
+    "returnedPaymentChoices": 30,
+    "journeys": [
+      {
+        "flight": "AD8750",
+        "origin": "VCP",
+        "destination": "LIS",
+        "departure": "2026-12-01T18:10:00",
+        "arrival": "2026-12-02T07:15:00",
+        "matchesRequestedDestination": true,
+        "cabins": [
+          {
+            "name": "Economy",
+            "bookingClass": "W",
+            "paymentChoices": 5,
+            "firstPaymentChoice": {
+              "companionPass": false,
+              "paxType": "ADT",
+              "fareMoney": 0,
+              "points": {
+                "amount": 86000,
+                "discount": {
+                  "applied": true,
+                  "amount": 2580,
+                  "promotionCode": null,
+                  "restriction": "DiscountForContactPax",
+                  "discountRuleForContactPax": true
+                },
+                "discountedAmount": 83420
+              },
+              "taxesAndFees": 59.17,
+              "convenienceFee": 135.9,
+              "totalMoney": 195.07,
+              "currencyCode": "BRL",
+              "hold": null
+            }
+          },
+          {
+            "name": "Business",
+            "bookingClass": "UL",
+            "paymentChoices": 5,
+            "firstPaymentChoice": {
+              "companionPass": false,
+              "paxType": "ADT",
+              "fareMoney": 0,
+              "points": {
+                "amount": 450000,
+                "discount": {
+                  "applied": true,
+                  "amount": 4500,
+                  "promotionCode": null,
+                  "restriction": "DiscountForContactPax",
+                  "discountRuleForContactPax": true
+                },
+                "discountedAmount": 445500
+              },
+              "taxesAndFees": 59.17,
+              "convenienceFee": 135.9,
+              "totalMoney": 195.07,
+              "currencyCode": "BRL",
+              "hold": null
+            }
+          }
+        ]
+      },
+      {
+        "flight": "AD8800",
+        "origin": "VCP",
+        "destination": "OPO",
+        "departure": "2026-12-01T19:15:00",
+        "arrival": "2026-12-02T08:20:00",
+        "matchesRequestedDestination": false,
+        "cabins": [
+          {
+            "name": "Economy",
+            "bookingClass": "W",
+            "paymentChoices": 5,
+            "firstPaymentChoice": {
+              "companionPass": false,
+              "paxType": "ADT",
+              "fareMoney": 0,
+              "points": {
+                "amount": 80000,
+                "discount": {
+                  "applied": true,
+                  "amount": 2400,
+                  "promotionCode": null,
+                  "restriction": "DiscountForContactPax",
+                  "discountRuleForContactPax": true
+                },
+                "discountedAmount": 77600
+              },
+              "taxesAndFees": 59.17,
+              "convenienceFee": 135.9,
+              "totalMoney": 195.07,
+              "currencyCode": "BRL",
+              "hold": null
+            }
+          },
+          {
+            "name": "Business",
+            "bookingClass": "UL",
+            "paymentChoices": 5,
+            "firstPaymentChoice": {
+              "companionPass": false,
+              "paxType": "ADT",
+              "fareMoney": 0,
+              "points": {
+                "amount": 430000,
+                "discount": {
+                  "applied": true,
+                  "amount": 4300,
+                  "promotionCode": null,
+                  "restriction": "DiscountForContactPax",
+                  "discountRuleForContactPax": true
+                },
+                "discountedAmount": 425700
+              },
+              "taxesAndFees": 59.17,
+              "convenienceFee": 135.9,
+              "totalMoney": 195.07,
+              "currencyCode": "BRL",
+              "hold": null
+            }
+          }
+        ]
+      },
+      {
+        "flight": "AD8752",
+        "origin": "VCP",
+        "destination": "LIS",
+        "departure": "2026-12-01T21:05:00",
+        "arrival": "2026-12-02T10:10:00",
+        "matchesRequestedDestination": true,
+        "cabins": [
+          {
+            "name": "Economy",
+            "bookingClass": "W",
+            "paymentChoices": 5,
+            "firstPaymentChoice": {
+              "companionPass": false,
+              "paxType": "ADT",
+              "fareMoney": 0,
+              "points": {
+                "amount": 86000,
+                "discount": {
+                  "applied": true,
+                  "amount": 2580,
+                  "promotionCode": null,
+                  "restriction": "DiscountForContactPax",
+                  "discountRuleForContactPax": true
+                },
+                "discountedAmount": 83420
+              },
+              "taxesAndFees": 59.17,
+              "convenienceFee": 135.9,
+              "totalMoney": 195.07,
+              "currencyCode": "BRL",
+              "hold": null
+            }
+          },
+          {
+            "name": "Business",
+            "bookingClass": "UL",
+            "paymentChoices": 5,
+            "firstPaymentChoice": {
+              "companionPass": false,
+              "paxType": "ADT",
+              "fareMoney": 0,
+              "points": {
+                "amount": 450000,
+                "discount": {
+                  "applied": true,
+                  "amount": 4500,
+                  "promotionCode": null,
+                  "restriction": "DiscountForContactPax",
+                  "discountRuleForContactPax": true
+                },
+                "discountedAmount": 445500
+              },
+              "taxesAndFees": 59.17,
+              "convenienceFee": 135.9,
+              "totalMoney": 195.07,
+              "currencyCode": "BRL",
+              "hold": null
+            }
+          }
+        ]
+      }
+    ],
+    "actualPage": "Three rows rendered. AD8750 expanded to Economy 83,420 points and Business 445,500 points, with five payment tiers for each in the native response.",
+    "correctnessFindings": [
+      "One of the three journeys is VCP–OPO, an explicitly advertised nearby alternative. Only two journeys / 20 payment choices match VCP–LIS; never mislabel OPO as LIS.",
+      "DiscountForContactPax requires the account holder to be among the travelers. The page also says differentiated redemption fees depend on that condition. Ordinary non-holder fees and a selected-cart total have not been verified.",
+      "AD8750 Economy first payment choice: raw 86,000 points; account-holder 83,420; native response shows BRL59.17 taxes plus BRL135.90 convenience fee = BRL195.07. Other payment tiers include additional fareMoney. These are one-adult source observations, not verified two-adult totals.",
+      "Aircraft legInfo.remainingSeats is aircraft remaining capacity, not verified award-fare availability; do not expose it as award seats.",
+      "No refund guarantee or matching cash comparison is established."
+    ]
+  },
+  "followupExperiments": [
+    {
+      "method": "Restart owned Chrome, navigate the observed public booking URL with VCP–SDU October5 and two adults.",
+      "outcome": "The normal page returns a generic error; no native inventory received."
+    },
+    {
+      "method": "Use the actual public offer dialog, explicitly change destination/date/adults to VCP–SDU October5/two, and submit.",
+      "outcome": "Verified final booking query is correct; the normal page returns an error with no native inventory."
+    },
+    {
+      "method": "Reopen the original VCP–LIS December1/one-adult query through its normal public offer dialog after restart.",
+      "outcome": "The original positive control does not reproduce; generic error and no native inventory."
+    },
+    {
+      "method": "Start a clean page, use the independent top booking form on the public points page, verify final field values and submitted native request.",
+      "query": {
+        "origin": "VCP",
+        "dest": "SDU",
+        "departDate": "2026-10-05",
+        "pax": 2
+      },
+      "finalForm": {
+        "stage": "final-form",
+        "origin": "São Paulo - Campinas (VCP) (VCP)",
+        "dest": "Rio de Janeiro - Santos Dumont (SDU) (SDU)",
+        "date": "05/10/2026",
+        "pax": "2 Passageiro"
+      },
+      "submittedRequest": {
+        "criteria": [
+          {
+            "departureStation": "VCP",
+            "arrivalStation": "SDU",
+            "std": "10/05/2026",
+            "departureDate": "2026-10-05"
+          }
+        ],
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": "2",
+            "companionPass": false
+          }
+        ],
+        "flexibleDays": {
+          "daysToLeft": "3",
+          "daysToRight": "3"
+        },
+        "currencyCode": "BRL"
+      },
+      "inventory": [
+        {
+          "stage": "inventory-extra-response",
+          "status": 200
+        },
+        {
+          "stage": "inventory-extra-response",
+          "status": 403
+        },
+        {
+          "stage": "inventory-loading-failed",
+          "errorText": "net::ERR_FAILED",
+          "corsErrorStatus": {
+            "corsError": "MissingAllowOriginHeader",
+            "failedParameter": ""
+          }
+        }
+      ],
+      "outcome": "Correct VCP–SDU October5 two-adult form submitted. Actual inventory HTTP403; missing CORS allow-origin; no flights. Reused page alone does not explain the failure."
+    }
+  ],
+  "implementationCorrections": [
+    "Earlier origin click was intercepted by an English cookie banner; accepting both real settings labels fixed the ordinary form flow.",
+    "The asynchronous public airport picker briefly changed the intended SDU selection to LAD in an initial fast form test. That attempt is excluded as evidence about VCP–SDU. The corrected probe checks final visible fields and the actual native request before assessing inventory.",
+    "Wait for the offer dialog before clicking Reserve agora; otherwise the identically named top form can be submitted. Hidden duplicate fare buttons require accessible role/visible-row scoping."
+  ]
+}
