@@ -1,0 +1,175 @@
+{
+  "programId": "EY_GUEST",
+  "date": "2026-09-06",
+  "status": "native anonymous local API and frontend verified; airline-wide completeness unfinished",
+  "method": {
+    "entry": "https://digital.etihad.com/book/search",
+    "flow": "AWARD",
+    "runtime": "app-owned ordinary Google Chrome, dedicated anonymous profile",
+    "siteRequest": "https://api-des.etihad.com/airlines/EY/v2/search/air-bounds",
+    "cabinSearches": [
+      [
+        "ECONOMY",
+        "BUSINESS"
+      ],
+      [
+        "BUSINESS",
+        "FIRST"
+      ]
+    ],
+    "maxFlightCombinationsPerBound": 25,
+    "showMilesPrice": true,
+    "showSoldOut": true,
+    "loginUsed": false,
+    "importedPersonalState": false,
+    "subscriptionUsed": false
+  },
+  "measuredSearches": [
+    {
+      "origin": "JFK",
+      "destination": "AUH",
+      "departureDate": "2026-10-05",
+      "adults": 1,
+      "itineraries": 6,
+      "availableFares": 38,
+      "nativeRunnerElapsedMs": 10813
+    },
+    {
+      "origin": "JFK",
+      "destination": "AUH",
+      "departureDate": "2026-10-05",
+      "adults": 2,
+      "itineraries": 6,
+      "availableFares": 38,
+      "actualAppApiElapsedMs": 10141
+    },
+    {
+      "origin": "LHR",
+      "destination": "AUH",
+      "departureDate": "2026-10-05",
+      "adults": 2,
+      "itineraries": 7,
+      "availableFares": 76,
+      "nonstopItineraries": 4,
+      "railItineraries": 3,
+      "runnerElapsedMs": [
+        11453,
+        12744
+      ],
+      "subsequentAppFareCounts": [
+        73,
+        76
+      ],
+      "lastUiObservedAt": "2026-09-06T08:48:06Z",
+      "lastUiElapsedSeconds": 11.2
+    }
+  ],
+  "priceChecks": [
+    {
+      "flights": [
+        "EY2"
+      ],
+      "cabin": "Y",
+      "perAdultPoints": 60000,
+      "perAdultCash": 224.9,
+      "currency": "USD",
+      "airlineRoundedDisplay": 225
+    },
+    {
+      "flights": [
+        "AA236",
+        "EY86"
+      ],
+      "cabin": "Y",
+      "perAdultPoints": 85000,
+      "perAdultCash": 249.6,
+      "currency": "USD",
+      "alternateTaxConversionMustNotBeCombined": true
+    },
+    {
+      "flights": [
+        "EY66"
+      ],
+      "cabin": "F",
+      "fare": "Comfort GuestSeat",
+      "perAdultPoints": 120000,
+      "perAdultCash": 514.19,
+      "currency": "GBP",
+      "adults": 2,
+      "partyPoints": 240000,
+      "partyCash": 1028.38
+    },
+    {
+      "flights": [
+        "EY8756",
+        "EY78"
+      ],
+      "cabin": "Y",
+      "fare": "Value Pay with miles",
+      "perAdultPoints": 86724,
+      "perAdultCash": 217.03,
+      "currency": "GBP",
+      "adults": 2,
+      "partyPoints": 173448,
+      "partyCash": 434.06,
+      "includesRail": true,
+      "transfer": [
+        "QQM",
+        "MAN"
+      ]
+    }
+  ],
+  "pricingContract": {
+    "points": "prices.milesConversion.convertedMiles.base",
+    "cash": "prices.totalPrices[0].totalTaxes, converted using currency decimalPlaces",
+    "source": "https://digital.etihad.com/ey/statics/booking/app/69.1.0/main.ef03c52a7a636e69.js",
+    "validation": "Exact per-adult totals reconcile to the party. Do not pair convertedMiles.total with the base cash taxes. No exact cash comparison is fabricated."
+  },
+  "frontend": {
+    "fullMultiSourceSearch": {
+      "itineraries": 45,
+      "fareChoices": 132,
+      "sourcesWithResults": 4,
+      "elapsedSeconds": 53.4,
+      "mergedFlightPrograms": [
+        "EY_GUEST",
+        "AA_AADVANTAGE",
+        "B6_TRUEBLUE"
+      ],
+      "mergedFlights": [
+        "EY62",
+        "EY64",
+        "EY68"
+      ]
+    },
+    "focusedVerification": "Real /api/search with EY_GUEST program selection; no fixture replay. Native program filter, all itineraries/fares, original fees, currency conversion, AM/PM, party totals, First, rail segments and selected-cabin handoff checked.",
+    "desktop": {
+      "width": 1440,
+      "scrollWidth": 1440
+    },
+    "mobile": {
+      "width": 390,
+      "scrollWidth": 390,
+      "visibleItineraryCards": 7
+    },
+    "pageErrors": [],
+    "premiumHandoffCabin": "B",
+    "screenshots": "Settled rendered desktop, First detail, rail detail and mobile views inspected locally."
+  },
+  "validation": {
+    "testsPassed": 218,
+    "testFilesPassed": 29,
+    "typeScript": "passed",
+    "focusedEslint": "passed",
+    "optimizedNode22Build": "passed"
+  },
+  "remaining": [
+    "25-combination cap expansion and wider route completeness",
+    "Validated real empty-result semantics",
+    "Broader adult and member-specific fare scope",
+    "Full refund time restrictions and penalties",
+    "Hosted access and sustained release qualification",
+    "ANA next in coverage-first entry pass; earlier unresolved native sources remain open"
+  ],
+  "privacy": "Permanent fixtures retain sanitized flight/fare dictionaries only; no personal profile, account credentials, session headers, office metadata or selection tokens."
+}

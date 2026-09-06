@@ -36,7 +36,7 @@ An optional [browser service](browser-worker/README.md) now adds native Delta Sk
 | Seats.aero | Individual award itineraries for its supported programs | App-owned commercial Live Search key |
 | AwardTool | Individual award itineraries for contract-enabled programs | App-owned API key |
 
-**Universal airline coverage is not complete.** The configured local app has nine scoped live feeds, plus cached Qantas and the Virgin daily calendar; requesting cached Qantas inventory does not turn it into live availability. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
+**Universal airline coverage is not complete.** The configured local app has ten scoped live feeds, plus cached Qantas and the Virgin daily calendar; requesting cached Qantas inventory does not turn it into live availability. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
 
 The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” Virgin calendar summaries appear separately from flight results and do not count as complete flight integrations. JetBlue now returns complete itinerary and fare records for the audited searches. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
 
@@ -115,3 +115,7 @@ Skywards partner quotes preserve the exact party total. Per-person values for mu
 Frontier preserves cash-versus-miles bundle alternatives. A bundle named Business does not establish a business-class cabin; ambiguous seat types are explicitly unconfirmed. International Frontier currency is not verified. Aeromexico retains all supplied fare families, with AM Plus correctly treated as extra-legroom Economy. Source cash charges already include supplied taxes and fees and are not added twice.
 
 The development-only `/build-progress` page shows the local work log, updated via `node scripts/report-progress.mjs work/progress-update.json`. Its API reads only the fixed ignored `work/live-progress.json` file; both routes return 404 outside development. It is a follow-along work log, not automated global airline monitoring.
+
+### Etihad native search
+
+Etihad Guest now returns native anonymous awards through the optional browser service. Verified local searches include JFK–AUH 6 itineraries/38 fares and LHR–AUH 7/76 for two adults, including First Class, exact fees and labeled rail connections. Both cabin searches and all available supplied fare families are retained. Search caps, wider route coverage and hosting remain explicit limits. See [browser setup](browser-worker/README.md) and [evidence](docs/evidence/etihad-anonymous-2026-09-06.json).

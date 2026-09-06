@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  EY_GUEST: {
+    inventory: "flights",
+    label: "Etihad Guest & offered partner awards",
+    detail:
+      "Anonymous Etihad searches across Economy, Business and First, retaining available GuestSeat and pay-with-miles fare choices and exact taxes. Requires the browser service. A response that reaches the airline’s itinerary limit is reported as incomplete rather than silently truncated. Recheck fare rules and availability with Etihad before booking.",
+  },
   AA_AADVANTAGE: {
     inventory: "flights",
     label: "American AAdvantage & offered partner awards",

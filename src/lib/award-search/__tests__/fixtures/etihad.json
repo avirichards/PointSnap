@@ -1,0 +1,4969 @@
+{
+  "query": {
+    "origin": "JFK",
+    "dest": "AUH",
+    "departDate": "2026-10-05",
+    "pax": 2,
+    "minCabin": "Y"
+  },
+  "payload": {
+    "type": "etihad-cabin-searches",
+    "searches": [
+      {
+        "cabins": [
+          "ECONOMY",
+          "BUSINESS"
+        ],
+        "limit": 25,
+        "response": {
+          "data": {
+            "airBoundGroups": [
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 56400,
+                  "segments": [
+                    {
+                      "flightId": "SEG-AA236-JFKFCO-2026-10-05-2000"
+                    },
+                    {
+                      "flightId": "SEG-EY86-FCOAUH-2026-10-06-1135"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "YGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-AA236-JFKFCO-2026-10-05-2000",
+                        "cabin": "eco",
+                        "bookingClass": "T",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY86-FCOAUH-2026-10-06-1135",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 100300,
+                              "total": 125260,
+                              "totalTaxes": 24960,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 85000,
+                              "total": 88723
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 200600,
+                          "total": 250520,
+                          "totalTaxes": 49920,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 170000,
+                          "total": 177446
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-AA236-JFKFCO-2026-10-05-2000",
+                        "cabin": "business",
+                        "bookingClass": "U",
+                        "statusCode": "HK",
+                        "quota": 0
+                      },
+                      {
+                        "flightId": "SEG-EY86-FCOAUH-2026-10-06-1135",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 201000,
+                              "total": 261460,
+                              "totalTaxes": 60460,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 159999,
+                              "total": 163722
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 402000,
+                          "total": 522920,
+                          "totalTaxes": 120920,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 319998,
+                          "total": 327444
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 45600,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "YGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 111000,
+                              "total": 133490,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 60000,
+                              "total": 60000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 222000,
+                          "total": 266980,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 120000,
+                          "total": 120000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YGCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 135400,
+                              "total": 157890,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 73200,
+                              "total": 73200
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 270800,
+                          "total": 315780,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 146400,
+                          "total": 146400
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN16",
+                      "PEN17",
+                      "PEN18"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YGDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 222900,
+                              "total": 245390,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 120500,
+                              "total": 120500
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 445800,
+                          "total": 490780,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 241000,
+                          "total": 241000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 56100,
+                              "total": 78590,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 70125,
+                              "total": 98238
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 112200,
+                          "total": 157180,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 140250,
+                          "total": 196476
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 69000,
+                              "total": 91490,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 86250,
+                              "total": 114363
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 138000,
+                          "total": 182980,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 172500,
+                          "total": 228726
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 222000,
+                              "total": 279990,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 120000,
+                              "total": 120000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 444000,
+                          "total": 559980,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 240000,
+                          "total": 240000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 101500,
+                              "total": 123990,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 126875,
+                              "total": 154988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 203000,
+                          "total": 247980,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 253750,
+                          "total": 309976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 267800,
+                              "total": 325790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 144751,
+                              "total": 144751
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 535600,
+                          "total": 651580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 289502,
+                          "total": 289502
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN19",
+                      "PEN20",
+                      "PEN21"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 445900,
+                              "total": 503890,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 241000,
+                              "total": 241000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 891800,
+                          "total": 1007780,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 482000,
+                          "total": 482000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 432300,
+                              "total": 490290,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 540375,
+                              "total": 612863
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 864600,
+                          "total": 980580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1080750,
+                          "total": 1225726
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN22",
+                      "PEN23",
+                      "PEN24"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 470800,
+                              "total": 528790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 588500,
+                              "total": 660988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 941600,
+                          "total": 1057580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1177000,
+                          "total": 1321976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN25",
+                      "PEN26",
+                      "PEN27"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 683600,
+                              "total": 741590,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 854500,
+                              "total": 926988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1367200,
+                          "total": 1483180,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1709000,
+                          "total": 1853976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 46800,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "YGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 111000,
+                              "total": 133490,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 60000,
+                              "total": 60000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 222000,
+                          "total": 266980,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 120000,
+                          "total": 120000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YGCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 135400,
+                              "total": 157890,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 73200,
+                              "total": 73200
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 270800,
+                          "total": 315780,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 146400,
+                          "total": 146400
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN16",
+                      "PEN17",
+                      "PEN18"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YGDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 222900,
+                              "total": 245390,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 120500,
+                              "total": 120500
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 445800,
+                          "total": 490780,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 241000,
+                          "total": 241000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 55100,
+                              "total": 77590,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 68875,
+                              "total": 96988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 110200,
+                          "total": 155180,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 137750,
+                          "total": 193976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 68000,
+                              "total": 90490,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 85000,
+                              "total": 113113
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 136000,
+                          "total": 180980,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 170000,
+                          "total": 226226
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 222000,
+                              "total": 279990,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 120000,
+                              "total": 120000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 444000,
+                          "total": 559980,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 240000,
+                          "total": 240000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 100500,
+                              "total": 122990,
+                              "totalTaxes": 22490,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 125625,
+                              "total": 153738
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 201000,
+                          "total": 245980,
+                          "totalTaxes": 44980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 251250,
+                          "total": 307476
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 267800,
+                              "total": 325790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 144751,
+                              "total": 144751
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 535600,
+                          "total": 651580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 289502,
+                          "total": 289502
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN19",
+                      "PEN20",
+                      "PEN21"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 445900,
+                              "total": 503890,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 241000,
+                              "total": 241000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 891800,
+                          "total": 1007780,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 482000,
+                          "total": 482000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 432300,
+                              "total": 490290,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 540375,
+                              "total": 612863
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 864600,
+                          "total": 980580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1080750,
+                          "total": 1225726
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN22",
+                      "PEN23",
+                      "PEN24"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 470800,
+                              "total": 528790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 588500,
+                              "total": 660988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 941600,
+                          "total": 1057580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1177000,
+                          "total": 1321976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN25",
+                      "PEN26",
+                      "PEN27"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 683600,
+                              "total": 741590,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 854500,
+                              "total": 926988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1367200,
+                          "total": 1483180,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1709000,
+                          "total": 1853976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 56700,
+                  "segments": [
+                    {
+                      "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300"
+                    },
+                    {
+                      "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "YGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "X",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "N",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 116400,
+                              "total": 139340,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 66000,
+                              "total": 69723
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 232800,
+                          "total": 278680,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 132000,
+                          "total": 139446
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN13",
+                      "PEN14",
+                      "PEN15"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "P",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 69100,
+                              "total": 92040,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 86375,
+                              "total": 115050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 138200,
+                          "total": 184080,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 172750,
+                          "total": 230100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "P",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 82000,
+                              "total": 104940,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 102500,
+                              "total": 131175
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 164000,
+                          "total": 209880,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 205000,
+                          "total": 262350
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "P",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 114500,
+                              "total": 137440,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 143125,
+                              "total": 171800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 229000,
+                          "total": 274880,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 286250,
+                          "total": 343600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "Y",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 5
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 727000,
+                              "total": 785440,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 908750,
+                              "total": 981800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1454000,
+                          "total": 1570880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1817500,
+                          "total": 1963600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN22",
+                      "PEN23",
+                      "PEN24"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "Y",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 5
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 778400,
+                              "total": 836840,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 973000,
+                              "total": 1046050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1556800,
+                          "total": 1673680,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1946000,
+                          "total": 2092100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN25",
+                      "PEN26",
+                      "PEN27"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "Y",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 5
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 987500,
+                              "total": 1045940,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 1234375,
+                              "total": 1307425
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1975000,
+                          "total": 2091880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 2468750,
+                          "total": 2614850
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 56700,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300"
+                    },
+                    {
+                      "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "YVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 69100,
+                              "total": 92040,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 86375,
+                              "total": 115050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 138200,
+                          "total": 184080,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 172750,
+                          "total": 230100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 82000,
+                              "total": 104940,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 102500,
+                              "total": 131175
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 164000,
+                          "total": 209880,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 205000,
+                          "total": 262350
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 114500,
+                              "total": 137440,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 143125,
+                              "total": 171800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 229000,
+                          "total": 274880,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 286250,
+                          "total": 343600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 727000,
+                              "total": 785440,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 908750,
+                              "total": 981800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1454000,
+                          "total": 1570880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1817500,
+                          "total": 1963600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN22",
+                      "PEN23",
+                      "PEN24"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 778400,
+                              "total": 836840,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 973000,
+                              "total": 1046050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1556800,
+                          "total": 1673680,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1946000,
+                          "total": 2092100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN25",
+                      "PEN26",
+                      "PEN27"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 987500,
+                              "total": 1045940,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 1234375,
+                              "total": 1307425
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1975000,
+                          "total": 2091880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 2468750,
+                          "total": 2614850
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 65700,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030"
+                    },
+                    {
+                      "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "YVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 69100,
+                              "total": 92040,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 86375,
+                              "total": 115050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 138200,
+                          "total": 184080,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 172750,
+                          "total": 230100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 82000,
+                              "total": 104940,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 102500,
+                              "total": 131175
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 164000,
+                          "total": 209880,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 205000,
+                          "total": 262350
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "YDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "eco",
+                        "bookingClass": "V",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 114500,
+                              "total": 137440,
+                              "totalTaxes": 22940,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 143125,
+                              "total": 171800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 229000,
+                          "total": 274880,
+                          "totalTaxes": 45880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 286250,
+                          "total": 343600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 727000,
+                              "total": 785440,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 908750,
+                              "total": 981800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1454000,
+                          "total": 1570880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1817500,
+                          "total": 1963600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN22",
+                      "PEN23",
+                      "PEN24"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 778400,
+                              "total": 836840,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 973000,
+                              "total": 1046050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1556800,
+                          "total": 1673680,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1946000,
+                          "total": 2092100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN25",
+                      "PEN26",
+                      "PEN27"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 987500,
+                              "total": 1045940,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 1234375,
+                              "total": 1307425
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1975000,
+                          "total": 2091880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 2468750,
+                          "total": 2614850
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "dictionaries": {
+            "flight": {
+              "SEG-EY4-JFKAUH-2026-10-05-2220": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "4",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T22:20:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T19:20:00.000+04:00"
+                },
+                "duration": 46800,
+                "aircraftCode": "351",
+                "isOpenSegment": false
+              },
+              "SEG-AA236-JFKFCO-2026-10-05-2000": {
+                "marketingAirlineCode": "AA",
+                "operatingAirlineCode": "AA",
+                "marketingFlightNumber": "236",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T20:00:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "FCO",
+                  "dateTime": "2026-10-06T10:20:00.000+02:00"
+                },
+                "duration": 30000,
+                "aircraftCode": "789",
+                "isOpenSegment": false
+              },
+              "SEG-EY2-JFKAUH-2026-10-05-1545": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "2",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T15:45:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T12:25:00.000+04:00"
+                },
+                "duration": 45600,
+                "aircraftCode": "351",
+                "isOpenSegment": false
+              },
+              "SEG-EY8304-JFKBOS-2026-10-05-1300": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "B6",
+                "marketingFlightNumber": "8304",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T13:00:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T14:29:00.000-04:00"
+                },
+                "duration": 5340,
+                "aircraftCode": "223",
+                "isOpenSegment": false
+              },
+              "SEG-B61118-JFKBOS-2026-10-05-1300": {
+                "marketingAirlineCode": "B6",
+                "operatingAirlineCode": "B6",
+                "marketingFlightNumber": "1118",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T13:00:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T14:29:00.000-04:00"
+                },
+                "duration": 5340,
+                "aircraftCode": "223",
+                "isOpenSegment": false
+              },
+              "SEG-EY8-BOSAUH-2026-10-05-1625": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "8",
+                "departure": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T16:25:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T12:45:00.000+04:00"
+                },
+                "duration": 44400,
+                "aircraftCode": "789",
+                "isOpenSegment": false
+              },
+              "SEG-EY86-FCOAUH-2026-10-06-1135": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "86",
+                "departure": {
+                  "locationCode": "FCO",
+                  "dateTime": "2026-10-06T11:35:00.000+02:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T19:40:00.000+04:00"
+                },
+                "duration": 21900,
+                "aircraftCode": "789",
+                "isOpenSegment": false
+              },
+              "SEG-EY8004-JFKBOS-2026-10-05-1030": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "B6",
+                "marketingFlightNumber": "8004",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T10:30:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T11:49:00.000-04:00"
+                },
+                "duration": 4740,
+                "aircraftCode": "223",
+                "isOpenSegment": false
+              }
+            },
+            "airline": {
+              "AA": "AMERICAN AIRLINES",
+              "EY": "ETIHAD AIRWAYS",
+              "B6": "JETBLUE AIRWAYS"
+            },
+            "aircraft": {
+              "223": "AIRBUS  A220-300",
+              "351": "AIRBUS A350-1000",
+              "789": "BOEING 787-9"
+            },
+            "currency": {
+              "USD": {
+                "decimalPlaces": 2
+              }
+            },
+            "anonymousTraveler": {
+              "ADT-1": {
+                "passengerTypeCode": "ADT"
+              },
+              "ADT-2": {
+                "passengerTypeCode": "ADT"
+              }
+            },
+            "fareFamilyWithServices": {
+              "YVALUE": {
+                "cabin": "eco",
+                "commercialFareFamily": "ECONOMY"
+              },
+              "YGCOMFORT": {
+                "cabin": "eco",
+                "commercialFareFamily": "ECONOMY"
+              },
+              "YCOMFORT": {
+                "cabin": "eco",
+                "commercialFareFamily": "ECONOMY"
+              },
+              "YDELUXE": {
+                "cabin": "eco",
+                "commercialFareFamily": "ECONOMY"
+              },
+              "JGCOMFORT": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JVALUE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JDELUXE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JCOMFORT": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "YGDELUXE": {
+                "cabin": "eco",
+                "commercialFareFamily": "ECONOMY"
+              },
+              "JGVALUE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "YGVALUE": {
+                "cabin": "eco",
+                "commercialFareFamily": "ECONOMY"
+              },
+              "JGDELUXE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              }
+            },
+            "fareConditions": {
+              "PEN9": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN17": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN16": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN15": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN14": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN13": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN12": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN11": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN10": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN19": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN18": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN20": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN6": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN5": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN27": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN8": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN26": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN7": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN25": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN2": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN24": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN1": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN23": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN4": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN22": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN3": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN21": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "cabins": [
+          "BUSINESS",
+          "FIRST"
+        ],
+        "limit": 25,
+        "response": {
+          "data": {
+            "airBoundGroups": [
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 56400,
+                  "segments": [
+                    {
+                      "flightId": "SEG-AA236-JFKFCO-2026-10-05-2000"
+                    },
+                    {
+                      "flightId": "SEG-EY86-FCOAUH-2026-10-06-1135"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "JGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-AA236-JFKFCO-2026-10-05-2000",
+                        "cabin": "business",
+                        "bookingClass": "U",
+                        "statusCode": "HK",
+                        "quota": 0
+                      },
+                      {
+                        "flightId": "SEG-EY86-FCOAUH-2026-10-06-1135",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 201000,
+                              "total": 261460,
+                              "totalTaxes": 60460,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 159999,
+                              "total": 163722
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 402000,
+                          "total": 522920,
+                          "totalTaxes": 120920,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 319998,
+                          "total": 327444
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 45600,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "JGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 222000,
+                              "total": 279990,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 120000,
+                              "total": 120000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 444000,
+                          "total": 559980,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 240000,
+                          "total": 240000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 267800,
+                              "total": 325790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 144751,
+                              "total": 144751
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 535600,
+                          "total": 651580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 289502,
+                          "total": 289502
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 445900,
+                              "total": 503890,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 241000,
+                              "total": 241000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 891800,
+                          "total": 1007780,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 482000,
+                          "total": 482000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 432300,
+                              "total": 490290,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 540375,
+                              "total": 612863
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 864600,
+                          "total": 980580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1080750,
+                          "total": 1225726
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 470800,
+                              "total": 528790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 588500,
+                              "total": 660988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 941600,
+                          "total": 1057580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1177000,
+                          "total": 1321976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN13",
+                      "PEN14",
+                      "PEN15"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY2-JFKAUH-2026-10-05-1545",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 6
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 683600,
+                              "total": 741590,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 854500,
+                              "total": 926988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1367200,
+                          "total": 1483180,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1709000,
+                          "total": 1853976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 46800,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "JGVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 222000,
+                              "total": 279990,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 120000,
+                              "total": 120000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 444000,
+                          "total": 559980,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 240000,
+                          "total": 240000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN1",
+                      "PEN2",
+                      "PEN3"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 267800,
+                              "total": 325790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 144751,
+                              "total": 144751
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 535600,
+                          "total": 651580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 289502,
+                          "total": 289502
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN4",
+                      "PEN5",
+                      "PEN6"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JGDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "I",
+                        "statusCode": "HK",
+                        "quota": 0
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 445900,
+                              "total": 503890,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 241000,
+                              "total": 241000
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 891800,
+                          "total": 1007780,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 482000,
+                          "total": 482000
+                        }
+                      },
+                      "isRedemption": true
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 432300,
+                              "total": 490290,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 540375,
+                              "total": 612863
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 864600,
+                          "total": 980580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1080750,
+                          "total": 1225726
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 470800,
+                              "total": 528790,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 588500,
+                              "total": 660988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 941600,
+                          "total": 1057580,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1177000,
+                          "total": 1321976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN13",
+                      "PEN14",
+                      "PEN15"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY4-JFKAUH-2026-10-05-2220",
+                        "cabin": "business",
+                        "bookingClass": "W",
+                        "statusCode": "HK",
+                        "quota": 9
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 683600,
+                              "total": 741590,
+                              "totalTaxes": 57990,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 854500,
+                              "total": 926988
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1367200,
+                          "total": 1483180,
+                          "totalTaxes": 115980,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1709000,
+                          "total": 1853976
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 56700,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300"
+                    },
+                    {
+                      "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 727000,
+                              "total": 785440,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 908750,
+                              "total": 981800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1454000,
+                          "total": 1570880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1817500,
+                          "total": 1963600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 778400,
+                              "total": 836840,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 973000,
+                              "total": 1046050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1556800,
+                          "total": 1673680,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1946000,
+                          "total": 2092100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN13",
+                      "PEN14",
+                      "PEN15"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8304-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 987500,
+                              "total": 1045940,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 1234375,
+                              "total": 1307425
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1975000,
+                          "total": 2091880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 2468750,
+                          "total": 2614850
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 65700,
+                  "segments": [
+                    {
+                      "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030"
+                    },
+                    {
+                      "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 727000,
+                              "total": 785440,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 908750,
+                              "total": 981800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1454000,
+                          "total": 1570880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1817500,
+                          "total": 1963600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 778400,
+                              "total": 836840,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 973000,
+                              "total": 1046050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1556800,
+                          "total": 1673680,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1946000,
+                          "total": 2092100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN13",
+                      "PEN14",
+                      "PEN15"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-EY8004-JFKBOS-2026-10-05-1030",
+                        "cabin": "eco",
+                        "bookingClass": "H",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 4
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 987500,
+                              "total": 1045940,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 1234375,
+                              "total": 1307425
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1975000,
+                          "total": 2091880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 2468750,
+                          "total": 2614850
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  }
+                ]
+              },
+              {
+                "boundDetails": {
+                  "originLocationCode": "JFK",
+                  "destinationLocationCode": "AUH",
+                  "duration": 56700,
+                  "segments": [
+                    {
+                      "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300"
+                    },
+                    {
+                      "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625"
+                    }
+                  ]
+                },
+                "airBounds": [
+                  {
+                    "fareFamilyCode": "JVALUE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "Y",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 5
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 727000,
+                              "total": 785440,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 908750,
+                              "total": 981800
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1454000,
+                          "total": 1570880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1817500,
+                          "total": 1963600
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN7",
+                      "PEN8",
+                      "PEN9"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JCOMFORT",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "Y",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 5
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 778400,
+                              "total": 836840,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 973000,
+                              "total": 1046050
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1556800,
+                          "total": 1673680,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 1946000,
+                          "total": 2092100
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN13",
+                      "PEN14",
+                      "PEN15"
+                    ]
+                  },
+                  {
+                    "fareFamilyCode": "JDELUXE",
+                    "availabilityDetails": [
+                      {
+                        "flightId": "SEG-B61118-JFKBOS-2026-10-05-1300",
+                        "cabin": "eco",
+                        "bookingClass": "Y",
+                        "statusCode": "HK",
+                        "quota": 7
+                      },
+                      {
+                        "flightId": "SEG-EY8-BOSAUH-2026-10-05-1625",
+                        "cabin": "business",
+                        "bookingClass": "D",
+                        "statusCode": "HK",
+                        "quota": 5
+                      }
+                    ],
+                    "prices": {
+                      "unitPrices": [
+                        {
+                          "travelerIds": [
+                            "ADT-1",
+                            "ADT-2"
+                          ],
+                          "prices": [
+                            {
+                              "base": 987500,
+                              "total": 1045940,
+                              "totalTaxes": 58440,
+                              "currencyCode": "USD"
+                            }
+                          ],
+                          "milesConversion": {
+                            "convertedMiles": {
+                              "base": 1234375,
+                              "total": 1307425
+                            }
+                          }
+                        }
+                      ],
+                      "totalPrices": [
+                        {
+                          "base": 1975000,
+                          "total": 2091880,
+                          "totalTaxes": 116880,
+                          "currencyCode": "USD"
+                        }
+                      ],
+                      "milesConversion": {
+                        "convertedMiles": {
+                          "base": 2468750,
+                          "total": 2614850
+                        }
+                      },
+                      "isRedemption": false
+                    },
+                    "fareConditionsCodes": [
+                      "PEN10",
+                      "PEN11",
+                      "PEN12"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "dictionaries": {
+            "flight": {
+              "SEG-EY4-JFKAUH-2026-10-05-2220": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "4",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T22:20:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T19:20:00.000+04:00"
+                },
+                "duration": 46800,
+                "aircraftCode": "351",
+                "isOpenSegment": false
+              },
+              "SEG-AA236-JFKFCO-2026-10-05-2000": {
+                "marketingAirlineCode": "AA",
+                "operatingAirlineCode": "AA",
+                "marketingFlightNumber": "236",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T20:00:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "FCO",
+                  "dateTime": "2026-10-06T10:20:00.000+02:00"
+                },
+                "duration": 30000,
+                "aircraftCode": "789",
+                "isOpenSegment": false
+              },
+              "SEG-EY8304-JFKBOS-2026-10-05-1300": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "B6",
+                "marketingFlightNumber": "8304",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T13:00:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T14:29:00.000-04:00"
+                },
+                "duration": 5340,
+                "aircraftCode": "223",
+                "isOpenSegment": false
+              },
+              "SEG-B61118-JFKBOS-2026-10-05-1300": {
+                "marketingAirlineCode": "B6",
+                "operatingAirlineCode": "B6",
+                "marketingFlightNumber": "1118",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T13:00:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T14:29:00.000-04:00"
+                },
+                "duration": 5340,
+                "aircraftCode": "223",
+                "isOpenSegment": false
+              },
+              "SEG-EY2-JFKAUH-2026-10-05-1545": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "2",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T15:45:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T12:25:00.000+04:00"
+                },
+                "duration": 45600,
+                "aircraftCode": "351",
+                "isOpenSegment": false
+              },
+              "SEG-EY8-BOSAUH-2026-10-05-1625": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "8",
+                "departure": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T16:25:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T12:45:00.000+04:00"
+                },
+                "duration": 44400,
+                "aircraftCode": "789",
+                "isOpenSegment": false
+              },
+              "SEG-EY86-FCOAUH-2026-10-06-1135": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "EY",
+                "marketingFlightNumber": "86",
+                "departure": {
+                  "locationCode": "FCO",
+                  "dateTime": "2026-10-06T11:35:00.000+02:00"
+                },
+                "arrival": {
+                  "locationCode": "AUH",
+                  "dateTime": "2026-10-06T19:40:00.000+04:00"
+                },
+                "duration": 21900,
+                "aircraftCode": "789",
+                "isOpenSegment": false
+              },
+              "SEG-EY8004-JFKBOS-2026-10-05-1030": {
+                "marketingAirlineCode": "EY",
+                "operatingAirlineCode": "B6",
+                "marketingFlightNumber": "8004",
+                "departure": {
+                  "locationCode": "JFK",
+                  "dateTime": "2026-10-05T10:30:00.000-04:00"
+                },
+                "arrival": {
+                  "locationCode": "BOS",
+                  "dateTime": "2026-10-05T11:49:00.000-04:00"
+                },
+                "duration": 4740,
+                "aircraftCode": "223",
+                "isOpenSegment": false
+              }
+            },
+            "airline": {
+              "AA": "AMERICAN AIRLINES",
+              "EY": "ETIHAD AIRWAYS",
+              "B6": "JETBLUE AIRWAYS"
+            },
+            "aircraft": {
+              "223": "AIRBUS  A220-300",
+              "351": "AIRBUS A350-1000",
+              "789": "BOEING 787-9"
+            },
+            "currency": {
+              "USD": {
+                "decimalPlaces": 2
+              }
+            },
+            "anonymousTraveler": {
+              "ADT-1": {
+                "passengerTypeCode": "ADT"
+              },
+              "ADT-2": {
+                "passengerTypeCode": "ADT"
+              }
+            },
+            "fareFamilyWithServices": {
+              "JVALUE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JGCOMFORT": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JCOMFORT": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JDELUXE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JGVALUE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              },
+              "JGDELUXE": {
+                "cabin": "business",
+                "commercialFareFamily": "BUSINESS"
+              }
+            },
+            "fareConditions": {
+              "PEN9": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN6": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN5": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN8": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN15": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN7": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN14": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN2": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN13": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN1": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN12": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN4": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN11": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              },
+              "PEN3": {
+                "category": "refund",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": false
+                  }
+                ]
+              },
+              "PEN10": {
+                "category": "change",
+                "situation": "beforeDeparture",
+                "details": [
+                  {
+                    "isAllowed": true
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

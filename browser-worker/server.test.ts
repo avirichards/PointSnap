@@ -40,6 +40,47 @@ async function start(
 }
 
 describe("background browser request boundary", () => {
+  it("dispatches Etihad only when configured and exposes it in authenticated health", async () => {
+    const first = await start();
+    expect(
+      (
+        await fetch(first.url.replace("american", "etihad"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify(q),
+        })
+      ).status,
+    ).toBe(404);
+    const search = vi
+      .fn()
+      .mockResolvedValue({
+        programId: "EY_GUEST",
+        query: q,
+        complete: true,
+        observedAt: new Date().toISOString(),
+        payload: {},
+        itineraryCount: 6,
+        fareCount: 38,
+        stages: [],
+      });
+    const close = vi.fn().mockResolvedValue(undefined);
+    const second = await start(undefined, { etihadRunner: { search, close } });
+    const result = await fetch(second.url.replace("american", "etihad"), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(q),
+    });
+    expect(result.status).toBe(200);
+    expect((await result.json()).programId).toBe("EY_GUEST");
+    const health = await fetch(new URL("/health", second.url), { headers });
+    expect((await health.json()).programs).toEqual([
+      "AA_AADVANTAGE",
+      "EY_GUEST",
+    ]);
+    expect(second.search).not.toHaveBeenCalled();
+    await cleanups.pop()!();
+    expect(close).toHaveBeenCalledOnce();
+  });
   it("dispatches Smiles independently and closes its browser runner", async () => {
     const first = await start();
     expect(
@@ -51,18 +92,16 @@ describe("background browser request boundary", () => {
         })
       ).status,
     ).toBe(404);
-    const search = vi
-      .fn()
-      .mockResolvedValue({
-        programId: "G3_GOL_SMILES",
-        query: q,
-        complete: true,
-        observedAt: new Date().toISOString(),
-        payload: {},
-        itineraryCount: 5,
-        fareCount: 42,
-        stages: [],
-      });
+    const search = vi.fn().mockResolvedValue({
+      programId: "G3_GOL_SMILES",
+      query: q,
+      complete: true,
+      observedAt: new Date().toISOString(),
+      payload: {},
+      itineraryCount: 5,
+      fareCount: 42,
+      stages: [],
+    });
     const close = vi.fn().mockResolvedValue(undefined);
     const second = await start(undefined, { smilesRunner: { search, close } });
     const result = await fetch(second.url.replace("american", "smiles"), {

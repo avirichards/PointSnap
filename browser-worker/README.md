@@ -1,6 +1,6 @@
 # PointSnap airline browser service
 
-PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American can reuse a dedicated app-owned anonymous Chrome profile. No traveler login, personal browser profile, copied cookies or data subscription is used.
+PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American and Etihad reuse separate dedicated app-owned anonymous Chrome profiles. No traveler login, personal browser profile, copied cookies or data subscription is used.
 
 **Delta has verified local live responses.** LAX–JFK October 5: all 46 itineraries on 3 pages, 167 bookable fares for one adult and 166 for two. JFK–LHR:17 itineraries/41 fares, including offered Air France and KLM awards priced in SkyMiles. Delta's public brand catalog supplies partner cabin definitions. These observations establish the tested scope, not every route, runtime or future search.
 
@@ -47,6 +47,22 @@ POINTSNAP_BROWSER_WORKER_TOKEN="the-same-random-secret"
 ```
 
 Never expose the token through `NEXT_PUBLIC_*`. Outside loopback, the worker URL must use HTTPS and the service should be private. Setting these variables alone does not install the runtime or establish hosted connectivity. Delta and Smiles use WebKit. Smiles quotes each itinerary sequentially; the 40-flight partner search takes about two minutes. The app host must permit the search route's 210-second maximum. The worker cancels Smiles after 180 seconds; other runners retain their 95-second budget.
+
+### Etihad’s ordinary Chrome runtime
+
+Install standard Google Chrome, then add `POINTSNAP_BROWSER_ETIHAD="1"` to both the worker and Next.js private environment files. Restart the worker after enabling it and verify `/health` reports `EY_GUEST`. The source uses `work/browser-profiles/etihad-desktop-collector`, independently of American and personal browser state. The ordinary desktop Chrome executable/display requirements below apply; no login or subscription is required in the verified local flow.
+
+The runner opens the official AWARD entry twice, for Economy/Business and Business/First. It validates the site’s own route/date/adult request, reconciles each available fare and exact taxes, expands the rendered list, and requires both responses. It preserves GuestSeat and Pay with miles families, partner flights and explicitly labeled rail transfers. Priced fares without enough seats are excluded. Reaching the site’s 25-combination request cap is an explicit incomplete-search error; expansion and validated empty-result semantics remain open.
+
+```sh
+POINTSNAP_TEST_PROGRAM=EY_GUEST pnpm test:browser-live JFK AUH 2026-10-05 2
+# Direct diagnostic only while the normal worker is stopped:
+pnpm exec tsx browser-worker/probe-etihad.ts LHR AUH 2026-10-05 2
+```
+
+Actual local API/UI checks return JFK–AUH 6/38 and LHR–AUH 7/76 for two adults, generally 10–13 seconds for the native source. Another London observation had73 fares, reflecting changed availability. First Class, USD/GBP fees, per-person and party totals, mobile cards and the premium handoff are verified. Hosted access, broad route completeness and prolonged reliability remain unqualified. See [Etihad evidence](../docs/evidence/etihad-anonymous-2026-09-06.json).
+
+Run one worker or direct probe per profile. Etihad serializes its own searches, closes canceled pages and closes its owned browser on worker shutdown. It shares the authenticated worker queue and overall concurrency limit. Never run a standalone diagnostic against an actively owned worker profile.
 
 ### American's ordinary Chrome runtime
 

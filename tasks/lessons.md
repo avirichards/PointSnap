@@ -83,3 +83,16 @@ The user explicitly prioritizes airline access and asked not to stop until conne
 ## September 6 — Virgin, Singapore and Turkish connection pass
 
 Current evidence is stored in the three dated entry reports. Virgin’s public deal handoff reaches login; its calendar final dialog uses the already-tested full-reward form. Singapore’s advertised new booking mode was confirmed before checking redemption and still requests login. Turkish’s normal keyboard controls completed the actual query before validation returned 403. Treat a form-interaction failure separately from an access denial, and never count metadata or calendar minima as full flight inventory. Etihad and ANA are next in the approved order; earlier native gaps remain open.
+
+## September 6 — Etihad native awards and reusable collection lessons
+
+- A normal dedicated Chrome session can succeed after an interrupted direct request. Reuse the browser lifecycle, then independently verify each airline’s actual public entry and response contract.
+- Etihad’s Economy URL requests Economy/Business; its Business URL requests Business/First. One successful response misses cabins. Both source requests and query details must validate.
+- `showSoldOut:true` supplies prices for zero-seat fares. Count actual available party-sized offers, not every priced object: the JFK sample is 38 available fares, not 45.
+- The published client pairs `convertedMiles.base` with exact cash taxes. Alternative converted-total/remaining-cash fields represent another payment choice. Reconcile adult totals and currency decimal places before normalization; do not infer cents per point from an unrelated cash fare.
+- Airline-marketed segments can be trains with a station-to-airport transfer. Preserve operating names, technical stops, local clocks and explicit transfers. Use word-boundary transport detection so AIRBUS is not mislabeled BUS.
+- Later cabin searches can withdraw or change fare classes. Replace the covered cabin’s earlier fare set on shared itineraries; never retain a stale cheap price merely because its booking class changed.
+- A returned 25-combination limit is not proof of completeness. Report a capped response explicitly and keep expansion open. Valid empty searches and full route scope require their own evidence.
+- Check the actual booking handoff from the selected fare. First now opens Etihad’s premium search instead of the default Economy search.
+- Wait for dialogs and their transitions before visual screenshots. Desktop and 390px mobile views, source grouping, original fees and rail details were inspected; no horizontal overflow or page errors in the final check.
+- Preserve only flight/fare evidence. Selection tokens, office/corporate metadata and account fields never belong in normalized payloads or permanent fixtures.

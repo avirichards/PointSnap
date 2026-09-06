@@ -55,6 +55,12 @@ const airlines = (row: AwardResult) =>
         .filter(Boolean),
     ),
   ].join(" + ");
+const surfaceTravel = (row: AwardResult) =>
+  row.segments.some((s) => /\bTRAIN\b/i.test(s.aircraft ?? ""))
+    ? "Includes rail travel"
+    : row.segments.some((s) => /\b(?:BUS|COACH)\b/i.test(s.aircraft ?? ""))
+      ? "Includes coach travel"
+      : null;
 const duration = (n: number | null) =>
   n === null ? "Schedule on airline" : `${Math.floor(n / 60)}h ${n % 60}m`;
 const points = (n: number) => new Intl.NumberFormat("en-US").format(n);
@@ -200,11 +206,7 @@ function Results({
       >
         {label}
         <span aria-hidden>
-          {sort === key && sortCabin === cabin
-            ? descending
-              ? "↓"
-              : "↑"
-            : "↕"}
+          {sort === key && sortCabin === cabin ? (descending ? "↓" : "↑") : "↕"}
         </span>
       </button>
     </th>
@@ -460,6 +462,11 @@ function Results({
                     <p className="text-xs text-muted-foreground mt-1">
                       {g.row.segments.map((s) => s.flightNumber).join(" · ")}
                     </p>
+                    {surfaceTravel(g.row) && (
+                      <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+                        {surfaceTravel(g.row)}
+                      </p>
+                    )}
                     <p className="booking-count text-xs text-primary mt-2">
                       {g.programs.length} booking program
                       {g.programs.length > 1 ? "s" : ""} · {g.offers.length}{" "}
@@ -519,6 +526,11 @@ function Results({
                 {g.programs.length} program{g.programs.length > 1 ? "s" : ""}
               </span>
             </div>
+            {surfaceTravel(g.row) && (
+              <p className="text-xs text-amber-600 dark:text-amber-300 mt-2">
+                {surfaceTravel(g.row)}
+              </p>
+            )}
             <p className="mt-4 text-lg tabular-nums">
               {time(g.row.segments[0]?.departure)} →{" "}
               {time(g.row.segments.at(-1)?.arrival ?? null)}
@@ -858,16 +870,15 @@ function Details({
   const [fareId, setFareId] = useState(row.prices[cabin]?.fareId);
   const options = row.fares?.filter((p) => p.cabin === cabin) ?? [];
   const price = options.find((p) => p.fareId === fareId) ?? row.prices[cabin]!;
-  const continueUrl =
-    row.programId === "ET_SHEBAMILES"
-      ? bookingUrl(row.programId, {
-          origin: row.origin,
-          dest: row.destination,
-          departDate: row.date,
-          pax,
-          minCabin: price.cabin,
-        })
-      : row.bookingUrl;
+  const continueUrl = ["ET_SHEBAMILES", "EY_GUEST"].includes(row.programId)
+    ? bookingUrl(row.programId, {
+        origin: row.origin,
+        dest: row.destination,
+        departDate: row.date,
+        pax,
+        minCabin: price.cabin,
+      })
+    : row.bookingUrl;
   const value = centsPerPoint(price);
   const balance = wallet?.entries.find(
     (e) => e.asset_id === row.programId,
@@ -931,9 +942,7 @@ function Details({
           </p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">
-            Cash for your party
-          </p>
+          <p className="text-sm text-muted-foreground">Cash for your party</p>
           <p className="text-xl font-semibold mt-1">
             <Money price={price} multiplier={pax} original />
           </p>
@@ -1031,6 +1040,12 @@ function Details({
         <ol className="space-y-4">
           {row.segments.map((s, i) => (
             <li key={i} className="border-l-2 border-primary/30 pl-4">
+              {i > 0 && row.segments[i - 1].destination !== s.origin && (
+                <p className="text-sm text-amber-600 dark:text-amber-300 mb-2">
+                  Transfer from {row.segments[i - 1].destination} to {s.origin}{" "}
+                  required.
+                </p>
+              )}
               <p className="font-medium">
                 {s.origin} → {s.destination}
                 <span className="ml-3 text-sm text-muted-foreground">
@@ -1064,8 +1079,11 @@ function Details({
                   key={stop.airport}
                   className="text-sm text-muted-foreground mt-2"
                 >
-                  Stop in {stop.airport} on the same flight ·{" "}
-                  {time(stop.arrival)} – {time(stop.departure)}
+                  Stop in {stop.airport} on the same{" "}
+                  {/\b(?:TRAIN|BUS|COACH)\b/i.test(s.aircraft ?? "")
+                    ? "service"
+                    : "flight"}{" "}
+                  · {time(stop.arrival)} – {time(stop.departure)}
                   {stop.duration !== null
                     ? ` · ${duration(stop.duration)}`
                     : ""}

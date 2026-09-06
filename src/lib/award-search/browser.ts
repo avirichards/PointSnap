@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseAmerican } from "./american";
+import { parseEtihad } from "./etihad";
 import { parseDelta } from "./delta";
 import { parseSmiles, smilesObservationCounts } from "./smiles";
 import { ProviderError } from "./types";
@@ -42,10 +43,16 @@ export function browserPrograms(): string[] {
       : []),
     ...(process.env.POINTSNAP_BROWSER_DELTA === "1" ? ["DL_SKYMILES"] : []),
     ...(process.env.POINTSNAP_BROWSER_SMILES === "1" ? ["G3_GOL_SMILES"] : []),
+    ...(process.env.POINTSNAP_BROWSER_ETIHAD === "1" ? ["EY_GUEST"] : []),
   ];
 }
 const envelope = z.object({
-  programId: z.enum(["AA_AADVANTAGE", "DL_SKYMILES", "G3_GOL_SMILES"]),
+  programId: z.enum([
+    "AA_AADVANTAGE",
+    "DL_SKYMILES",
+    "G3_GOL_SMILES",
+    "EY_GUEST",
+  ]),
   query: z.object({
     origin: z.string(),
     dest: z.string(),
@@ -66,11 +73,13 @@ export async function browserSearch(
   onNotice?: (notice: string) => void,
 ) {
   const name =
-    programId === "G3_GOL_SMILES"
-      ? "Smiles"
-      : programId === "DL_SKYMILES"
-        ? "Delta"
-        : "American";
+    programId === "EY_GUEST"
+      ? "Etihad"
+      : programId === "G3_GOL_SMILES"
+        ? "Smiles"
+        : programId === "DL_SKYMILES"
+          ? "Delta"
+          : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -80,7 +89,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -140,11 +149,13 @@ export async function browserSearch(
       `${name}'s browser response is not a fresh observation.`,
     );
   const rows = (
-    programId === "G3_GOL_SMILES"
-      ? parseSmiles
-      : programId === "DL_SKYMILES"
-        ? parseDelta
-        : parseAmerican
+    programId === "EY_GUEST"
+      ? parseEtihad
+      : programId === "G3_GOL_SMILES"
+        ? parseSmiles
+        : programId === "DL_SKYMILES"
+          ? parseDelta
+          : parseAmerican
   )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||
@@ -162,6 +173,10 @@ export async function browserSearch(
   )
     onNotice?.(
       "Combined American's all-cabin and Business/First searches. The later premium quote replaces an earlier price for the same cabin and flight.",
+    );
+  if (programId === "EY_GUEST")
+    onNotice?.(
+      "Combined Etihad’s Economy/Business and Business/First searches. Includes available GuestSeat and pay-with-miles fares; sold-out choices are excluded. Exact cash taxes may differ from the airline’s rounded display.",
     );
   if (programId === "G3_GOL_SMILES") {
     const { withdrawn, otherAirports } = smilesObservationCounts(data.payload);

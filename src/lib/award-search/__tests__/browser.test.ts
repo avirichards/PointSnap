@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { browserPrograms, browserSearch } from "../browser";
 import { americanFixture } from "./fixtures/american";
+import etihadFixture from "./fixtures/etihad.json";
 import deltaFixture from "./fixtures/delta.json";
 import smilesFixture from "./fixtures/smiles.json";
 import smilesAmericanFixture from "./fixtures/smiles-american.json";
@@ -27,6 +28,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "1");
   vi.stubEnv("POINTSNAP_BROWSER_DELTA", "0");
   vi.stubEnv("POINTSNAP_BROWSER_SMILES", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_ETIHAD", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -34,6 +36,41 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches Etihad with both cabin responses and checks complete fare counts", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_ETIHAD", "1");
+    expect(browserPrograms()).toEqual(["EY_GUEST"]);
+    const query = { ...etihadFixture.query, minCabin: "Y" as const };
+    const body = {
+      ...response(),
+      programId: "EY_GUEST",
+      query,
+      payload: etihadFixture.payload,
+      itineraryCount: 6,
+      fareCount: 38,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const notice = vi.fn();
+    expect(
+      await browserSearch(
+        query,
+        new AbortController().signal,
+        "EY_GUEST",
+        notice,
+      ),
+    ).toHaveLength(6);
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/etihad",
+    );
+    expect(notice).toHaveBeenCalledWith(
+      expect.stringContaining("sold-out choices are excluded"),
+    );
+    fetch.mockResolvedValue(Response.json({ ...body, fareCount: 45 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "EY_GUEST"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+  });
   it("discloses both seat withdrawals and other-airport exclusions without losing matching Smiles flights", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_SMILES", "1");
     const query = { ...smilesAmericanFixture.query, minCabin: "Y" as const };

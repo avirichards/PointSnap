@@ -19,7 +19,7 @@ export const BOOKING_SITES: Record<string, string> = {
   CM_CONNECTMILES: "https://www.copaair.com/",
   EK_SKYWARDS: "https://www.emirates.com/",
   ET_SHEBAMILES: "https://dxbooking.ethiopianairlines.com/dx/ETDX/",
-  EY_GUEST: "https://www.etihad.com/",
+  EY_GUEST: "https://digital.etihad.com/book/search",
   SK_EUROBONUS: "https://www.flysas.com/",
   AY_FINNAIR_PLUS: "https://www.finnair.com/",
   QF_FF: "https://flightrewardfinder.qantas.com/",
@@ -47,9 +47,31 @@ export function skywardsPartnerUrl(q: SearchQuery) {
   for (let i = 0; i < q.pax; i++) params.append("passengerAge[]", "18");
   return `https://partnerrewards.emirates.com/search.php?${params}`;
 }
+export function etihadBookingUrl(
+  q: SearchQuery,
+  cabin = q.minCabin === "J" || q.minCabin === "F" ? "B" : "E",
+) {
+  const u = new URL("https://digital.etihad.com/book/search");
+  u.search = new URLSearchParams({
+    LANGUAGE: "EN",
+    CHANNEL: "DESKTOP",
+    B_LOCATION: q.origin,
+    E_LOCATION: q.dest,
+    TRIP_TYPE: "O",
+    CABIN: cabin,
+    TRAVELERS: Array(q.pax).fill("ADT").join(","),
+    TRIP_FLOW_TYPE: "AVAILABILITY",
+    DATE_1: q.departDate.replaceAll("-", "") + "0000",
+    WDS_ENABLE_MILES_TOGGLE: "TRUE",
+    FLOW: "AWARD",
+  }).toString();
+  return u.href;
+}
+
 export function bookingUrl(program: string, q: SearchQuery) {
   const base = BOOKING_SITES[program] ?? "https://www.alaskaair.com/";
   if (!q.origin || !q.dest || !q.departDate) return new URL(base).origin;
+  if (program === "EY_GUEST") return etihadBookingUrl(q);
   if (program === "AS_MILEAGEPLAN")
     return `${base}?${new URLSearchParams({ O: q.origin, D: q.dest, OD: q.departDate, A: String(q.pax), C: "0", L: "0", RT: "false", ShoppingMethod: "onlineaward", awardType: "MilesOnly" })}`;
   if (program === "B6_TRUEBLUE")
