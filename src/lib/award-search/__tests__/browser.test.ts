@@ -5,6 +5,7 @@ import etihadFixture from "./fixtures/etihad.json";
 import sasFixture from "./fixtures/sas-arn.json";
 import qantasFixture from "./fixtures/qantas-native-domestic-two.json";
 import unitedFixture from "../fixtures/united-lax-aus.json";
+import flyingBlueFixture from "../fixtures/flying-blue-native-jfk-ams-two.json";
 import virginFixture from "../fixtures/virgin-native-jfk-lhr-two.json";
 import { sourceInfo } from "../source-info";
 import { parseQantasNative } from "../qantas-native";
@@ -43,6 +44,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_QANTAS", "0");
   vi.stubEnv("POINTSNAP_BROWSER_UNITED", "0");
   vi.stubEnv("POINTSNAP_BROWSER_VIRGIN", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_FLYING_BLUE", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -50,6 +52,43 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches Flying Blue and rejects an incomplete cabin response", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_FLYING_BLUE", "1");
+    expect(browserPrograms()).toEqual(["AF_FLYINGBLUE"]);
+    const query = {
+      origin: "JFK",
+      dest: "AMS",
+      departDate: "2026-10-08",
+      pax: 2,
+      minCabin: "Y" as const,
+    };
+    const body = {
+      ...response(),
+      programId: "AF_FLYINGBLUE",
+      query,
+      payload: flyingBlueFixture,
+      itineraryCount: 13,
+      fareCount: 32,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "AF_FLYINGBLUE",
+    );
+    expect(rows).toHaveLength(13);
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/flying-blue",
+    );
+    expect(sourceInfo("AF_FLYINGBLUE", true)?.inventory).toBe("flights");
+    fetch.mockResolvedValue(Response.json({ ...body, fareCount: 31 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "AF_FLYINGBLUE"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+  });
+
   it("dispatches Virgin native flights independently from its calendar and verifies available fare totals", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_VIRGIN", "1");

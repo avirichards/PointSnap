@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseUnited, unitedPayloadSchema } from "./united";
+import { parseFlyingBlueNative } from "./flying-blue-native";
 import { parseVirginNative } from "./virgin-native";
 import { parseAmerican } from "./american";
 import { parseEtihad } from "./etihad";
@@ -44,6 +45,9 @@ function configuration() {
 export function browserPrograms(): string[] {
   if (!configuration()) return [];
   return [
+    ...(process.env.POINTSNAP_BROWSER_FLYING_BLUE === "1"
+      ? ["AF_FLYINGBLUE"]
+      : []),
     ...(process.env.POINTSNAP_BROWSER_VIRGIN === "1" ? ["VS_FLYING_CLUB"] : []),
     ...(process.env.POINTSNAP_BROWSER_UNITED === "1" ? ["UA_MP"] : []),
     ...(process.env.POINTSNAP_BROWSER_QANTAS === "1" ? ["QF_FF"] : []),
@@ -62,6 +66,7 @@ export function browserPrograms(): string[] {
 }
 const envelope = z.object({
   programId: z.enum([
+    "AF_FLYINGBLUE",
     "VS_FLYING_CLUB",
     "UA_MP",
     "AA_AADVANTAGE",
@@ -93,25 +98,27 @@ export async function browserSearch(
   onNotice?: (notice: string) => void,
 ) {
   const name =
-    programId === "VS_FLYING_CLUB"
-      ? "Virgin Atlantic"
-      : programId === "UA_MP"
-        ? "United"
-        : programId === "QF_FF"
-          ? "Qantas"
-          : programId === "CM_CONNECTMILES"
-            ? "Copa"
-            : programId === "SK_EUROBONUS"
-              ? "SAS"
-              : programId === "WN_RAPID_REWARDS"
-                ? "Southwest"
-                : programId === "EY_GUEST"
-                  ? "Etihad"
-                  : programId === "G3_GOL_SMILES"
-                    ? "Smiles"
-                    : programId === "DL_SKYMILES"
-                      ? "Delta"
-                      : "American";
+    programId === "AF_FLYINGBLUE"
+      ? "Flying Blue"
+      : programId === "VS_FLYING_CLUB"
+        ? "Virgin Atlantic"
+        : programId === "UA_MP"
+          ? "United"
+          : programId === "QF_FF"
+            ? "Qantas"
+            : programId === "CM_CONNECTMILES"
+              ? "Copa"
+              : programId === "SK_EUROBONUS"
+                ? "SAS"
+                : programId === "WN_RAPID_REWARDS"
+                  ? "Southwest"
+                  : programId === "EY_GUEST"
+                    ? "Etihad"
+                    : programId === "G3_GOL_SMILES"
+                      ? "Smiles"
+                      : programId === "DL_SKYMILES"
+                        ? "Delta"
+                        : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -121,7 +128,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "VS_FLYING_CLUB" ? "virgin" : programId === "UA_MP" ? "united" : programId === "QF_FF" ? "qantas" : programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "AF_FLYINGBLUE" ? "flying-blue" : programId === "VS_FLYING_CLUB" ? "virgin" : programId === "UA_MP" ? "united" : programId === "QF_FF" ? "qantas" : programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -140,7 +147,8 @@ export async function browserSearch(
         signal: AbortSignal.any([
           signal,
           AbortSignal.timeout(
-            programId === "UA_MP" ||
+            programId === "AF_FLYINGBLUE" ||
+              programId === "UA_MP" ||
               programId === "G3_GOL_SMILES" ||
               programId === "CM_CONNECTMILES" ||
               programId === "QF_FF"
@@ -188,25 +196,27 @@ export async function browserSearch(
       `${name}'s browser response is not a fresh observation.`,
     );
   const rows = (
-    programId === "VS_FLYING_CLUB"
-      ? parseVirginNative
-      : programId === "UA_MP"
-        ? parseUnited
-        : programId === "QF_FF"
-          ? parseQantasNative
-          : programId === "CM_CONNECTMILES"
-            ? parseCopa
-            : programId === "SK_EUROBONUS"
-              ? parseSas
-              : programId === "WN_RAPID_REWARDS"
-                ? parseSouthwest
-                : programId === "EY_GUEST"
-                  ? parseEtihad
-                  : programId === "G3_GOL_SMILES"
-                    ? parseSmiles
-                    : programId === "DL_SKYMILES"
-                      ? parseDelta
-                      : parseAmerican
+    programId === "AF_FLYINGBLUE"
+      ? parseFlyingBlueNative
+      : programId === "VS_FLYING_CLUB"
+        ? parseVirginNative
+        : programId === "UA_MP"
+          ? parseUnited
+          : programId === "QF_FF"
+            ? parseQantasNative
+            : programId === "CM_CONNECTMILES"
+              ? parseCopa
+              : programId === "SK_EUROBONUS"
+                ? parseSas
+                : programId === "WN_RAPID_REWARDS"
+                  ? parseSouthwest
+                  : programId === "EY_GUEST"
+                    ? parseEtihad
+                    : programId === "G3_GOL_SMILES"
+                      ? parseSmiles
+                      : programId === "DL_SKYMILES"
+                        ? parseDelta
+                        : parseAmerican
   )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||
@@ -283,6 +293,10 @@ export async function browserSearch(
           : "All displayed flights and both cabin views were reconciled."),
     );
   }
+  if (programId === "AF_FLYINGBLUE")
+    onNotice?.(
+      "Flying Blue member quotes include every displayed itinerary and expanded cabin fare. Exact fees are shown per person. Connecting segment cabins and broader route completeness remain under verification.",
+    );
   if (programId === "VS_FLYING_CLUB")
     onNotice?.(
       "Native Flying Club member quotes include all displayed flight and cabin offers. Sold-out cabins are excluded; exact fees can differ from the airline’s rounded display.",

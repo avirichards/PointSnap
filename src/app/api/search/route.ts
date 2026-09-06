@@ -54,7 +54,13 @@ export async function GET(req: NextRequest) {
     // outlive that budget so completed inventory is not cut off prematurely.
     AbortSignal.timeout(
       ids.some((id) =>
-        ["UA_MP", "G3_GOL_SMILES", "CM_CONNECTMILES", "QF_FF"].includes(id),
+        [
+          "AF_FLYINGBLUE",
+          "UA_MP",
+          "G3_GOL_SMILES",
+          "CM_CONNECTMILES",
+          "QF_FF",
+        ].includes(id),
       )
         ? 200000
         : 110000,

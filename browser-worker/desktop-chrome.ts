@@ -66,6 +66,7 @@ type DesktopProgram =
   | "british-airways"
   | "qatar"
   | "virgin-atlantic"
+  | "flying-blue"
   | "singapore"
   | "turkish"
   | "etihad"

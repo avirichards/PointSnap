@@ -1,0 +1,86 @@
+{
+  "checkedAt": "2026-09-06T23:37:56.429949+00:00",
+  "program": "AF_FLYINGBLUE",
+  "method": "Authorized Flying Blue member session; normal dated KLM REWARD landing and UI cabin expansion; inventory-only allowlisted GraphQL responses.",
+  "nativeSearches": [
+    {
+      "origin": "JFK",
+      "destination": "AMS",
+      "date": "2026-10-07",
+      "adults": 1,
+      "itineraries": 14,
+      "fares": 32,
+      "durationMs": 45965
+    },
+    {
+      "origin": "JFK",
+      "destination": "AMS",
+      "date": "2026-10-08",
+      "adults": 2,
+      "itineraries": 13,
+      "fares": 32,
+      "durationMs": 46264
+    }
+  ],
+  "actualPointSnapApi": {
+    "program": "AF_FLYINGBLUE",
+    "origin": "JFK",
+    "dest": "AMS",
+    "departDate": "2026-10-08",
+    "pax": 2,
+    "durationMs": 52487,
+    "complete": true,
+    "coverage": {
+      "programId": "AF_FLYINGBLUE",
+      "state": "success",
+      "source": "Flying Blue \u00b7 member airline browser",
+      "message": "Flying Blue member quotes include every displayed itinerary and expanded cabin fare. Exact fees are shown per person. Connecting segment cabins and broader route completeness remain under verification. Native KLM reward searches through an authorized Flying Blue operator session, including offered Air France and partner flights. Every displayed itinerary and expanded cabin price is reconciled with the airline page. Exact points and fees are quoted per person. Member benefits may affect prices; confirm eligibility before transferring points. Connecting segment cabins, wider routes and session recovery remain under qualification. Customers do not connect an airline account to search.",
+      "inventory": "flights"
+    },
+    "itineraries": 14,
+    "fares": 33
+  },
+  "foregroundPreserved": true,
+  "foregroundSamples": 54,
+  "memberSessionReusedAfterOwnedBrowserRestartWithoutNewCode": true,
+  "pricesAreConditionalMemberQuotes": true,
+  "perPersonExample": {
+    "flight": "KL642",
+    "points": 29000,
+    "cash": 138,
+    "currency": "USD"
+  },
+  "partyExample": {
+    "adults": 2,
+    "points": 58000,
+    "cash": 276,
+    "currency": "USD"
+  },
+  "completeDisplayedItinerariesAndExpandedFarePricesReconciled": true,
+  "actualFrontend": {
+    "itineraries": 14,
+    "fares": 33,
+    "desktopWidth": 1440,
+    "mobileWidth": 390,
+    "horizontalOverflow": false,
+    "pageErrors": 0,
+    "tripPrefilledOfficialLink": true,
+    "partyTotalsAndMemberLabel": true
+  },
+  "checks": {
+    "tests": 368,
+    "files": 42,
+    "typecheck": true,
+    "focusedLint": true,
+    "optimizedBuild": true
+  },
+  "remaining": [
+    "Per-fare connecting segment cabin binding; currently explicitly unconfirmed",
+    "Broader routes, First-class eligibility, same-flight stops and empty-result shapes",
+    "Long-term session recovery and hosted operation",
+    "Routine fare-condition presentation handed to the separate UI task"
+  ],
+  "credentialsIncluded": false,
+  "codesIncluded": false,
+  "accountMetadataIncluded": false
+}

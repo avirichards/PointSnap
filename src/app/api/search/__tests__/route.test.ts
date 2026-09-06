@@ -42,7 +42,13 @@ afterEach(() => {
   vi.useRealTimers();
 });
 describe("search endpoint", () => {
-  it.each(["UA_MP", "G3_GOL_SMILES", "CM_CONNECTMILES", "QF_FF"])(
+  it.each([
+    "AF_FLYINGBLUE",
+    "UA_MP",
+    "G3_GOL_SMILES",
+    "CM_CONNECTMILES",
+    "QF_FF",
+  ])(
     "delivers a completed %s inventory after the short-source deadline",
     async (program) => {
       vi.useFakeTimers();
