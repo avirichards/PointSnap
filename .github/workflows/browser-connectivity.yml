@@ -1,7 +1,16 @@
-name: American browser connectivity (explicit diagnostic)
+name: Airline browser connectivity (explicit diagnostic)
 
 on:
   workflow_dispatch:
+    inputs:
+      program:
+        description: Airline to test with a fresh anonymous browser
+        type: choice
+        required: true
+        default: delta
+        options:
+          - delta
+          - american
 
 permissions:
   contents: read
@@ -23,13 +32,22 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install standard browser engines
+        if: inputs.program == 'american'
         run: pnpm exec playwright install --with-deps --no-shell chromium webkit firefox
+      - name: Install standard WebKit
+        if: inputs.program == 'delta'
+        run: pnpm exec playwright install --with-deps webkit
+      - name: Fresh anonymous Delta search and complete pagination
+        if: inputs.program == 'delta'
+        run: pnpm exec tsx browser-worker/probe-delta.ts
       - name: Installed Chrome anonymous search
+        if: inputs.program == 'american'
         continue-on-error: true
         env:
           POINTSNAP_BROWSER_CHANNEL: chrome
         run: pnpm exec tsx browser-worker/probe.ts chromium
       - name: WebKit direct booking entry
+        if: inputs.program == 'american'
         continue-on-error: true
         env:
           POINTSNAP_BROWSER_ENTRY: direct
@@ -37,7 +55,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: american-browser-connectivity
+          name: ${{ inputs.program }}-browser-connectivity
           path: work/browser-probes/*.json
           if-no-files-found: error
           retention-days: 7
