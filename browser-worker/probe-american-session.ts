@@ -114,6 +114,10 @@ async function main() {
             reports,
             skipFirstRun:
               process.env.POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN === "1",
+            startupTimeoutMs: Number(
+              process.env.POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS ??
+                "20000",
+            ),
           },
           null,
           2,

@@ -332,6 +332,13 @@ export class AmericanBrowserRunner {
           ? this.persistentPage
           : await context.newPage();
       if (persistentContext) this.persistentPage = page;
+      if (persistentContext) {
+        // A reused ordinary Chrome tab can be backgrounded while idle. Its
+        // animation frames can throttle and stall normal click stability checks.
+        // Activate only this app-owned page before using its ordinary UI.
+        await page.bringToFront();
+        mark("activate-owned-page");
+      }
       signal.throwIfAborted();
       onResponse = (response: Response) => {
         if (!response.request().isNavigationRequest()) return;
@@ -438,6 +445,10 @@ export class AmericanBrowserRunner {
           .fill(`${month}/${day}/${year}`);
         await page.locator("#matOneWayDatePicker").press("Tab");
         await page.locator("#passenger-count").selectOption(String(q.pax));
+        if (await page.locator("#connecting-airport-checkbox").isChecked())
+          await page
+            .locator('label[for="connecting-airport-checkbox"]')
+            .click();
         if (!(await page.locator("#redeem-miles").isChecked()))
           await page.locator("label[for='redeem-miles']").click();
         await page

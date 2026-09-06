@@ -1825,7 +1825,7 @@
         }
       ]
     },
-    "conclusion": "Hosted macOS ordinary Chrome submits successfully, then encounters airline verification in all three phases. Linux fails before browser readiness; startup classification is being improved. Neither is a hosted native connection.",
+    "conclusion": "The latest Linux first-run follow-up succeeds with native anonymous American inventory in all three phases. Earlier Linux startup failures and Mac airline verification remain recorded as separate experiments. Expanded cabin collection and sustained hosted qualification remain open.",
     "linuxStartupFollowUp": {
       "run": "https://github.com/avirichards/PointSnap/actions/runs/34015921337",
       "query": {
@@ -1860,6 +1860,273 @@
         }
       ],
       "conclusion": "The owned Chrome process did not expose its debugging endpoint within 20 seconds. No airline page was reached. Idle/restart phases were skipped because no browser opened. Investigate ordinary first-run setup next."
+    },
+    "linuxFirstRunFollowUp": {
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34016368911",
+      "commit": "5ec36beb8ac5b041f1c5bd084c20230973f2daf4",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "mode": "desktop-chrome",
+      "options": {
+        "engine": "chromium",
+        "channel": "chrome",
+        "headless": false,
+        "entry": "homepage-form",
+        "persistentProfile": true
+      },
+      "platform": "linux",
+      "idleMs": 30000,
+      "reports": [
+        {
+          "phase": "initial",
+          "at": "2026-09-06T06:24:30.665Z",
+          "elapsedMs": 27466,
+          "result": "success",
+          "itineraries": 40,
+          "fares": 80,
+          "stages": [
+            {
+              "stage": "dedicated-profile-ready",
+              "elapsedMs": 0
+            },
+            {
+              "stage": "homepage",
+              "elapsedMs": 127
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 340,
+              "path": "/",
+              "status": 200
+            },
+            {
+              "stage": "homepage-route-and-passengers",
+              "elapsedMs": 1104
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 2508,
+              "path": "/",
+              "status": 301
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 2952,
+              "path": "/homePage.do",
+              "status": 200
+            },
+            {
+              "stage": "submit-search",
+              "elapsedMs": 8575
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 9533,
+              "path": "/booking/find-flights",
+              "status": 302
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 9734,
+              "path": "/booking/search",
+              "status": 200
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 12754,
+              "path": "/booking/choose-flights/1",
+              "status": 200
+            },
+            {
+              "stage": "read-flight-response",
+              "elapsedMs": 13195
+            },
+            {
+              "stage": "validated-complete-response",
+              "elapsedMs": 13561,
+              "itineraries": 40,
+              "fares": 80
+            }
+          ]
+        },
+        {
+          "phase": "same-session-after-idle",
+          "at": "2026-09-06T06:25:07.139Z",
+          "elapsedMs": 6467,
+          "result": "success",
+          "itineraries": 40,
+          "fares": 80,
+          "stages": [
+            {
+              "stage": "dedicated-profile-ready",
+              "elapsedMs": 0
+            },
+            {
+              "stage": "homepage",
+              "elapsedMs": 1
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 155,
+              "path": "/",
+              "status": 301
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 627,
+              "path": "/homePage.do",
+              "status": 200
+            },
+            {
+              "stage": "homepage-route-and-passengers",
+              "elapsedMs": 1693
+            },
+            {
+              "stage": "submit-search",
+              "elapsedMs": 2606
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 3057,
+              "path": "/booking/find-flights",
+              "status": 302
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 3316,
+              "path": "/booking/search",
+              "status": 200
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 5803,
+              "path": "/booking/choose-flights/1",
+              "status": 200
+            },
+            {
+              "stage": "read-flight-response",
+              "elapsedMs": 6141
+            },
+            {
+              "stage": "validated-complete-response",
+              "elapsedMs": 6465,
+              "itineraries": 40,
+              "fares": 80
+            }
+          ]
+        },
+        {
+          "phase": "after-browser-restart",
+          "at": "2026-09-06T06:25:16.596Z",
+          "elapsedMs": 9402,
+          "result": "success",
+          "itineraries": 40,
+          "fares": 80,
+          "stages": [
+            {
+              "stage": "dedicated-profile-ready",
+              "elapsedMs": 0
+            },
+            {
+              "stage": "homepage",
+              "elapsedMs": 78
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 407,
+              "path": "/",
+              "status": 301
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 1572,
+              "path": "/homePage.do",
+              "status": 200
+            },
+            {
+              "stage": "homepage-route-and-passengers",
+              "elapsedMs": 3170
+            },
+            {
+              "stage": "submit-search",
+              "elapsedMs": 4883
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 5275,
+              "path": "/booking/find-flights",
+              "status": 302
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 5583,
+              "path": "/booking/search",
+              "status": 200
+            },
+            {
+              "stage": "document",
+              "elapsedMs": 8166,
+              "path": "/booking/choose-flights/1",
+              "status": 200
+            },
+            {
+              "stage": "read-flight-response",
+              "elapsedMs": 8526
+            },
+            {
+              "stage": "validated-complete-response",
+              "elapsedMs": 8853,
+              "itineraries": 40,
+              "fares": 80
+            }
+          ]
+        }
+      ],
+      "skipFirstRun": true,
+      "conclusion": "With the explicit normal Chrome no-first-run startup option, the hosted Linux browser starts and returns native anonymous inventory in all three phases: initial 27.466 seconds, after 30 seconds idle 6.467 seconds, after restart 9.402 seconds. Every phase validates 40 itineraries and 80 fares. This tests the baseline homepage form, not expanded cabin collection or a permanent hosted service."
+    },
+    "expandedLinuxAttempt": {
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34016748361",
+      "commit": "13eb3d7",
+      "query": {
+        "origin": "JFK",
+        "dest": "LHR",
+        "departDate": "2026-10-06",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "mode": "desktop-chrome",
+      "options": {
+        "engine": "chromium",
+        "channel": "chrome",
+        "headless": false,
+        "entry": "homepage-form",
+        "persistentProfile": true,
+        "includePremium": true
+      },
+      "platform": "linux",
+      "idleMs": 30000,
+      "reports": [
+        {
+          "phase": "initial",
+          "at": "2026-09-06T06:33:00.403Z",
+          "elapsedMs": 21523,
+          "result": "error",
+          "message": "The dedicated American browser profile could not open or was closed.",
+          "stage": "launch",
+          "status": 503,
+          "persistentProfile": true,
+          "errorType": "BrowserSessionLaunchError",
+          "launchIssue": "debugging-startup-timeout"
+        }
+      ],
+      "skipFirstRun": true,
+      "conclusion": "Fresh expanded-cabin diagnostic fails at Chrome startup after 21.523 seconds, despite the first-run option. No airline page reached. Previous baseline success is retained; startup reliability remains unresolved. Next distinct test allows a bounded 60-second cold start and preserves the same browser security defaults."
     }
   },
   "expandedCabinSearches": {
@@ -1900,5 +2167,206 @@
       }
     },
     "scope": "The source can return different capped or selected itinerary sets. Two scopes improve observed coverage but do not establish all possible itinerary completeness."
-  }
+  },
+  "connectingCityResearch": {
+    "query": {
+      "origin": "LAX",
+      "destination": "AUS",
+      "date": "2026-10-05",
+      "passengers": 2
+    },
+    "method": "Ordinary signed-out American advanced form, Show all cabins, all airlines, exact airports, connecting city DFW. Read every rendered flight row and fare button.",
+    "itineraries": 40,
+    "fares": 80,
+    "comparison": {
+      "earlierExpandedAppItineraries": 52,
+      "additionalFlightSequences": 23,
+      "scope": "Comparison against the previously recorded 52-row app result, not a simultaneous refreshed response. Fresh comparison is in progress.",
+      "additional": [
+        "AA2746|AA1073",
+        "AA2850|AA2707",
+        "AA1657|AA972",
+        "AA2766|AA2884",
+        "AA3317|AA3722",
+        "AA2890|AA616",
+        "AA922|AA1146",
+        "AA2811|AA1073",
+        "AA2746|AA2884",
+        "AA2850|AA972",
+        "AA2890|AA2543",
+        "AA3317|AA616",
+        "AA2766|AA1146",
+        "AA922|AA3722",
+        "AA2811|AA2884",
+        "AA3317|AA2543",
+        "AA2850|AA1588",
+        "AA968|AA1070",
+        "AA971|AA1070",
+        "AA2766|AA2543",
+        "AA2490|AA6281",
+        "AA2766|AA2707",
+        "AA2746|AA2543"
+      ],
+      "freshAppComparison": {
+        "at": "2026-09-06T06:40:06.456Z",
+        "itineraries": 52,
+        "previousAdditionalStillAbsent": [
+          "AA2746|AA1073",
+          "AA2850|AA2707",
+          "AA1657|AA972",
+          "AA2766|AA2884",
+          "AA3317|AA3722",
+          "AA2890|AA616",
+          "AA922|AA1146",
+          "AA2811|AA1073",
+          "AA2746|AA2884",
+          "AA2850|AA972",
+          "AA2890|AA2543",
+          "AA3317|AA616",
+          "AA2766|AA1146",
+          "AA922|AA3722",
+          "AA2811|AA2884",
+          "AA3317|AA2543",
+          "AA2850|AA1588",
+          "AA968|AA1070",
+          "AA971|AA1070",
+          "AA2766|AA2543",
+          "AA2490|AA6281",
+          "AA2766|AA2707",
+          "AA2746|AA2543"
+        ],
+        "scope": "Earlier connection-city public reference compared with a new exact-party PointSnap query. Missing-flight sequences remain missing; this is not a same-instant inventory guarantee."
+      }
+    },
+    "conclusion": "A connection-city restriction exposes a different set of ordinary available itineraries. Wider expansion must validate each query and reconcile exact itinerary/cabin quotes; the current two-cabin set is not exhaustive."
+  },
+  "backgroundPageRecovery": {
+    "observations": [
+      {
+        "id": "87c90ee3-136f-4228-a891-ab6624bfd891",
+        "at": "2026-09-06T06:31:26.647Z",
+        "query": {
+          "origin": "LAX",
+          "dest": "AUS",
+          "departDate": "2026-10-05",
+          "pax": 2,
+          "minCabin": "Y"
+        },
+        "elapsedMs": 16850,
+        "result": "error",
+        "programId": "AA_AADVANTAGE",
+        "status": 502,
+        "stage": "homepage",
+        "message": "American's browser search could not complete at homepage. No availability was inferred.",
+        "stages": [
+          {
+            "stage": "dedicated-profile-ready",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "homepage",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 244,
+            "path": "/",
+            "status": 301
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 792,
+            "path": "/homePage.do",
+            "status": 200
+          }
+        ],
+        "title": "American Airlines - Airline tickets and low fares at aa.com",
+        "path": "/homePage.do",
+        "verification": false,
+        "errorType": "TimeoutError"
+      },
+      {
+        "id": "cda896d4-92e0-49c0-ab70-b8f93abc5abf",
+        "at": "2026-09-06T06:33:30.369Z",
+        "query": {
+          "origin": "LAX",
+          "dest": "AUS",
+          "departDate": "2026-10-05",
+          "pax": 2,
+          "minCabin": "Y"
+        },
+        "elapsedMs": 16275,
+        "result": "error",
+        "programId": "AA_AADVANTAGE",
+        "status": 502,
+        "stage": "homepage",
+        "message": "American's browser search could not complete at homepage. No availability was inferred.",
+        "stages": [
+          {
+            "stage": "dedicated-profile-ready",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "homepage",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 193,
+            "path": "/",
+            "status": 301
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 653,
+            "path": "/homePage.do",
+            "status": 200
+          }
+        ],
+        "title": "American Airlines - Airline tickets and low fares at aa.com",
+        "path": "/homePage.do",
+        "verification": false,
+        "errorType": "TimeoutError"
+      }
+    ],
+    "ownedBrowserDOM": {
+      "path": "/homePage.do",
+      "visibility": "hidden",
+      "advancedLinkVisible": true
+    },
+    "actionabilityDiagnostic": {
+      "ordinaryClick": "times out waiting for visible/enabled/stable despite a visible advanced link",
+      "afterBringToFront": "same ordinary click succeeds; path /booking/search/find-flights"
+    },
+    "fix": "Activate only the reused app-owned page before interacting. Reset remembered connecting-airport restriction for each unrestricted query. Verified through the real API and actual PointSnap UI after normal worker restart.",
+    "actualAppAfterFix": {
+      "at": "2026-09-06T06:40:06.456Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": "2",
+        "minCabin": "Y",
+        "programs": "AA_AADVANTAGE"
+      },
+      "elapsedMs": 14401,
+      "state": "success",
+      "itineraries": 52,
+      "fares": 90,
+      "ui": {
+        "query": "LAX-AUS 2026-10-05, one adult",
+        "itineraries": 52,
+        "fares": 91,
+        "allRowsVisibleAt100PerPage": true,
+        "nativeProgramFilter": "American AAdvantage",
+        "nonstops": [
+          "AA2118",
+          "AA4945",
+          "AA6443"
+        ],
+        "observed": "Actual refreshed PointSnap interface after the page activation fix; native points and USD5.60 fees visible."
+      }
+    }
+  },
+  "currentSequencing": "User approved coverage-first: native connections with data correctness and UI proof before substantial hosted reliability/load/cost optimization and seven-day qualification. Prepared 60-second startup diagnostic is deferred, not executed. Continue Aeroplan then United; American inventory gaps remain logged."
 }

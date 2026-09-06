@@ -1,0 +1,54 @@
+# PointSnap — airline connection playbook
+
+Updated September 6, 2026 UTC. This is the current set of lessons carried between connectors. The dated evidence files preserve individual experiments; this document records what changes in the next implementation. Observations are scoped to the route, date, party and runtime actually tested.
+
+## Working order and access order
+
+**Coverage first, as explicitly approved by the user:** establish each native connection through PointSnap, validate real flight/fare data and the actual UI, then move to the next airline. Fix correctness and normal-search failures now. Defer substantial hosted reliability, prolonged idle/restart testing, load/cost optimization and seven-day qualification to a later release pass. American's initial local integration gate is met; continue with Aeroplan and United. Preserve its remaining inventory gaps without treating hosted qualification as a gate for every later program.
+
+Continue American, Aeroplan, United, British Airways, Qatar, Virgin, Singapore, Turkish, Etihad, ANA, Alaska, Delta, JetBlue, Qantas, Avianca, Emirates and Aeromexico, then other programs. For every program, try direct anonymous access first, then an app-operated anonymous browser. Use an operator account only when evidence justifies it. Customers must not need an airline connection or helper installation. No award-data subscriptions; prefer existing/free infrastructure and keep the total infrastructure within $100/month.
+
+## Lessons already changing the code
+
+| Observed lesson | Evidence | What carries forward |
+|---|---|---|
+| An unsuccessful request does not identify the cause by itself. American's earlier hosted Linux Chrome could not start; hosted Mac submitted and reached verification. Skipping ordinary Chrome first-run setup let the next Linux probe return native inventory in all three phases. | American persistent-session evidence: staged startup and hosted reports. | Record the first failing stage: runtime, navigation, form interaction, verification, member gate, response, parsing or completeness. Do not describe a launch failure as an airline block or assume login fixes it. |
+| Reused ordinary Chrome pages can become hidden and stall normal click stability checks. | Two local homepage timeouts; visible advanced link, hidden document; bringing only the owned page to front let the same click succeed. | Activate the owned page before ordinary UI interaction. Distinguish browser scheduling/actionability from denied airline access. Verify this in the actual worker after the fix. |
+| A dedicated, separately launched ordinary Chrome process succeeded locally for American where managed browser launch and profile persistence alone did not. | Native domestic and international American searches, idle/restart tests and actual PointSnap UI. | Reuse the app-owned browser/session infrastructure as a candidate for other public browser flows. Test each airline independently; do not import a personal profile or assume this guarantees hosted access. |
+| One official search may expose only a subset of bookable routes. American's all-cabin and Business/First searches returned different itinerary sets. | Expanded American: 51 international itineraries / 130 fares; 52 domestic / 90 fares in the recorded queries. | Investigate the airline's ordinary search scopes, pagination and fare choices. Validate each response before merging exact itineraries. Never equate a full response with airline-wide exhaustiveness. |
+| Later quotes can supersede earlier quotes, including withdrawn cabin prices. | American cabin-union regression tests; a changed domestic Main price was independently rechecked on the airline website. | Replace superseded offers for the same scope and exact itinerary. Preserve distinct fare families. Do not manufacture a low price by retaining an older quote that the later search removed. |
+| Some data becomes available only after the browser performs the airline's normal flow. Delta works through its anonymous WebKit form and complete paginated responses. | Delta browser evidence; 46 domestic itineraries across three pages. | Collect responses produced by the app-owned browser's real search, follow every reported page and reject an incomplete page set. Keep the browser runner separate from normalization so its useful parts can be reused. |
+| A visible points price may hide multiple cash/points and baggage choices. | Smiles: five domestic flights / 42 regular-member fare choices for two travelers; first flight has 14 choices. | Expand every offered regular payment and bundle choice. Quote actual fees; distinguish a failed tax quote from a zero fee. Keep member-tier offers separate from publicly eligible offers. |
+| The source can silently add nearby airports or retain previous form choices. | Smiles returned ONT alternatives to an exact LAX search; American's advanced form retained previous airports, cabin and party. | Explicitly set the whole query every time. Validate all returned airports, dates and passengers. Disclose excluded alternatives; city-group searches must deliberately enumerate their airport members. |
+| Different HTTP clients can behave differently, without establishing a login requirement. | Qantas cached results succeed with the configured Node transport where default fetch failed. | Test the actual current public contract and transport separately. Retain the source's observation time; a successful fetch does not make cached availability live. |
+| Segments, stops and prices may use different representations. | Ethiopian reference-linked segments and passenger totals; Qantas single-flight technical stops; cross-program AA grouping. | Normalize reference graphs, exact times, stops, currency and per-person versus party amounts. Match every segment when grouping programs. Unknown is not zero and a single flight number is not proof of nonstop travel. |
+| Partner flights do not connect the partner's native loyalty program. | American flights through Alaska/Smiles; United flights through TrueBlue. | Group the physical flight once while retaining the booking program, program-specific points, fees, eligibility and observation time for each offer. |
+| Browser-only evidence, app integration and production qualification are distinct milestones. | American is integrated locally and now passes baseline hosted Linux initial/idle/restart checks. Expanded hosted collection remains under test; hosted Mac reaches verification. Delta has one successful hosted Mac diagnostic. | Verify the actual API and frontend, then the deployment runtime, restarts, idle behavior, representative routes, duration and cost. Label the exact evidence level. |
+
+## Reusable implementation already in place
+
+- `browser-worker/persistent-session.ts`: one active search per owned profile, cancellable queue, orderly close, retry after failed launch and disposal of disconnected browser resources. Ten focused regression tests protect session lifecycle behavior.
+- `browser-worker/desktop-chrome.ts`: isolated ordinary Chrome process with loopback control and sanitized startup categories. Its default does not change airline verification handling.
+- `browser-worker/american.ts`, `delta.ts` and `smiles.ts`: airline-specific normal browser flows feeding independently validated responses.
+- `src/lib/award-search/browser.ts`: authenticated app-to-worker boundary with query, freshness and completeness checks.
+- Airline parsers and common result types: normalize offers while retaining program, fare, cabin, original fees and provenance.
+- `docs/evidence/`: permanent sanitized experiment results; `tasks/user-requirements.md`: user scope; `/build-progress`: current work and next experiment.
+
+## Protocol for the next connection
+
+1. Read the program's latest evidence and this playbook before another attempt. Identify one unanswered hypothesis and the one variable the attempt changes.
+2. Verify the current official anonymous flow. Separate member-only functionality from public search. Do not infer a member gate from a generic denied request.
+3. Try direct anonymous transport first. If normal browser execution is needed, use the existing isolated browser infrastructure, explicitly set every query field and record the first divergence from the working public flow.
+4. Capture only necessary availability data. Validate route, exact date, passengers, cabin, all pages, all fare families, original taxes and query scope. Record what the source does not disclose.
+5. Reconcile against an independent official search for the same query. Investigate missing flights and prices, not just matching row counts. Test domestic, international, connections, premium cabin and multiple passengers.
+6. Run through PointSnap's real API and UI. Verify grouping, fare comparison, pagination, filters, date summaries, local times, currency and party costs using the same offers.
+7. Verify another normal query works, then advance to the next program. Record latency as available. Queue the actual hosting environment, prolonged idle/restart behavior, load/cost work and the approved 50-search/seven-day qualification for the later release pass; do not make a production reliability claim before those checks.
+8. Record the outcome, reusable lesson, evidence location and next distinct action. Add a regression test when a discovered correctness bug warrants it. Update this playbook when a new result changes the next airline's approach.
+
+## Open hypotheses, not established solutions
+
+- American's ordinary DFW connection search returns 40 itineraries / 80 fares, including 23 flight sequences absent from the earlier expanded 52-row app result. A fresh comparison and integration of further scopes are in progress.
+- The explicit hosted Linux first-run follow-up passed all three baseline native searches. A fresh expanded-query runner still timed out at startup before any airline page. A bounded 60-second startup diagnostic is prepared but deferred under the user's coverage-first decision; first-run setup alone is not a complete reliability fix.
+- Aeroplan and United need their own fresh access tests. American's anonymous success does not demonstrate anonymous native inventory or reliable member-session recovery for either.
+
+The May session notes in `tasks/lessons.md` are historical. Their proxy, login and design recommendations do not override the current user-approved plan or fresh evidence.

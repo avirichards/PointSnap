@@ -1,5 +1,15 @@
 # PointSnap — Lessons Learned
 
+## Current connection lessons — September 2026
+
+The user explicitly approved a coverage-first pass: establish and verify native airline connections through PointSnap, then move to the next airline. Fix incorrect data and failures that prevent normal searches now; defer substantial hosting, load optimization and long-running reliability qualification until after the connection pass. Do not keep American in extended deployment experiments while other native connectors are still missing. Final completeness and public-release requirements remain unchanged.
+
+The maintained [airline connection playbook](../docs/airline-connection-playbook.md) consolidates transferable findings, their evidence, reusable implementation and the procedure for each next airline. Read it together with the current completion plan before testing another program. Record the cause and first failing stage rather than labeling every unsuccessful request a blocked airline.
+
+Anonymous access comes first. American's new app-owned ordinary Chrome connection supersedes the old assumption that a paid proxy or login is necessary for that program. A single search can still omit itineraries: separate all-cabin and Business/First searches now reveal additional flights. Carry those completeness checks, isolated sessions, normal form-state resets and staged diagnostics into the next connector.
+
+The May notes below are historical observations and recommendations, not current instructions. In particular, the user now makes Apple HIG optional where useful, prioritizes real airline data and excludes award-data subscriptions. Follow the current user requirements rather than stale recommendations.
+
 Per CLAUDE.md §3: after any correction from the user, write the pattern here so the same mistake doesn't repeat.
 
 ## Session 2 (2026-05-17)

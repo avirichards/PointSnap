@@ -53,6 +53,10 @@ on:
         description: American desktop adult count
         type: string
         default: "1"
+      startup_timeout_ms:
+        description: Ordinary Chrome startup deadline (1000 to 60000 ms)
+        type: string
+        default: "20000"
 
 permissions:
   contents: read
@@ -102,6 +106,7 @@ jobs:
       - name: Ordinary Chrome with profile reuse and restart (macOS)
         if: inputs.program == 'american-desktop' && runner.os == 'macOS'
         env:
+          POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS: ${{ inputs.startup_timeout_ms }}
           POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
           POINTSNAP_AMERICAN_EXPAND_CABINS: ${{ inputs.expand_cabins && '1' || '0' }}
           POINTSNAP_PROBE_ORIGIN: ${{ inputs.origin }}
@@ -112,6 +117,7 @@ jobs:
       - name: Ordinary Chrome with profile reuse and restart (Linux)
         if: inputs.program == 'american-desktop' && runner.os == 'Linux'
         env:
+          POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS: ${{ inputs.startup_timeout_ms }}
           POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
           POINTSNAP_AMERICAN_EXPAND_CABINS: ${{ inputs.expand_cabins && '1' || '0' }}
           POINTSNAP_PROBE_ORIGIN: ${{ inputs.origin }}

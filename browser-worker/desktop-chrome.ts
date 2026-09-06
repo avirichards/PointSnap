@@ -51,6 +51,17 @@ class DesktopChrome {
     });
     if (process.platform === "linux" && !process.env.DISPLAY)
       throw new BrowserSessionLaunchError("display-unavailable");
+    const startupTimeoutMs = Number(
+      process.env.POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS ?? "20000",
+    );
+    if (
+      !Number.isInteger(startupTimeoutMs) ||
+      startupTimeoutMs < 1000 ||
+      startupTimeoutMs > 60000
+    )
+      throw new Error(
+        "Choose a Chrome startup deadline from 1000 to 60000 ms.",
+      );
     const profile = resolve("work/browser-profiles/american-desktop-collector");
     await mkdir(profile, { recursive: true, mode: 0o700 });
     await chmod(profile, 0o700);
@@ -90,7 +101,7 @@ class DesktopChrome {
     });
     try {
       let ready = false;
-      const deadline = Date.now() + 20000;
+      const deadline = Date.now() + startupTimeoutMs;
       while (!stopped && Date.now() < deadline) {
         ready = await fetch(`${endpoint}/json/version`, {
           signal: AbortSignal.timeout(500),

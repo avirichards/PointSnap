@@ -4,6 +4,7 @@ Source: all user messages supplied in this task through September 5, 2026, inclu
 
 ## Priority 1 — live award coverage
 
+- [ ] Coverage-first sequence approved: establish the native airline connections through PointSnap with real flight/fare accuracy and frontend checks before substantial production reliability, hosting/load optimization or seven-day qualification. Keep those release requirements for a later pass; do not hold all other airlines behind American's hosting. American's initial integration gate is verified; Aeroplan and United are next.
 - [ ] Finish the entire app and keep investigating every airline until all practical access paths are exhausted. Treat a failed method as evidence about that method, not proof that an airline is impossible.
 - [ ] Search every available flight, connection, cabin and fare option for the chosen route, day and party. JetBlue was specifically called out for missing flights. Current JetBlue adapter now returns 16 JFK–LAX itineraries / 119 fares, including connections, with exact cash matches; maintain this completeness standard for every source.
 - [x] Users can search working direct sources without connecting their personal airline accounts.
@@ -37,7 +38,7 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: **American AAdvantage, anonymously**. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
+Current focus: **Aeroplan, then United, with anonymous methods first**. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
 
 ## Priority 2 — intuitive depth and comparison
 
@@ -192,6 +193,9 @@ The following ledger traces the user's requests in conversation order. Repeated 
 | 82 | Ask whether to set a goal before starting | Goal is optional; proposed wording references the full plan and measurable completion criteria. No goal was active at that setup check; the later explicit goal activation is recorded in group 84. |
 | 83 | Confirm free anonymous connections are prioritized in the plan and goal | Explicit order: direct anonymous connection, app-operated anonymous browser, then justified operator-account fallback. Prefer existing/free infrastructure; optional paid hosting remains within $100/month and no award-data subscription. Correct stale Aeroplan-first/traveler-connected recommendations and verify anonymous-first language in the active goal. |
 | 84 | Activate the approved completion goal | Goal state verified active through the goal tool. Keep the full approved objective, prioritize American anonymously, and continue toward complete native connections and the remaining product requirements. No token budget was specified. |
+| 85 | Confirm lessons from one airline help the next and are saved | Maintain docs/airline-connection-playbook.md with evidence, transferable findings, implemented shared components and next-airline procedure. Link it from tasks/lessons.md and the completion plan; update it after meaningful discoveries. Separate proven behavior from a hypothesis for another airline. |
+| 86 | Explain production reliability and whether it is needed before connecting all airlines | Distinguish a verified native connection from sustained hosted operation, multi-user load, extended recovery and release qualification. Recommend a coverage-first pass while preserving flight/fare accuracy and the final reliability requirements. |
+| 87 | Approve coverage-first sequencing; save it in the plan and clarify whether the goal needs editing | Completion plan and playbook now explicitly move extended production/hosting qualification after the airline-connection pass. The active goal already points to the approved completion plan and retains the same final objective; no goal recreation or scope reduction is needed. Record this decision in the readable goal copy and current progress feed. |
 
 ## Current completion boundary
 
@@ -254,3 +258,7 @@ Latest American completeness finding: the official Business/First form exposes t
 
 
 Expanded American checkpoint: 206 automated tests, TypeScript, focused lint and optimized Node 22 build pass. Actual UI checks show 51 international and 52 domestic itineraries, with source scope, full pagination and all three domestic nonstops. The initial hosted ordinary Mac search reaches verification; Linux fails at browser startup, which is tracked separately from airline access. All prior product requirements remain active behind the airline-connection priority.
+
+### September 6 UTC — saved connection lessons and hosted American progress
+
+All85 request groups remain logged. The connection playbook consolidates evidence and reusable implementation for subsequent airlines. Standard hosted Linux Chrome now returns native anonymous American results on initial search, after30 seconds idle and after restart:40 itineraries/80 fares in each test. This follows the explicit first-run startup diagnostic; previous Linux launch failures were not proof of airline denial. Expanded hosted searches and remaining completeness work are still in progress.
