@@ -1,0 +1,110 @@
+{
+  "checkedAt": "2026-09-06T10:09:14.608587+00:00",
+  "programId": "SK_EUROBONUS",
+  "stage": "local-native-integration",
+  "method": "PointSnap-owned ordinary Chrome profile; official anonymous points-booking page and its own GET /api/offers/flights response",
+  "customerAirlineLoginRequired": false,
+  "awardSubscriptionRequired": false,
+  "officialGuide": "https://www.flysas.com/en/eurobonus/award-flights",
+  "entry": "https://www.flysas.com/en/book/flights/",
+  "query": {
+    "origin": "CPH",
+    "dest": "ARN",
+    "departDate": "2026-10-05",
+    "pax": 2
+  },
+  "observations": [
+    {
+      "method": "plain anonymous fetch with no cookies or copied headers",
+      "status": 403
+    },
+    {
+      "method": "own Chrome fresh page",
+      "route": "CPH-ARN",
+      "itineraries": 20,
+      "fares": 72,
+      "notes": "Initial sanitized fixture, 14 nonstop and 6 connecting itineraries."
+    },
+    {
+      "method": "complete collector; all fare cards expanded and reconciled",
+      "route": "CPH-ARN",
+      "itineraries": 20,
+      "fares": 74,
+      "elapsedMs": 6933
+    },
+    {
+      "method": "complete collector after international accessible-label fix",
+      "route": "CPH-JFK",
+      "itineraries": 7,
+      "fares": 14,
+      "elapsedMs": 2699
+    },
+    {
+      "method": "PointSnap frontend and actual SSE",
+      "route": "CPH-ARN",
+      "itineraries": 20,
+      "fares": 74,
+      "elapsedMs": 7900
+    },
+    {
+      "method": "PointSnap API independent query",
+      "route": "CPH-JFK",
+      "itineraries": 7,
+      "fares": 14,
+      "elapsedMs": 3674,
+      "state": "success"
+    }
+  ],
+  "selectedAirlineCartChecks": [
+    {
+      "flight": "SK402",
+      "fare": "ECONOMY BONUS",
+      "pointsPerAdult": 10000,
+      "feesPerAdult": 38.01,
+      "currency": "EUR",
+      "partyPoints": 20000,
+      "partyFees": 76.02
+    },
+    {
+      "flight": "SK1416",
+      "fare": "BUSINESS",
+      "pointsPerAdult": 53350,
+      "feesPerAdult": 38.01,
+      "currency": "EUR",
+      "partyPoints": 106700,
+      "partyFees": 76.02,
+      "note": "The raw regular offer also has totalPrice=254.76 EUR per adult; that is not the points booking copayment."
+    }
+  ],
+  "frontendChecks": [
+    "All 20 itineraries and 74 fares retained",
+    "SK1416 Business and Business Flex selectable at 53,350 /64,375 points per adult",
+    "Two-adult Business total106,700 points plusEUR76.02, converted toUSD88.40 at displayed September6 reference rate",
+    "AM/PM times and SAS Connect operator shown",
+    "14 nonstop results after mobile filter; viewport390 and document width390",
+    "Trip handoff carries exact route/date/two adults in points mode",
+    "No page errors during scoped desktop/mobile checks",
+    "Normal multi-source search completed in153.0 seconds:100 grouped itineraries /505 fare choices from5 sources.",
+    "SAS SK402 appears once with two programs: native EuroBonus10,000 points and Delta SkyMiles15,000; each retains its own source taxes.",
+    "Nonstop filter on combined results shows14 itineraries /60 fare choices."
+  ],
+  "lessons": [
+    "Ordinary owned Chrome works where this plain HTTP request and earlier managed browsers fail.",
+    "Reconcile all product families, not lowestFares or calendar tabs.",
+    "International visible card titles can be blank; their accessible fare-rule labels identify the correct products.",
+    "SAS internal cabinClass Y can mean European Business or long-haul Premium; do not map it to Economy. Unconfirmed connecting segment cabins stay unknown.",
+    "Empty source responses and missing fare cards must not become a false sold-out result."
+  ],
+  "remaining": [
+    "All-route, all-date and party-size qualification",
+    "Verified valid-empty semantics",
+    "Same-flight stop details",
+    "Exact cash-fare comparisons",
+    "Full refund conditions and unconfirmed connecting segment cabins",
+    "Member-specific inventory",
+    "Hosted deployment, sustained reliability and operating-cost qualification"
+  ],
+  "otherSourceFindings": [
+    "On the full CPH-ARN search, Ethiopian initialization, Frontier price scope, Etihad displayed-count matching and Southwest unsupported-flow completion remain explicit errors; none was relabeled as no availability."
+  ]
+}

@@ -2,6 +2,8 @@
 
 ## Current connection lessons — September 2026
 
+SAS reuses the app-owned ordinary Chrome lifecycle successfully after earlier HTTP/managed-browser failures. Its regular points response contains a cash reference total distinct from the actual tax copayment; verify selected-cart prices. Some international visible fare titles are blank while accessible fare-rule labels are correct. Internal cabin codes are airline-specific: SAS Y can be European Business or long-haul Premium. Record unknown segment cabins instead of guessing.
+
 The user explicitly approved a coverage-first pass: establish and verify native airline connections through PointSnap, then move to the next airline. Fix incorrect data and failures that prevent normal searches now; defer substantial hosting, load optimization and long-running reliability qualification until after the connection pass. Do not keep American in extended deployment experiments while other native connectors are still missing. Final completeness and public-release requirements remain unchanged.
 
 The maintained [airline connection playbook](../docs/airline-connection-playbook.md) consolidates transferable findings, their evidence, reusable implementation and the procedure for each next airline. Read it together with the current completion plan before testing another program. Record the cause and first failing stage rather than labeling every unsuccessful request a blocked airline.

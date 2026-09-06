@@ -1,0 +1,1200 @@
+{
+  "type": "sas-points",
+  "request": {
+    "from": "CPH",
+    "to": "JFK",
+    "outDate": "20261005",
+    "adt": "2",
+    "chd": "0",
+    "inf": "0",
+    "yth": "0",
+    "bookingFlow": "points",
+    "pos": "lu",
+    "channel": "web",
+    "displayType": "upsell"
+  },
+  "response": {
+    "bookingFlow": "POINTS",
+    "tripType": "O",
+    "currency": {
+      "code": "EUR"
+    },
+    "outboundFlights": {
+      "F0": {
+        "id": 0,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "08:40:00",
+        "startTimeInLocal": "2026-10-05T14:20:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T12:20:00.000Z",
+        "endTimeInLocal": "2026-10-05T17:00:00.000-04:00",
+        "endTimeInGmt": "2026-10-05T21:00:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T14:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T12:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T17:00:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-05T21:00:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "333",
+              "name": "Airbus A330-300"
+            },
+            "flightNumber": "915",
+            "duration": "08:40:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_8": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 209.3,
+                    "totalPrice": 5505.92,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 104.65,
+                          "totalPrice": 2752.96,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_1": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 209.3,
+                    "totalPrice": 4248.86,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 104.65,
+                          "totalPrice": 2124.43,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F1": {
+        "id": 1,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "11:45:00",
+        "startTimeInLocal": "2026-10-05T09:55:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T07:55:00.000Z",
+        "endTimeInLocal": "2026-10-05T15:40:00.000-04:00",
+        "endTimeInGmt": "2026-10-05T19:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T09:55:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T07:55:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T11:05:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T09:05:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "452",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T13:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T11:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T15:40:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-05T19:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "32Q",
+              "name": "Airbus A321neo"
+            },
+            "flightNumber": "923",
+            "duration": "08:20:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_9": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 5512.78,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2756.39,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_2": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 4255.72,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2127.86,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F2": {
+        "id": 2,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "13:35:00",
+        "startTimeInLocal": "2026-10-05T08:05:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T06:05:00.000Z",
+        "endTimeInLocal": "2026-10-05T15:40:00.000-04:00",
+        "endTimeInGmt": "2026-10-05T19:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T08:05:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T06:05:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T09:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T07:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1462",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T13:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T11:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T15:40:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-05T19:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "32Q",
+              "name": "Airbus A321neo"
+            },
+            "flightNumber": "923",
+            "duration": "08:20:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_10": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 5512.78,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2756.39,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_3": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 4255.72,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2127.86,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F3": {
+        "id": 3,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "14:40:00",
+        "startTimeInLocal": "2026-10-05T07:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T05:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T15:40:00.000-04:00",
+        "endTimeInGmt": "2026-10-05T19:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T07:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T05:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T08:10:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T06:10:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "454",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T13:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T11:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T15:40:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-05T19:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "32Q",
+              "name": "Airbus A321neo"
+            },
+            "flightNumber": "923",
+            "duration": "08:20:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_11": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 5512.78,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2756.39,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_4": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 4255.72,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2127.86,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F4": {
+        "id": 4,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "22:30:00",
+        "startTimeInLocal": "2026-10-05T23:10:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T21:10:00.000Z",
+        "endTimeInLocal": "2026-10-06T15:40:00.000-04:00",
+        "endTimeInGmt": "2026-10-06T19:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T23:10:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T21:10:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-06T00:20:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T22:20:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1474",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-06T13:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-06T11:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-06T15:40:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-06T19:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "32Q",
+              "name": "Airbus A321neo"
+            },
+            "flightNumber": "923",
+            "duration": "08:20:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_12": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 5512.78,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2756.39,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_5": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 4255.72,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2127.86,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F5": {
+        "id": 5,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "26:35:00",
+        "startTimeInLocal": "2026-10-05T19:05:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T17:05:00.000Z",
+        "endTimeInLocal": "2026-10-06T15:40:00.000-04:00",
+        "endTimeInGmt": "2026-10-06T19:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T19:05:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T17:05:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T20:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T18:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1470",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-06T13:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-06T11:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-06T15:40:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-06T19:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "32Q",
+              "name": "Airbus A321neo"
+            },
+            "flightNumber": "923",
+            "duration": "08:20:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_13": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 5512.78,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2756.39,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_6": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 4255.72,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2127.86,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F6": {
+        "id": 6,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "JFK",
+          "name": "John F Kennedy Intl"
+        },
+        "connectionDuration": "27:50:00",
+        "startTimeInLocal": "2026-10-05T17:50:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T15:50:00.000Z",
+        "endTimeInLocal": "2026-10-06T15:40:00.000-04:00",
+        "endTimeInGmt": "2026-10-06T19:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T17:50:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T15:50:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T19:00:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T17:00:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "462",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-06T13:20:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-06T11:20:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-06T15:40:00.000-04:00",
+            "arrivalDateTimeInGmt": "2026-10-06T19:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "JFK",
+              "name": "John F Kennedy Intl"
+            },
+            "airCraft": {
+              "code": "32Q",
+              "name": "Airbus A321neo"
+            },
+            "flightNumber": "923",
+            "duration": "08:20:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "PREMIUM": {
+            "PREMIUM FLEX": {
+              "products": {
+                "O_14": {
+                  "productName": "PREMIUM FLEX",
+                  "productCode": "NEUPF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 5512.78,
+                    "points": 974322,
+                    "pointsAfterDiscount": 974322,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2756.39,
+                          "points": 487161,
+                          "pointsAfterDiscount": 487161,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 5,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "YDKOWPF",
+                      "bookingClass": "Y",
+                      "avlSeats": 5,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "FLEX": {
+              "products": {
+                "O_7": {
+                  "productName": "FLEX",
+                  "productCode": "NEUEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 216.16,
+                    "totalPrice": 4255.72,
+                    "points": 744108,
+                    "pointsAfterDiscount": 744108,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 108.08,
+                          "totalPrice": 2127.86,
+                          "points": 372054,
+                          "pointsAfterDiscount": 372054,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "EKDKOWEF",
+                      "bookingClass": "E",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

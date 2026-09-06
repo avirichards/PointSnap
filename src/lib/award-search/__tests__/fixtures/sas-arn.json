@@ -1,0 +1,4396 @@
+{
+  "type": "sas-points",
+  "request": {
+    "from": "CPH",
+    "to": "ARN",
+    "outDate": "20261005",
+    "adt": "2",
+    "chd": "0",
+    "inf": "0",
+    "yth": "0",
+    "bookingFlow": "points",
+    "pos": "lu",
+    "channel": "web",
+    "displayType": "upsell"
+  },
+  "response": {
+    "bookingFlow": "POINTS",
+    "tripType": "O",
+    "currency": {
+      "code": "EUR"
+    },
+    "outboundFlights": {
+      "F1": {
+        "id": 1,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T07:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T05:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T08:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T06:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T07:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T05:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T08:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T06:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "402",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS BONUS": {
+              "products": {
+                "O_11": {
+                  "productName": "BUSINESS BONUS",
+                  "productCode": "SNEBS",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 40000,
+                    "pointsAfterDiscount": 40000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 20000,
+                          "pointsAfterDiscount": 20000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "IBP00",
+                      "bookingClass": "I",
+                      "avlSeats": 4,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_1": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F2": {
+        "id": 2,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T08:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T06:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T09:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T07:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T08:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T06:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T09:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T07:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1416",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_73": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 5,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_60": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 5,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_2": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 2,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F3": {
+        "id": 3,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T09:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T07:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T10:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T08:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T09:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T07:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T10:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T08:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1418",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_74": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 6,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_61": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 6,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_3": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F4": {
+        "id": 4,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T10:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T08:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T11:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T09:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T10:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T08:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T11:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T09:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "404",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS BONUS": {
+              "products": {
+                "O_12": {
+                  "productName": "BUSINESS BONUS",
+                  "productCode": "SNEBS",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 40000,
+                    "pointsAfterDiscount": 40000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 20000,
+                          "pointsAfterDiscount": 20000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "IBP00",
+                      "bookingClass": "I",
+                      "avlSeats": 5,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_4": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F15": {
+        "id": 15,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T11:50:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T09:50:00.000Z",
+        "endTimeInLocal": "2026-10-05T13:05:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T11:05:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T11:50:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T09:50:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T13:05:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T11:05:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1420",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_91": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 731.52,
+                    "points": 167650,
+                    "pointsAfterDiscount": 167650,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 365.76,
+                          "points": 83825,
+                          "pointsAfterDiscount": 83825,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "SDOBF",
+                      "bookingClass": "S",
+                      "avlSeats": 2,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_87": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 651.52,
+                    "points": 145600,
+                    "pointsAfterDiscount": 145600,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 325.76,
+                          "points": 72800,
+                          "pointsAfterDiscount": 72800,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "SDOBS",
+                      "bookingClass": "S",
+                      "avlSeats": 2,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_32": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 267.52,
+                    "points": 40650,
+                    "pointsAfterDiscount": 40650,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 133.76,
+                          "points": 20325,
+                          "pointsAfterDiscount": 20325,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "KKDOGHT",
+                      "bookingClass": "K",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_55": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 423.52,
+                    "points": 83200,
+                    "pointsAfterDiscount": 83200,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 211.76,
+                          "points": 41600,
+                          "pointsAfterDiscount": 41600,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "KKDOEF",
+                      "bookingClass": "K",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_36": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 315.52,
+                    "points": 53850,
+                    "pointsAfterDiscount": 53850,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 157.76,
+                          "points": 26925,
+                          "pointsAfterDiscount": 26925,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "KKDOES",
+                      "bookingClass": "K",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F5": {
+        "id": 5,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T12:55:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T10:55:00.000Z",
+        "endTimeInLocal": "2026-10-05T14:10:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T12:10:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T12:55:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T10:55:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T14:10:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T12:10:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1422",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_76": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_62": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_5": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F6": {
+        "id": 6,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T13:50:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T11:50:00.000Z",
+        "endTimeInLocal": "2026-10-05T15:05:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T13:05:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T13:50:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T11:50:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T15:05:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T13:05:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1426",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS BONUS": {
+              "products": {
+                "O_13": {
+                  "productName": "BUSINESS BONUS",
+                  "productCode": "SNEBS",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 40000,
+                    "pointsAfterDiscount": 40000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 20000,
+                          "pointsAfterDiscount": 20000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "IBP00",
+                      "bookingClass": "I",
+                      "avlSeats": 5,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_6": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F7": {
+        "id": 7,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T15:10:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T13:10:00.000Z",
+        "endTimeInLocal": "2026-10-05T16:25:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T14:25:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T15:10:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T13:10:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T16:25:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T14:25:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1424",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_78": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_63": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_7": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F8": {
+        "id": 8,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T16:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T14:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T17:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T15:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T16:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T14:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T17:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T15:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "408",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_79": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_64": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 4,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_8": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F9": {
+        "id": 9,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T17:05:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T15:05:00.000Z",
+        "endTimeInLocal": "2026-10-05T18:20:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T16:20:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T17:05:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T15:05:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T18:20:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T16:20:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1408",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_80": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_65": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_9": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F17": {
+        "id": 17,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T18:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T16:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T19:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T17:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T18:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T16:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T19:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T17:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "410",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_92": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 731.52,
+                    "points": 167650,
+                    "pointsAfterDiscount": 167650,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 365.76,
+                          "points": 83825,
+                          "pointsAfterDiscount": 83825,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "SDOBF",
+                      "bookingClass": "S",
+                      "avlSeats": 7,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_88": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 651.52,
+                    "points": 145600,
+                    "pointsAfterDiscount": 145600,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 325.76,
+                          "points": 72800,
+                          "pointsAfterDiscount": 72800,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "SDOBS",
+                      "bookingClass": "S",
+                      "avlSeats": 7,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_44": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 375.52,
+                    "points": 70000,
+                    "pointsAfterDiscount": 70000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 187.76,
+                          "points": 35000,
+                          "pointsAfterDiscount": 35000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "UKDOGHT",
+                      "bookingClass": "U",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_69": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 529.52,
+                    "points": 112600,
+                    "pointsAfterDiscount": 112600,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 264.76,
+                          "points": 56300,
+                          "pointsAfterDiscount": 56300,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "UKDOEF",
+                      "bookingClass": "U",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_51": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 423.52,
+                    "points": 83200,
+                    "pointsAfterDiscount": 83200,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 211.76,
+                          "points": 41600,
+                          "pointsAfterDiscount": 41600,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "UKDOES",
+                      "bookingClass": "U",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F13": {
+        "id": 13,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:15:00",
+        "startTimeInLocal": "2026-10-05T19:00:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T17:00:00.000Z",
+        "endTimeInLocal": "2026-10-05T20:15:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T18:15:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T19:00:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T17:00:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T20:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T18:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1430",
+            "duration": "01:15:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_81": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 3,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_66": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 3,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_27": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 241.52,
+                    "points": 34240,
+                    "pointsAfterDiscount": 34240,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 120.76,
+                          "points": 17120,
+                          "pointsAfterDiscount": 17120,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "NKDOGHT",
+                      "bookingClass": "N",
+                      "avlSeats": 5,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_49": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 397.52,
+                    "points": 75900,
+                    "pointsAfterDiscount": 75900,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 198.76,
+                          "points": 37950,
+                          "pointsAfterDiscount": 37950,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "NKDOEF",
+                      "bookingClass": "N",
+                      "avlSeats": 5,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_33": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 289.52,
+                    "points": 46500,
+                    "pointsAfterDiscount": 46500,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 144.76,
+                          "points": 23250,
+                          "pointsAfterDiscount": 23250,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "NKDOES",
+                      "bookingClass": "N",
+                      "avlSeats": 5,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F0": {
+        "id": 0,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:10:00",
+        "startTimeInLocal": "2026-10-05T21:25:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T19:25:00.000Z",
+        "endTimeInLocal": "2026-10-05T22:35:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T20:35:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T21:25:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T19:25:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T22:35:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T20:35:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1410",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_82": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_67": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_10": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 76.02,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 38.01,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F12": {
+        "id": 12,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "01:10:00",
+        "startTimeInLocal": "2026-10-05T23:10:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T21:10:00.000Z",
+        "endTimeInLocal": "2026-10-06T00:20:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T22:20:00.000Z",
+        "stops": 0,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T23:10:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T21:10:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-06T00:20:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T22:20:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1428",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_83": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 589.52,
+                    "points": 128750,
+                    "pointsAfterDiscount": 128750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 294.76,
+                          "points": 64375,
+                          "pointsAfterDiscount": 64375,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_68": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 509.52,
+                    "points": 106700,
+                    "pointsAfterDiscount": 106700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 254.76,
+                          "points": 53350,
+                          "pointsAfterDiscount": 53350,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_21": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 188.78,
+                    "points": 22440,
+                    "pointsAfterDiscount": 22440,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 94.39,
+                          "points": 11220,
+                          "pointsAfterDiscount": 11220,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "TKDOGHT",
+                      "bookingClass": "T",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_43": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 342.78,
+                    "points": 61150,
+                    "pointsAfterDiscount": 61150,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 171.39,
+                          "points": 30575,
+                          "pointsAfterDiscount": 30575,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "TKDOEF",
+                      "bookingClass": "T",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_23": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 76.02,
+                    "totalPrice": 236.78,
+                    "points": 33040,
+                    "pointsAfterDiscount": 33040,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 38.01,
+                          "totalPrice": 118.39,
+                          "points": 16520,
+                          "pointsAfterDiscount": 16520,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "TKDOES",
+                      "bookingClass": "T",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F18": {
+        "id": 18,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "02:45:00",
+        "startTimeInLocal": "2026-10-05T09:55:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T07:55:00.000Z",
+        "endTimeInLocal": "2026-10-05T12:40:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T10:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T09:55:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T07:55:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T11:05:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T09:05:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "452",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T11:40:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T09:40:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T12:40:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T10:40:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "E95",
+              "name": "Embraer 195"
+            },
+            "flightNumber": "486",
+            "duration": "01:00:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "SK",
+              "name": "SAS LINK"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_98": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 997.88,
+                    "points": 239000,
+                    "pointsAfterDiscount": 239000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 498.94,
+                          "points": 119500,
+                          "pointsAfterDiscount": 119500,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "JDOBF",
+                      "bookingClass": "J",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "JDOBF",
+                      "bookingClass": "J",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_96": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 917.88,
+                    "points": 217000,
+                    "pointsAfterDiscount": 217000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 458.94,
+                          "points": 108500,
+                          "pointsAfterDiscount": 108500,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "JDOBS",
+                      "bookingClass": "J",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "JDOBS",
+                      "bookingClass": "J",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_56": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 427.88,
+                    "points": 82650,
+                    "pointsAfterDiscount": 82650,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 213.94,
+                          "points": 41325,
+                          "pointsAfterDiscount": 41325,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "UKDOGHT",
+                      "bookingClass": "U",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "UKDOGHT",
+                      "bookingClass": "U",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_71": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 581.88,
+                    "points": 125250,
+                    "pointsAfterDiscount": 125250,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 290.94,
+                          "points": 62625,
+                          "pointsAfterDiscount": 62625,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "UKDOEF",
+                      "bookingClass": "U",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "UKDOEF",
+                      "bookingClass": "U",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_58": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 475.88,
+                    "points": 95850,
+                    "pointsAfterDiscount": 95850,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 237.94,
+                          "points": 47925,
+                          "pointsAfterDiscount": 47925,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "UKDOES",
+                      "bookingClass": "U",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "UKDOES",
+                      "bookingClass": "U",
+                      "avlSeats": 6,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F10": {
+        "id": 10,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "03:00:00",
+        "startTimeInLocal": "2026-10-05T08:40:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T06:40:00.000Z",
+        "endTimeInLocal": "2026-10-05T11:40:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T09:40:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T08:40:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T06:40:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T09:30:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T07:30:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "GOT",
+              "name": "Landvetter"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "434",
+            "duration": "00:50:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T10:40:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T08:40:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T11:40:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T09:40:00.000Z",
+            "departureAirport": {
+              "code": "GOT",
+              "name": "Landvetter"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "144",
+            "duration": "01:00:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS BONUS": {
+              "products": {
+                "O_16": {
+                  "productName": "BUSINESS BONUS",
+                  "productCode": "SNEBS",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 87,
+                    "totalPrice": 87,
+                    "points": 40000,
+                    "pointsAfterDiscount": 40000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 43.5,
+                          "totalPrice": 43.5,
+                          "points": 20000,
+                          "pointsAfterDiscount": 20000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "IBP00",
+                      "bookingClass": "I",
+                      "avlSeats": 5,
+                      "cabinClass": "C"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "IBP00",
+                      "bookingClass": "I",
+                      "avlSeats": 5,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_14": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 87,
+                    "totalPrice": 87,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 43.5,
+                          "totalPrice": 43.5,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F16": {
+        "id": 16,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "03:00:00",
+        "startTimeInLocal": "2026-10-05T19:05:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T17:05:00.000Z",
+        "endTimeInLocal": "2026-10-05T22:05:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T20:05:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T19:05:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T17:05:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T20:15:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T18:15:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1470",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T21:10:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T19:10:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T22:05:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T20:05:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1488",
+            "duration": "00:55:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_93": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 783.88,
+                    "points": 180300,
+                    "pointsAfterDiscount": 180300,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 391.94,
+                          "points": 90150,
+                          "pointsAfterDiscount": 90150,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "SDOBF",
+                      "bookingClass": "S",
+                      "avlSeats": 3,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "SDOBF",
+                      "bookingClass": "S",
+                      "avlSeats": 3,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_89": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 703.88,
+                    "points": 158250,
+                    "pointsAfterDiscount": 158250,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 351.94,
+                          "points": 79125,
+                          "pointsAfterDiscount": 79125,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "SDOBS",
+                      "bookingClass": "S",
+                      "avlSeats": 3,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "SDOBS",
+                      "bookingClass": "S",
+                      "avlSeats": 3,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_34": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 293.88,
+                    "points": 45950,
+                    "pointsAfterDiscount": 45950,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 146.94,
+                          "points": 22975,
+                          "pointsAfterDiscount": 22975,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "NKDOGHT",
+                      "bookingClass": "N",
+                      "avlSeats": 7,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "NKDOGHT",
+                      "bookingClass": "N",
+                      "avlSeats": 7,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_57": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 449.88,
+                    "points": 88550,
+                    "pointsAfterDiscount": 88550,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 224.94,
+                          "points": 44275,
+                          "pointsAfterDiscount": 44275,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "NKDOEF",
+                      "bookingClass": "N",
+                      "avlSeats": 7,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "NKDOEF",
+                      "bookingClass": "N",
+                      "avlSeats": 7,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_40": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 341.88,
+                    "points": 59150,
+                    "pointsAfterDiscount": 59150,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 170.94,
+                          "points": 29575,
+                          "pointsAfterDiscount": 29575,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "NKDOES",
+                      "bookingClass": "N",
+                      "avlSeats": 7,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "NKDOES",
+                      "bookingClass": "N",
+                      "avlSeats": 7,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F11": {
+        "id": 11,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "03:05:00",
+        "startTimeInLocal": "2026-10-05T14:05:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T12:05:00.000Z",
+        "endTimeInLocal": "2026-10-05T17:10:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T15:10:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T14:05:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T12:05:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T14:55:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T12:55:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "GOT",
+              "name": "Landvetter"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "430",
+            "duration": "00:50:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T16:10:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T14:10:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T17:10:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T15:10:00.000Z",
+            "departureAirport": {
+              "code": "GOT",
+              "name": "Landvetter"
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "162",
+            "duration": "01:00:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "X1",
+              "name": "SAS Connect"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_85": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 87,
+                    "totalPrice": 646,
+                    "points": 141400,
+                    "pointsAfterDiscount": 141400,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 43.5,
+                          "totalPrice": 323,
+                          "points": 70700,
+                          "pointsAfterDiscount": 70700,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "ADOBF",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_70": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 87,
+                    "totalPrice": 566,
+                    "points": 119350,
+                    "pointsAfterDiscount": 119350,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 43.5,
+                          "totalPrice": 283,
+                          "points": 59675,
+                          "pointsAfterDiscount": 59675,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "ADOBS",
+                      "bookingClass": "A",
+                      "avlSeats": 9,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "ECONOMY BONUS": {
+              "products": {
+                "O_15": {
+                  "productName": "ECONOMY BONUS",
+                  "productCode": "SNEES",
+                  "isStandardAward": true,
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 87,
+                    "totalPrice": 87,
+                    "points": 20000,
+                    "pointsAfterDiscount": 20000,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 43.5,
+                          "totalPrice": 43.5,
+                          "points": 10000,
+                          "pointsAfterDiscount": 10000,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "XBP00",
+                      "bookingClass": "X",
+                      "avlSeats": 9,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F14": {
+        "id": 14,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "03:10:00",
+        "startTimeInLocal": "2026-10-05T11:45:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T09:45:00.000Z",
+        "endTimeInLocal": "2026-10-05T14:55:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T12:55:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T11:45:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T09:45:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T12:55:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T10:55:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "1458",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T13:55:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T11:55:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T14:55:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T12:55:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "496",
+            "duration": "01:00:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_90": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 729.88,
+                    "points": 165600,
+                    "pointsAfterDiscount": 165600,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 364.94,
+                          "points": 82800,
+                          "pointsAfterDiscount": 82800,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "BDOBF",
+                      "bookingClass": "B",
+                      "avlSeats": 2,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "BDOBF",
+                      "bookingClass": "B",
+                      "avlSeats": 2,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_86": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 649.88,
+                    "points": 143600,
+                    "pointsAfterDiscount": 143600,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 324.94,
+                          "points": 71800,
+                          "pointsAfterDiscount": 71800,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "BDOBS",
+                      "bookingClass": "B",
+                      "avlSeats": 2,
+                      "cabinClass": "Y"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "BDOBS",
+                      "bookingClass": "B",
+                      "avlSeats": 2,
+                      "cabinClass": "Y"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_28": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 259.84,
+                    "points": 36680,
+                    "pointsAfterDiscount": 36680,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 129.92,
+                          "points": 18340,
+                          "pointsAfterDiscount": 18340,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "LKDOGHT",
+                      "bookingClass": "L",
+                      "avlSeats": 3,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "LKDOGHT",
+                      "bookingClass": "L",
+                      "avlSeats": 3,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_50": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 413.84,
+                    "points": 78950,
+                    "pointsAfterDiscount": 78950,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 206.92,
+                          "points": 39475,
+                          "pointsAfterDiscount": 39475,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "LKDOEF",
+                      "bookingClass": "L",
+                      "avlSeats": 3,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "LKDOEF",
+                      "bookingClass": "L",
+                      "avlSeats": 3,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_35": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 307.84,
+                    "points": 49600,
+                    "pointsAfterDiscount": 49600,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 153.92,
+                          "points": 24800,
+                          "pointsAfterDiscount": 24800,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "LKDOES",
+                      "bookingClass": "L",
+                      "avlSeats": 3,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "LKDOES",
+                      "bookingClass": "L",
+                      "avlSeats": 3,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "F19": {
+        "id": 19,
+        "origin": {
+          "code": "CPH",
+          "name": "Kastrup"
+        },
+        "destination": {
+          "code": "ARN",
+          "name": "Arlanda"
+        },
+        "connectionDuration": "03:10:00",
+        "startTimeInLocal": "2026-10-05T17:50:00.000+02:00",
+        "startTimeInGmt": "2026-10-05T15:50:00.000Z",
+        "endTimeInLocal": "2026-10-05T21:00:00.000+02:00",
+        "endTimeInGmt": "2026-10-05T19:00:00.000Z",
+        "stops": 1,
+        "segments": [
+          {
+            "id": 11,
+            "departureDateTimeInLocal": "2026-10-05T17:50:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T15:50:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T19:00:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T17:00:00.000Z",
+            "departureAirport": {
+              "code": "CPH",
+              "name": "Kastrup"
+            },
+            "arrivalAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "airCraft": {
+              "code": "32N",
+              "name": "Airbus A320neo"
+            },
+            "flightNumber": "462",
+            "duration": "01:10:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "numberOfStops": 0
+          },
+          {
+            "id": 12,
+            "departureDateTimeInLocal": "2026-10-05T20:05:00.000+02:00",
+            "departureDateTimeInGmt": "2026-10-05T18:05:00.000Z",
+            "arrivalDateTimeInLocal": "2026-10-05T21:00:00.000+02:00",
+            "arrivalDateTimeInGmt": "2026-10-05T19:00:00.000Z",
+            "departureAirport": {
+              "code": "OSL",
+              "name": "Gardermoen "
+            },
+            "arrivalAirport": {
+              "code": "ARN",
+              "name": "Arlanda"
+            },
+            "airCraft": {
+              "code": "E95",
+              "name": "Embraer 195"
+            },
+            "flightNumber": "886",
+            "duration": "00:55:00",
+            "marketingCarrier": {
+              "code": "SK",
+              "name": "SAS"
+            },
+            "operatingCarrier": {
+              "code": "SK",
+              "name": "SAS LINK"
+            },
+            "numberOfStops": 0
+          }
+        ],
+        "cabins": {
+          "BUSINESS": {
+            "BUSINESS FLEX": {
+              "products": {
+                "O_100": {
+                  "productName": "BUSINESS FLEX",
+                  "productCode": "NEBF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 1131.88,
+                    "points": 275700,
+                    "pointsAfterDiscount": 275700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 565.94,
+                          "points": 137850,
+                          "pointsAfterDiscount": 137850,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ZDOBF",
+                      "bookingClass": "Z",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "ZDOBF",
+                      "bookingClass": "Z",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            },
+            "BUSINESS": {
+              "products": {
+                "O_99": {
+                  "productName": "BUSINESS",
+                  "productCode": "NEBS",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 1051.88,
+                    "points": 253700,
+                    "pointsAfterDiscount": 253700,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 525.94,
+                          "points": 126850,
+                          "pointsAfterDiscount": 126850,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "ZDOBS",
+                      "bookingClass": "Z",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "ZDOBS",
+                      "bookingClass": "Z",
+                      "avlSeats": 3,
+                      "cabinClass": "C"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "ECONOMY": {
+            "LIGHT": {
+              "products": {
+                "O_94": {
+                  "productName": "LIGHT",
+                  "productCode": "NEGHT",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 787.88,
+                    "points": 181750,
+                    "pointsAfterDiscount": 181750,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 393.94,
+                          "points": 90875,
+                          "pointsAfterDiscount": 90875,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "MKDOGHT",
+                      "bookingClass": "M",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "MKDOGHT",
+                      "bookingClass": "M",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "FLEX": {
+              "products": {
+                "O_97": {
+                  "productName": "FLEX",
+                  "productCode": "NEEF",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 943.88,
+                    "points": 224300,
+                    "pointsAfterDiscount": 224300,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 471.94,
+                          "points": 112150,
+                          "pointsAfterDiscount": 112150,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "MKDOEF",
+                      "bookingClass": "M",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "MKDOEF",
+                      "bookingClass": "M",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            },
+            "STANDARD": {
+              "products": {
+                "O_95": {
+                  "productName": "STANDARD",
+                  "productCode": "NEES",
+                  "price": {
+                    "currency": "EUR",
+                    "totalTax": 82.88,
+                    "totalPrice": 837.88,
+                    "points": 194950,
+                    "pointsAfterDiscount": 194950,
+                    "discountedPoints": 0,
+                    "credits": 0,
+                    "pricePerPassengerType": [
+                      {
+                        "type": "ADT",
+                        "numberCount": 2,
+                        "price": {
+                          "currency": "EUR",
+                          "totalTax": 41.44,
+                          "totalPrice": 418.94,
+                          "points": 97475,
+                          "pointsAfterDiscount": 97475,
+                          "discountedPoints": 0,
+                          "credits": 0
+                        }
+                      }
+                    ]
+                  },
+                  "fares": [
+                    {
+                      "segmentId": "11",
+                      "fareClass": "MKDOES",
+                      "bookingClass": "M",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    },
+                    {
+                      "segmentId": "12",
+                      "fareClass": "MKDOES",
+                      "bookingClass": "M",
+                      "avlSeats": 4,
+                      "cabinClass": "M"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

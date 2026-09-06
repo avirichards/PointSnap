@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  SK_EUROBONUS: {
+    inventory: "flights",
+    label: "SAS EuroBonus award flights",
+    detail:
+      "Anonymous SAS searches with every returned Bonus and regular pay-with-points fare family. The flight list and fare choices are reconciled against the airline page. Taxes are quoted in EUR and shown per person. Segment cabins that cannot be confirmed remain marked unknown. SAS login is required to book, but not to search in PointSnap. Broader routes and hosted operation remain under verification.",
+  },
   WN_RAPID_REWARDS: {
     inventory: "flights",
     label: "Southwest Rapid Rewards award flights",

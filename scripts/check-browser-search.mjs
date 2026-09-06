@@ -8,6 +8,7 @@ if (
     "G3_GOL_SMILES",
     "EY_GUEST",
     "WN_RAPID_REWARDS",
+    "SK_EUROBONUS",
   ].includes(program)
 )
   throw new Error("Unsupported browser program.");

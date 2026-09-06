@@ -162,3 +162,17 @@ pnpm exec tsx browser-worker/probe-southwest-live.ts BWI CUN 2026-10-05 2
 ```
 
 The actual local API returned DEN–LAS 26 itineraries / 104 available fares in 8.7 seconds and BWI–CUN 16 / 62 in 5.7 seconds, each for two adults. Corresponding standalone normal-browser searches also passed. These are scoped observations, not a promise of all-route coverage or sustained hosted reliability. Empty-list semantics still need verification and remain explicit errors. Use one runner per owned profile.
+
+## SAS ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_SAS="1"` in both private environment files, restart the worker and verify authenticated health reports `SK_EUROBONUS`. The dedicated `sas-desktop-collector` profile uses the standard Chrome setup above; no customer connection, account or award subscription is needed to search. Booking on SAS requires a member login.
+
+Each query opens the official points page in a new owned tab and validates its own GET inventory request. All itinerary rows and expanded fare-card names/prices must match the complete response. Both Bonus and regular points products are retained. Adult and party prices are checked separately; the regular offer's monetary reference total is not added to the award taxes. Ambiguous connecting segment cabins stay unconfirmed. The raw response is reduced to a flight/price allowlist before leaving the collector.
+
+```sh
+POINTSNAP_TEST_PROGRAM=SK_EUROBONUS pnpm test:browser-live CPH ARN 2026-10-05 2
+# Standalone diagnostic only while no worker owns the SAS profile:
+pnpm exec tsx browser-worker/probe-sas-live.ts CPH JFK 2026-10-05 2
+```
+
+Actual local PointSnap searches verified CPH–ARN 20 itineraries / 74 fares and CPH–JFK 7 / 14 for two adults. Empty-response semantics, broader route/party coverage, technical stops, exact cash comparisons, refund rules and hosted qualification remain open. An unverified empty or incomplete response is an explicit source error.

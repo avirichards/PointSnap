@@ -75,14 +75,15 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
       !browserIds.includes(id) &&
       commercial.includes(id),
   );
-  // Southwest's points-plus-cash search is normally short. Start it before
-  // longer browser collectors so its deadline isn't consumed in their queue.
+  // Southwest and SAS searches are normally short. Start them before
+  // longer browser collectors so their deadlines aren't consumed in their queue.
   // Every requested program is still searched; this changes dispatch order only.
   const singles = ids
     .filter((id) => !batchIds.includes(id))
     .sort(
       (a, b) =>
-        Number(b === "WN_RAPID_REWARDS") - Number(a === "WN_RAPID_REWARDS"),
+        Number(["WN_RAPID_REWARDS", "SK_EUROBONUS"].includes(b)) -
+        Number(["WN_RAPID_REWARDS", "SK_EUROBONUS"].includes(a)),
     );
   let index = 0;
   const report = (id: string, error: unknown) =>
@@ -121,15 +122,17 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
         let rows: AwardResult[];
         if (browserIds.includes(id)) {
           source =
-            id === "WN_RAPID_REWARDS"
-              ? "Southwest Rapid Rewards · airline browser"
-              : id === "EY_GUEST"
-                ? "Etihad Guest · airline browser"
-                : id === "G3_GOL_SMILES"
-                  ? "Smiles · airline browser"
-                  : id === "DL_SKYMILES"
-                    ? "Delta · airline browser"
-                    : "American AAdvantage · direct airline";
+            id === "SK_EUROBONUS"
+              ? "SAS EuroBonus · airline browser"
+              : id === "WN_RAPID_REWARDS"
+                ? "Southwest Rapid Rewards · airline browser"
+                : id === "EY_GUEST"
+                  ? "Etihad Guest · airline browser"
+                  : id === "G3_GOL_SMILES"
+                    ? "Smiles · airline browser"
+                    : id === "DL_SKYMILES"
+                      ? "Delta · airline browser"
+                      : "American AAdvantage · direct airline";
           rows = await browserSearch(ctx.query, ctx.signal, id, (notice) => {
             sourceNotice = notice;
           });

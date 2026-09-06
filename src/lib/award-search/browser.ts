@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseAmerican } from "./american";
 import { parseEtihad } from "./etihad";
+import { parseSas } from "./sas";
 import { parseSouthwest } from "./southwest";
 import { parseDelta } from "./delta";
 import { parseSmiles, smilesObservationCounts } from "./smiles";
@@ -39,6 +40,7 @@ function configuration() {
 export function browserPrograms(): string[] {
   if (!configuration()) return [];
   return [
+    ...(process.env.POINTSNAP_BROWSER_SAS === "1" ? ["SK_EUROBONUS"] : []),
     ...(process.env.POINTSNAP_BROWSER_AMERICAN === "1"
       ? ["AA_AADVANTAGE"]
       : []),
@@ -57,6 +59,7 @@ const envelope = z.object({
     "G3_GOL_SMILES",
     "EY_GUEST",
     "WN_RAPID_REWARDS",
+    "SK_EUROBONUS",
   ]),
   query: z.object({
     origin: z.string(),
@@ -78,15 +81,17 @@ export async function browserSearch(
   onNotice?: (notice: string) => void,
 ) {
   const name =
-    programId === "WN_RAPID_REWARDS"
-      ? "Southwest"
-      : programId === "EY_GUEST"
-        ? "Etihad"
-        : programId === "G3_GOL_SMILES"
-          ? "Smiles"
-          : programId === "DL_SKYMILES"
-            ? "Delta"
-            : "American";
+    programId === "SK_EUROBONUS"
+      ? "SAS"
+      : programId === "WN_RAPID_REWARDS"
+        ? "Southwest"
+        : programId === "EY_GUEST"
+          ? "Etihad"
+          : programId === "G3_GOL_SMILES"
+            ? "Smiles"
+            : programId === "DL_SKYMILES"
+              ? "Delta"
+              : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -96,7 +101,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -156,15 +161,17 @@ export async function browserSearch(
       `${name}'s browser response is not a fresh observation.`,
     );
   const rows = (
-    programId === "WN_RAPID_REWARDS"
-      ? parseSouthwest
-      : programId === "EY_GUEST"
-        ? parseEtihad
-        : programId === "G3_GOL_SMILES"
-          ? parseSmiles
-          : programId === "DL_SKYMILES"
-            ? parseDelta
-            : parseAmerican
+    programId === "SK_EUROBONUS"
+      ? parseSas
+      : programId === "WN_RAPID_REWARDS"
+        ? parseSouthwest
+        : programId === "EY_GUEST"
+          ? parseEtihad
+          : programId === "G3_GOL_SMILES"
+            ? parseSmiles
+            : programId === "DL_SKYMILES"
+              ? parseDelta
+              : parseAmerican
   )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||

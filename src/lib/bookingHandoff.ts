@@ -95,11 +95,23 @@ export function southwestBookingUrl(
   return `https://www.southwest.com/air/booking/select-depart.html?${params}`;
 }
 
+export function sasBookingUrl(q: SearchQuery) {
+  const params = new URLSearchParams({
+    search: `OW_${q.origin}-${q.dest}-${q.departDate.replaceAll("-", "")}_a${q.pax}c0i0y0`,
+    view: "upsell",
+    bookingFlow: "points",
+    sortBy: "rec",
+    filterBy: "all",
+  });
+  return `https://www.flysas.com/en/book/flights/?${params}`;
+}
+
 export function bookingUrl(program: string, q: SearchQuery) {
   const base = BOOKING_SITES[program] ?? "https://www.alaskaair.com/";
   if (!q.origin || !q.dest || !q.departDate) return new URL(base).origin;
   if (program === "EY_GUEST") return etihadBookingUrl(q);
   if (program === "WN_RAPID_REWARDS") return southwestBookingUrl(q);
+  if (program === "SK_EUROBONUS") return sasBookingUrl(q);
   if (program === "AS_MILEAGEPLAN")
     return `${base}?${new URLSearchParams({ O: q.origin, D: q.dest, OD: q.departDate, A: String(q.pax), C: "0", L: "0", RT: "false", ShoppingMethod: "onlineaward", awardType: "MilesOnly" })}`;
   if (program === "B6_TRUEBLUE")

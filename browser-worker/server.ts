@@ -12,6 +12,7 @@ import { BrowserSearchError, type AmericanBrowserResult } from "./american";
 import type { EtihadBrowserResult } from "./etihad";
 import type { DeltaBrowserResult } from "./delta";
 import type { SmilesBrowserResult } from "./smiles";
+import type { SasBrowserResult } from "./sas";
 import type { SouthwestBrowserResult } from "./southwest";
 
 type SearchRunner = {
@@ -23,6 +24,7 @@ type SearchRunner = {
     | DeltaBrowserResult
     | SmilesBrowserResult
     | EtihadBrowserResult
+    | SasBrowserResult
     | SouthwestBrowserResult
   >;
   close(): Promise<void>;
@@ -36,6 +38,7 @@ type WorkerOptions = {
   smilesRunner?: SearchRunner;
   etihadRunner?: SearchRunner;
   southwestRunner?: SearchRunner;
+  sasRunner?: SearchRunner;
 };
 
 async function readQuery(req: IncomingMessage) {
@@ -138,23 +141,26 @@ export function createBrowserWorker(
           ...(options.deltaRunner ? ["DL_SKYMILES"] : []),
           ...(options.smilesRunner ? ["G3_GOL_SMILES"] : []),
           ...(options.etihadRunner ? ["EY_GUEST"] : []),
+          ...(options.sasRunner ? ["SK_EUROBONUS"] : []),
           ...(options.southwestRunner ? ["WN_RAPID_REWARDS"] : []),
         ],
       });
       return;
     }
     const selectedRunner =
-      req.url === "/v1/search/southwest"
-        ? options.southwestRunner
-        : req.url === "/v1/search/etihad"
-          ? options.etihadRunner
-          : req.url === "/v1/search/american"
-            ? runner
-            : req.url === "/v1/search/delta"
-              ? options.deltaRunner
-              : req.url === "/v1/search/smiles"
-                ? options.smilesRunner
-                : undefined;
+      req.url === "/v1/search/sas"
+        ? options.sasRunner
+        : req.url === "/v1/search/southwest"
+          ? options.southwestRunner
+          : req.url === "/v1/search/etihad"
+            ? options.etihadRunner
+            : req.url === "/v1/search/american"
+              ? runner
+              : req.url === "/v1/search/delta"
+                ? options.deltaRunner
+                : req.url === "/v1/search/smiles"
+                  ? options.smilesRunner
+                  : undefined;
     if (req.method !== "POST" || !selectedRunner) {
       reply(res, 404, { message: "Unknown browser search." });
       return;
@@ -242,15 +248,17 @@ export function createBrowserWorker(
         elapsedMs: Date.now() - started,
         result: "error",
         programId:
-          req.url === "/v1/search/southwest"
-            ? "WN_RAPID_REWARDS"
-            : req.url === "/v1/search/etihad"
-              ? "EY_GUEST"
-              : req.url === "/v1/search/smiles"
-                ? "G3_GOL_SMILES"
-                : req.url === "/v1/search/delta"
-                  ? "DL_SKYMILES"
-                  : "AA_AADVANTAGE",
+          req.url === "/v1/search/sas"
+            ? "SK_EUROBONUS"
+            : req.url === "/v1/search/southwest"
+              ? "WN_RAPID_REWARDS"
+              : req.url === "/v1/search/etihad"
+                ? "EY_GUEST"
+                : req.url === "/v1/search/smiles"
+                  ? "G3_GOL_SMILES"
+                  : req.url === "/v1/search/delta"
+                    ? "DL_SKYMILES"
+                    : "AA_AADVANTAGE",
         status,
         stage,
         message,
@@ -276,6 +284,7 @@ export function createBrowserWorker(
       await options.smilesRunner?.close();
       await options.etihadRunner?.close();
       await options.southwestRunner?.close();
+      await options.sasRunner?.close();
       server.closeAllConnections();
       await new Promise<void>((done) => server.close(() => done()));
     },

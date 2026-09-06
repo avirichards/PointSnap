@@ -215,7 +215,7 @@ export const PROGRAMS: readonly ProgramCatalogEntry[] = [
     iata: "SK",
     name: "SAS EuroBonus",
     country: "se",
-    authRequired: "required",
+    authRequired: "optional",
   },
   {
     id: "AY_FINNAIR_PLUS",
