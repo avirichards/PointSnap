@@ -1,6 +1,6 @@
 # PointSnap airline browser service
 
-PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American, Etihad and Southwest reuse separate dedicated app-owned anonymous Chrome profiles. No traveler login, personal browser profile, copied cookies or data subscription is used.
+PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American, Etihad and Southwest reuse separate dedicated app-owned anonymous Chrome profiles. Customers do not connect their airline accounts. United’s optional native source uses a separately authorized operator account in its own app-owned profile; the other described sources remain anonymous. No personal browser profile, imported cookies or data subscription is used.
 
 **Delta has verified local live responses.** LAX–JFK October 5: all 46 itineraries on 3 pages, 167 bookable fares for one adult and 166 for two. JFK–LHR:17 itineraries/41 fares, including offered Air France and KLM awards priced in SkyMiles. Delta's public brand catalog supplies partner cabin definitions. These observations establish the tested scope, not every route, runtime or future search.
 
@@ -227,3 +227,11 @@ Qantas remains an enabled experimental native adapter with documented successful
 The fresh LAX–AUS two-adult baseline returned 52 / 90; DFW all/premium searches exposed 26 additional physical itineraries with every displayed fare price reconciled. The full expansion later reached Challenge Validation at SEA, so it has not passed the PointSnap API/frontend gate. Do not repeat that unchanged experiment or infer that a login or different pacing resolves it.
 
 After a distinct access hypothesis is established, the explicit diagnostic is `node --import tsx browser-worker/probe-american-connections.ts LAX AUS 2026-10-05 2`. Stop the idle service and confirm its browser has closed before running against the same fixed profile. The diagnostic saves per-scope counts before any later failure; optional `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` retains compact public fare responses. Its 300-second deadline is a bounded experiment, not the ordinary API timeout. Do not run it while the worker owns the American profile.
+
+## United MileagePlus member pilot
+
+Set `POINTSNAP_BROWSER_UNITED=1` in both the worker and Next.js environments to enable the native route `/v1/search/united`. The first query opens the dedicated ordinary Chrome profile. If United requires login, the source returns HTTP 503 with an operator-session message and leaves that normal sign-in tab open for setup. Sign in only through the official page; never put credentials or verification codes into source, fixtures or request parameters. The worker serializes searches and reuses its own tab. It does not automatically store or recover passwords.
+
+The collector clears saved traveler selections, sets the requested generic party, merges every native inventory batch, expands all flights and reconciles both cabin views. Account IDs and shopping/session references are removed by an allowlist before leaving the collector. All quotes retain explicit account-eligibility labels. Neither a crossed-out promotional comparison nor a seat-inventory bucket is treated as a public fare or exact award-seat count.
+
+Verified local samples: 40 LAX–AUS itineraries / 89 fares for one adult on October 7; 69 EWR–LHR / 175 fares for two. Three short browser restarts required password sign-in but not another code on the remembered device. This is initial connection evidence, not unattended recovery, permanent verification retention or hosted qualification. Broader routes, new cabin/technical-stop shapes and verified empty searches remain open. Unverified or mismatched responses fail explicitly.

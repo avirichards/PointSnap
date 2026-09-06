@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
+import { parseUnited, unitedPayloadSchema } from "./united";
 import { parseAmerican } from "./american";
 import { parseEtihad } from "./etihad";
 import { parseSas } from "./sas";
@@ -42,6 +43,7 @@ function configuration() {
 export function browserPrograms(): string[] {
   if (!configuration()) return [];
   return [
+    ...(process.env.POINTSNAP_BROWSER_UNITED === "1" ? ["UA_MP"] : []),
     ...(process.env.POINTSNAP_BROWSER_QANTAS === "1" ? ["QF_FF"] : []),
     ...(process.env.POINTSNAP_BROWSER_COPA === "1" ? ["CM_CONNECTMILES"] : []),
     ...(process.env.POINTSNAP_BROWSER_SAS === "1" ? ["SK_EUROBONUS"] : []),
@@ -58,6 +60,7 @@ export function browserPrograms(): string[] {
 }
 const envelope = z.object({
   programId: z.enum([
+    "UA_MP",
     "AA_AADVANTAGE",
     "DL_SKYMILES",
     "G3_GOL_SMILES",
@@ -87,21 +90,23 @@ export async function browserSearch(
   onNotice?: (notice: string) => void,
 ) {
   const name =
-    programId === "QF_FF"
-      ? "Qantas"
-      : programId === "CM_CONNECTMILES"
-        ? "Copa"
-        : programId === "SK_EUROBONUS"
-          ? "SAS"
-          : programId === "WN_RAPID_REWARDS"
-            ? "Southwest"
-            : programId === "EY_GUEST"
-              ? "Etihad"
-              : programId === "G3_GOL_SMILES"
-                ? "Smiles"
-                : programId === "DL_SKYMILES"
-                  ? "Delta"
-                  : "American";
+    programId === "UA_MP"
+      ? "United"
+      : programId === "QF_FF"
+        ? "Qantas"
+        : programId === "CM_CONNECTMILES"
+          ? "Copa"
+          : programId === "SK_EUROBONUS"
+            ? "SAS"
+            : programId === "WN_RAPID_REWARDS"
+              ? "Southwest"
+              : programId === "EY_GUEST"
+                ? "Etihad"
+                : programId === "G3_GOL_SMILES"
+                  ? "Smiles"
+                  : programId === "DL_SKYMILES"
+                    ? "Delta"
+                    : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -111,7 +116,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "QF_FF" ? "qantas" : programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "UA_MP" ? "united" : programId === "QF_FF" ? "qantas" : programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -130,7 +135,8 @@ export async function browserSearch(
         signal: AbortSignal.any([
           signal,
           AbortSignal.timeout(
-            programId === "G3_GOL_SMILES" ||
+            programId === "UA_MP" ||
+              programId === "G3_GOL_SMILES" ||
               programId === "CM_CONNECTMILES" ||
               programId === "QF_FF"
               ? 185000
@@ -177,21 +183,23 @@ export async function browserSearch(
       `${name}'s browser response is not a fresh observation.`,
     );
   const rows = (
-    programId === "QF_FF"
-      ? parseQantasNative
-      : programId === "CM_CONNECTMILES"
-        ? parseCopa
-        : programId === "SK_EUROBONUS"
-          ? parseSas
-          : programId === "WN_RAPID_REWARDS"
-            ? parseSouthwest
-            : programId === "EY_GUEST"
-              ? parseEtihad
-              : programId === "G3_GOL_SMILES"
-                ? parseSmiles
-                : programId === "DL_SKYMILES"
-                  ? parseDelta
-                  : parseAmerican
+    programId === "UA_MP"
+      ? parseUnited
+      : programId === "QF_FF"
+        ? parseQantasNative
+        : programId === "CM_CONNECTMILES"
+          ? parseCopa
+          : programId === "SK_EUROBONUS"
+            ? parseSas
+            : programId === "WN_RAPID_REWARDS"
+              ? parseSouthwest
+              : programId === "EY_GUEST"
+                ? parseEtihad
+                : programId === "G3_GOL_SMILES"
+                  ? parseSmiles
+                  : programId === "DL_SKYMILES"
+                    ? parseDelta
+                    : parseAmerican
   )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||
@@ -257,6 +265,15 @@ export async function browserSearch(
         (otherAirportItineraries
           ? `The airline also returned ${otherAirportItineraries} itineraries for nearby airports; only ${q.origin}–${q.dest} flights are shown.`
           : ""),
+    );
+  }
+  if (programId === "UA_MP") {
+    const p = unitedPayloadSchema.parse(data.payload);
+    onNotice?.(
+      "MileagePlus prices were observed through an authorized member account and may depend on elite status. Confirm eligibility and the final price with United. " +
+        (p.responses.some((r) => r.data.Warnings?.length)
+          ? "The airline returned all displayed flights but also reported an upstream shopping warning; broader inventory completeness is unverified."
+          : "All displayed flights and both cabin views were reconciled."),
     );
   }
   return rows;

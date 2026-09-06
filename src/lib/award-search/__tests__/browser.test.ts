@@ -4,6 +4,7 @@ import { americanFixture } from "./fixtures/american";
 import etihadFixture from "./fixtures/etihad.json";
 import sasFixture from "./fixtures/sas-arn.json";
 import qantasFixture from "./fixtures/qantas-native-domestic-two.json";
+import unitedFixture from "../fixtures/united-lax-aus.json";
 import { parseQantasNative } from "../qantas-native";
 import copaFixture from "./fixtures/copa-lax-two.json";
 import southwestFixture from "./fixtures/southwest-den.json";
@@ -38,6 +39,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_SAS", "0");
   vi.stubEnv("POINTSNAP_BROWSER_COPA", "0");
   vi.stubEnv("POINTSNAP_BROWSER_QANTAS", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_UNITED", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -45,6 +47,46 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches native United inventory with visible account eligibility and complete distinct fare counts", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_UNITED", "1");
+    expect(browserPrograms()).toEqual(["UA_MP"]);
+    const query = { ...unitedFixture.query, minCabin: "Y" as const };
+    const body = {
+      ...response(),
+      programId: "UA_MP",
+      query,
+      payload: unitedFixture,
+      itineraryCount: 38,
+      fareCount: 100,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const notice = vi.fn();
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "UA_MP",
+      notice,
+    );
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/united",
+    );
+    expect(rows).toHaveLength(38);
+    expect(rows.flatMap((r) => r.fares!)).toHaveLength(100);
+    expect(
+      rows.every((r) =>
+        r.fares!.every((p) => p.eligibility?.type === "account"),
+      ),
+    ).toBe(true);
+    expect(notice).toHaveBeenCalledWith(
+      expect.stringContaining("may depend on elite status"),
+    );
+    fetch.mockResolvedValueOnce(Response.json({ ...body, fareCount: 76 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "UA_MP"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+  });
   it("dispatches Qantas's native quotes and reconciles cabin-filtered fare counts", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_QANTAS", "1");
@@ -99,6 +141,7 @@ describe("browser search bridge", () => {
       browserSearch(query, new AbortController().signal, "QF_FF"),
     ).rejects.toThrow(/incomplete flight or fare counts/);
     vi.stubEnv("POINTSNAP_BROWSER_QANTAS", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_UNITED", "0");
     await expect(
       browserSearch(query, new AbortController().signal, "QF_FF"),
     ).rejects.toThrow(/not enabled/);
@@ -150,6 +193,7 @@ describe("browser search bridge", () => {
     ).rejects.toThrow(/incomplete flight or fare counts/);
     vi.stubEnv("POINTSNAP_BROWSER_COPA", "0");
     vi.stubEnv("POINTSNAP_BROWSER_QANTAS", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_UNITED", "0");
     await expect(
       browserSearch(query, new AbortController().signal, "CM_CONNECTMILES"),
     ).rejects.toThrow(/not enabled/);

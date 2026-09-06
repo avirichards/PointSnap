@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  UA_MP: {
+    inventory: "flights",
+    label: "United MileagePlus · account-observed awards",
+    detail:
+      "Native MileagePlus searches through an authorized operator account. Every displayed itinerary and both mixed-cabin views are checked against the returned inventory. Prices and availability may depend on the account’s elite status; confirm your eligibility with United before transferring points. Customers do not connect their airline account to PointSnap. Operator verification and broader route coverage remain under qualification.",
+  },
   CM_CONNECTMILES: {
     inventory: "flights",
     label: "Copa ConnectMiles & offered partner awards",

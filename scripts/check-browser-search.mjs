@@ -3,6 +3,7 @@ const base = process.env.POINTSNAP_TEST_URL || "http://127.0.0.1:3000";
 const program = process.env.POINTSNAP_TEST_PROGRAM || "AA_AADVANTAGE";
 if (
   ![
+    "UA_MP",
     "AA_AADVANTAGE",
     "DL_SKYMILES",
     "G3_GOL_SMILES",
@@ -31,7 +32,11 @@ const query = new URLSearchParams({
 const started = Date.now();
 try {
   const response = await fetch(`${base}/api/search?${query}`, {
-    signal: AbortSignal.timeout(program === "G3_GOL_SMILES" ? 205000 : 115000),
+    signal: AbortSignal.timeout(
+      ["G3_GOL_SMILES", "UA_MP", "QF_FF", "CM_CONNECTMILES"].includes(program)
+        ? 205000
+        : 115000,
+    ),
   });
   if (!response.ok)
     throw new Error(`PointSnap returned HTTP ${response.status}`);

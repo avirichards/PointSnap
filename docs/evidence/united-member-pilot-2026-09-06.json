@@ -1,0 +1,185 @@
+{
+  "checkedAt": "2026-09-06T20:37:39.931844+00:00",
+  "program": "UA_MP",
+  "method": "User-authorized sign-in through United’s normal public page in its dedicated app-owned ordinary Chrome profile. Credential commands use a non-echoing input channel and are not written into source or evidence files.",
+  "steps": [
+    {
+      "stage": "identifier",
+      "result": "Advanced to password form."
+    },
+    {
+      "stage": "password",
+      "result": "Advanced to six separate verification-code inputs and a Continue button; no invalid-credential error observed."
+    },
+    {
+      "stage": "verification",
+      "result": "User-provided verification accepted through normal form; no additional sign-in needed for second query."
+    }
+  ],
+  "currentState": "local_native_integration_verified",
+  "verificationDigits": 6,
+  "ownerInputRequested": false,
+  "signedInConfirmed": true,
+  "nativeAwardInventoryObtained": true,
+  "authenticatedSearchQueries": 2,
+  "credentialsIncluded": false,
+  "codesIncluded": false,
+  "next": "Continue the remaining native airline connections. United broader routes, empty/technical-stop shapes, trip-prefilled handoff, public eligibility and unattended recovery remain open for subsequent passes.",
+  "validation": {
+    "nativePageVisuallyInspected": true,
+    "appIntegrationVerified": true,
+    "desktopWidth": 1440,
+    "mobileWidth": 390,
+    "partyTotalExample": {
+      "businessPointsPerPerson": 200000,
+      "businessPointsForTwo": 400000,
+      "taxPerPersonUSD": 5.6,
+      "taxForTwoUSD": 11.2
+    },
+    "operatorScopePreserved": true,
+    "savedTravelersDeselected": true,
+    "errors": [],
+    "horizontalOverflow": false,
+    "programComparisonVerified": true,
+    "mobileFareDetailsVerified": true,
+    "lightThemeVerified": true,
+    "progressApiStatus": 200,
+    "unitTests": 307,
+    "testFiles": 38,
+    "typecheck": "passed",
+    "focusedLint": "passed",
+    "optimizedNode22Build": "passed",
+    "progressFrontend": {
+      "actualProgressPageVerified": true,
+      "unitedState": "flight_feed",
+      "accountEligibilityDisclosed": true,
+      "recoveryLimitDisclosed": true,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "rememberDeviceSelected": true,
+  "sessionLongevityVerified": false,
+  "queries": [
+    {
+      "origin": "LAX",
+      "destination": "AUS",
+      "date": "2026-10-06",
+      "adults": 1,
+      "nativeResponseFlights": 38,
+      "nonstops": 2,
+      "example": {
+        "flight": "UA1625",
+        "economyMiles": 15000,
+        "economyFees": 5.6,
+        "currency": "USD"
+      },
+      "pageAllRowsReconciled": true,
+      "expandedPageRows": 38,
+      "distinctFares": 100,
+      "defaultDisplayedFares": 76,
+      "unmixedDisplayedFares": 76
+    },
+    {
+      "origin": "EWR",
+      "destination": "LHR",
+      "date": "2026-10-07",
+      "adults": 2,
+      "nativeBatches": [
+        6,
+        63
+      ],
+      "nativeResponseFlights": 69,
+      "expandedPageRows": 69,
+      "pageAllRowsReconciled": true,
+      "distinctFares": 175,
+      "defaultDisplayedFares": 175,
+      "unmixedDisplayedFares": 123,
+      "expandedFlightNumbersVerified": true
+    }
+  ],
+  "eligibility": {
+    "accountPricingObserved": true,
+    "eliteDiscountDisplayed": true,
+    "publicFareEligibilityVerified": false,
+    "note": "Observed prices belong to the authorized elite-member search. Do not treat crossed-out promotional comparisons as bookable public fares."
+  },
+  "sessionRecovery": {
+    "ordinaryChromeRestarts": 3,
+    "normalPasswordSignInsWithoutAnotherCode": 3,
+    "automaticCredentialRecoveryImplemented": false,
+    "persistentSignInAcrossRestart": false,
+    "longTermVerificationNotRequiredProven": false,
+    "note": "The remembered device avoided another code in these bounded tests. Passwords were supplied transiently through normal forms; PointSnap does not store or automatically recover them."
+  },
+  "applicationQueries": [
+    {
+      "at": "2026-09-06T20:21:21.045Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-07",
+        "pax": 1
+      },
+      "durationMs": 24018,
+      "coverage": [
+        {
+          "programId": "UA_MP",
+          "state": "success",
+          "source": "United MileagePlus · member airline browser",
+          "message": "MileagePlus prices were observed through an authorized member account and may depend on elite status. Confirm eligibility and the final price with United. The airline returned all displayed flights but also reported an upstream shopping warning; broader inventory completeness is unverified. Native MileagePlus searches through an authorized operator account. Every displayed itinerary and both mixed-cabin views are checked against the returned inventory. Prices and availability may depend on the account’s elite status; confirm your eligibility with United before transferring points. Customers do not connect their airline account to PointSnap. Operator verification and broader route coverage remain under qualification.",
+          "inventory": "flights"
+        }
+      ],
+      "complete": true,
+      "itineraries": 40,
+      "fares": 89,
+      "eligibilityRetained": true
+    },
+    {
+      "origin": "EWR",
+      "destination": "LHR",
+      "date": "2026-10-07",
+      "adults": 2,
+      "itineraries": 69,
+      "fares": 175,
+      "coverage": [
+        {
+          "programId": "UA_MP",
+          "state": "success",
+          "source": "United MileagePlus · member airline browser",
+          "message": "MileagePlus prices were observed through an authorized member account and may depend on elite status. Confirm eligibility and the final price with United. The airline returned all displayed flights but also reported an upstream shopping warning; broader inventory completeness is unverified. Native MileagePlus searches through an authorized operator account. Every displayed itinerary and both mixed-cabin views are checked against the returned inventory. Prices and availability may depend on the account’s elite status; confirm your eligibility with United before transferring points. Customers do not connect their airline account to PointSnap. Operator verification and broader route coverage remain under qualification.",
+          "inventory": "flights"
+        }
+      ],
+      "frontendInitiated": true
+    },
+    {
+      "origin": "LAX",
+      "destination": "AUS",
+      "date": "2026-10-07",
+      "adults": 1,
+      "programs": [
+        "UA_MP",
+        "B6_TRUEBLUE"
+      ],
+      "itineraries": 42,
+      "fares": 110,
+      "frontendInitiated": true,
+      "sameFlightComparison": {
+        "flight": "UA1496",
+        "groupedOnce": true,
+        "UA_MP": {
+          "points": 15000,
+          "cashUSD": 5.6,
+          "eligibility": "Elite account price"
+        },
+        "B6_TRUEBLUE": {
+          "points": 18000,
+          "cashUSD": 5.6,
+          "accountEligibilityLabel": false
+        }
+      }
+    }
+  ]
+}

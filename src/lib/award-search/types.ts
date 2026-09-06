@@ -30,6 +30,8 @@ export interface AwardPrice {
   seats: number | null;
   seatCountLabel?: string;
   bookingNotes?: string[];
+  /** Account-observed pricing must remain visibly conditional in every fare view. */
+  eligibility?: { type: "account"; label: string; description: string };
   mixedCabin: boolean;
   cashFare?: {
     amount: number;

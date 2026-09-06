@@ -136,21 +136,23 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
         let rows: AwardResult[];
         if (browserIds.includes(id)) {
           source =
-            id === "QF_FF"
-              ? "Qantas Frequent Flyer · airline browser"
-              : id === "CM_CONNECTMILES"
-                ? "Copa ConnectMiles · airline browser"
-                : id === "SK_EUROBONUS"
-                  ? "SAS EuroBonus · airline browser"
-                  : id === "WN_RAPID_REWARDS"
-                    ? "Southwest Rapid Rewards · airline browser"
-                    : id === "EY_GUEST"
-                      ? "Etihad Guest · airline browser"
-                      : id === "G3_GOL_SMILES"
-                        ? "Smiles · airline browser"
-                        : id === "DL_SKYMILES"
-                          ? "Delta · airline browser"
-                          : "American AAdvantage · direct airline";
+            id === "UA_MP"
+              ? "United MileagePlus · member airline browser"
+              : id === "QF_FF"
+                ? "Qantas Frequent Flyer · airline browser"
+                : id === "CM_CONNECTMILES"
+                  ? "Copa ConnectMiles · airline browser"
+                  : id === "SK_EUROBONUS"
+                    ? "SAS EuroBonus · airline browser"
+                    : id === "WN_RAPID_REWARDS"
+                      ? "Southwest Rapid Rewards · airline browser"
+                      : id === "EY_GUEST"
+                        ? "Etihad Guest · airline browser"
+                        : id === "G3_GOL_SMILES"
+                          ? "Smiles · airline browser"
+                          : id === "DL_SKYMILES"
+                            ? "Delta · airline browser"
+                            : "American AAdvantage · direct airline";
           rows = await browserSearch(ctx.query, ctx.signal, id, (notice) => {
             sourceNotice = notice;
           });

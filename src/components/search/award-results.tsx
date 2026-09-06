@@ -252,7 +252,15 @@ function Results({
             Cached · recheck
           </span>
         )}
-        {!!offer.price.bookingNotes?.length && (
+        {offer.price.eligibility && (
+          <span
+            className="text-[11px] mt-1 text-amber-700 dark:text-amber-300"
+            title={offer.price.eligibility.description}
+          >
+            {offer.price.eligibility.label}
+          </span>
+        )}
+        {!offer.price.eligibility && !!offer.price.bookingNotes?.length && (
           <span className="text-[11px] mt-1">Fare conditions</span>
         )}
         {offer.price.mixedCabin && (
@@ -300,6 +308,12 @@ function Results({
           )}
         </div>
       </div>
+      {matching.some((g) => g.offers.some((o) => o.price.eligibility)) && (
+        <p className="text-sm text-muted-foreground">
+          Member pricing is marked on each fare. Your account may receive a
+          different price.
+        </p>
+      )}
       <ResultFilterBar
         value={{ ...filters, feeCurrency: fx.currency }}
         onChange={(f) => {
@@ -738,6 +752,12 @@ function Results({
                               </p>
                             </div>
                           </div>
+                          {p.eligibility && (
+                            <p className="text-xs text-amber-700 dark:text-amber-300 mt-3">
+                              {p.eligibility.label} · confirm your eligibility
+                              with United
+                            </p>
+                          )}
                           <Button
                             className="mt-4 w-full"
                             variant="outline"
@@ -923,6 +943,11 @@ function Details({
               <span className="flex-1 text-sm capitalize">
                 {option.fareName ?? CABIN_LABEL[option.cabin]}
                 {option.mixedCabin ? " · mixed cabin" : ""}
+                {option.eligibility && (
+                  <span className="block text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    {option.eligibility.label}
+                  </span>
+                )}
               </span>
               <span className="text-sm text-right tabular-nums">
                 {points(option.points)} points
@@ -948,6 +973,12 @@ function Details({
           </p>
         </div>
       </div>
+      {price.eligibility && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+          <p className="font-medium">{price.eligibility.label}</p>
+          <p className="mt-1">{price.eligibility.description}</p>
+        </div>
+      )}
       {price.mixedCabin && (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           Mixed cabin: this journey uses different cabins. Check each segment
