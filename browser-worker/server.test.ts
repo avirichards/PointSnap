@@ -40,6 +40,42 @@ async function start(
 }
 
 describe("background browser request boundary", () => {
+  it("dispatches Delta only when its runner is explicitly configured", async () => {
+    const first = await start();
+    expect(
+      (
+        await fetch(first.url.replace("american", "delta"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify(q),
+        })
+      ).status,
+    ).toBe(404);
+    const delta = vi
+      .fn()
+      .mockResolvedValue({
+        programId: "DL_SKYMILES",
+        query: q,
+        complete: true,
+        observedAt: new Date().toISOString(),
+        payload: {},
+        itineraryCount: 0,
+        fareCount: 0,
+        stages: [],
+      });
+    const second = await start(undefined, {
+      deltaRunner: { search: delta, close: async () => {} },
+    });
+    const result = await fetch(second.url.replace("american", "delta"), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(q),
+    });
+    expect(result.status).toBe(200);
+    expect((await result.json()).programId).toBe("DL_SKYMILES");
+    expect(delta).toHaveBeenCalledOnce();
+    expect(second.search).not.toHaveBeenCalled();
+  });
   it("does not launch browsers for unauthenticated or invalid searches", async () => {
     const { url, search } = await start();
     expect(

@@ -1,73 +1,74 @@
-# American background-browser pilot
+# PointSnap airline browser service
 
-This is an experimental transport, disabled by default. PointSnap's server sends a route/date/party request to a separate browser process. That process uses American's ordinary public booking form and validates the complete native response. No traveler airline login is required by this implementation.
+PointSnap sends a route, date and passenger count to a separate authenticated browser service. Each request creates a fresh anonymous browser context and uses the airline's ordinary booking form. No traveler login, personal browser profile, copied cookies or data subscription is used.
 
-**A working parser and service are not a working airline connection.** Local Chromium and Chrome attempts receive booking-page denial. WebKit and Firefox successfully submit the form but reach verification before flight data. See [the evidence report](../docs/airline-access-status.md) for the current measured result; do not enable this as a production source until the intended runtime returns complete live responses reliably.
+**Delta has verified local live responses.** LAX–JFK October 5: all 46 itineraries on 3 pages, 167 bookable fares for one adult and 166 for two. JFK–LHR:17 itineraries/41 fares, including offered Air France and KLM awards priced in SkyMiles. Delta's public brand catalog supplies partner cabin definitions. These observations establish the tested scope, not every route, runtime or future search.
 
-## Local setup
+**American remains experimental.** Its ordinary browser shows native awards, but the dedicated worker's recorded local and hosted attempts reach denial or verification before inventory. Keep American disabled unless that runtime is separately verified. [Detailed evidence](../docs/airline-access-status.md).
 
-Use Node 22 and the repository's pinned pnpm/Playwright versions. Browser binaries are installed separately; they are not shipped with the Next.js application.
+## Setup
+
+Use Node 22 and the pinned pnpm/Playwright versions. Install the browser separately from Next.js:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm exec playwright install --no-shell chromium
+pnpm exec playwright install webkit
 ```
 
-Create an ignored `.env.browser.local` file with a newly generated random token of at least 32 characters. Set the same token in the Next server's `.env.local`. Never expose it through `NEXT_PUBLIC_*` or the browser client.
+On a supported Linux host, use `pnpm exec playwright install --with-deps webkit` to install system dependencies too.
 
-Worker settings:
+Create an ignored `.env.browser.local` containing a newly generated random token of at least 32 characters:
 
 ```dotenv
 POINTSNAP_BROWSER_WORKER_TOKEN="your-random-secret-at-least-32-characters"
+POINTSNAP_BROWSER_DELTA="1"
 POINTSNAP_BROWSER_HOST="127.0.0.1"
 POINTSNAP_BROWSER_PORT="3002"
-POINTSNAP_BROWSER_ENGINE="chromium"
-POINTSNAP_BROWSER_CHANNEL="chromium"
-POINTSNAP_BROWSER_HEADLESS="1"
-POINTSNAP_BROWSER_ENTRY="homepage"
 POINTSNAP_BROWSER_EVIDENCE_DIR="work/browser-worker/evidence"
 ```
+
+Run the worker:
 
 ```sh
 node --env-file=.env.browser.local --import tsx browser-worker/start.ts
 ```
 
-For an isolated PointSnap pilot, explicitly configure its server:
+Configure Next.js in `.env.local` and restart it:
 
 ```dotenv
-POINTSNAP_BROWSER_AMERICAN="1"
+POINTSNAP_BROWSER_DELTA="1"
+POINTSNAP_BROWSER_AMERICAN="0"
 POINTSNAP_BROWSER_WORKER_URL="http://127.0.0.1:3002"
 POINTSNAP_BROWSER_WORKER_TOKEN="the-same-random-secret"
 ```
 
-Restart the Next server after changing these settings. An optional `POINTSNAP_NEXT_DIST_DIR=work/browser-pilot-next` keeps a second local instance's build files separate. Outside loopback, the worker URL must use HTTPS and the service must run behind an authenticated private deployment. This repository does not provision or claim a verified hosted browser deployment.
+Never expose the token through `NEXT_PUBLIC_*`. Outside loopback, the worker URL must use HTTPS and the service should be private. Setting these variables alone does not install the runtime or establish hosted connectivity. Delta always uses WebKit in the current implementation.
 
-## Reproduce the live check
+## Live verification
 
-```sh
-POINTSNAP_TEST_URL=http://localhost:3000 pnpm test:browser-live LAX AUS 2026-10-05 1
-```
-
-This exercises PointSnap's real streaming API and exits unsuccessfully for a source failure even when the HTTP stream itself completed. It prints only the query, coverage, counts and elapsed time. It does not use recorded flight fixtures.
-
-The separate `browser-worker/probe.ts` diagnostic exercises the same browser driver directly. The optional GitHub workflow tests selected standard engines on hosted Linux. Each selected engine runs once in sequence; source failure is stored in its evidence JSON and is not a claim of connectivity merely because the diagnostic job uploaded its artifact.
+These commands perform new airline searches. They do not use recorded fixtures:
 
 ```sh
-pnpm exec playwright install webkit firefox
-pnpm exec tsx browser-worker/probe.ts webkit 2026-10-05
+POINTSNAP_TEST_PROGRAM=DL_SKYMILES pnpm test:browser-live LAX JFK 2026-10-05 2
+pnpm exec tsx browser-worker/probe-delta.ts 2026-10-05 JFK LHR 1
 ```
 
-`POINTSNAP_BROWSER_ENGINE` accepts `chromium`, `webkit` or `firefox`. `POINTSNAP_BROWSER_CHANNEL=chrome` uses an already installed standard Chrome only with the Chromium engine. `POINTSNAP_BROWSER_HEADLESS=0` opens the worker's own temporary browser visibly. `POINTSNAP_BROWSER_ENTRY=direct` tests the direct advanced-booking entry instead of the normal homepage link. `POINTSNAP_BROWSER_ENTRY=homepage-form` submits the homepage booking widget itself. These are explicit diagnostic choices, not an automatic retry loop after denial.
+The first exercises PointSnap's streaming API. A completed stream with a failed airline source still exits unsuccessfully. The second exercises the same Delta runner directly and writes counts, stages and an example fare to `work/browser-probes/`. The manual Delta GitHub workflow tests a fresh hosted Linux runtime; inspect the diagnostic result before claiming deployment success.
 
-## Request and correctness boundaries
+`POINTSNAP_SAVE_PUBLIC_FIXTURE=1` is an optional local diagnostic setting that also saves the sanitized guest flight payload for parser investigation. This is off in the application and hosted workflow. It excludes session/selection IDs and never substitutes its saved output for a new search.
 
-- The authenticated worker accepts only American airport/date/party queries, never arbitrary URLs or browser commands. It binds to loopback by default, limits request size and runs at most two searches with a bounded queue.
-- Each request creates and closes its own anonymous context. No personal browser profile, login cookies, challenge tokens, passwords or payment information are imported. Verification stops the search.
-- Cancellation, queue expiry and client disconnect close the request's context. Searches time out before PointSnap's outer streaming deadline.
-- Advanced-form airport selections are checked, nearby-airport expansion is disabled, and all cabins/airlines are requested. The homepage-widget diagnostic uses the native widget defaults; its full fare scope must be reconciled before promotion. The shared engine applies the user's cabin filter afterward.
-- The native parser checks the requested route, date, party totals, live metadata, every itinerary/segment/fare, pagination flags and counts. The PointSnap bridge independently revalidates the returned payload, timestamp, query and counts.
-- Flight fixtures exist only in tests. Browser failure, login/verification, empty availability and complete results remain distinct. Sanitized diagnostics omit page HTML, cookies and session-bearing URLs.
+## Correctness and lifecycle
 
-Before promoting this pilot, reconcile all native fares against the airline across multiple routes and party sizes, repeat after browser restart/idle periods, and prove the actual deployment runtime. This pilot currently falls short of those acceptance criteria.
+- The worker accepts only supported airline route/date/party queries, never arbitrary URLs or browser commands. Authentication, request-size limits, a bounded queue and a shared two-search concurrency limit apply.
+- Each request's context closes on success, failure, cancellation or deadline. Login or verification interrupts a search and remains a source error.
+- Delta requests miles, all available cabins, Basic fares included, no nonstop restriction and no nearby-airport expansion. The app applies the user's filters to the complete response afterward.
+- Every reported results page is required. Page numbers, total itineraries, duplicate flights, route, date and passenger count are validated. A temporarily hidden pagination button never counts as a finished search.
+- Exact formatted taxes are preserved; rounded UI taxes are not substituted. Local airport clocks remain local. Delta's arrival-day marker is not added to elapsed trip duration.
+- Available primary and secondary fare families, segment cabins, mixed cabins and operating flight numbers are retained. Unknown cabin definitions, promotional eligibility or malformed available fares fail explicitly instead of disappearing.
+- The app independently revalidates the returned query, observation time, program, complete payload and counts. Fixtures are used only for regression tests.
 
-The separate `probe-southwest.ts` diagnostic navigates the official points booker in a fresh browser and records the actual shopping-response status and visible fare count. Its WebKit and Firefox attempts returned shopping403; it does not create an enabled Southwest source.
+## Remaining diagnostics
+
+`POINTSNAP_BROWSER_AMERICAN=1` enables the separate American pilot. Its engine can be `chromium`, `webkit` or `firefox`; `POINTSNAP_BROWSER_CHANNEL=chrome` selects installed standard Chrome for Chromium. `POINTSNAP_BROWSER_HEADLESS=0` opens its own temporary browser visibly. Entry modes are `homepage`, `direct` and `homepage-form`. These choices are explicit experiments, not an automatic retry loop after denial.
+
+`probe-southwest.ts` tests the official points booker. Its recorded WebKit/Firefox attempts returned shopping HTTP 403; no Southwest source is enabled.

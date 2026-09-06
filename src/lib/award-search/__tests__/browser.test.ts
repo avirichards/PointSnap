@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { browserPrograms, browserSearch } from "../browser";
 import { americanFixture } from "./fixtures/american";
+import deltaFixture from "./fixtures/delta.json";
 const q = {
   origin: "LAX",
   dest: "AUS",
@@ -21,6 +22,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_WORKER_URL", "http://127.0.0.1:3002");
   vi.stubEnv("POINTSNAP_BROWSER_WORKER_TOKEN", "local-test-token-".repeat(3));
   vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "1");
+  vi.stubEnv("POINTSNAP_BROWSER_DELTA", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -28,6 +30,38 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches Delta independently, validates its program identity and retains every page", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_DELTA", "1");
+    expect(browserPrograms()).toEqual(["DL_SKYMILES"]);
+    const query = { ...deltaFixture.query, minCabin: "Y" as const };
+    const body = {
+      ...response(),
+      programId: "DL_SKYMILES",
+      query,
+      payload: deltaFixture,
+      itineraryCount: 46,
+      fareCount: 167,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "DL_SKYMILES",
+    );
+    expect(rows).toHaveLength(46);
+    expect(rows.reduce((n, r) => n + r.fares!.length, 0)).toBe(167);
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/delta",
+    );
+    fetch.mockResolvedValue(
+      Response.json({ ...body, programId: "AA_AADVANTAGE" }),
+    );
+    await expect(
+      browserSearch(query, new AbortController().signal, "DL_SKYMILES"),
+    ).rejects.toThrow("different search");
+  });
   it("requires explicit activation and a secure configured worker", () => {
     expect(browserPrograms()).toEqual(["AA_AADVANTAGE"]);
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");

@@ -1,5 +1,8 @@
 /** Explicit live integration probe. Does not run as part of the unit tests. */
 const base = process.env.POINTSNAP_TEST_URL || "http://127.0.0.1:3000";
+const program = process.env.POINTSNAP_TEST_PROGRAM || "AA_AADVANTAGE";
+if (!["AA_AADVANTAGE", "DL_SKYMILES"].includes(program))
+  throw new Error("Unsupported browser program.");
 const [
   origin = "LAX",
   dest = "AUS",
@@ -7,7 +10,7 @@ const [
   pax = "1",
 ] = process.argv.slice(2);
 const query = new URLSearchParams({
-  programs: "AA_AADVANTAGE",
+  programs: program,
   origin,
   dest,
   departDate,
@@ -32,7 +35,7 @@ try {
   );
   const complete = events.some((event) => event.type === "complete");
   const result = {
-    program: "AA_AADVANTAGE",
+    program,
     origin,
     dest,
     departDate,
@@ -50,7 +53,7 @@ try {
 } catch (error) {
   console.error(
     JSON.stringify({
-      program: "AA_AADVANTAGE",
+      program,
       durationMs: Date.now() - started,
       error: error.message,
     }),

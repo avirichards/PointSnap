@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  DL_SKYMILES: {
+    inventory: "flights",
+    label: "Delta SkyMiles award flights",
+    detail:
+      "A fresh anonymous Delta browser search, including every reported results page and available fare family. Personal cardholder discounts are not included. Requires the browser service; runtime or airline interruptions remain source errors.",
+  },
   QF_FF: {
     inventory: "flights",
     label: "Qantas & offered partner rewards · cached",

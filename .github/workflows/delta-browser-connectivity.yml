@@ -1,0 +1,34 @@
+name: Delta browser connectivity (explicit diagnostic)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  delta-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps webkit
+      - name: Fresh anonymous Delta search and complete pagination
+        run: pnpm exec tsx browser-worker/probe-delta.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: delta-browser-connectivity
+          path: work/browser-probes/delta-*.json
+          if-no-files-found: error
+          retention-days: 7

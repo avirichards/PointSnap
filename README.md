@@ -16,6 +16,8 @@ pnpm dev
 
 Open http://localhost:3000. All environment values may stay blank to use the eight direct sources: six live flight feeds, Qantas cached flight inventory and Virgin Atlantic's daily calendar. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
 
+An optional [browser service](browser-worker/README.md) now adds native Delta SkyMiles searches without a traveler login or data subscription. Local verification returned all 46 LAX–JFK itineraries across 3 pages, 167 available fares for one adult and 166 for two. JFK–LHR returned 17 itineraries/41 fares, including offered Air France/KLM flights booked with SkyMiles. The service requires separate browser binaries and runtime configuration; it is not bundled into a serverless deployment. Native American remains unfinished.
+
 ## Live coverage
 
 | Source | Returned data | Access |

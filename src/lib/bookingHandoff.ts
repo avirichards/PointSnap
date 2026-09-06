@@ -9,7 +9,7 @@ export const BOOKING_SITES: Record<string, string> = {
   BA_AVIOS: "https://www.britishairways.com/",
   AV_LIFEMILES: "https://www.lifemiles.com/",
   CX_CATHAY: "https://www.cathaypacific.com/",
-  DL_SKYMILES: "https://www.delta.com/flight-search/book-a-flight",
+  DL_SKYMILES: "https://www.delta.com/flightsearch/book-a-flight",
   LH_MILES_MORE: "https://www.miles-and-more.com/",
   NH_ANA: "https://www.ana.co.jp/en/us/",
   TK_MILES_SMILES: "https://www.turkishairlines.com/",

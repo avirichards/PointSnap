@@ -49,6 +49,25 @@ async function run(ids: string[]) {
   return events;
 }
 describe("multi-program orchestration", () => {
+  it("routes an enabled Delta search to its own browser adapter", async () => {
+    mock.browserIds.mockReturnValue(["DL_SKYMILES"]);
+    mock.browser.mockResolvedValue([]);
+    const events = await run(["DL_SKYMILES"]);
+    expect(mock.browser).toHaveBeenCalledWith(
+      q,
+      expect.any(AbortSignal),
+      "DL_SKYMILES",
+    );
+    expect(events.at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: {
+        programId: "DL_SKYMILES",
+        state: "empty",
+        source: "Delta · airline browser",
+      },
+    });
+    expect(mock.direct).not.toHaveBeenCalled();
+  });
   it("distinguishes a failed source from an empty result and an unconnected source", async () => {
     mock.direct.mockRejectedValueOnce(new ProviderError("Temporarily blocked"));
     const events = await run(["AS_MILEAGEPLAN", "B6_TRUEBLUE", "UA_MP"]);
@@ -105,7 +124,11 @@ describe("multi-program orchestration", () => {
     mock.browser.mockResolvedValue([]);
     expect(providerCoverage()).toContain("AA_AADVANTAGE");
     const events = await run(["AA_AADVANTAGE"]);
-    expect(mock.browser).toHaveBeenCalledWith(q, expect.any(AbortSignal));
+    expect(mock.browser).toHaveBeenCalledWith(
+      q,
+      expect.any(AbortSignal),
+      "AA_AADVANTAGE",
+    );
     expect(mock.direct).not.toHaveBeenCalled();
     expect(events.at(-1)).toMatchObject({
       type: "coverage",

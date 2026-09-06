@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseAmerican } from "./american";
+import { parseDelta } from "./delta";
 import { ProviderError } from "./types";
 
 function configuration() {
@@ -33,12 +34,16 @@ function configuration() {
 
 /** Explicit opt-in for the experimental native browser transport. */
 export function browserPrograms(): string[] {
-  return process.env.POINTSNAP_BROWSER_AMERICAN === "1" && configuration()
-    ? ["AA_AADVANTAGE"]
-    : [];
+  if (!configuration()) return [];
+  return [
+    ...(process.env.POINTSNAP_BROWSER_AMERICAN === "1"
+      ? ["AA_AADVANTAGE"]
+      : []),
+    ...(process.env.POINTSNAP_BROWSER_DELTA === "1" ? ["DL_SKYMILES"] : []),
+  ];
 }
 const envelope = z.object({
-  programId: z.literal("AA_AADVANTAGE"),
+  programId: z.enum(["AA_AADVANTAGE", "DL_SKYMILES"]),
   query: z.object({
     origin: z.string(),
     dest: z.string(),
@@ -52,35 +57,46 @@ const envelope = z.object({
   payload: z.unknown(),
 });
 
-export async function browserSearch(q: SearchQuery, signal: AbortSignal) {
+export async function browserSearch(
+  q: SearchQuery,
+  signal: AbortSignal,
+  programId = "AA_AADVANTAGE",
+) {
+  const name = programId === "DL_SKYMILES" ? "Delta" : "American";
   const config = configuration();
-  if (!config || !browserPrograms().includes("AA_AADVANTAGE"))
-    throw new ProviderError("American's browser connection is not enabled.");
+  if (!config || !browserPrograms().includes(programId))
+    throw new ProviderError(`${name}'s browser connection is not enabled.`);
   signal.throwIfAborted();
   const started = Date.now();
   let response: Response;
   try {
-    response = await fetch(new URL("/v1/search/american", config.url), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${config.token}`,
+    response = await fetch(
+      new URL(
+        `/v1/search/${programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        config.url,
+      ),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config.token}`,
+        },
+        body: JSON.stringify({
+          origin: q.origin,
+          dest: q.dest,
+          departDate: q.departDate,
+          pax: q.pax,
+          minCabin: q.minCabin,
+        }),
+        signal: AbortSignal.any([signal, AbortSignal.timeout(100000)]),
+        cache: "no-store",
+        redirect: "error",
       },
-      body: JSON.stringify({
-        origin: q.origin,
-        dest: q.dest,
-        departDate: q.departDate,
-        pax: q.pax,
-        minCabin: q.minCabin,
-      }),
-      signal: AbortSignal.any([signal, AbortSignal.timeout(100000)]),
-      cache: "no-store",
-      redirect: "error",
-    });
+    );
   } catch {
     signal.throwIfAborted();
     throw new ProviderError(
-      "American's browser service could not be reached or timed out.",
+      `${name}'s browser service could not be reached or timed out.`,
     );
   }
   if (!response.ok) {
@@ -88,36 +104,41 @@ export async function browserSearch(q: SearchQuery, signal: AbortSignal) {
     const message =
       typeof issue?.message === "string" && issue.message.length <= 250
         ? issue.message
-        : "American's browser search could not complete.";
+        : `${name}'s browser search could not complete.`;
     throw new ProviderError(message, response.status);
   }
   const decoded = envelope.safeParse(await response.json());
   if (!decoded.success)
     throw new ProviderError(
-      "American's browser service returned an incomplete response.",
+      `${name}'s browser service returned an incomplete response.`,
     );
   const data = decoded.data;
   if (
+    data.programId !== programId ||
     data.query.origin !== q.origin ||
     data.query.dest !== q.dest ||
     data.query.departDate !== q.departDate ||
     data.query.pax !== q.pax
   )
     throw new ProviderError(
-      "American's browser response belongs to a different search.",
+      `${name}'s browser response belongs to a different search.`,
     );
   const observed = Date.parse(data.observedAt);
   if (observed < started - 30000 || observed > Date.now() + 30000)
     throw new ProviderError(
-      "American's browser response is not a fresh observation.",
+      `${name}'s browser response is not a fresh observation.`,
     );
-  const rows = parseAmerican(data.payload, q, data.observedAt);
+  const rows = (programId === "DL_SKYMILES" ? parseDelta : parseAmerican)(
+    data.payload,
+    q,
+    data.observedAt,
+  );
   if (
     rows.length !== data.itineraryCount ||
     rows.reduce((n, row) => n + (row.fares?.length ?? 0), 0) !== data.fareCount
   )
     throw new ProviderError(
-      "American's browser response has incomplete flight or fare counts.",
+      `${name}'s browser response has incomplete flight or fare counts.`,
     );
   return rows;
 }

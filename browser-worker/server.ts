@@ -9,9 +9,13 @@ import { resolve } from "node:path";
 import { parseQuery } from "../src/lib/award-search/query";
 import type { SearchQuery } from "../src/lib/types";
 import { BrowserSearchError, type AmericanBrowserResult } from "./american";
+import type { DeltaBrowserResult } from "./delta";
 
 type SearchRunner = {
-  search(q: SearchQuery, signal: AbortSignal): Promise<AmericanBrowserResult>;
+  search(
+    q: SearchQuery,
+    signal: AbortSignal,
+  ): Promise<AmericanBrowserResult | DeltaBrowserResult>;
   close(): Promise<void>;
 };
 type WorkerOptions = {
@@ -19,6 +23,7 @@ type WorkerOptions = {
   concurrency?: number;
   timeoutMs?: number;
   evidenceDirectory?: string;
+  deltaRunner?: SearchRunner;
 };
 
 async function readQuery(req: IncomingMessage) {
@@ -116,10 +121,20 @@ export function createBrowserWorker(
         active,
         queued: queue.length,
         program: "AA_AADVANTAGE",
+        programs: [
+          "AA_AADVANTAGE",
+          ...(options.deltaRunner ? ["DL_SKYMILES"] : []),
+        ],
       });
       return;
     }
-    if (req.method !== "POST" || req.url !== "/v1/search/american") {
+    const selectedRunner =
+      req.url === "/v1/search/american"
+        ? runner
+        : req.url === "/v1/search/delta"
+          ? options.deltaRunner
+          : undefined;
+    if (req.method !== "POST" || !selectedRunner) {
       reply(res, 404, { message: "Unknown browser search." });
       return;
     }
@@ -174,7 +189,7 @@ export function createBrowserWorker(
         acquired = true;
       }
       signal.throwIfAborted();
-      const result = await runner.search(q, signal);
+      const result = await selectedRunner.search(q, signal);
       signal.throwIfAborted();
       await record({
         id,
@@ -182,6 +197,7 @@ export function createBrowserWorker(
         query: q,
         elapsedMs: Date.now() - started,
         result: "success",
+        programId: result.programId,
         itineraries: result.itineraryCount,
         fares: result.fareCount,
         stages: result.stages,
@@ -200,6 +216,8 @@ export function createBrowserWorker(
         query: q,
         elapsedMs: Date.now() - started,
         result: "error",
+        programId:
+          req.url === "/v1/search/delta" ? "DL_SKYMILES" : "AA_AADVANTAGE",
         status,
         stage,
         message,
@@ -221,6 +239,7 @@ export function createBrowserWorker(
     close: async () => {
       for (const controller of requests) controller.abort();
       await runner.close();
+      await options.deltaRunner?.close();
       server.closeAllConnections();
       await new Promise<void>((done) => server.close(() => done()));
     },

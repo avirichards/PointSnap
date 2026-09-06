@@ -111,8 +111,11 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
       try {
         let rows: AwardResult[];
         if (browserIds.includes(id)) {
-          source = "American · browser pilot";
-          rows = await browserSearch(ctx.query, ctx.signal);
+          source =
+            id === "DL_SKYMILES"
+              ? "Delta · airline browser"
+              : "American · browser pilot";
+          rows = await browserSearch(ctx.query, ctx.signal, id);
         } else if (DIRECT_PROGRAMS.includes(id)) {
           try {
             source = "Direct airline";
@@ -141,7 +144,9 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
             state: rows.length ? "success" : "empty",
             source,
             message:
-              source === "Direct airline" ? SOURCE_INFO[id]?.detail : undefined,
+              source === "Direct airline" || browserIds.includes(id)
+                ? SOURCE_INFO[id]?.detail
+                : undefined,
             inventory:
               source === "Direct airline"
                 ? (SOURCE_INFO[id]?.inventory ?? "flights")
