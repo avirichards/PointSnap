@@ -6,7 +6,7 @@ import { allowSearch } from "@/lib/award-search/limit";
 import { currentUser } from "@/lib/supabase/server";
 import type { AwardEvent } from "@/lib/award-search/types";
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 210;
 export async function GET(req: NextRequest) {
   let query, ids;
   try {
@@ -50,7 +50,8 @@ export async function GET(req: NextRequest) {
   const signal = AbortSignal.any([
     req.signal,
     cancel.signal,
-    AbortSignal.timeout(110000),
+    // Smiles quotes every itinerary's taxes and payment choices sequentially.
+    AbortSignal.timeout(ids.includes("G3_GOL_SMILES") ? 200000 : 110000),
   ]);
   const started = Date.now();
   let closed = false;

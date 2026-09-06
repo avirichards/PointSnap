@@ -27,11 +27,14 @@ async function main() {
         ? "direct"
         : "homepage";
   const channel = process.env.POINTSNAP_BROWSER_CHANNEL || "chromium";
+  const temporaryProfile =
+    process.env.POINTSNAP_BROWSER_TEMPORARY_PROFILE === "1";
   const runner = new AmericanBrowserRunner({
     engine,
     headless: true,
     entry,
     channel,
+    temporaryProfile,
   });
   const started = Date.now();
   let report: Record<string, unknown>;
@@ -67,6 +70,7 @@ async function main() {
     platform: process.platform,
     architecture: process.arch,
     headless: true,
+    temporaryProfile,
     entry,
     channel: engine === "chromium" ? channel : undefined,
     query: q,
@@ -75,7 +79,7 @@ async function main() {
   };
   await mkdir("work/browser-probes", { recursive: true });
   await writeFile(
-    `work/browser-probes/${engine}.json`,
+    `work/browser-probes/${engine}${temporaryProfile ? "-temporary-profile" : ""}.json`,
     JSON.stringify(output, null, 2) + "\n",
   );
   console.log(JSON.stringify(output));

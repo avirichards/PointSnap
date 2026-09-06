@@ -8,6 +8,8 @@ import {
 } from "playwright";
 import { parseAmerican } from "../src/lib/award-search/american";
 import type { SearchQuery } from "../src/lib/types";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { resolve } from "node:path";
 
 export type BrowserStage = {
   stage: string;
@@ -99,6 +101,7 @@ export class AmericanBrowserRunner {
       headless?: boolean;
       entry?: "homepage" | "direct" | "homepage-form";
       engine?: "chromium" | "firefox" | "webkit";
+      temporaryProfile?: boolean;
     } = {},
   ) {}
 
@@ -148,18 +151,40 @@ export class AmericanBrowserRunner {
       stage = next;
       stages.push({ stage, elapsedMs: Date.now() - started });
     };
-    let context: BrowserContext | undefined, page: Page | undefined;
+    let context: BrowserContext | undefined,
+      page: Page | undefined,
+      profile: string | undefined;
     const abort = () => {
       void context?.close().catch(() => {});
     };
     signal.throwIfAborted();
     signal.addEventListener("abort", abort, { once: true });
     try {
-      const browser = await this.browser();
-      signal.throwIfAborted();
       // Every request gets a fresh anonymous context. No personal browser profile,
       // imported login state, stealth patches or verification-cookie transport.
-      context = await browser.newContext({ locale: "en-US" });
+      if (this.options.temporaryProfile) {
+        const directory = resolve("work/browser-profiles");
+        await mkdir(directory, { recursive: true, mode: 0o700 });
+        profile = await mkdtemp(resolve(directory, "american-"));
+        const engine = this.options.engine ?? "chromium";
+        context = await { chromium, firefox, webkit }[
+          engine
+        ].launchPersistentContext(profile, {
+          ...(engine === "chromium"
+            ? {
+                channel: this.options.channel ?? "chromium",
+                chromiumSandbox: true,
+              }
+            : {}),
+          headless: this.options.headless ?? true,
+          locale: "en-US",
+          timeout: 30000,
+        });
+      } else {
+        const browser = await this.browser();
+        signal.throwIfAborted();
+        context = await browser.newContext({ locale: "en-US" });
+      }
       signal.throwIfAborted();
       context.setDefaultTimeout(15000);
       page = await context.newPage();
@@ -355,6 +380,7 @@ export class AmericanBrowserRunner {
     } finally {
       signal.removeEventListener("abort", abort);
       await context?.close().catch(() => {});
+      if (profile) await rm(profile, { recursive: true, force: true });
     }
   }
 }

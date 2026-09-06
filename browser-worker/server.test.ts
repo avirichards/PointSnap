@@ -40,6 +40,47 @@ async function start(
 }
 
 describe("background browser request boundary", () => {
+  it("dispatches Smiles independently and closes its browser runner", async () => {
+    const first = await start();
+    expect(
+      (
+        await fetch(first.url.replace("american", "smiles"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify(q),
+        })
+      ).status,
+    ).toBe(404);
+    const search = vi
+      .fn()
+      .mockResolvedValue({
+        programId: "G3_GOL_SMILES",
+        query: q,
+        complete: true,
+        observedAt: new Date().toISOString(),
+        payload: {},
+        itineraryCount: 5,
+        fareCount: 42,
+        stages: [],
+      });
+    const close = vi.fn().mockResolvedValue(undefined);
+    const second = await start(undefined, { smilesRunner: { search, close } });
+    const result = await fetch(second.url.replace("american", "smiles"), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(q),
+    });
+    expect(result.status).toBe(200);
+    expect(await result.json()).toMatchObject({
+      programId: "G3_GOL_SMILES",
+      itineraryCount: 5,
+      fareCount: 42,
+    });
+    expect(search).toHaveBeenCalledOnce();
+    expect(second.search).not.toHaveBeenCalled();
+    await cleanups.pop()!();
+    expect(close).toHaveBeenCalledOnce();
+  });
   it("dispatches Delta only when its runner is explicitly configured", async () => {
     const first = await start();
     expect(
@@ -51,18 +92,16 @@ describe("background browser request boundary", () => {
         })
       ).status,
     ).toBe(404);
-    const delta = vi
-      .fn()
-      .mockResolvedValue({
-        programId: "DL_SKYMILES",
-        query: q,
-        complete: true,
-        observedAt: new Date().toISOString(),
-        payload: {},
-        itineraryCount: 0,
-        fareCount: 0,
-        stages: [],
-      });
+    const delta = vi.fn().mockResolvedValue({
+      programId: "DL_SKYMILES",
+      query: q,
+      complete: true,
+      observedAt: new Date().toISOString(),
+      payload: {},
+      itineraryCount: 0,
+      fareCount: 0,
+      stages: [],
+    });
     const second = await start(undefined, {
       deltaRunner: { search: delta, close: async () => {} },
     });

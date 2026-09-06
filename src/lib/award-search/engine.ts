@@ -93,6 +93,7 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
     while (index < singles.length && !ctx.signal.aborted) {
       const id = singles[index++];
       let source = "";
+      let sourceNotice = "";
       if (
         !DIRECT_PROGRAMS.includes(id) &&
         !browserIds.includes(id) &&
@@ -112,10 +113,14 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
         let rows: AwardResult[];
         if (browserIds.includes(id)) {
           source =
-            id === "DL_SKYMILES"
-              ? "Delta · airline browser"
-              : "American · browser pilot";
-          rows = await browserSearch(ctx.query, ctx.signal, id);
+            id === "G3_GOL_SMILES"
+              ? "Smiles · airline browser"
+              : id === "DL_SKYMILES"
+                ? "Delta · airline browser"
+                : "American · browser pilot";
+          rows = await browserSearch(ctx.query, ctx.signal, id, (notice) => {
+            sourceNotice = notice;
+          });
         } else if (DIRECT_PROGRAMS.includes(id)) {
           try {
             source = "Direct airline";
@@ -145,7 +150,9 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
             source,
             message:
               source === "Direct airline" || browserIds.includes(id)
-                ? SOURCE_INFO[id]?.detail
+                ? [sourceNotice, SOURCE_INFO[id]?.detail]
+                    .filter(Boolean)
+                    .join(" ") || undefined
                 : undefined,
             inventory:
               source === "Direct airline"

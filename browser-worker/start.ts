@@ -1,6 +1,7 @@
 import { AmericanBrowserRunner } from "./american";
 import { createBrowserWorker } from "./server";
 import { DeltaBrowserRunner } from "./delta";
+import { SmilesBrowserRunner } from "./smiles";
 
 const channel = process.env.POINTSNAP_BROWSER_CHANNEL || "chromium";
 const headless = process.env.POINTSNAP_BROWSER_HEADLESS !== "0";
@@ -20,6 +21,10 @@ const runner = new AmericanBrowserRunner({ channel, headless, entry, engine });
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",
   evidenceDirectory: process.env.POINTSNAP_BROWSER_EVIDENCE_DIR,
+  smilesRunner:
+    process.env.POINTSNAP_BROWSER_SMILES === "1"
+      ? new SmilesBrowserRunner()
+      : undefined,
   deltaRunner:
     process.env.POINTSNAP_BROWSER_DELTA === "1"
       ? new DeltaBrowserRunner()

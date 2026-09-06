@@ -10,12 +10,13 @@ import { parseQuery } from "../src/lib/award-search/query";
 import type { SearchQuery } from "../src/lib/types";
 import { BrowserSearchError, type AmericanBrowserResult } from "./american";
 import type { DeltaBrowserResult } from "./delta";
+import type { SmilesBrowserResult } from "./smiles";
 
 type SearchRunner = {
   search(
     q: SearchQuery,
     signal: AbortSignal,
-  ): Promise<AmericanBrowserResult | DeltaBrowserResult>;
+  ): Promise<AmericanBrowserResult | DeltaBrowserResult | SmilesBrowserResult>;
   close(): Promise<void>;
 };
 type WorkerOptions = {
@@ -24,6 +25,7 @@ type WorkerOptions = {
   timeoutMs?: number;
   evidenceDirectory?: string;
   deltaRunner?: SearchRunner;
+  smilesRunner?: SearchRunner;
 };
 
 async function readQuery(req: IncomingMessage) {
@@ -124,6 +126,7 @@ export function createBrowserWorker(
         programs: [
           "AA_AADVANTAGE",
           ...(options.deltaRunner ? ["DL_SKYMILES"] : []),
+          ...(options.smilesRunner ? ["G3_GOL_SMILES"] : []),
         ],
       });
       return;
@@ -133,7 +136,9 @@ export function createBrowserWorker(
         ? runner
         : req.url === "/v1/search/delta"
           ? options.deltaRunner
-          : undefined;
+          : req.url === "/v1/search/smiles"
+            ? options.smilesRunner
+            : undefined;
     if (req.method !== "POST" || !selectedRunner) {
       reply(res, 404, { message: "Unknown browser search." });
       return;
@@ -143,7 +148,11 @@ export function createBrowserWorker(
       cancel = new AbortController();
     const signal = AbortSignal.any([
       cancel.signal,
-      AbortSignal.timeout(timeoutMs),
+      AbortSignal.timeout(
+        req.url === "/v1/search/smiles"
+          ? (options.timeoutMs ?? 180000)
+          : timeoutMs,
+      ),
     ]);
     requests.add(cancel);
     res.on("close", () => {
@@ -217,7 +226,11 @@ export function createBrowserWorker(
         elapsedMs: Date.now() - started,
         result: "error",
         programId:
-          req.url === "/v1/search/delta" ? "DL_SKYMILES" : "AA_AADVANTAGE",
+          req.url === "/v1/search/smiles"
+            ? "G3_GOL_SMILES"
+            : req.url === "/v1/search/delta"
+              ? "DL_SKYMILES"
+              : "AA_AADVANTAGE",
         status,
         stage,
         message,
@@ -240,6 +253,7 @@ export function createBrowserWorker(
       for (const controller of requests) controller.abort();
       await runner.close();
       await options.deltaRunner?.close();
+      await options.smilesRunner?.close();
       server.closeAllConnections();
       await new Promise<void>((done) => server.close(() => done()));
     },

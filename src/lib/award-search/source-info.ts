@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  G3_GOL_SMILES: {
+    inventory: "flights",
+    label: "GOL Smiles & offered partner awards",
+    detail:
+      "Anonymous searches of Smiles's Brazilian site, with every displayed itinerary, regular-member miles and cash-and-miles choices, offered baggage bundles and travel fees paid in cash. Club and elite discounts are excluded. Fees are quoted in BRL. Requires the browser service.",
+  },
   DL_SKYMILES: {
     inventory: "flights",
     label: "Delta SkyMiles award flights",

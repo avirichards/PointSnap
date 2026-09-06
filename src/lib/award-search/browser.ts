@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseAmerican } from "./american";
 import { parseDelta } from "./delta";
+import { parseSmiles, smilesPayloadSchema } from "./smiles";
 import { ProviderError } from "./types";
 
 function configuration() {
@@ -40,10 +41,11 @@ export function browserPrograms(): string[] {
       ? ["AA_AADVANTAGE"]
       : []),
     ...(process.env.POINTSNAP_BROWSER_DELTA === "1" ? ["DL_SKYMILES"] : []),
+    ...(process.env.POINTSNAP_BROWSER_SMILES === "1" ? ["G3_GOL_SMILES"] : []),
   ];
 }
 const envelope = z.object({
-  programId: z.enum(["AA_AADVANTAGE", "DL_SKYMILES"]),
+  programId: z.enum(["AA_AADVANTAGE", "DL_SKYMILES", "G3_GOL_SMILES"]),
   query: z.object({
     origin: z.string(),
     dest: z.string(),
@@ -61,8 +63,14 @@ export async function browserSearch(
   q: SearchQuery,
   signal: AbortSignal,
   programId = "AA_AADVANTAGE",
+  onNotice?: (notice: string) => void,
 ) {
-  const name = programId === "DL_SKYMILES" ? "Delta" : "American";
+  const name =
+    programId === "G3_GOL_SMILES"
+      ? "Smiles"
+      : programId === "DL_SKYMILES"
+        ? "Delta"
+        : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -72,7 +80,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -88,7 +96,10 @@ export async function browserSearch(
           pax: q.pax,
           minCabin: q.minCabin,
         }),
-        signal: AbortSignal.any([signal, AbortSignal.timeout(100000)]),
+        signal: AbortSignal.any([
+          signal,
+          AbortSignal.timeout(programId === "G3_GOL_SMILES" ? 185000 : 100000),
+        ]),
         cache: "no-store",
         redirect: "error",
       },
@@ -128,11 +139,13 @@ export async function browserSearch(
     throw new ProviderError(
       `${name}'s browser response is not a fresh observation.`,
     );
-  const rows = (programId === "DL_SKYMILES" ? parseDelta : parseAmerican)(
-    data.payload,
-    q,
-    data.observedAt,
-  );
+  const rows = (
+    programId === "G3_GOL_SMILES"
+      ? parseSmiles
+      : programId === "DL_SKYMILES"
+        ? parseDelta
+        : parseAmerican
+  )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||
     rows.reduce((n, row) => n + (row.fares?.length ?? 0), 0) !== data.fareCount
@@ -140,5 +153,14 @@ export async function browserSearch(
     throw new ProviderError(
       `${name}'s browser response has incomplete flight or fare counts.`,
     );
+  if (programId === "G3_GOL_SMILES") {
+    const withdrawn = smilesPayloadSchema
+      .parse(data.payload)
+      .extensions.filter((e) => e.unavailable).length;
+    if (withdrawn)
+      onNotice?.(
+        `Smiles withdrew ${withdrawn} listed ${withdrawn === 1 ? "offer" : "offers"} after its live seat recheck. Only offers with confirmed prices and taxes are shown.`,
+      );
+  }
   return rows;
 }

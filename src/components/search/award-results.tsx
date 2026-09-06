@@ -251,7 +251,7 @@ function Results({
           </span>
         )}
         {!!offer.price.bookingNotes?.length && (
-          <span className="text-[11px] mt-1">Eligibility applies</span>
+          <span className="text-[11px] mt-1">Fare conditions</span>
         )}
         {offer.price.mixedCabin && (
           <span className="text-xs mt-1">Mixed cabin</span>
@@ -932,7 +932,7 @@ function Details({
         </div>
         <div>
           <p className="text-sm text-muted-foreground">
-            Taxes & fees for your party
+            Cash for your party
           </p>
           <p className="text-xl font-semibold mt-1">
             <Money price={price} multiplier={pax} original />

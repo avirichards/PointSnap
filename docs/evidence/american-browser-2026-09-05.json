@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-09-06T00:28:11.448683+00:00",
-  "scope": "American LAX\u2013AUS, September 7, 2026, one adult; real PointSnap API to separate anonymous browser worker. No live AA worker response obtained.",
+  "checkedAt": "2026-09-06T01:41:52.334Z",
+  "scope": "American LAX–AUS, September 7, 2026, one adult; real PointSnap API to separate anonymous browser worker. No live AA worker response obtained.",
   "ordinaryBrowserReference": {
     "itineraries": 40,
     "fares": 72,
@@ -503,6 +503,181 @@
       "path": "/booking/choose-flights/1",
       "verification": true,
       "errorType": "TimeoutError"
+    },
+    {
+      "result": "error",
+      "documents": [
+        {
+          "path": "/",
+          "status": 403
+        }
+      ],
+      "runtime": "macOS system WKWebView",
+      "anonymous": true,
+      "message": "American requested browser verification.",
+      "at": "2026-09-06T00:54:19Z",
+      "elapsedMs": 621,
+      "stage": "homepage",
+      "variant": "system-wkwebview-homepage",
+      "engine": "macOS system WKWebView",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "platform": "macOS arm64 / Objective-C AppKit WebKit",
+      "note": "Fresh nonpersistent app-owned WKWebView; default user agent and browser security. The entry page was denied before any search submission."
+    },
+    {
+      "result": "error",
+      "documents": [
+        {
+          "path": "/booking/search/find-flights",
+          "status": 403
+        }
+      ],
+      "runtime": "macOS system WKWebView",
+      "anonymous": true,
+      "message": "American requested browser verification.",
+      "at": "2026-09-06T00:56:26Z",
+      "elapsedMs": 578,
+      "stage": "booking-form",
+      "variant": "system-wkwebview-direct",
+      "engine": "macOS system WKWebView",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "platform": "macOS arm64 / Objective-C AppKit WebKit",
+      "note": "Fresh nonpersistent app-owned WKWebView; default user agent and browser security. The entry page was denied before any search submission."
+    },
+    {
+      "at": "2026-09-06T01:39:33.349Z",
+      "engine": "chromium",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "headless": true,
+      "temporaryProfile": true,
+      "entry": "homepage-form",
+      "channel": "chrome",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 6225,
+      "result": "error",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stage": "homepage",
+      "status": 503,
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 5170
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5313,
+          "path": "/",
+          "status": 403
+        }
+      ],
+      "title": "Access Denied",
+      "path": "/",
+      "verification": true,
+      "errorType": "Error"
+    },
+    {
+      "at": "2026-09-06T01:40:27.673Z",
+      "engine": "webkit",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "headless": true,
+      "temporaryProfile": true,
+      "entry": "homepage-form",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 16992,
+      "result": "error",
+      "message": "American requested browser verification. This search could not complete automatically.",
+      "stage": "read-flight-response",
+      "status": 503,
+      "stages": [
+        {
+          "stage": "homepage",
+          "elapsedMs": 1219
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1579,
+          "path": "/",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1813
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2483,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3023,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 4530
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5213,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5479,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6929,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 6939
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 7002,
+          "path": "/challenge-assets/v7/captcha.html",
+          "status": 200
+        }
+      ],
+      "title": "Challenge Validation",
+      "path": "/booking/choose-flights/1",
+      "verification": true,
+      "errorType": "TimeoutError"
     }
   ],
   "hostedStatus": "Seven hosted attempts across Linux and macOS. Fresh hosted Mac Chrome receives homepage Access Denied; WebKit submits the actual search form then reaches Challenge Validation. No complete native AAdvantage response from the worker; normal app remains disabled.",
@@ -930,7 +1105,7 @@
     "fares": 70,
     "cached": false,
     "entry": "homepage form",
-    "route": "LAX\u2013AUS",
+    "route": "LAX–AUS",
     "date": "2026-09-07",
     "pax": 1,
     "note": "Separate ordinary anonymous browser search. Not a worker result or a completed fare-by-fare reconciliation against the earlier advanced-form search."
@@ -1040,5 +1215,7 @@
       "verification": true,
       "errorType": "TimeoutError"
     }
-  ]
+  ],
+  "systemWebViewStatus": "Two fresh macOS system WKWebView tests returned entry HTTP 403. Two additional newly created regular-profile tests also failed: standard Chrome homepage 403; WebKit completed the homepage form and reached Challenge Validation before inventory. Twelve local and seven hosted attempts are recorded. Native AAdvantage remains disabled.",
+  "temporaryProfileScope": "Profiles were created empty by the diagnostic, never loaded from a personal browser, and deleted after each search. Browser defaults, sandbox and verification behavior were retained."
 }

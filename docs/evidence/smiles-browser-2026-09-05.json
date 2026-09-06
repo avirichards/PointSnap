@@ -1,0 +1,563 @@
+{
+  "checkedAt": "2026-09-06T01:53:14.286Z",
+  "programId": "G3_GOL_SMILES",
+  "scope": "Fresh anonymous Smiles Brazilian search, ordinary booking form, complete rendered results and regular-member cash/miles and offered baggage choices. Exact travel fees paid in cash. No traveler login or data subscription.",
+  "status": "Enabled in the local PointSnap application. Hosted runtime verification pending.",
+  "nativeFixture": {
+    "query": {
+      "origin": "GRU",
+      "dest": "GIG",
+      "departDate": "2026-10-05",
+      "pax": 2
+    },
+    "itineraries": 5,
+    "fares": 42,
+    "nonstops": 5,
+    "observedAt": "2026-09-06T01:20:19.974Z",
+    "firstFlight": {
+      "number": "G31382",
+      "fares": 14,
+      "regularAwardPointsPerPerson": 20700,
+      "partyPoints": 41400,
+      "cashPerPerson": 35.75,
+      "partyCash": 71.5,
+      "currency": "BRL"
+    }
+  },
+  "partnerRunner": {
+    "at": "2026-09-06T01:31:41.436Z",
+    "engine": "webkit",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "query": {
+      "origin": "GRU",
+      "dest": "CDG",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "minCabin": "Y"
+    },
+    "elapsedMs": 138282,
+    "result": "success",
+    "complete": true,
+    "itineraries": 40,
+    "fares": 280,
+    "nonstops": 2,
+    "stages": [
+      {
+        "stage": "open-search",
+        "elapsedMs": 642
+      },
+      {
+        "stage": "fill-route",
+        "elapsedMs": 4485
+      },
+      {
+        "stage": "date",
+        "elapsedMs": 7948
+      },
+      {
+        "stage": "submit-search",
+        "elapsedMs": 8157
+      },
+      {
+        "stage": "all-results-pages",
+        "elapsedMs": 21142
+      },
+      {
+        "stage": "all-fares-and-travel-fees",
+        "elapsedMs": 22572
+      },
+      {
+        "stage": "validate-complete-quotes",
+        "elapsedMs": 138214
+      }
+    ],
+    "observedAt": "2026-09-06T01:31:41.382Z",
+    "example": {
+      "flights": [
+        "G31558",
+        "AF415"
+      ],
+      "duration": 1830,
+      "fares": [
+        {
+          "name": "Smiles award",
+          "cabin": "Y",
+          "points": 200000,
+          "partyPoints": 200000,
+          "cash": 290.99,
+          "currency": "BRL",
+          "seats": 7
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 100000,
+          "partyPoints": 100000,
+          "cash": 2080.99,
+          "currency": "BRL",
+          "seats": 7
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 120000,
+          "partyPoints": 120000,
+          "cash": 1730.99,
+          "currency": "BRL",
+          "seats": 7
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 130000,
+          "partyPoints": 130000,
+          "cash": 1560.99,
+          "currency": "BRL",
+          "seats": 7
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 140000,
+          "partyPoints": 140000,
+          "cash": 1385.99,
+          "currency": "BRL",
+          "seats": 7
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 150000,
+          "partyPoints": 150000,
+          "cash": 1205.99,
+          "currency": "BRL",
+          "seats": 7
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 160000,
+          "partyPoints": 160000,
+          "cash": 1030.99,
+          "currency": "BRL",
+          "seats": 7
+        }
+      ]
+    }
+  },
+  "futureMonthRunner": {
+    "at": "2026-09-06T01:35:56.476Z",
+    "engine": "webkit",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "query": {
+      "origin": "GRU",
+      "dest": "GIG",
+      "departDate": "2026-11-05",
+      "pax": 2,
+      "minCabin": "Y"
+    },
+    "elapsedMs": 23851,
+    "result": "success",
+    "complete": true,
+    "itineraries": 6,
+    "fares": 42,
+    "nonstops": 6,
+    "stages": [
+      {
+        "stage": "open-search",
+        "elapsedMs": 598
+      },
+      {
+        "stage": "fill-route",
+        "elapsedMs": 4330
+      },
+      {
+        "stage": "date",
+        "elapsedMs": 8040
+      },
+      {
+        "stage": "submit-search",
+        "elapsedMs": 9222
+      },
+      {
+        "stage": "all-results-pages",
+        "elapsedMs": 15573
+      },
+      {
+        "stage": "all-fares-and-travel-fees",
+        "elapsedMs": 16412
+      },
+      {
+        "stage": "validate-complete-quotes",
+        "elapsedMs": 23811
+      }
+    ],
+    "observedAt": "2026-09-06T01:35:56.440Z",
+    "example": {
+      "flights": [
+        "G31562"
+      ],
+      "duration": 65,
+      "fares": [
+        {
+          "name": "Smiles award",
+          "cabin": "Y",
+          "points": 21500,
+          "partyPoints": 43000,
+          "cash": 35.75,
+          "currency": "BRL",
+          "seats": 9
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 6500,
+          "partyPoints": 13000,
+          "cash": 355.75,
+          "currency": "BRL",
+          "seats": 9
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 8600,
+          "partyPoints": 17200,
+          "cash": 305.75,
+          "currency": "BRL",
+          "seats": 9
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 10800,
+          "partyPoints": 21600,
+          "cash": 265.75,
+          "currency": "BRL",
+          "seats": 9
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 12900,
+          "partyPoints": 25800,
+          "cash": 215.75,
+          "currency": "BRL",
+          "seats": 9
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 15100,
+          "partyPoints": 30200,
+          "cash": 175.75,
+          "currency": "BRL",
+          "seats": 9
+        },
+        {
+          "name": "Smiles & Money",
+          "cabin": "Y",
+          "points": 16200,
+          "partyPoints": 32400,
+          "cash": 155.75,
+          "currency": "BRL",
+          "seats": 9
+        }
+      ]
+    }
+  },
+  "actualPointSnapRequests": [
+    {
+      "id": "e9d343c5-417d-4e35-b326-fd8fe78043fd",
+      "at": "2026-09-06T01:33:02.657Z",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-11-05",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 22932,
+      "result": "error",
+      "programId": "G3_GOL_SMILES",
+      "status": 503,
+      "stage": "date",
+      "message": "Smiles's browser search could not complete at date.",
+      "error": "locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Move forward to switch to the next month.', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"button\" aria-label=\"Move forward to switch to the next month.\" class=\"DayPickerNavigation_button DayPickerNavigation_button_1 DayPickerNavigation_button__horizontal DayPickerNavigation_button__horizontal_2\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be "
+    },
+    {
+      "id": "e2d6b8fa-c00e-41b9-94e3-f9357cd64ff9",
+      "at": "2026-09-06T01:33:24.382Z",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-05",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 30351,
+      "result": "success",
+      "programId": "G3_GOL_SMILES",
+      "itineraries": 5,
+      "fares": 42,
+      "stages": [
+        {
+          "stage": "open-search",
+          "elapsedMs": 237
+        },
+        {
+          "stage": "fill-route",
+          "elapsedMs": 3419
+        },
+        {
+          "stage": "date",
+          "elapsedMs": 7237
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 8055
+        },
+        {
+          "stage": "all-results-pages",
+          "elapsedMs": 14752
+        },
+        {
+          "stage": "all-fares-and-travel-fees",
+          "elapsedMs": 15592
+        },
+        {
+          "stage": "validate-complete-quotes",
+          "elapsedMs": 24937
+        }
+      ]
+    },
+    {
+      "id": "6d63b2cb-eab0-4763-a962-b5e7e7e9c135",
+      "at": "2026-09-06T01:34:47.157Z",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-05",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 25248,
+      "result": "success",
+      "programId": "G3_GOL_SMILES",
+      "itineraries": 5,
+      "fares": 42,
+      "stages": [
+        {
+          "stage": "open-search",
+          "elapsedMs": 345
+        },
+        {
+          "stage": "fill-route",
+          "elapsedMs": 3414
+        },
+        {
+          "stage": "date",
+          "elapsedMs": 7099
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 7931
+        },
+        {
+          "stage": "all-results-pages",
+          "elapsedMs": 15567
+        },
+        {
+          "stage": "all-fares-and-travel-fees",
+          "elapsedMs": 16494
+        },
+        {
+          "stage": "validate-complete-quotes",
+          "elapsedMs": 25240
+        }
+      ]
+    },
+    {
+      "id": "67d19422-9151-4506-93e0-a203dc3ff703",
+      "at": "2026-09-06T01:38:19.139Z",
+      "query": {
+        "origin": "GRU",
+        "dest": "CDG",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 117529,
+      "result": "success",
+      "programId": "G3_GOL_SMILES",
+      "itineraries": 40,
+      "fares": 280,
+      "stages": [
+        {
+          "stage": "open-search",
+          "elapsedMs": 252
+        },
+        {
+          "stage": "fill-route",
+          "elapsedMs": 3782
+        },
+        {
+          "stage": "date",
+          "elapsedMs": 7217
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 7424
+        },
+        {
+          "stage": "all-results-pages",
+          "elapsedMs": 19893
+        },
+        {
+          "stage": "all-fares-and-travel-fees",
+          "elapsedMs": 21804
+        },
+        {
+          "stage": "validate-complete-quotes",
+          "elapsedMs": 117516
+        }
+      ]
+    },
+    {
+      "id": "50bb6e24-3d0e-4ee4-98b8-0c468f2a5787",
+      "at": "2026-09-06T01:42:03.194Z",
+      "query": {
+        "origin": "GRU",
+        "dest": "CDG",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 89979,
+      "result": "error",
+      "programId": "G3_GOL_SMILES",
+      "status": 503,
+      "stage": "all-fares-and-travel-fees",
+      "message": "Smiles's browser search could not complete at all-fares-and-travel-fees.",
+      "error": "page.evaluate: Error: Itinerary 28/40: /v1/airlines/flight/boardingtax returned HTTP 452 (code: 113; errorCode: 113; message: Não foi possível prosseguir com a emissão do voo escolhido devido à indisponibilidade de assentos. Para prosseguir com emissão, será necessário refazer a busca.; errorMessage: Não foi possível prosseguir com a emissão do voo escolhido devido à indisponibilidade de assentos. Para prosseguir com emissão, será necessário refazer a busca.)"
+    },
+    {
+      "id": "bafcb343-b525-4bda-aba7-cfdd64d741a2",
+      "at": "2026-09-06T01:50:47.635Z",
+      "query": {
+        "origin": "GRU",
+        "dest": "CDG",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 128768,
+      "result": "success",
+      "programId": "G3_GOL_SMILES",
+      "itineraries": 40,
+      "fares": 280,
+      "stages": [
+        {
+          "stage": "open-search",
+          "elapsedMs": 665
+        },
+        {
+          "stage": "fill-route",
+          "elapsedMs": 5047
+        },
+        {
+          "stage": "date",
+          "elapsedMs": 8775
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 8997
+        },
+        {
+          "stage": "all-results-pages",
+          "elapsedMs": 21966
+        },
+        {
+          "stage": "all-fares-and-travel-fees",
+          "elapsedMs": 23933
+        },
+        {
+          "stage": "validate-complete-quotes",
+          "elapsedMs": 128739
+        }
+      ]
+    }
+  ],
+  "frontendVerification": {
+    "nativeRows": 5,
+    "fareChoices": 42,
+    "firstFlightChoices": 14,
+    "perPersonDisplay": "20700 miles + approximately USD 7.00; original BRL 35.75",
+    "twoAdultDisplay": "41400 miles + approximately USD 14.00; original BRL 71.50",
+    "moneyChoice": "3800 miles + BRL 355.75 per person",
+    "timeFormat": "AM/PM",
+    "consoleErrorsForPointSnap": 0,
+    "bookingTarget": "https://www.smiles.com.br/portal/passagens",
+    "partnerSearch": {
+      "itineraries": 40,
+      "fares": 280,
+      "resultPages": [
+        25,
+        15
+      ],
+      "lastVisibleRange": "26–40 of 40",
+      "fullSearchItinerariesIncludingAlaska": 49,
+      "fullSearchFareChoices": 289,
+      "durationSeconds": 131.1,
+      "programFilter": "GOL Smiles"
+    }
+  },
+  "failedExperiments": [
+    {
+      "stage": "partner-tax-quote",
+      "status": 452,
+      "concurrency": 2,
+      "elapsedMs": 39800
+    },
+    {
+      "stage": "partner-tax-quote",
+      "status": 452,
+      "concurrency": 1,
+      "elapsedMs": 37065
+    },
+    {
+      "stage": "calendar-next-month",
+      "result": "Visible nested arrow needed; fixed and independently verified with November 5, six flights / 42 fares."
+    }
+  ],
+  "implementationCorrections": [
+    "All Smiles & Money upsells require the original payment-choice fare UID plus offer number; using the alternative UID omitted five baggage choices. Final fixture preserves 42 fares rather than the incomplete 37-fare prototype.",
+    "Quote traffic is sequential. The 40-itinerary runner required 138 seconds; the actual PointSnap partner request later completed in about 118 seconds. Browser budget 180 seconds; outer search budget 200 seconds when Smiles is requested.",
+    "Travel fees can be paid with cash or miles on Smiles. PointSnap preserves the cash option and does not add tax-payment miles to the base award.",
+    "The separately returned retail cash fare has a different fare family; it is not used to invent a cash-value comparison."
+  ],
+  "boundaries": [
+    "Successful queries establish the supplied source set, not every route or future response.",
+    "Club and elite discounts are excluded from anonymous regular-member fares.",
+    "Fees are quoted in BRL and display conversion retains the original amount.",
+    "HTTP 452/code 113 explicitly withdraws the selected offer after its seat recheck. Withdrawals are retained as separate evidence and disclosed; unexpected quote errors remain failures.",
+    "No source-level zero-results contract has yet been verified. Such responses fail explicitly until validated.",
+    "Offered partner awards are priced in Smiles; these are not native Flying Blue, Iberia Plus or other partner-program connectors.",
+    "No permanent hosted service or load-reliability claim."
+  ],
+  "validation": {
+    "frontendContractTests": 185,
+    "typecheck": "passed",
+    "lint": "zero errors; seven existing warnings",
+    "optimizedNode22Build": "passed"
+  },
+  "seatRecheckCorrection": {
+    "observedStatus": 452,
+    "observedCode": "113",
+    "itineraryIndex": 28,
+    "sourceCount": 40,
+    "sourceMeaning": "Selected offer has no seats; redo the search.",
+    "behavior": "Check the remaining offers, preserve each withdrawal separately, return only verified offers and disclose the withdrawal count. Unknown error codes remain failures."
+  }
+}

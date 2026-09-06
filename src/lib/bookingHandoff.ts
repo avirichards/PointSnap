@@ -26,7 +26,7 @@ export const BOOKING_SITES: Record<string, string> = {
   QR_PRIVILEGE: "https://www.qatarairways.com/",
   SV_ALFURSAN: "https://www.saudia.com/",
   SQ_KRISFLYER: "https://www.singaporeair.com/",
-  G3_GOL_SMILES: "https://www.smiles.com.br/",
+  G3_GOL_SMILES: "https://www.smiles.com.br/portal/passagens",
   VA_VELOCITY: "https://www.virginaustralia.com/",
   F9_FRONTIER_MILES: "https://booking.flyfrontier.com/Flight/InternalSelect",
 };

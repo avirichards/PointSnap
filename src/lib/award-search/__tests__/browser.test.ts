@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { browserPrograms, browserSearch } from "../browser";
 import { americanFixture } from "./fixtures/american";
 import deltaFixture from "./fixtures/delta.json";
+import smilesFixture from "./fixtures/smiles.json";
+import { smilesPayloadSchema } from "../smiles";
 const q = {
   origin: "LAX",
   dest: "AUS",
@@ -23,6 +25,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_WORKER_TOKEN", "local-test-token-".repeat(3));
   vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "1");
   vi.stubEnv("POINTSNAP_BROWSER_DELTA", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_SMILES", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -30,6 +33,73 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("reports withdrawn Smiles offers separately from the verified flight set", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_SMILES", "1");
+    const payload = smilesPayloadSchema.parse(smilesFixture),
+      query = { ...payload.query, minCabin: "Y" as const };
+    payload.extensions[2].tax = undefined;
+    payload.extensions[2].unavailable = {
+      code: "113",
+      reason: "seats-unavailable",
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({
+            ...response(),
+            programId: "G3_GOL_SMILES",
+            payload,
+            query,
+            itineraryCount: 4,
+            fareCount: 35,
+          }),
+        ),
+    );
+    const notice = vi.fn();
+    expect(
+      await browserSearch(
+        query,
+        new AbortController().signal,
+        "G3_GOL_SMILES",
+        notice,
+      ),
+    ).toHaveLength(4);
+    expect(notice).toHaveBeenCalledWith(
+      expect.stringContaining("withdrew 1 listed offer"),
+    );
+  });
+  it("dispatches Smiles with all validated fare choices and rejects incomplete counts", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_SMILES", "1");
+    expect(browserPrograms()).toEqual(["G3_GOL_SMILES"]);
+    const query = { ...smilesFixture.query, minCabin: "Y" as const };
+    const body = {
+      ...response(),
+      programId: "G3_GOL_SMILES",
+      query,
+      payload: smilesFixture,
+      itineraryCount: 5,
+      fareCount: 42,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "G3_GOL_SMILES",
+    );
+    expect(rows).toHaveLength(5);
+    expect(rows.reduce((n, r) => n + r.fares!.length, 0)).toBe(42);
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/smiles",
+    );
+    fetch.mockResolvedValue(Response.json({ ...body, fareCount: 37 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "G3_GOL_SMILES"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+  });
   it("dispatches Delta independently, validates its program identity and retains every page", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_DELTA", "1");

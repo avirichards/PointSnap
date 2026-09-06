@@ -49,6 +49,17 @@ async function run(ids: string[]) {
   return events;
 }
 describe("multi-program orchestration", () => {
+  it("keeps Smiles withdrawal notices in source coverage even when no quoted offer remains", async () => {
+    mock.browserIds.mockReturnValue(["G3_GOL_SMILES"]);
+    mock.browser.mockImplementation(async (_q, _signal, _id, notice) => {
+      notice("Smiles withdrew 1 listed offer after its live seat recheck.");
+      return [];
+    });
+    const events = await run(["G3_GOL_SMILES"]);
+    expect(events.at(-1)).toMatchObject({ type: "coverage", coverage: {
+      programId: "G3_GOL_SMILES", state: "empty", message: expect.stringContaining("withdrew 1 listed offer"),
+    } });
+  });
   it("routes an enabled Delta search to its own browser adapter", async () => {
     mock.browserIds.mockReturnValue(["DL_SKYMILES"]);
     mock.browser.mockResolvedValue([]);
@@ -57,6 +68,7 @@ describe("multi-program orchestration", () => {
       q,
       expect.any(AbortSignal),
       "DL_SKYMILES",
+      expect.any(Function),
     );
     expect(events.at(-1)).toMatchObject({
       type: "coverage",
@@ -128,6 +140,7 @@ describe("multi-program orchestration", () => {
       q,
       expect.any(AbortSignal),
       "AA_AADVANTAGE",
+      expect.any(Function),
     );
     expect(mock.direct).not.toHaveBeenCalled();
     expect(events.at(-1)).toMatchObject({

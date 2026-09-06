@@ -10,6 +10,7 @@ on:
         default: delta
         options:
           - delta
+          - smiles
           - american
       runner:
         description: Standard hosted runtime to verify
@@ -43,8 +44,11 @@ jobs:
         if: inputs.program == 'american'
         run: pnpm exec playwright install --with-deps --no-shell chromium webkit firefox
       - name: Install standard WebKit
-        if: inputs.program == 'delta'
+        if: inputs.program == 'delta' || inputs.program == 'smiles'
         run: pnpm exec playwright install --with-deps webkit
+      - name: Fresh anonymous Smiles search and every payment choice
+        if: inputs.program == 'smiles'
+        run: pnpm exec tsx browser-worker/probe-smiles.ts
       - name: Fresh anonymous Delta search and complete pagination
         if: inputs.program == 'delta'
         run: pnpm exec tsx browser-worker/probe-delta.ts
