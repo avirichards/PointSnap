@@ -62,6 +62,9 @@ class DesktopChrome {
         `--user-data-dir=${profile}`,
         "--remote-debugging-address=127.0.0.1",
         `--remote-debugging-port=${port}`,
+        ...(process.env.POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN === "1"
+          ? ["--no-first-run"]
+          : []),
         "about:blank",
       ],
       { stdio: ["ignore", "ignore", "pipe"] },

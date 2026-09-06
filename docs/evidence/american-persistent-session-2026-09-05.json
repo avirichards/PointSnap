@@ -1519,7 +1519,14 @@
       "existingWarnings": 7
     },
     "ui": "Actual domestic search, full independent fare parity, international search and updated progress page reviewed",
-    "additionalTests": "Cabin-search union, independent query/completeness checks, replacing superseded prices and removing withdrawn cabin prices."
+    "additionalTests": "Cabin-search union, independent query/completeness checks, replacing superseded prices and removing withdrawn cabin prices.",
+    "hostedCI": {
+      "commit": "38174c325bc74b08d8123610c2261263b541d215",
+      "frontend": "passed",
+      "pythonWorkers": "passed",
+      "vercelPreviewBuild": "passed",
+      "airlineRuntimeQualification": "separate; native hosted American remains unverified"
+    }
   },
   "hostedDesktop": {
     "macos": {
@@ -1818,7 +1825,42 @@
         }
       ]
     },
-    "conclusion": "Hosted macOS ordinary Chrome submits successfully, then encounters airline verification in all three phases. Linux fails before browser readiness; startup classification is being improved. Neither is a hosted native connection."
+    "conclusion": "Hosted macOS ordinary Chrome submits successfully, then encounters airline verification in all three phases. Linux fails before browser readiness; startup classification is being improved. Neither is a hosted native connection.",
+    "linuxStartupFollowUp": {
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34015921337",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "mode": "desktop-chrome",
+      "options": {
+        "engine": "chromium",
+        "channel": "chrome",
+        "headless": false,
+        "entry": "homepage-form",
+        "persistentProfile": true
+      },
+      "platform": "linux",
+      "idleMs": 30000,
+      "reports": [
+        {
+          "phase": "initial",
+          "at": "2026-09-06T06:13:44.610Z",
+          "elapsedMs": 20131,
+          "result": "error",
+          "message": "The dedicated American browser profile could not open or was closed.",
+          "stage": "launch",
+          "status": 503,
+          "persistentProfile": true,
+          "errorType": "BrowserSessionLaunchError",
+          "launchIssue": "debugging-startup-timeout"
+        }
+      ],
+      "conclusion": "The owned Chrome process did not expose its debugging endpoint within 20 seconds. No airline page was reached. Idle/restart phases were skipped because no browser opened. Investigate ordinary first-run setup next."
+    }
   },
   "expandedCabinSearches": {
     "protocol": "Two independently validated official anonymous searches: all cabins and Business/First, all airlines, exact airports and party. Shared itineraries merge; the later premium cabin quote replaces earlier premium prices. Both searches must complete.",

@@ -104,7 +104,16 @@ async function main() {
       await writeFile(
         file,
         JSON.stringify(
-          { query, mode, options, platform: process.platform, idleMs, reports },
+          {
+            query,
+            mode,
+            options,
+            platform: process.platform,
+            idleMs,
+            reports,
+            skipFirstRun:
+              process.env.POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN === "1",
+          },
           null,
           2,
         ) + "\n",

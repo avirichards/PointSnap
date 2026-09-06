@@ -29,6 +29,10 @@ on:
           - webkit
           - chromium
           - firefox
+      skip_first_run:
+        description: Explicit desktop Chrome startup-dialog diagnostic
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -77,9 +81,13 @@ jobs:
         run: pnpm exec tsx browser-worker/probe.ts webkit
       - name: Ordinary Chrome with profile reuse and restart (macOS)
         if: inputs.program == 'american-desktop' && runner.os == 'macOS'
+        env:
+          POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
         run: pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome
       - name: Ordinary Chrome with profile reuse and restart (Linux)
         if: inputs.program == 'american-desktop' && runner.os == 'Linux'
+        env:
+          POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
         run: xvfb-run -a pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome
       - uses: actions/upload-artifact@v4
         if: always()
