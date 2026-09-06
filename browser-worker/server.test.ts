@@ -41,6 +41,7 @@ async function start(
 
 describe("background browser request boundary", () => {
   it.each([
+    { path: "virgin", id: "VS_FLYING_CLUB", option: "virginRunner" },
     { path: "southwest", id: "WN_RAPID_REWARDS", option: "southwestRunner" },
     { path: "sas", id: "SK_EUROBONUS", option: "sasRunner" },
     { path: "copa", id: "CM_CONNECTMILES", option: "copaRunner" },

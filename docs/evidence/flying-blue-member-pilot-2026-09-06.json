@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-09-06T21:57:08.719296+00:00",
+  "program": "AF_FLYINGBLUE",
+  "currentState": "native_inventory_obtained_not_integrated",
+  "method": "Authorized email-PIN sign-in, normal official KLM dated REWARD landing, actual SearchResultAvailableOffersQuery response. Allowlisted flight and fare data only.",
+  "query": {
+    "origin": "JFK",
+    "destination": "AMS",
+    "date": "2026-10-07",
+    "adults": 1
+  },
+  "flights": 14,
+  "cabinSlots": 42,
+  "availableBaseFares": 32,
+  "directFlights": 3,
+  "connectingFlights": 11,
+  "carriersObserved": [
+    "KLM",
+    "Air France",
+    "Virgin Atlantic",
+    "Delta",
+    "SAS"
+  ],
+  "appIntegrationVerified": false,
+  "completeFareFamilyDetailsVerified": false,
+  "next": "Inspect expanded fare choices and segment cabins, reconcile every offered fare, validate a second query and party totals, then implement the native worker.",
+  "credentialsIncluded": false,
+  "codesIncluded": false
+}

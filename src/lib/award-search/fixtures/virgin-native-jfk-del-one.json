@@ -1,0 +1,1529 @@
+{
+  "type": "virgin-member-awards",
+  "request": {
+    "flightSearchRequest": {
+      "searchOriginDestinations": [
+        {
+          "origin": "JFK",
+          "destination": "DEL",
+          "departureDate": "2026-10-07"
+        }
+      ],
+      "awardSearch": true,
+      "bundleOffer": false,
+      "calendarSearch": false,
+      "flexiDateSearch": false,
+      "nonStopOnly": false,
+      "refundableOnly": false,
+      "checkInBaggageAllowance": false,
+      "carryOnBaggageAllowance": false
+    },
+    "customerDetails": [
+      {
+        "ptc": "ADT"
+      }
+    ]
+  },
+  "result": {
+    "slices": {
+      "current": 0,
+      "total": 1
+    },
+    "criteria": {
+      "departing": "2026-10-07",
+      "origin": {
+        "code": "JFK",
+        "cityName": "New York",
+        "countryName": "NY",
+        "airportName": "John F Kennedy International"
+      },
+      "destination": {
+        "code": "DEL",
+        "cityName": "Delhi",
+        "countryName": "India",
+        "airportName": "Indira Gandhi International Airport"
+      }
+    },
+    "slice": {
+      "flightsAndFares": [
+        {
+          "flight": {
+            "duration": "PT18H",
+            "departure": "2026-10-07T20:35:00",
+            "arrival": "2026-10-09T00:05:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "DEL",
+              "cityName": "Delhi",
+              "countryName": "India",
+              "airportName": "Indira Gandhi International Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS154",
+                "operatingFlightNumber": "VS154",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-07T20:35:00",
+                "arrival": "2026-10-08T08:50:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": "PT1H50M",
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-07T20:35:00",
+                    "arrival": "2026-10-08T08:50:00",
+                    "isDominantLeg": false,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              },
+              {
+                "flightNumber": "VS302",
+                "operatingFlightNumber": "VS302",
+                "pendingGovtApproval": false,
+                "duration": "PT8H55M",
+                "departure": "2026-10-08T10:40:00",
+                "arrival": "2026-10-09T00:05:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "destination": {
+                  "code": "DEL",
+                  "cityName": "Delhi",
+                  "countryName": "India",
+                  "airportName": "Indira Gandhi International Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT8H55M",
+                    "departure": "2026-10-08T10:40:00",
+                    "arrival": "2026-10-09T00:05:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "destination": {
+                      "code": "DEL",
+                      "cityName": "Delhi",
+                      "countryName": "India",
+                      "airportName": "Indira Gandhi International Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "300000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 295.2,
+                "amountIncludingTax": 295.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1143.7,
+                "amountIncludingTax": 1143.7,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT19H35M",
+            "departure": "2026-10-07T19:00:00",
+            "arrival": "2026-10-09T00:05:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "DEL",
+              "cityName": "Delhi",
+              "countryName": "India",
+              "airportName": "Indira Gandhi International Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS46",
+                "operatingFlightNumber": "VS46",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-07T19:00:00",
+                "arrival": "2026-10-08T07:15:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A350-1000"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": "PT3H25M",
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-07T19:00:00",
+                    "arrival": "2026-10-08T07:15:00",
+                    "isDominantLeg": false,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              },
+              {
+                "flightNumber": "VS302",
+                "operatingFlightNumber": "VS302",
+                "pendingGovtApproval": false,
+                "duration": "PT8H55M",
+                "departure": "2026-10-08T10:40:00",
+                "arrival": "2026-10-09T00:05:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "destination": {
+                  "code": "DEL",
+                  "cityName": "Delhi",
+                  "countryName": "India",
+                  "airportName": "Indira Gandhi International Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT8H55M",
+                    "departure": "2026-10-08T10:40:00",
+                    "arrival": "2026-10-09T00:05:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "destination": {
+                      "code": "DEL",
+                      "cityName": "Delhi",
+                      "countryName": "India",
+                      "airportName": "Indira Gandhi International Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "300000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 295.2,
+                "amountIncludingTax": 295.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "500000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 532.8,
+                "amountIncludingTax": 532.8,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1143.7,
+                "amountIncludingTax": 1143.7,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT20H5M",
+            "departure": "2026-10-07T18:30:00",
+            "arrival": "2026-10-09T00:05:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "DEL",
+              "cityName": "Delhi",
+              "countryName": "India",
+              "airportName": "Indira Gandhi International Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS10",
+                "operatingFlightNumber": "VS10",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-07T18:30:00",
+                "arrival": "2026-10-08T06:45:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": "PT3H55M",
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-07T18:30:00",
+                    "arrival": "2026-10-08T06:45:00",
+                    "isDominantLeg": false,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              },
+              {
+                "flightNumber": "VS302",
+                "operatingFlightNumber": "VS302",
+                "pendingGovtApproval": false,
+                "duration": "PT8H55M",
+                "departure": "2026-10-08T10:40:00",
+                "arrival": "2026-10-09T00:05:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "destination": {
+                  "code": "DEL",
+                  "cityName": "Delhi",
+                  "countryName": "India",
+                  "airportName": "Indira Gandhi International Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT8H55M",
+                    "departure": "2026-10-08T10:40:00",
+                    "arrival": "2026-10-09T00:05:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "destination": {
+                      "code": "DEL",
+                      "cityName": "Delhi",
+                      "countryName": "India",
+                      "airportName": "Indira Gandhi International Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "300000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 295.2,
+                "amountIncludingTax": 295.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "500000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 532.8,
+                "amountIncludingTax": 532.8,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1143.7,
+                "amountIncludingTax": 1143.7,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT20H35M",
+            "departure": "2026-10-07T18:00:00",
+            "arrival": "2026-10-09T00:05:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "DEL",
+              "cityName": "Delhi",
+              "countryName": "India",
+              "airportName": "Indira Gandhi International Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS4",
+                "operatingFlightNumber": "VS4",
+                "pendingGovtApproval": false,
+                "duration": "PT7H20M",
+                "departure": "2026-10-07T18:00:00",
+                "arrival": "2026-10-08T06:20:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": "PT4H20M",
+                "legs": [
+                  {
+                    "duration": "PT7H20M",
+                    "departure": "2026-10-07T18:00:00",
+                    "arrival": "2026-10-08T06:20:00",
+                    "isDominantLeg": false,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              },
+              {
+                "flightNumber": "VS302",
+                "operatingFlightNumber": "VS302",
+                "pendingGovtApproval": false,
+                "duration": "PT8H55M",
+                "departure": "2026-10-08T10:40:00",
+                "arrival": "2026-10-09T00:05:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "destination": {
+                  "code": "DEL",
+                  "cityName": "Delhi",
+                  "countryName": "India",
+                  "airportName": "Indira Gandhi International Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT8H55M",
+                    "departure": "2026-10-08T10:40:00",
+                    "arrival": "2026-10-09T00:05:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "destination": {
+                      "code": "DEL",
+                      "cityName": "Delhi",
+                      "countryName": "India",
+                      "airportName": "Indira Gandhi International Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "300000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 295.2,
+                "amountIncludingTax": 295.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "500000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 532.8,
+                "amountIncludingTax": 532.8,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1143.7,
+                "amountIncludingTax": 1143.7,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT23H45M",
+            "departure": "2026-10-07T23:55:00",
+            "arrival": "2026-10-09T09:10:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "DEL",
+              "cityName": "Delhi",
+              "countryName": "India",
+              "airportName": "Indira Gandhi International Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS138",
+                "operatingFlightNumber": "VS138",
+                "pendingGovtApproval": false,
+                "duration": "PT7H10M",
+                "departure": "2026-10-07T23:55:00",
+                "arrival": "2026-10-08T12:05:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": "PT8H5M",
+                "legs": [
+                  {
+                    "duration": "PT7H10M",
+                    "departure": "2026-10-07T23:55:00",
+                    "arrival": "2026-10-08T12:05:00",
+                    "isDominantLeg": false,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              },
+              {
+                "flightNumber": "VS300",
+                "operatingFlightNumber": "VS300",
+                "pendingGovtApproval": false,
+                "duration": "PT8H30M",
+                "departure": "2026-10-08T20:10:00",
+                "arrival": "2026-10-09T09:10:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "destination": {
+                  "code": "DEL",
+                  "cityName": "Delhi",
+                  "countryName": "India",
+                  "airportName": "Indira Gandhi International Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT8H30M",
+                    "departure": "2026-10-08T20:10:00",
+                    "arrival": "2026-10-09T09:10:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "destination": {
+                      "code": "DEL",
+                      "cityName": "Delhi",
+                      "countryName": "India",
+                      "airportName": "Indira Gandhi International Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "300000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 295.2,
+                "amountIncludingTax": 295.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "500000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 532.8,
+                "amountIncludingTax": 532.8,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1143.7,
+                "amountIncludingTax": 1143.7,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT27H5M",
+            "departure": "2026-10-07T20:35:00",
+            "arrival": "2026-10-09T09:10:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "DEL",
+              "cityName": "Delhi",
+              "countryName": "India",
+              "airportName": "Indira Gandhi International Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS154",
+                "operatingFlightNumber": "VS154",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-07T20:35:00",
+                "arrival": "2026-10-08T08:50:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": "PT11H20M",
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-07T20:35:00",
+                    "arrival": "2026-10-08T08:50:00",
+                    "isDominantLeg": false,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              },
+              {
+                "flightNumber": "VS300",
+                "operatingFlightNumber": "VS300",
+                "pendingGovtApproval": false,
+                "duration": "PT8H30M",
+                "departure": "2026-10-08T20:10:00",
+                "arrival": "2026-10-09T09:10:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "destination": {
+                  "code": "DEL",
+                  "cityName": "Delhi",
+                  "countryName": "India",
+                  "airportName": "Indira Gandhi International Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT8H30M",
+                    "departure": "2026-10-08T20:10:00",
+                    "arrival": "2026-10-09T09:10:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "destination": {
+                      "code": "DEL",
+                      "cityName": "Delhi",
+                      "countryName": "India",
+                      "airportName": "Indira Gandhi International Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "300000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 295.2,
+                "amountIncludingTax": 295.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "500000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 532.8,
+                "amountIncludingTax": 532.8,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1143.7,
+                "amountIncludingTax": 1143.7,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

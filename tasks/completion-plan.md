@@ -10,7 +10,7 @@ For each program, get real native award searches working through PointSnap itsel
 
 Hosted deployment, multi-user load, prolonged idle/restart recovery, the 50-search/seven-day reliability qualification and operating-cost optimization remain required before public release. They are a later pass, not a gate that holds all subsequent airline connections behind American. Do not launch further hosted American qualification merely because another hosting experiment is available. Use hosting research now only if it is needed to establish an otherwise unavailable native connection.
 
-American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. Etihad has now passed the initial local integration gate; ANA’s current public award entries have been rechecked and reach member login; Southwest, SAS and Copa have now passed their initial local integration gates in PointSnap. Aeroplan, BA, Qatar, Virgin full flights, Singapore and Turkish retain their documented unresolved native-access work.
+American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. Etihad has now passed the initial local integration gate; ANA’s current public award entries have been rechecked and reach member login; Southwest, SAS and Copa have now passed their initial local integration gates in PointSnap. United and Virgin Atlantic have also passed their initial native member integration gates. Flying Blue native inventory is obtained and being integrated. Aeroplan, BA, Qatar, Singapore and Turkish retain their documented unresolved native-access work.
 
 Qantas's experimental native collector now passes initial domestic, international, API and frontend checks, but later repeat searches received HTTP 403 and an explicit Access Denied page. Keep this connection marked integrating. Preserve the successful samples and the current failure evidence; test a distinct access hypothesis before another unchanged request, while continuing the remaining airline connections.
 
@@ -38,6 +38,12 @@ The working order is American, Aeroplan, United, British Airways, Qatar, Virgin 
 For each airline, record hypothesis, changed variable, current official flow, outcome and next action. Distinguish implementation errors, access verification, login requirements, incomplete extraction and valid empty availability. Do not repeat an unchanged failed experiment as a new idea. Public access and member-specific eligibility must remain distinct.
 
 Read and update the [airline connection playbook](../docs/airline-connection-playbook.md) as discoveries accumulate. Carry tested session handling, transport diagnostics, completeness checks and pricing normalization into the next program. Keep airline-specific assumptions as hypotheses until independently verified.
+
+## Virgin and Flying Blue — member fallback progress
+
+Virgin native flight search is verified in PointSnap: JFK–LHR October 8, two adults, 6 itineraries / 17 fares; JFK–DEL connecting search also reconciles 6 / 17. Exact source fees, all available cabin choices, per-person and party totals, account eligibility and trip-prefilled links passed desktop/mobile checks. The full 333-test suite and optimized build pass. A worker restart required normal sign-in and a fresh Virgin email code; the authorized Gmail connector completed it. This is interactive operator recovery, not an unattended mailbox service or durable sign-in guarantee. United was restored and freshly reverified at 40 / 89 after the same restart.
+
+Flying Blue now supplies native JFK–AMS inventory after normal PIN sign-in; inspect all expanded fares and segment cabins before enabling the worker. Aeroplan sign-in succeeded but its first inventory request returned429; perform one normal recovery check after cooldown. Keep remaining native connections first.
 
 ## United — native member connection verified locally
 

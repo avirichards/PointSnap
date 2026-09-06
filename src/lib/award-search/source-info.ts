@@ -103,6 +103,13 @@ export const SOURCE_INFO: Record<
 
 /** A native browser search must never inherit the public finder's cached scope. */
 export function sourceInfo(programId: string, nativeBrowser = false) {
+  if (programId === "VS_FLYING_CLUB" && nativeBrowser)
+    return {
+      inventory: "flights" as const,
+      label: "Virgin Atlantic Flying Club · member award flights",
+      detail:
+        "Native Flying Club flight searches through an authorized operator session. All returned itineraries and cabin offers are reconciled with the displayed flight count and prices. Sold-out cabins are excluded. Exact fees and passenger totals are retained. Member eligibility, wider partner coverage and session recovery remain under verification. Customers do not connect their airline account to search PointSnap.",
+    };
   if (programId === "QF_FF" && nativeBrowser)
     return {
       inventory: "flights" as const,

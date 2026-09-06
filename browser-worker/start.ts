@@ -5,6 +5,7 @@ import { DeltaBrowserRunner } from "./delta";
 import { SmilesBrowserRunner } from "./smiles";
 import { SasBrowserRunner } from "./sas";
 import { UnitedBrowserRunner } from "./united";
+import { VirginBrowserRunner } from "./virgin";
 import { CopaBrowserRunner } from "./copa";
 import { QantasBrowserRunner } from "./qantas";
 import { SouthwestBrowserRunner } from "./southwest";
@@ -54,6 +55,10 @@ const worker = createBrowserWorker(runner, {
   qantasRunner:
     process.env.POINTSNAP_BROWSER_QANTAS === "1"
       ? new QantasBrowserRunner()
+      : undefined,
+  virginRunner:
+    process.env.POINTSNAP_BROWSER_VIRGIN === "1"
+      ? new VirginBrowserRunner()
       : undefined,
   unitedRunner:
     process.env.POINTSNAP_BROWSER_UNITED === "1"

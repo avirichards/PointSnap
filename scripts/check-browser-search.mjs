@@ -3,6 +3,7 @@ const base = process.env.POINTSNAP_TEST_URL || "http://127.0.0.1:3000";
 const program = process.env.POINTSNAP_TEST_PROGRAM || "AA_AADVANTAGE";
 if (
   ![
+    "VS_FLYING_CLUB",
     "UA_MP",
     "AA_AADVANTAGE",
     "DL_SKYMILES",

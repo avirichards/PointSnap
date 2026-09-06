@@ -15,6 +15,7 @@ import type { SmilesBrowserResult } from "./smiles";
 import type { SasBrowserResult } from "./sas";
 import type { CopaBrowserResult } from "./copa";
 import type { UnitedBrowserResult } from "./united";
+import type { VirginBrowserResult } from "./virgin";
 import type { QantasBrowserResult } from "./qantas";
 import type { SouthwestBrowserResult } from "./southwest";
 
@@ -29,6 +30,7 @@ type SearchRunner = {
     | EtihadBrowserResult
     | SasBrowserResult
     | QantasBrowserResult
+    | VirginBrowserResult
     | UnitedBrowserResult
     | CopaBrowserResult
     | SouthwestBrowserResult
@@ -45,6 +47,7 @@ type WorkerOptions = {
   etihadRunner?: SearchRunner;
   southwestRunner?: SearchRunner;
   sasRunner?: SearchRunner;
+  virginRunner?: SearchRunner;
   unitedRunner?: SearchRunner;
   copaRunner?: SearchRunner;
   qantasRunner?: SearchRunner;
@@ -152,6 +155,7 @@ export function createBrowserWorker(
           ...(options.etihadRunner ? ["EY_GUEST"] : []),
           ...(options.sasRunner ? ["SK_EUROBONUS"] : []),
           ...(options.qantasRunner ? ["QF_FF"] : []),
+          ...(options.virginRunner ? ["VS_FLYING_CLUB"] : []),
           ...(options.unitedRunner ? ["UA_MP"] : []),
           ...(options.copaRunner ? ["CM_CONNECTMILES"] : []),
           ...(options.southwestRunner ? ["WN_RAPID_REWARDS"] : []),
@@ -160,25 +164,27 @@ export function createBrowserWorker(
       return;
     }
     const selectedRunner =
-      req.url === "/v1/search/united"
-        ? options.unitedRunner
-        : req.url === "/v1/search/qantas"
-          ? options.qantasRunner
-          : req.url === "/v1/search/copa"
-            ? options.copaRunner
-            : req.url === "/v1/search/sas"
-              ? options.sasRunner
-              : req.url === "/v1/search/southwest"
-                ? options.southwestRunner
-                : req.url === "/v1/search/etihad"
-                  ? options.etihadRunner
-                  : req.url === "/v1/search/american"
-                    ? runner
-                    : req.url === "/v1/search/delta"
-                      ? options.deltaRunner
-                      : req.url === "/v1/search/smiles"
-                        ? options.smilesRunner
-                        : undefined;
+      req.url === "/v1/search/virgin"
+        ? options.virginRunner
+        : req.url === "/v1/search/united"
+          ? options.unitedRunner
+          : req.url === "/v1/search/qantas"
+            ? options.qantasRunner
+            : req.url === "/v1/search/copa"
+              ? options.copaRunner
+              : req.url === "/v1/search/sas"
+                ? options.sasRunner
+                : req.url === "/v1/search/southwest"
+                  ? options.southwestRunner
+                  : req.url === "/v1/search/etihad"
+                    ? options.etihadRunner
+                    : req.url === "/v1/search/american"
+                      ? runner
+                      : req.url === "/v1/search/delta"
+                        ? options.deltaRunner
+                        : req.url === "/v1/search/smiles"
+                          ? options.smilesRunner
+                          : undefined;
     if (req.method !== "POST" || !selectedRunner) {
       reply(res, 404, { message: "Unknown browser search." });
       return;
@@ -269,23 +275,25 @@ export function createBrowserWorker(
         elapsedMs: Date.now() - started,
         result: "error",
         programId:
-          req.url === "/v1/search/united"
-            ? "UA_MP"
-            : req.url === "/v1/search/qantas"
-              ? "QF_FF"
-              : req.url === "/v1/search/copa"
-                ? "CM_CONNECTMILES"
-                : req.url === "/v1/search/sas"
-                  ? "SK_EUROBONUS"
-                  : req.url === "/v1/search/southwest"
-                    ? "WN_RAPID_REWARDS"
-                    : req.url === "/v1/search/etihad"
-                      ? "EY_GUEST"
-                      : req.url === "/v1/search/smiles"
-                        ? "G3_GOL_SMILES"
-                        : req.url === "/v1/search/delta"
-                          ? "DL_SKYMILES"
-                          : "AA_AADVANTAGE",
+          req.url === "/v1/search/virgin"
+            ? "VS_FLYING_CLUB"
+            : req.url === "/v1/search/united"
+              ? "UA_MP"
+              : req.url === "/v1/search/qantas"
+                ? "QF_FF"
+                : req.url === "/v1/search/copa"
+                  ? "CM_CONNECTMILES"
+                  : req.url === "/v1/search/sas"
+                    ? "SK_EUROBONUS"
+                    : req.url === "/v1/search/southwest"
+                      ? "WN_RAPID_REWARDS"
+                      : req.url === "/v1/search/etihad"
+                        ? "EY_GUEST"
+                        : req.url === "/v1/search/smiles"
+                          ? "G3_GOL_SMILES"
+                          : req.url === "/v1/search/delta"
+                            ? "DL_SKYMILES"
+                            : "AA_AADVANTAGE",
         status,
         stage,
         message,
@@ -312,6 +320,7 @@ export function createBrowserWorker(
       await options.etihadRunner?.close();
       await options.southwestRunner?.close();
       await options.sasRunner?.close();
+      await options.virginRunner?.close();
       await options.unitedRunner?.close();
       await options.copaRunner?.close();
       await options.qantasRunner?.close();

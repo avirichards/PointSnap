@@ -2,6 +2,16 @@
 
 Updated September 6, 2026 UTC. This is the current set of lessons carried between connectors. The dated evidence files preserve individual experiments; this document records what changes in the next implementation. Observations are scoped to the route, date, party and runtime actually tested.
 
+## Virgin native member connection — September 6
+
+The official reward form hands off to a public dated search URL. Navigating that same documented query in the authenticated app-owned profile works without retaining basket or account identifiers. Collect only actual inventory from the page; validate its requested route, dates, adult count and filter flags. Ignore calendar minima. Reconcile the page’s “Showing N of N flights” plus every available and sold-out cabin before accepting a response.
+
+Virgin cash and points are whole-party values. Its visible fee rounds the party cash up to a whole dollar; retain the exact response amount (USD328.20 for two, USD164.10 each), and reconcile the rounded display separately. Explicit SOLD_OUT with a null price must not become an available fare. Source segment and dominant-leg data preserve connecting cabin details. Unsupported stop/cabin/empty shapes should fail visibly rather than silently truncate.
+
+A normal worker restart lost sign-in and required a new email verification. Authorized Gmail connector read and ordinary verification completed recovery; United only needed its normal password in the same restart. Persistent profiles and remembered devices do not promise persistent sign-in. No credentials, code values or authentication responses belong in evidence. Interactive agent access to Gmail is not an app-owned unattended mailbox integration. See [Virgin evidence](evidence/virgin-native-member-2026-09-06.json).
+
+Flying Blue’s first native response contains 14 itinerary rows and 42 cabin slots, including unavailable placeholders. Count available prices separately, inspect additional fare choices and segment cabins, and do not label base response capture an integrated source.
+
 ## United member fallback — September 6 integration
 
 United’s justified member fallback unlocks real native inventory. A successful password/code submission is only the beginning: collect the actual airline responses, verify the exact party, reconcile the displayed list and preserve account eligibility. The login alone is not a public-price feed.

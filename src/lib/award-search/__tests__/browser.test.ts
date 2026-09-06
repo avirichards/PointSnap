@@ -5,6 +5,8 @@ import etihadFixture from "./fixtures/etihad.json";
 import sasFixture from "./fixtures/sas-arn.json";
 import qantasFixture from "./fixtures/qantas-native-domestic-two.json";
 import unitedFixture from "../fixtures/united-lax-aus.json";
+import virginFixture from "../fixtures/virgin-native-jfk-lhr-two.json";
+import { sourceInfo } from "../source-info";
 import { parseQantasNative } from "../qantas-native";
 import copaFixture from "./fixtures/copa-lax-two.json";
 import southwestFixture from "./fixtures/southwest-den.json";
@@ -40,6 +42,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_COPA", "0");
   vi.stubEnv("POINTSNAP_BROWSER_QANTAS", "0");
   vi.stubEnv("POINTSNAP_BROWSER_UNITED", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_VIRGIN", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -47,6 +50,45 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches Virgin native flights independently from its calendar and verifies available fare totals", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_VIRGIN", "1");
+    expect(browserPrograms()).toEqual(["VS_FLYING_CLUB"]);
+    const query = {
+      origin: "JFK",
+      dest: "LHR",
+      departDate: "2026-10-08",
+      pax: 2,
+      minCabin: "Y" as const,
+    };
+    const body = {
+      ...response(),
+      programId: "VS_FLYING_CLUB",
+      query,
+      payload: virginFixture,
+      itineraryCount: 6,
+      fareCount: 17,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "VS_FLYING_CLUB",
+    );
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/virgin",
+    );
+    expect(rows).toHaveLength(6);
+    expect(rows.flatMap((r) => r.fares!)).toHaveLength(17);
+    expect(rows[0].prices.Y?.cash).toBe(164.1);
+    expect(sourceInfo("VS_FLYING_CLUB", true)?.inventory).toBe("flights");
+    expect(sourceInfo("VS_FLYING_CLUB", false)?.inventory).toBe("calendar");
+    fetch.mockResolvedValueOnce(Response.json({ ...body, fareCount: 18 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "VS_FLYING_CLUB"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+  });
   it("dispatches native United inventory with visible account eligibility and complete distinct fare counts", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_UNITED", "1");
