@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-09-06T02:40:37.074021+00:00",
+  "checkedAt": "2026-09-06T02:57:52.514179+00:00",
   "programId": "G3_GOL_SMILES",
   "scope": "Fresh anonymous Smiles Brazilian search, ordinary booking form, complete rendered results and regular-member cash/miles and offered baggage choices. Exact travel fees paid in cash. No traveler login or data subscription.",
-  "status": "Enabled in local PointSnap. Hosted Mac did not expose the booking form; hosted Linux submitted the search but received no expected flight API response within40 seconds. Hosted access remains unverified.",
+  "status": "Enabled in local PointSnap. Three hosted WebKit attempts did not return flights: two could not expose the booking form, one submitted and received no expected inventory response. Hosted access remains unverified.",
   "nativeFixture": {
     "query": {
       "origin": "GRU",
@@ -284,7 +284,7 @@
       "status": 503,
       "stage": "date",
       "message": "Smiles's browser search could not complete at date.",
-      "error": "locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Move forward to switch to the next month.', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"button\" aria-label=\"Move forward to switch to the next month.\" class=\"DayPickerNavigation_button DayPickerNavigation_button_1 DayPickerNavigation_button__horizontal DayPickerNavigation_button__horizontal_2\">\u2026</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 \u00d7 waiting for element to be "
+      "error": "locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Move forward to switch to the next month.', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"button\" aria-label=\"Move forward to switch to the next month.\" class=\"DayPickerNavigation_button DayPickerNavigation_button_1 DayPickerNavigation_button__horizontal DayPickerNavigation_button__horizontal_2\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be "
     },
     {
       "id": "e2d6b8fa-c00e-41b9-94e3-f9357cd64ff9",
@@ -440,7 +440,7 @@
       "status": 503,
       "stage": "all-fares-and-travel-fees",
       "message": "Smiles's browser search could not complete at all-fares-and-travel-fees.",
-      "error": "page.evaluate: Error: Itinerary 28/40: /v1/airlines/flight/boardingtax returned HTTP 452 (code: 113; errorCode: 113; message: N\u00e3o foi poss\u00edvel prosseguir com a emiss\u00e3o do voo escolhido devido \u00e0 indisponibilidade de assentos. Para prosseguir com emiss\u00e3o, ser\u00e1 necess\u00e1rio refazer a busca.; errorMessage: N\u00e3o foi poss\u00edvel prosseguir com a emiss\u00e3o do voo escolhido devido \u00e0 indisponibilidade de assentos. Para prosseguir com emiss\u00e3o, ser\u00e1 necess\u00e1rio refazer a busca.)"
+      "error": "page.evaluate: Error: Itinerary 28/40: /v1/airlines/flight/boardingtax returned HTTP 452 (code: 113; errorCode: 113; message: Não foi possível prosseguir com a emissão do voo escolhido devido à indisponibilidade de assentos. Para prosseguir com emissão, será necessário refazer a busca.; errorMessage: Não foi possível prosseguir com a emissão do voo escolhido devido à indisponibilidade de assentos. Para prosseguir com emissão, será necessário refazer a busca.)"
     },
     {
       "id": "bafcb343-b525-4bda-aba7-cfdd64d741a2",
@@ -558,7 +558,7 @@
         25,
         15
       ],
-      "lastVisibleRange": "26\u201340 of 40",
+      "lastVisibleRange": "26–40 of 40",
       "fullSearchItinerariesIncludingAlaska": 49,
       "fullSearchFareChoices": 289,
       "durationSeconds": 131.1,
@@ -682,12 +682,59 @@
             "elapsedMs": 18243
           }
         ],
-        "title": "Viver o mundo come\u00e7a aqui",
+        "title": "Viver o mundo começa aqui",
         "path": "/mfe/emissao-passagem/",
         "error": "browserContext.waitForEvent: Timeout 40000ms exceeded while waiting for event \"response\""
       },
       "run": "https://github.com/avirichards/PointSnap/actions/runs/34006676715",
       "runtime": "GitHub ubuntu-latest / standard WebKit"
+    },
+    {
+      "at": "2026-09-06T02:45:56.285Z",
+      "engine": "webkit",
+      "platform": "linux",
+      "architecture": "x64",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 35355,
+      "result": "error",
+      "complete": false,
+      "message": "Smiles's browser search could not complete at open-search.",
+      "stage": "open-search",
+      "diagnostic": {
+        "stages": [
+          {
+            "stage": "open-search",
+            "elapsedMs": 4445
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 5186,
+            "status": 200,
+            "path": "/portal/passagens"
+          }
+        ],
+        "network": [
+          {
+            "kind": "request-failed",
+            "host": "www.smiles.com.br",
+            "path": "/6dDHd7/kPnz/B/e/7ByNKLvKt0jX/aSDaJzVwhJwhGhOp/FxwfRw/eSp/SZl90Ay4B",
+            "error": "Load request cancelled"
+          }
+        ],
+        "title": "Passagens Aéreas baratas nacionais e internacionais - Smiles",
+        "path": "/portal/passagens",
+        "visibleText": "Smiles\nMilhas\nViagem\nServiços\nPacotes\nShopping\nPromoções\nCartão de Crédito GOL Smiles\nClube Smiles\nAcesse ou crie a sua conta\n\nJunte milhas e comece a viajar\n\nAcessar conta\nCriar conta\nPassagens Aéreas baratas nacionais e internacionais\nPassagens\nRadar Smiles\nViaje Fácil\nServiços GOL\nParceiras Aéreas\nMilhas de Voos\nNovas Rotas\nBusiness INSIGNIA\nFeriado, lá vou eu!\n\nOfertas para voar nos feriados prolongados de 2026.\n\nResgate já\n\n\n\n\n\nSlide 5 de 9\n\nPassagens aéreas: Escolha seu destino e planeje s",
+        "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('textbox', { name: 'Origem', exact: true }) to be visible\n    - waiting for \"https://www.smiles.com.br/portal/passagens\" navigation to finish...\n    - navigated to \"https://www.smiles.com.br/portal/passagens\"\n"
+      },
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34007239210",
+      "runtime": "ubuntu-latest",
+      "interpretation": "HTTP 200 public landing page rendered, but no origin form was exposed. No award API response or HTTP 403 was observed; this is not evidence of CAPTCHA or inventory denial."
     }
   ],
   "austinCorrection": {

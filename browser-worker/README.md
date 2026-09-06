@@ -90,3 +90,5 @@ American still fails in the hosted Mac runtime: Chrome receives homepage Access 
 
 
 Smiles may include nearby airports despite an exact-airport search. The worker validates every candidate and quote, then returns only the requested route; the app discloses other-airport exclusions and seat withdrawals. Diagnostics with `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` save sanitized rejected observations separately as `*-rejected-flights.json`. These are diagnostic evidence only and never live fallback data. Airport entry can fall back to a city name but always selects the exact IATA airport.
+
+Smiles diagnostics can explicitly select a standard engine with `POINTSNAP_SMILES_ENGINE=webkit|chromium|firefox`. The application continues to use WebKit. Reports include the engine in their filenames; failure diagnostics retain only public paths, response status, visible text and form labels, never input values, session cookies or request headers. The manual hosted workflow exposes the same engine choice. An experiment failure does not automatically trigger other engines.

@@ -1,6 +1,6 @@
 /** Explicit live diagnostic of the same Smiles runner used by PointSnap. */
 import { mkdir, writeFile } from "node:fs/promises";
-import { SmilesBrowserRunner } from "./smiles";
+import { SmilesBrowserRunner, type SmilesBrowserEngine } from "./smiles";
 import { BrowserSearchError } from "./american";
 import {
   parseSmiles,
@@ -18,15 +18,19 @@ async function main() {
   const query = parseQuery(
     new URLSearchParams({ origin, dest, departDate: date, pax, minCabin: "Y" }),
   );
+  const engine = process.env.POINTSNAP_SMILES_ENGINE ?? "webkit";
+  if (!["webkit", "chromium", "firefox"].includes(engine))
+    throw new Error("Unknown diagnostic browser engine.");
   const saveObservation = async (payload: unknown, rejected = false) => {
     await mkdir("work/browser-probes", { recursive: true });
     await writeFile(
-      `work/browser-probes/smiles-${origin}-${dest}-${date}-${pax}-${rejected ? "rejected-" : ""}flights.json`,
+      `work/browser-probes/smiles-${engine}-${origin}-${dest}-${date}-${pax}-${rejected ? "rejected-" : ""}flights.json`,
       JSON.stringify(payload),
       { mode: 0o600 },
     );
   };
   const runner = new SmilesBrowserRunner({
+      engine: engine as SmilesBrowserEngine,
       onObservation:
         process.env.POINTSNAP_SAVE_PUBLIC_FIXTURE === "1"
           ? (payload) => saveObservation(payload)
@@ -89,7 +93,7 @@ async function main() {
   }
   const output = {
     at: new Date().toISOString(),
-    engine: "webkit",
+    engine,
     platform: process.platform,
     architecture: process.arch,
     query,
@@ -98,7 +102,7 @@ async function main() {
   };
   await mkdir("work/browser-probes", { recursive: true });
   await writeFile(
-    `work/browser-probes/smiles-${origin}-${dest}-${date}-${pax}.json`,
+    `work/browser-probes/smiles-${engine}-${origin}-${dest}-${date}-${pax}.json`,
     JSON.stringify(output, null, 2) + "\n",
   );
   console.log(JSON.stringify(output));

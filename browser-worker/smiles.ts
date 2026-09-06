@@ -1,6 +1,8 @@
 import { SMILES_QUOTE_SCRIPT } from "./smiles-quote-script";
 import {
   webkit,
+  chromium,
+  firefox,
   type Browser,
   type BrowserContext,
   type Page,
@@ -21,6 +23,7 @@ import {
 export type SmilesBrowserResult = Omit<AmericanBrowserResult, "programId"> & {
   programId: "G3_GOL_SMILES";
 };
+export type SmilesBrowserEngine = "webkit" | "chromium" | "firefox";
 type RawFare = {
   uid: string;
   uidupsell?: string;
@@ -84,13 +87,21 @@ export class SmilesBrowserRunner {
   private pending?: Promise<Browser>;
   constructor(
     private options: {
+      engine?: SmilesBrowserEngine;
       onObservation?: (payload: unknown) => Promise<void>;
       onRejectedObservation?: (payload: unknown) => Promise<void>;
     } = {},
   ) {}
   private async browser() {
-    this.pending ??= webkit
-      .launch({ headless: true, timeout: 30000 })
+    const engine = this.options.engine ?? "webkit";
+    this.pending ??= { webkit, chromium, firefox }[engine]
+      .launch({
+        headless: true,
+        timeout: 30000,
+        ...(engine === "chromium"
+          ? { channel: "chromium", chromiumSandbox: true }
+          : {}),
+      })
       .catch((e) => {
         this.pending = undefined;
         throw e;
@@ -408,6 +419,24 @@ export class SmilesBrowserRunner {
           network,
           title: (await page?.title().catch(() => ""))?.slice(0, 160),
           path: page ? new URL(page.url()).pathname : undefined,
+          formFields: await page
+            ?.locator("input, select")
+            .evaluateAll((elements) =>
+              elements.slice(0, 20).map((e) => ({
+                tag: e.tagName,
+                type: e.getAttribute("type"),
+                label: e.getAttribute("aria-label"),
+                placeholder: e.getAttribute("placeholder"),
+                name: e.getAttribute("name"),
+              })),
+            )
+            .catch(() => []),
+          frames: context?.pages().flatMap((p) =>
+            p.frames().map((f) => {
+              const u = new URL(f.url() || "about:blank");
+              return { host: u.hostname, path: u.pathname.slice(0, 250) };
+            }),
+          ),
           visibleText: (
             await page
               ?.locator("body")

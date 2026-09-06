@@ -20,6 +20,14 @@ on:
         options:
           - ubuntu-latest
           - macos-15
+      browser:
+        description: Standard browser engine for the Smiles diagnostic
+        type: choice
+        default: webkit
+        options:
+          - webkit
+          - chromium
+          - firefox
 
 permissions:
   contents: read
@@ -41,13 +49,15 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install standard browser engines
-        if: inputs.program == 'american'
+        if: inputs.program == 'american' || inputs.program == 'smiles'
         run: pnpm exec playwright install --with-deps --no-shell chromium webkit firefox
       - name: Install standard WebKit
-        if: inputs.program == 'delta' || inputs.program == 'smiles'
+        if: inputs.program == 'delta'
         run: pnpm exec playwright install --with-deps webkit
       - name: Fresh anonymous Smiles search and every payment choice
         if: inputs.program == 'smiles'
+        env:
+          POINTSNAP_SMILES_ENGINE: ${{ inputs.browser }}
         run: pnpm exec tsx browser-worker/probe-smiles.ts
       - name: Fresh anonymous Delta search and complete pagination
         if: inputs.program == 'delta'
