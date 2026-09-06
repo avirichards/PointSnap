@@ -33,6 +33,26 @@ on:
         description: Explicit desktop Chrome startup-dialog diagnostic
         type: boolean
         default: false
+      expand_cabins:
+        description: American all-cabin plus Business/First searches
+        type: boolean
+        default: false
+      origin:
+        description: American desktop departure airport
+        type: string
+        default: LAX
+      destination:
+        description: American desktop destination airport
+        type: string
+        default: AUS
+      departure_date:
+        description: American desktop YYYY-MM-DD (blank means 30 days ahead)
+        type: string
+        default: ""
+      passengers:
+        description: American desktop adult count
+        type: string
+        default: "1"
 
 permissions:
   contents: read
@@ -83,12 +103,22 @@ jobs:
         if: inputs.program == 'american-desktop' && runner.os == 'macOS'
         env:
           POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
-        run: pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome
+          POINTSNAP_AMERICAN_EXPAND_CABINS: ${{ inputs.expand_cabins && '1' || '0' }}
+          POINTSNAP_PROBE_ORIGIN: ${{ inputs.origin }}
+          POINTSNAP_PROBE_DESTINATION: ${{ inputs.destination }}
+          POINTSNAP_PROBE_DATE: ${{ inputs.departure_date }}
+          POINTSNAP_PROBE_PASSENGERS: ${{ inputs.passengers }}
+        run: pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome "$POINTSNAP_PROBE_DATE" "$POINTSNAP_PROBE_ORIGIN" "$POINTSNAP_PROBE_DESTINATION" "$POINTSNAP_PROBE_PASSENGERS"
       - name: Ordinary Chrome with profile reuse and restart (Linux)
         if: inputs.program == 'american-desktop' && runner.os == 'Linux'
         env:
           POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
-        run: xvfb-run -a pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome
+          POINTSNAP_AMERICAN_EXPAND_CABINS: ${{ inputs.expand_cabins && '1' || '0' }}
+          POINTSNAP_PROBE_ORIGIN: ${{ inputs.origin }}
+          POINTSNAP_PROBE_DESTINATION: ${{ inputs.destination }}
+          POINTSNAP_PROBE_DATE: ${{ inputs.departure_date }}
+          POINTSNAP_PROBE_PASSENGERS: ${{ inputs.passengers }}
+        run: xvfb-run -a pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome "$POINTSNAP_PROBE_DATE" "$POINTSNAP_PROBE_ORIGIN" "$POINTSNAP_PROBE_DESTINATION" "$POINTSNAP_PROBE_PASSENGERS"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

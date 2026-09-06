@@ -38,13 +38,14 @@ async function main() {
     headless: desktop ? false : process.env.POINTSNAP_BROWSER_HEADLESS !== "0",
     entry: "homepage-form" as const,
     persistentProfile: true,
+    includePremium: process.env.POINTSNAP_AMERICAN_EXPAND_CABINS === "1",
   } satisfies NonNullable<
     ConstructorParameters<typeof AmericanBrowserRunner>[0]
   >;
   const createRunner = () =>
     desktop
       ? new AmericanBrowserRunner(
-          { entry: "homepage-form" },
+          { entry: "homepage-form", includePremium: options.includePremium },
           createDesktopChromeSession(),
         )
       : new AmericanBrowserRunner(options);
