@@ -1,12 +1,59 @@
 import { describe, expect, it } from "vitest";
 import source from "./fixtures/smiles.json";
 import partners from "./fixtures/smiles-partners.json";
-import { parseSmiles, smilesPayloadSchema } from "../smiles";
+import american from "./fixtures/smiles-american.json";
+import {
+  parseSmiles,
+  smilesPayloadSchema,
+  smilesObservationCounts,
+} from "../smiles";
 
 const query = { ...source.query, minCabin: "Y" as const };
 const fixture = () => smilesPayloadSchema.parse(structuredClone(source));
 
 describe("complete anonymous Smiles inventory", () => {
+  it("retains every exact-airport US itinerary when Smiles also includes Ontario departures", () => {
+    const q = { ...american.query, minCabin: "Y" as const };
+    const rows = parseSmiles(american, q);
+    expect(smilesObservationCounts(american)).toEqual({
+      listed: 40,
+      withdrawn: 3,
+      otherAirports: 15,
+    });
+    expect(rows).toHaveLength(22);
+    expect(rows.reduce((n, r) => n + r.fares!.length, 0)).toBe(168);
+    expect(
+      rows.every(
+        (r) =>
+          r.segments[0].origin === "LAX" &&
+          r.segments.at(-1)!.destination === "AUS",
+      ),
+    ).toBe(true);
+    expect(
+      rows
+        .filter((r) => r.segments.length === 1)
+        .map((r) => r.segments[0].flightNumber),
+    ).toEqual(["AA2118", "AA4945", "AA6443"]);
+    expect(rows[0].fares![0]).toMatchObject({
+      points: 26000,
+      cash: 91.76,
+      currency: "BRL",
+      quotedPassengers: 1,
+    });
+    expect(rows[0].fares).toHaveLength(7);
+  });
+  it("still rejects inconsistent legs, changed dates and invalid quotes on other-airport offers", () => {
+    const q = { ...american.query, minCabin: "Y" as const };
+    const cases = Array.from({ length: 3 }, () =>
+      smilesPayloadSchema.parse(american),
+    );
+    cases[0].response.requestedFlightSegmentList[0].flightList[9].legList[0].departure.airport.code =
+      "LAX";
+    cases[1].response.requestedFlightSegmentList[0].flightList[9].departure.date =
+      "2026-10-06T00:00:00";
+    cases[2].extensions[9].tax!.totals.totalBoardingTax.money++;
+    for (const p of cases) expect(() => parseSmiles(p, q)).toThrow();
+  });
   it("retains verified flights when Smiles explicitly withdraws a listed offer on its seat recheck", () => {
     const p = fixture();
     p.extensions[2].tax = undefined;

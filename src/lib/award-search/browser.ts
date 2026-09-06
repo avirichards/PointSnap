@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseAmerican } from "./american";
 import { parseDelta } from "./delta";
-import { parseSmiles, smilesPayloadSchema } from "./smiles";
+import { parseSmiles, smilesObservationCounts } from "./smiles";
 import { ProviderError } from "./types";
 
 function configuration() {
@@ -154,13 +154,17 @@ export async function browserSearch(
       `${name}'s browser response has incomplete flight or fare counts.`,
     );
   if (programId === "G3_GOL_SMILES") {
-    const withdrawn = smilesPayloadSchema
-      .parse(data.payload)
-      .extensions.filter((e) => e.unavailable).length;
+    const { withdrawn, otherAirports } = smilesObservationCounts(data.payload);
+    const notices: string[] = [];
     if (withdrawn)
-      onNotice?.(
+      notices.push(
         `Smiles withdrew ${withdrawn} listed ${withdrawn === 1 ? "offer" : "offers"} after its live seat recheck. Only offers with confirmed prices and taxes are shown.`,
       );
+    if (otherAirports)
+      notices.push(
+        `Smiles also returned ${otherAirports} ${otherAirports === 1 ? "offer" : "offers"} for other airports. Only ${q.origin}–${q.dest} flights are shown.`,
+      );
+    if (notices.length) onNotice?.(notices.join(" "));
   }
   return rows;
 }

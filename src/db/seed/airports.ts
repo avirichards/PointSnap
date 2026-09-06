@@ -38,6 +38,8 @@ export const AIRPORTS: AirportSeed[] = [
   { iata: "DFW", icao: "KDFW", name: "Dallas/Fort Worth", city: "Dallas", countryIso2: "US", region: "NA", latMicro: m(32.8998), lonMicro: m(-97.0403), tzOlson: "America/Chicago" },
   { iata: "DAL", icao: "KDAL", name: "Dallas Love Field", city: "Dallas", countryIso2: "US", region: "NA", latMicro: m(32.8471), lonMicro: m(-96.8518), tzOlson: "America/Chicago" },
   { iata: "IAH", icao: "KIAH", name: "Houston Intercontinental", city: "Houston", countryIso2: "US", region: "NA", latMicro: m(29.9844), lonMicro: m(-95.3414), tzOlson: "America/Chicago" },
+  // Airport/timezone reference: https://github.com/jpatokal/openflights/blob/master/data/airports.dat
+  { iata: "AUS", icao: "KAUS", name: "Austin-Bergstrom International", city: "Austin", countryIso2: "US", region: "NA", latMicro: m(30.1945), lonMicro: m(-97.669899), tzOlson: "America/Chicago" },
   { iata: "DEN", icao: "KDEN", name: "Denver International", city: "Denver", countryIso2: "US", region: "NA", latMicro: m(39.8561), lonMicro: m(-104.6737), tzOlson: "America/Denver" },
   { iata: "MSP", icao: "KMSP", name: "Minneapolis-St. Paul", city: "Minneapolis", countryIso2: "US", region: "NA", latMicro: m(44.8848), lonMicro: m(-93.2223), tzOlson: "America/Chicago" },
   { iata: "DTW", icao: "KDTW", name: "Detroit Metropolitan", city: "Detroit", countryIso2: "US", region: "NA", latMicro: m(42.2124), lonMicro: m(-83.3534), tzOlson: "America/Detroit" },

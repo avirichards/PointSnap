@@ -11,6 +11,7 @@ import {
   smilesPayloadSchema,
 } from "../src/lib/award-search/smiles";
 import { ProviderError } from "../src/lib/award-search/types";
+import { AIRPORTS } from "../src/db/seed/airports";
 import {
   BrowserSearchError,
   type AmericanBrowserResult,
@@ -29,6 +30,23 @@ type RawFare = {
   money: number;
 };
 type RawFlight = { uid: string; sourceGDS: string; fareList: RawFare[] };
+
+async function airport(page: Page, label: string, code: string) {
+  const input = page.getByRole("textbox", { name: label, exact: true });
+  const choice = page.getByRole("button", {
+    name: new RegExp(`^flight .* ${code}$`),
+  });
+  await input.fill(code);
+  const found = await choice.waitFor({ timeout: 2000 }).then(
+    () => true,
+    () => false,
+  );
+  const city = AIRPORTS.find((a) => a.iata === code)?.city;
+  // Smiles's autocomplete can match a country before the exact IATA code
+  // (AUS/Australia). Search the city, but still select only the requested code.
+  if (!found && city) await input.fill(city);
+  await choice.click();
+}
 
 async function date(page: Page, value: string) {
   const d = new Date(value + "T12:00:00Z");
@@ -67,6 +85,7 @@ export class SmilesBrowserRunner {
   constructor(
     private options: {
       onObservation?: (payload: unknown) => Promise<void>;
+      onRejectedObservation?: (payload: unknown) => Promise<void>;
     } = {},
   ) {}
   private async browser() {
@@ -112,10 +131,26 @@ export class SmilesBrowserRunner {
       page = await context.newPage();
       page.setDefaultTimeout(15000);
       mark("open-search");
-      await page.goto("https://www.smiles.com.br/portal/passagens", {
-        waitUntil: "domcontentloaded",
-        timeout: 35000,
+      const entry = await page.goto(
+        "https://www.smiles.com.br/portal/passagens",
+        {
+          waitUntil: "domcontentloaded",
+          timeout: 35000,
+        },
+      );
+      stages.push({
+        stage: "document",
+        elapsedMs: Date.now() - started,
+        status: entry?.status(),
+        path: "/portal/passagens",
       });
+      if (entry && !entry.ok())
+        throw new BrowserSearchError(
+          `Smiles's booking page returned HTTP ${entry.status()}.`,
+          stage,
+          503,
+          { stages },
+        );
       await page
         .getByRole("textbox", { name: "Origem", exact: true })
         .waitFor({ timeout: 30000 });
@@ -134,21 +169,8 @@ export class SmilesBrowserRunner {
         .getByRole("menuitem", { name: "Somente ida", exact: true })
         .click();
       await page.getByRole("textbox", { name: "Origem", exact: true }).click();
-      await page
-        .getByRole("textbox", { name: "Digite o local de origem", exact: true })
-        .fill(q.origin);
-      await page
-        .getByRole("button", { name: new RegExp(`^flight .* ${q.origin}$`) })
-        .click();
-      await page
-        .getByRole("textbox", {
-          name: "Digite o local de destino",
-          exact: true,
-        })
-        .fill(q.dest);
-      await page
-        .getByRole("button", { name: new RegExp(`^flight .* ${q.dest}$`) })
-        .click();
+      await airport(page, "Digite o local de origem", q.origin);
+      await airport(page, "Digite o local de destino", q.dest);
       mark("date");
       await date(page, q.departDate);
       if (q.pax > 1) {
@@ -312,7 +334,15 @@ export class SmilesBrowserRunner {
         );
       const payload = decoded.data,
         observedAt = new Date().toISOString();
-      const rows = parseSmiles(payload, q, observedAt);
+      let rows;
+      try {
+        rows = parseSmiles(payload, q, observedAt);
+      } catch (error) {
+        // Explicit diagnostics may retain only the sanitized candidate. It is
+        // never returned as availability or used as a live-search fallback.
+        await this.options.onRejectedObservation?.(payload);
+        throw error;
+      }
       await this.options.onObservation?.(payload);
       return {
         programId: "G3_GOL_SMILES",
@@ -339,6 +369,9 @@ export class SmilesBrowserRunner {
         stage,
         503,
         {
+          stages,
+          title: (await page?.title().catch(() => ""))?.slice(0, 160),
+          path: page ? new URL(page.url()).pathname : undefined,
           error:
             error instanceof Error ? error.message.slice(0, 500) : "unknown",
         },

@@ -87,3 +87,6 @@ The first exercises PointSnap's streaming API. A completed stream with a failed 
 The same Delta runner succeeds on a fresh GitHub macOS 15 / arm64 WebKit runtime: LAX–JFK October 6, one adult, all 49 itineraries / 173 fares / 9 nonstops in 24.0 seconds. The standard hosted Linux WebKit test reaches verification. These diagnostics use fresh anonymous contexts and are manual-only. They do not deploy a permanent browser service or establish load reliability.
 
 American still fails in the hosted Mac runtime: Chrome receives homepage Access Denied; WebKit submits the form and reaches Challenge Validation. Keep `POINTSNAP_BROWSER_AMERICAN=0`. See the per-airline evidence under `docs/evidence/`.
+
+
+Smiles may include nearby airports despite an exact-airport search. The worker validates every candidate and quote, then returns only the requested route; the app discloses other-airport exclusions and seat withdrawals. Diagnostics with `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` save sanitized rejected observations separately as `*-rejected-flights.json`. These are diagnostic evidence only and never live fallback data. Airport entry can fall back to a city name but always selects the exact IATA airport.

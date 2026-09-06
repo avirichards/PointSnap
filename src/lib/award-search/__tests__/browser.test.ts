@@ -3,6 +3,7 @@ import { browserPrograms, browserSearch } from "../browser";
 import { americanFixture } from "./fixtures/american";
 import deltaFixture from "./fixtures/delta.json";
 import smilesFixture from "./fixtures/smiles.json";
+import smilesAmericanFixture from "./fixtures/smiles-american.json";
 import { smilesPayloadSchema } from "../smiles";
 const q = {
   origin: "LAX",
@@ -33,6 +34,35 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("discloses both seat withdrawals and other-airport exclusions without losing matching Smiles flights", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_SMILES", "1");
+    const query = { ...smilesAmericanFixture.query, minCabin: "Y" as const };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        Response.json({
+          ...response(),
+          programId: "G3_GOL_SMILES",
+          query,
+          payload: smilesAmericanFixture,
+          itineraryCount: 22,
+          fareCount: 168,
+        }),
+      ),
+    );
+    const notice = vi.fn();
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "G3_GOL_SMILES",
+      notice,
+    );
+    expect(rows).toHaveLength(22);
+    expect(notice).toHaveBeenCalledOnce();
+    expect(notice.mock.calls[0][0]).toContain("withdrew 3 listed offers");
+    expect(notice.mock.calls[0][0]).toContain("15 offers for other airports");
+    expect(notice.mock.calls[0][0]).toContain("Only LAX–AUS flights are shown");
+  });
   it("reports withdrawn Smiles offers separately from the verified flight set", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_SMILES", "1");
     const payload = smilesPayloadSchema.parse(smilesFixture),
@@ -44,18 +74,16 @@ describe("browser search bridge", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(
-          Response.json({
-            ...response(),
-            programId: "G3_GOL_SMILES",
-            payload,
-            query,
-            itineraryCount: 4,
-            fareCount: 35,
-          }),
-        ),
+      vi.fn().mockResolvedValue(
+        Response.json({
+          ...response(),
+          programId: "G3_GOL_SMILES",
+          payload,
+          query,
+          itineraryCount: 4,
+          fareCount: 35,
+        }),
+      ),
     );
     const notice = vi.fn();
     expect(

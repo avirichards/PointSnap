@@ -4,7 +4,7 @@ import { SmilesBrowserRunner } from "./smiles";
 import { BrowserSearchError } from "./american";
 import {
   parseSmiles,
-  smilesPayloadSchema,
+  smilesObservationCounts,
 } from "../src/lib/award-search/smiles";
 import { parseQuery } from "../src/lib/award-search/query";
 
@@ -18,17 +18,22 @@ async function main() {
   const query = parseQuery(
     new URLSearchParams({ origin, dest, departDate: date, pax, minCabin: "Y" }),
   );
+  const saveObservation = async (payload: unknown, rejected = false) => {
+    await mkdir("work/browser-probes", { recursive: true });
+    await writeFile(
+      `work/browser-probes/smiles-${origin}-${dest}-${date}-${pax}-${rejected ? "rejected-" : ""}flights.json`,
+      JSON.stringify(payload),
+      { mode: 0o600 },
+    );
+  };
   const runner = new SmilesBrowserRunner({
       onObservation:
         process.env.POINTSNAP_SAVE_PUBLIC_FIXTURE === "1"
-          ? async (payload) => {
-              await mkdir("work/browser-probes", { recursive: true });
-              await writeFile(
-                `work/browser-probes/smiles-${origin}-${dest}-${date}-${pax}-flights.json`,
-                JSON.stringify(payload),
-                { mode: 0o600 },
-              );
-            }
+          ? (payload) => saveObservation(payload)
+          : undefined,
+      onRejectedObservation:
+        process.env.POINTSNAP_SAVE_PUBLIC_FIXTURE === "1"
+          ? (payload) => saveObservation(payload, true)
           : undefined,
     }),
     started = Date.now();
@@ -36,16 +41,15 @@ async function main() {
   try {
     const data = await runner.search(query, AbortSignal.timeout(180000));
     const rows = parseSmiles(data.payload, query, data.observedAt);
+    const counts = smilesObservationCounts(data.payload);
     report = {
       result: "success",
       complete: true,
       itineraries: data.itineraryCount,
       fares: data.fareCount,
-      listedItineraries: smilesPayloadSchema.parse(data.payload)
-        .displayedFlightCount,
-      withdrawnOffers: smilesPayloadSchema
-        .parse(data.payload)
-        .extensions.filter((e) => e.unavailable).length,
+      listedItineraries: counts.listed,
+      withdrawnOffers: counts.withdrawn,
+      otherAirportOffers: counts.otherAirports,
       nonstops: rows.filter(
         (r) => r.segments.length === 1 && !r.segments[0].technicalStops?.length,
       ).length,

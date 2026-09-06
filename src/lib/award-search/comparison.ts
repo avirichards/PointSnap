@@ -5,6 +5,7 @@ import type { AwardPrice, AwardResult } from "./types";
 import { centsPerPoint, pointsForParty } from "./value";
 import { PROGRAMS } from "@/lib/programs";
 import { stopAirports, stopCount } from "./stops";
+import { flightTimeStamp } from "./flight-time";
 export type SortOrder =
   | "points"
   | "value"
@@ -95,14 +96,6 @@ export function allFares(r: AwardResult): AwardPrice[] {
     ? r.fares
     : Object.values(r.prices).filter((p): p is AwardPrice => !!p);
 }
-function stamp(s: string | null) {
-  if (!s || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) return null;
-  if (/(?:Z|[+-]\d{2}:?\d{2})$/.test(s)) {
-    const t = Date.parse(s);
-    return Number.isFinite(t) ? `utc:${t}` : null;
-  }
-  return `local:${s.length === 16 ? s + ":00" : s.slice(0, 19)}`;
-}
 /** Never infer codeshare equivalence from a route and approximate departure time. */
 export function flightKey(r: AwardResult): string {
   if (r.kind !== "flight" || !r.segments.length)
@@ -117,8 +110,8 @@ export function flightKey(r: AwardResult): string {
       : /^\d+[A-Z]?$/.test(raw) && s.airline
         ? `${s.operatingAirline ?? s.airline}${Number.parseInt(raw, 10)}${raw.match(/[A-Z]$/)?.[0] ?? ""}`
         : null;
-    const departure = stamp(s.departure),
-      arrival = stamp(s.arrival);
+    const departure = flightTimeStamp(s.departure, s.origin),
+      arrival = flightTimeStamp(s.arrival, s.destination);
     return number && departure && arrival && s.origin && s.destination
       ? [s.origin, s.destination, number, departure, arrival]
       : null;
@@ -309,6 +302,12 @@ export function filterGroups(
       );
       return {
         ...g,
+        // The first source can be cached or excluded by the current filters.
+        // Use a remaining offer's journey, preferring confirmed stop details.
+        row:
+          offers.find((o) => !o.row.stopDetailsUnconfirmed)?.row ??
+          offers[0]?.row ??
+          g.row,
         offers,
         programs: [...new Set(offers.map((o) => o.row.programId))],
       };

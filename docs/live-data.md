@@ -316,3 +316,16 @@ All 185 tests, TypeScript, lint and an optimized Node 22 build pass. Real UI ver
 Four additional American local experiments used the system macOS WKWebView and newly created regular browser profiles. The system web view received HTTP 403 at both entries; Chrome's fresh regular profile received homepage 403; WebKit's fresh regular profile submitted the homepage form and reached Challenge Validation before inventory. No personal profile or verification state was imported. The twelve local and seven hosted attempts do not connect native AAdvantage.
 
 Seat-recheck correction: an actual PointSnap browser search failed at itinerary 28/40 with HTTP 452/code 113 and the airline’s explicit unavailable-seats response. The worker now preserves that withdrawal as a separate outcome while checking the rest of the source set. Verified offers remain available; coverage discloses the withdrawal count. Only the exact observed status/code is recognized; unknown errors do not become sold-out flights. Regression tests cover both paths and notice delivery.
+
+
+### Hosted Smiles follow-up
+
+The first fresh GitHub macos-15/WebKit diagnostic reached the Smiles booking URL but did not find the origin textbox within 30 seconds. Run [34005138631](https://github.com/avirichards/PointSnap/actions/runs/34005138631) failed before any inventory response. This evidence does not identify the HTTP status or prove a verification challenge; the worker now records document status and page title for future diagnostics. Local native and partner successes remain distinct from hosted access.
+
+
+### Smiles exact-airport correction
+
+An ordinary LAX–AUS October 5 search includes 15 Ontario (ONT) departures among 40 listed offers. Previously, rejecting these different airports discarded valid LAX flights too. The parser now validates all candidates and quotes, then retains only the exact requested airports and discloses the excluded count. Changed travel dates, inconsistent legs and invalid taxes still fail. The sanitized observation contains three explicit seat withdrawals, 22 matching grouped itineraries and 168 fare choices, including AA2118, AA4945 and AA6443 nonstops priced in Smiles. These are not native AAdvantage awards. The airport form also now falls back to a city name when the exact IATA query does not surface its airport, while still selecting only the exact IATA match. All188 tests, focused lint and the optimized TypeScript build pass.
+
+
+Fresh actual-app verification returned 22 Smiles itineraries/168 fares. All three supplied American nonstops survive filtering, no ONT rows appear, and the source panel discloses two withdrawals and 14 other-airport offers in this new observation. AA2118 now groups Alaska, cached Qantas and Smiles into one row with nine fares: airport-local and offset timestamps normalize to the same instant using known IANA zones. Repeated/nonexistent DST clocks and unknown-zone conversions remain conservative. A filtered group now uses a remaining offer with confirmed stop details instead of an earlier excluded/uncertain source. All 192 tests, focused lint, TypeScript and optimized build pass; actual page console is clean. The complete multi-source page has 91 grouped itineraries/374 fares, versus 107 before correcting time-format grouping.

@@ -12,6 +12,7 @@ import {
   type FlightOffer,
 } from "../comparison";
 import type { AwardResult, AwardPrice } from "../types";
+import { stopSummary } from "../stops";
 const price = (patch: Partial<AwardPrice> = {}): AwardPrice => ({
   cabin: "Y",
   points: 10000,
@@ -53,6 +54,79 @@ const offer = (r: AwardResult, p = price()): FlightOffer => ({
   price: p,
 });
 describe("exact physical itinerary comparisons", () => {
+  it("groups the same American flight across local-clock and offset providers without dropping fares", () => {
+    const local = row({
+      id: "smiles",
+      programId: "G3_GOL_SMILES",
+      origin: "LAX",
+      destination: "AUS",
+      segments: [
+        {
+          origin: "LAX",
+          destination: "AUS",
+          departure: "2026-10-05T16:46:00",
+          arrival: "2026-10-05T21:42:00",
+          airline: "AA",
+          flightNumber: "AA2118",
+        },
+      ],
+    });
+    const offset = row({
+      ...local,
+      id: "alaska",
+      programId: "AS_MILEAGEPLAN",
+      segments: local.segments.map((s) => ({
+        ...s,
+        departure: s.departure + "-07:00",
+        arrival: s.arrival + "-05:00",
+      })),
+    });
+    const groups = groupFlights([local, offset]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].programs).toEqual(["G3_GOL_SMILES", "AS_MILEAGEPLAN"]);
+    expect(groups[0].offers).toHaveLength(2);
+    const differentTime = row({
+      ...offset,
+      id: "different",
+      segments: offset.segments.map((s) => ({
+        ...s,
+        departure: "2026-10-05T16:47:00-07:00",
+      })),
+    });
+    expect(groupFlights([local, differentTime])).toHaveLength(2);
+  });
+  it("shows confirmed stop details from matching offers instead of an earlier uncertain source", () => {
+    const cached = row({
+      id: "cached",
+      programId: "QF_FF",
+      freshness: "cached",
+      stopDetailsUnconfirmed: true,
+    });
+    const live = row({
+      id: "live",
+      programId: "G3_GOL_SMILES",
+      stopDetailsUnconfirmed: false,
+    });
+    const groups = groupFlights([cached, live]);
+    const all = filterGroups(groups, defaultFilters(), 1);
+    expect(all[0].offers).toHaveLength(2);
+    expect(stopSummary(all[0].row)).toBe("Nonstop");
+    const nonstop = filterGroups(
+      groups,
+      { ...defaultFilters(), maxStops: "0" },
+      1,
+    );
+    expect(nonstop[0].programs).toEqual(["G3_GOL_SMILES"]);
+    expect(nonstop[0].row.id).toBe("live");
+    expect(stopSummary(nonstop[0].row)).toBe("Nonstop");
+    const onlyCached = filterGroups(
+      groups,
+      { ...defaultFilters(), programs: ["QF_FF"] },
+      1,
+    );
+    expect(onlyCached[0].row.id).toBe("cached");
+    expect(stopSummary(onlyCached[0].row)).toBe("Direct · check stops");
+  });
   it("keeps date prices and sorting aligned after economy is filtered to business", () => {
     const groups = groupFlights([
       row({ fares: [price(), price({ cabin: "J", points: 60000 })] }),

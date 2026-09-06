@@ -202,6 +202,19 @@ function regular(f: z.infer<typeof fare>) {
   return f.type === "SMILES" || f.type === "SMILES_MONEY";
 }
 
+export function smilesObservationCounts(payload: unknown) {
+  const p = smilesPayloadSchema.parse(payload);
+  return {
+    listed: p.displayedFlightCount,
+    withdrawn: p.extensions.filter((e) => e.unavailable).length,
+    otherAirports: p.response.requestedFlightSegmentList[0].flightList.filter(
+      (f) =>
+        f.departure.airport.code !== p.query.origin ||
+        f.arrival.airport.code !== p.query.dest,
+    ).length,
+  };
+}
+
 export function parseSmiles(
   payload: unknown,
   q: SearchQuery,
@@ -229,12 +242,20 @@ export function parseSmiles(
   for (const [index, f] of flights.entries()) {
     const e = p.extensions.find((e) => e.flightIndex === index);
     if (!e) fail("missing fare details");
+    const legs = f.legList;
     if (
-      f.departure.airport.code !== q.origin ||
-      f.arrival.airport.code !== q.dest ||
-      f.departure.date.slice(0, 10) !== q.departDate
+      f.departure.date.slice(0, 10) !== q.departDate ||
+      legs[0].departure.date !== f.departure.date ||
+      legs.at(-1)!.arrival.date !== f.arrival.date ||
+      legs[0].departure.airport.code !== f.departure.airport.code ||
+      legs.at(-1)!.arrival.airport.code !== f.arrival.airport.code ||
+      legs.some(
+        (l, i) =>
+          i > 0 &&
+          legs[i - 1].arrival.airport.code !== l.departure.airport.code,
+      )
     )
-      fail("an incomplete or different route");
+      fail("an incomplete itinerary or different travel date");
     if (e.unavailable) continue;
     const tax = e.tax;
     if (!tax) fail("missing travel-fee verification");
@@ -272,30 +293,9 @@ export function parseSmiles(
       )
     )
       fail("inconsistent travel fees");
-    const quotedCabin = CABINS[f.cabin],
-      legs = f.legList;
+    const quotedCabin = CABINS[f.cabin];
     if (p.requestedCabin === "ECONOMIC" && quotedCabin !== "Y")
       fail("a cabin outside the submitted search");
-    if (
-      f.departure.airport.code !== q.origin ||
-      f.arrival.airport.code !== q.dest ||
-      f.departure.date.slice(0, 10) !== q.departDate ||
-      legs[0].departure.date !== f.departure.date ||
-      legs.at(-1)!.arrival.date !== f.arrival.date ||
-      legs[0].departure.airport.code !== q.origin ||
-      legs.at(-1)!.arrival.airport.code !== q.dest ||
-      legs.some(
-        (l, i) =>
-          i > 0 &&
-          legs[i - 1].arrival.airport.code !== l.departure.airport.code,
-      ) ||
-      legs.some(
-        (l) =>
-          !Number.isFinite(Date.parse(l.departure.date + "Z")) ||
-          !Number.isFinite(Date.parse(l.arrival.date + "Z")),
-      )
-    )
-      fail("an incomplete or different route");
     if (f.stops < legs.length - 1) fail("an inconsistent stop count");
     if (f.duration.hours * 60 + f.duration.minutes <= 0)
       fail("an invalid trip duration");
@@ -420,6 +420,11 @@ export function parseSmiles(
           ),
         );
     if (
+      // Smiles includes nearby airports even when its submitted query names an
+      // exact airport (observed LAX -> AUS also contains ONT departures). Keep
+      // every candidate fully validated, then expose only the requested route.
+      f.departure.airport.code !== q.origin ||
+      f.arrival.airport.code !== q.dest ||
       CABIN_ORDER.indexOf(quotedCabin) < CABIN_ORDER.indexOf(q.minCabin) ||
       (seats !== null && seats < q.pax)
     )

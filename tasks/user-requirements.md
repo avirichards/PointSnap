@@ -187,3 +187,11 @@ The airline-first objective remains active and all 68 message groups remain logg
 American remains a priority: four new local runtime/profile experiments did not connect it, bringing recorded attempts to twelve local / seven hosted. Newly created profiles contain no personal state and are removed after the diagnostic. No existing request has been discarded or checked off without evidence.
 
 Additional UI improvement logged during the source audit: large cash-plus-miles fare families can create a long radio list. Consider a clearer fare-family/payment chooser after airline coverage work, preserving every option and visible total. Cash-plus-miles totals are now labeled “Cash for your party” rather than describing the entire cash portion as taxes. General fare notes no longer imply special eligibility automatically.
+
+
+### Smiles US partner follow-up
+
+All68 requests remain logged and airline access stays first. A new exact-airport bug was identified in the actual Smiles LAX–AUS response: the airline includes ONT alternatives. Every candidate is still validated, but matching LAX itineraries are retained and other-airport exclusions disclosed. The captured fixture contains three American nonstops and168 fare choices across22 matching itineraries. This is Smiles partner coverage, not native AAdvantage or the still-unimplemented hidden-city feature. Three new regression checks pass. The first hosted macOS Smiles test could not expose the booking form, so hosted access remains unverified.
+
+
+The US partner change is now verified in the actual app: 22 Smiles itineraries/168 fares, all three nonstops retained by the Nonstop filter, original BRL and USD conversion correct. AA2118 consolidates three booking programs and nine choices after timezone-aware exact matching. A stale group-level stop label was also fixed. All 192 tests and the optimized build pass. Native American and United access remain unfinished; no requirement is marked complete solely because partner flights are available.
