@@ -44,6 +44,7 @@ describe("background browser request boundary", () => {
     { path: "southwest", id: "WN_RAPID_REWARDS", option: "southwestRunner" },
     { path: "sas", id: "SK_EUROBONUS", option: "sasRunner" },
     { path: "copa", id: "CM_CONNECTMILES", option: "copaRunner" },
+    { path: "qantas", id: "QF_FF", option: "qantasRunner" },
   ])(
     "enables $path independently and releases its owned browser on shutdown",
     async ({ path, id, option }) => {

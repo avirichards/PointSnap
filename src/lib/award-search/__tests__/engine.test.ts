@@ -8,7 +8,7 @@ const mock = vi.hoisted(() => ({
 }));
 vi.mock("../direct", () => ({
   directSearch: mock.direct,
-  DIRECT_PROGRAMS: ["AS_MILEAGEPLAN", "B6_TRUEBLUE", "VS_FLYING_CLUB"],
+  DIRECT_PROGRAMS: ["AS_MILEAGEPLAN", "B6_TRUEBLUE", "VS_FLYING_CLUB", "QF_FF"],
 }));
 vi.mock("../seats", () => ({
   seatsSearch: mock.seats,
@@ -49,6 +49,34 @@ async function run(ids: string[]) {
   return events;
 }
 describe("multi-program orchestration", () => {
+  it("keeps native Qantas distinct from its cached finder and never falls back silently", async () => {
+    mock.browserIds.mockReturnValue(["QF_FF"]);
+    mock.browser.mockResolvedValue([]);
+    const events = await run(["QF_FF"]);
+    expect(mock.direct).not.toHaveBeenCalled();
+    expect(events.at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: {
+        source: "Qantas Frequent Flyer · airline browser",
+        message: expect.stringContaining("Anonymous native Qantas"),
+      },
+    });
+    mock.browser.mockRejectedValue(
+      new ProviderError("Native inventory unavailable"),
+    );
+    expect((await run(["QF_FF"])).at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: { state: "error", message: "Native inventory unavailable" },
+    });
+    expect(mock.direct).not.toHaveBeenCalled();
+    mock.browserIds.mockReturnValue([]);
+    expect((await run(["QF_FF"])).at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: { message: expect.stringContaining("Cached Classic Reward") },
+    });
+    expect(mock.direct).toHaveBeenCalledOnce();
+  });
+
   it("lets a fast Southwest result arrive while other browser sources are still pending", async () => {
     const ids = [
       "AA_AADVANTAGE",

@@ -94,3 +94,15 @@ export const SOURCE_INFO: Record<
       "Frontier award itineraries and fare bundles. International currency and premium seat types are not yet verified.",
   },
 };
+
+/** A native browser search must never inherit the public finder's cached scope. */
+export function sourceInfo(programId: string, nativeBrowser = false) {
+  if (programId === "QF_FF" && nativeBrowser)
+    return {
+      inventory: "flights" as const,
+      label: "Qantas Classic & Classic Plus award flights",
+      detail:
+        "Anonymous native Qantas quotes, including offered partners and Australian domestic routes. Every returned itinerary and available reward fare is reconciled with the airline page. Exact points and fees are quoted per person, with mixed cabins preserved. Login is required to confirm eligibility and book. Broader inventory coverage remains under verification.",
+    };
+  return SOURCE_INFO[programId];
+}

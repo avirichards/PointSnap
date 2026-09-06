@@ -12,6 +12,8 @@ Hosted deployment, multi-user load, prolonged idle/restart recovery, the 50-sear
 
 American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. Etihad has now passed the initial local integration gate; ANA’s current public award entries have been rechecked and reach member login; Southwest, SAS and Copa have now passed their initial local integration gates in PointSnap. Aeroplan, United, BA, Qatar, Virgin full flights, Singapore and Turkish retain their documented unresolved native-access work.
 
+Qantas's experimental native collector now passes initial domestic, international, API and frontend checks, but later repeat searches received HTTP 403 and an explicit Access Denied page. Keep this connection marked integrating. Preserve the successful samples and the current failure evidence; test a distinct access hypothesis before another unchanged request, while continuing the remaining airline connections.
+
 ## Outcome and constraints
 
 Deliver a practical, polished public award-search website with reliable native program data, complete flight and fare choices for each supported query, and all remaining product requirements verified in the actual browser. Customers must not need airline account connections or a helper installation. Keep existing working sources available.

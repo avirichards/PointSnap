@@ -191,3 +191,30 @@ POINTSNAP_TEST_PROGRAM=CM_CONNECTMILES node scripts/check-browser-search.mjs LAX
 No returned list is labeled airline-wide exhaustive. Valid empty searches, broader inventory limits, hosted operation and sustained reliability remain open. Missing, inconsistent or unfinished responses fail explicitly. Debug output contains allowlisted public flight data; never persist booking references, authentication headers or personal browser state.
 
 Copa local verification: LAX–PTY October 5 / two adults returned 46 exact itineraries and 60 fares; JFK–PTY October 6 returned 8 / 17 after accounting for all 45 source rows and 60 fares. The JFK source also returned 37 nearby-airport alternatives. A December 1 query returned 30 / 35. The actual desktop/mobile UI verified fare switching, party totals and booking conditions. The 90.9-second JFK full-page check justified a bounded 180-second Copa worker timeout and 185-second bridge timeout. No source flights or fares are dropped to fit that deadline.
+
+
+## Qantas ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_QANTAS="1"` in both private environment files, restart the idle worker, and verify authenticated health includes `QF_FF`. The runner owns its `qantas-desktop-collector` profile and submits the normal public Rewards / One way form without an account. Do not run a standalone probe while the worker owns that profile.
+
+```sh
+# Standalone only when the service is stopped:
+POINTSNAP_SAVE_PUBLIC_FIXTURE=1 node --import tsx browser-worker/probe-qantas-live.ts SYD MEL 2027-01-04 1
+# Actual API with the running service:
+POINTSNAP_TEST_PROGRAM=QF_FF node scripts/check-browser-search.mjs SYD LAX 2026-10-05 2
+```
+
+The collector verifies the selected airports, date and adult count, captures only `flexPricerAvailabilityActionFromLoad`, selects All cabins and expands every available flight row. Domestic grouped buttons and international fare radios are reconciled against each source itinerary, flight number, local clock, duration, point price, rounded list fee and Classic/Classic Plus family. Exact source fees and party totals are retained. Nearby-airport alternatives are excluded from exact-airport results and counted explicitly; mixed cabins stay visible.
+
+Local verification: independent SYD–MEL October 5 / two adults returned 37 itineraries / 62 fares; January 4 / one adult returned 45 / 57 after loading additional calendar months and changing the party. Actual PointSnap SYD–LAX October 5 / two adults returned 12 / 19 in 12.3 seconds, including all four cabins and PR/EK partners. A Business-minimum API query retained 2 itineraries / 3 Business/First fares and passed the same full source reconciliation. Desktop and mobile showed exact original AUD charges, converted USD, party totals and segment-level mixed cabins.
+
+When enabled, native Qantas takes precedence over the cached public finder; native failures remain explicit errors and never silently fall back to cached data. Disabling the flag preserves the independently labeled cached finder. Booking uses Qantas's public booking form; member eligibility, final booking totals, trip-prefilled handoffs, valid empty responses, technical-stop shapes, broader source-set completeness and later hosted qualification remain open. No all-Qantas or all-airline completeness claim is made.
+
+
+## September 6 — Qantas repeat-search access limitation
+
+The initial native integration passes remain valid observations. A normal SYD–MEL January 4 search returned 49 grouped itineraries and 77 fares from Qantas, American and Alaska in 89.1 seconds. Qantas contributed all 45 itineraries and 57 fares, displayed across pages of 25 and 20 rows. Desktop checks found no page errors or horizontal overflow.
+
+A later three-program repeat omitted Qantas because its source search failed. The optional country-notice wait was corrected so an absent notice cannot prematurely end the inventory wait. The next repeat returned native HTTP 403. A Qantas-only search on the same owned runtime then reached an explicit Access Denied page at the ordinary public booking redirect. Isolating the query therefore did not resolve access. The collector now detects denied booking navigation directly. No bypass, cookie transplant, profile rotation or account was used. Further unchanged requests were stopped.
+
+Qantas remains an enabled experimental native adapter with documented successful samples and a current access issue; the cached finder stays implemented behind native opt-out. Do not describe it as reliably connected or count its earlier samples as proof of all routes. The progress dashboard shows integrating. Continue the approved native-airline connection pass while retaining this issue, broader inventory completeness, valid empty/technical-stop formats and later hosted qualification as open work.

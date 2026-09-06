@@ -5,6 +5,7 @@ import { DeltaBrowserRunner } from "./delta";
 import { SmilesBrowserRunner } from "./smiles";
 import { SasBrowserRunner } from "./sas";
 import { CopaBrowserRunner } from "./copa";
+import { QantasBrowserRunner } from "./qantas";
 import { SouthwestBrowserRunner } from "./southwest";
 import { createDesktopChromeSession } from "./desktop-chrome";
 
@@ -49,6 +50,10 @@ const runner =
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",
   evidenceDirectory: process.env.POINTSNAP_BROWSER_EVIDENCE_DIR,
+  qantasRunner:
+    process.env.POINTSNAP_BROWSER_QANTAS === "1"
+      ? new QantasBrowserRunner()
+      : undefined,
   copaRunner:
     process.env.POINTSNAP_BROWSER_COPA === "1"
       ? new CopaBrowserRunner()

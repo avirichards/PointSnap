@@ -5,11 +5,13 @@ import { PROGRAMS } from "@/lib/programs";
 import { providerCoverage } from "@/lib/award-search/engine";
 import { bookingUrl } from "@/lib/bookingHandoff";
 import { workerConfigured } from "@/lib/worker";
-import { SOURCE_INFO } from "@/lib/award-search/source-info";
+import { browserPrograms } from "@/lib/award-search/browser";
+import { sourceInfo } from "@/lib/award-search/source-info";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Programs — PointSnap" };
 export default function ProgramsPage() {
   const enabled = providerCoverage();
+  const native = new Set(browserPrograms());
   return (
     <>
       <SiteHeader />
@@ -58,7 +60,8 @@ export default function ProgramsPage() {
                   {enabled.includes(p.id) ? (
                     <>
                       <Check className="size-4 text-primary" />
-                      {SOURCE_INFO[p.id]?.label ?? "Individual flight source"}
+                      {sourceInfo(p.id, native.has(p.id))?.label ??
+                        "Individual flight source"}
                     </>
                   ) : (
                     <>Data connection needed</>
@@ -66,13 +69,17 @@ export default function ProgramsPage() {
                 </p>
                 <a
                   className="text-sm font-medium inline-flex items-center gap-1 mt-auto hover:underline"
-                  href={bookingUrl(p.id, {
-                    origin: "",
-                    dest: "",
-                    departDate: "",
-                    pax: 1,
-                    minCabin: "Y",
-                  })}
+                  href={
+                    p.id === "QF_FF" && native.has(p.id)
+                      ? "https://www.qantas.com/en-us/book/flights"
+                      : bookingUrl(p.id, {
+                          origin: "",
+                          dest: "",
+                          departDate: "",
+                          pax: 1,
+                          minCabin: "Y",
+                        })
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                 >

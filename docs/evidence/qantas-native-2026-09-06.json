@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-06T13:26:59.221180+00:00",
+  "checkedAt": "2026-09-06T14:18:14.535Z",
   "program": "QF_FF",
-  "status": "native-anonymous-access-and-parser-verified; worker/API/frontend integration pending",
+  "status": "native browser/API/frontend integration verified on initial samples; subsequent anonymous access denials unresolved",
   "runtime": "App-owned ordinary installed Chrome with a dedicated Qantas profile. No airline account, personal browser state, subscription, request replay or security modification.",
   "hypothesis": "The normal public Rewards booking flow may provide live inventory independently of the cached Flight Reward Finder.",
   "entry": "https://www.qantas.com/en-us/book/flights",
@@ -128,19 +128,19 @@
   },
   "bookingBoundary": "Domestic fare expansion explicitly says log in to select. International radio selection became checked but the cart remained zero; no final cart total, booking or login was completed. Exact party totals above are native response values, not a confirmed booking.",
   "remaining": [
-    "Build and verify the independent PointSnap browser runner and API/frontend integration.",
+    "Resolve the later anonymous access denials; initial successful searches do not establish repeatable availability.",
     "Broaden route/date/party and cabin-selected source-set completeness; these samples do not establish all Qantas inventory.",
     "Validate technical-stop shapes and valid empty responses before accepting them.",
     "Verify fare handoffs, applicable member eligibility and selected-cart totals.",
     "Keep hosted and sustained production qualification for the later pass."
   ],
-  "enabledNativeSource": false,
+  "enabledNativeSource": true,
   "cachedFinderUnchanged": true,
-  "browserClosed": true,
+  "browserClosed": "Standalone and QA browsers closed; normal worker retains its owned runtime. Debug capture disabled.",
   "validation": {
     "focusedTests": 12,
-    "fullSuiteTests": 273,
-    "fullSuiteFiles": 34,
+    "fullSuiteTests": 282,
+    "fullSuiteFiles": 35,
     "typescript": "passed",
     "focusedEslint": "passed",
     "optimizedNode22Build": "passed",
@@ -148,7 +148,152 @@
       "verified": true,
       "pageErrors": 0,
       "horizontalOverflow": false,
-      "nativeSourceStillNotEnabled": true
+      "currentQantasState": "integrating; later anonymous access denials disclosed",
+      "programLabelAndOfficialBookingLinkVerified": true
     }
+  },
+  "integration": {
+    "checkedAt": "2026-09-06T14:00:49.559Z",
+    "runner": "browser-worker/qantas.ts",
+    "transport": "actual public form in app-owned ordinary installed Chrome; native response captured from that same browser",
+    "standalone": [
+      {
+        "origin": "SYD",
+        "dest": "MEL",
+        "date": "2026-10-05",
+        "adults": 2,
+        "itineraries": 37,
+        "fares": 62,
+        "elapsedMs": 23664
+      },
+      {
+        "origin": "SYD",
+        "dest": "LAX",
+        "date": "2026-10-05",
+        "adults": 2,
+        "itineraries": 12,
+        "fares": 19,
+        "elapsedMs": 23862
+      },
+      {
+        "origin": "SYD",
+        "dest": "MEL",
+        "date": "2027-01-04",
+        "adults": 1,
+        "itineraries": 45,
+        "fares": 57,
+        "elapsedMs": 13835
+      }
+    ],
+    "actualPointSnap": {
+      "route": "SYD-LAX",
+      "date": "2026-10-05",
+      "adults": 2,
+      "itineraries": 12,
+      "fares": 19,
+      "elapsedSeconds": 12.3,
+      "businessMinimum": {
+        "itineraries": 2,
+        "fares": 3,
+        "cabins": [
+          "J",
+          "F"
+        ],
+        "elapsedMs": 11943
+      }
+    },
+    "frontend": {
+      "desktopWidth": 1440,
+      "mobileWidth": 390,
+      "pageErrors": 0,
+      "horizontalOverflow": false,
+      "QF11": {
+        "pointsPerPerson": 48200,
+        "partyPoints": 96400,
+        "partyFeesAUD": 495.98,
+        "displayedPartyUSD": 356.64
+      },
+      "QF405_QF93_Premium": {
+        "pointsPerPerson": 323700,
+        "partyPoints": 647400,
+        "partyFeesAUD": 781.4,
+        "displayedPartyUSD": 561.88,
+        "segmentCabins": [
+          "Economy",
+          "Premium"
+        ]
+      },
+      "handoff": "official Qantas booking form; no trip-prefilled handoff or booking completed"
+    },
+    "fullMultiSource": {
+      "origin": "SYD",
+      "dest": "MEL",
+      "date": "2027-01-04",
+      "adults": 1,
+      "groupedItineraries": 49,
+      "fareChoices": 77,
+      "sourcesWithResults": [
+        "QF_FF",
+        "AA_AADVANTAGE",
+        "AS_MILEAGEPLAN"
+      ],
+      "elapsedSeconds": 89.1,
+      "qantas": {
+        "itineraries": 45,
+        "fares": 57,
+        "workerElapsedMs": 13753,
+        "withQueueMs": 16347,
+        "displayedPages": [
+          25,
+          20
+        ]
+      },
+      "frontend": {
+        "pageErrors": 0,
+        "horizontalOverflow": false,
+        "sharedFlightRowsHaveThreePrograms": true,
+        "threeProgramDialogVerification": false,
+        "reason": "Follow-up comparison had only American and Alaska because native Qantas returned an explicit source error."
+      },
+      "otherSources": "Remaining unavailable/error states remained visible; this normal search does not prove those programs work on this route."
+    },
+    "experiments": [
+      {
+        "variable": "airport-option text matching",
+        "result": "Word-boundary text matching missed the actual SYD suggestion because labels concatenate. Matching the exact IATA child of the real option succeeds."
+      },
+      {
+        "variable": "calendar lazy month rendering and state commit",
+        "result": "Scrolling the last day loads additional months. Wait for the actual selected departure label; immediate reads raced the update. January4 selected and echoed by native query."
+      },
+      {
+        "variable": "decrease adults from retained2 to1",
+        "result": "ArrowDown did not commit a new count; waiting alone did not fix it. Ordinary numeric input fill plus Tab succeeds, with displayed count and native response verified."
+      },
+      {
+        "variable": "independent process lifecycle",
+        "result": "Domestic, international and January standalone searches used separate collector processes closed before the next launch. Main worker restarted only after authenticated idle health and confirmed terminal exit. Native API searches then passed on the new worker."
+      }
+    ],
+    "scope": "Every returned displayed itinerary and fare reconciled. These samples do not prove all Qantas inventory.",
+    "repeatFailures": [
+      {
+        "at": "2026-09-06T14:07:24.655Z",
+        "query": "SYD-MEL 2027-01-04 one adult",
+        "runtime": "Qantas, American and Alaska search",
+        "outcome": "availability step failed after37.2seconds; optional notice wait could reject before the inventory deadline",
+        "correction": "Absent country notice no longer rejects the inventory wait."
+      },
+      {
+        "runtime": "Same three-program query after idle worker restart and notice fix",
+        "outcome": "Native flexPricerAvailabilityActionFromLoad returned HTTP403. Actual booking page remained an empty loading shell."
+      },
+      {
+        "runtime": "Qantas-only query, same dedicated profile, no concurrent other airline search",
+        "elapsedMs": 65210,
+        "outcome": "Normal public tripflow.redirect displayed Access Denied; no native flight response arrived.",
+        "correction": "Collector now recognizes denied official document navigation and reports an access error promptly. No security settings, profile identity or credentials were changed."
+      }
+    ]
   }
 }

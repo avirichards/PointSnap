@@ -38,7 +38,7 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: **Qantas native anonymous flights and parser verified; independent worker/API/frontend integration next**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
+Current focus: **Qantas native integration passed initial samples; subsequent access denials remain under investigation; continue remaining native connections**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
 
 ## Priority 2 — intuitive depth and comparison
 
@@ -331,3 +331,21 @@ Final normal multi-source verification: LAX–PTY October 5, two adults, returne
 All 87 requirement groups and the coverage-first plan remain active. Qantas’s actual public Rewards flow returns domestic and international native awards without login: SYD–MEL October 5 two adults: 37 itineraries/62 fares; SYD–LAX 12/19, all four cabins and partners. Every available fare in those two samples matches the actual airline page. The new parser preserves exact fees, party totals, mixed cabins, local clocks and alternate-airport accounting; three sanitized fixtures and 12 focused tests pass. Worker/API/frontend integration is pending, so the existing Qantas source stays labeled cached. No universal Qantas, all-airline or production-completion claim is made.
 
 The distinct full-form Qatar and Miles & More tests now reach member login after successful actual query submission. Earlier form/entry failures are superseded; neither returned native flights and no account or verification was used. These findings and remaining options are saved in the connection playbook and evidence.
+
+
+## September 6 — Qantas native PointSnap integration
+
+Qantas now has an independent anonymous public-form collector integrated into the worker, search API and actual frontend. SYD–LAX October5 two adults returned12 itineraries/19 fares in12.3 seconds, including all four cabins and PR/EK partners. A Business-minimum query returned2 itineraries/3 Business/First fares while reconciling the complete source before filtering. Independent SYD–MEL samples returned37/62 for two adults and45/57 for one adult on January4 after loading more calendar months. These are observed samples, not an airline-wide exhaustiveness claim.
+
+The real desktop1440/mobile390 UI preserves original AUD, USD conversion, exact party totals, Classic versus Classic Plus and per-segment mixed cabins. QF11 is48,200 points plusAUD247.99 each /96,400 plusAUD495.98 for two. QF405/QF93 Premium keeps its Economy first leg and Premium second leg. Native failure never silently falls back to cached data; disabling the flag retains the separate cached finder. Existing connections stay enabled. Normal multi-source verification is in progress; broader source limits, valid empty/technical-stop shapes, handoffs and later hosted qualification remain open.
+
+
+## September 6 — Qantas repeat-search access limitation
+
+The initial native integration passes remain valid observations. A normal SYD–MEL January 4 search returned 49 grouped itineraries and 77 fares from Qantas, American and Alaska in 89.1 seconds. Qantas contributed all 45 itineraries and 57 fares, displayed across pages of 25 and 20 rows. Desktop checks found no page errors or horizontal overflow.
+
+A later three-program repeat omitted Qantas because its source search failed. The optional country-notice wait was corrected so an absent notice cannot prematurely end the inventory wait. The next repeat returned native HTTP 403. A Qantas-only search on the same owned runtime then reached an explicit Access Denied page at the ordinary public booking redirect. Isolating the query therefore did not resolve access. The collector now detects denied booking navigation directly. No bypass, cookie transplant, profile rotation or account was used. Further unchanged requests were stopped.
+
+Qantas remains an enabled experimental native adapter with documented successful samples and a current access issue; the cached finder stays implemented behind native opt-out. Do not describe it as reliably connected or count its earlier samples as proof of all routes. The progress dashboard shows integrating. Continue the approved native-airline connection pass while retaining this issue, broader inventory completeness, valid empty/technical-stop formats and later hosted qualification as open work.
+
+Final validation for this integration: 282 tests across 35 files, focused ESLint and the optimized Node 22 build (including TypeScript) passed. The actual program page uses the native Qantas label and official booking link. The progress page clearly shows the later access issue and integrating state, with no page errors or horizontal overflow. The normal worker was restarted idle with debug capture disabled. All 87 requirements and the full active goal remain open where evidence is incomplete.
