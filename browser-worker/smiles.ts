@@ -110,7 +110,14 @@ export class SmilesBrowserRunner {
       page: Page | undefined,
       stage = "launch";
     const started = Date.now(),
-      stages: BrowserStage[] = [];
+      stages: BrowserStage[] = [],
+      network: {
+        kind: string;
+        host: string;
+        path: string;
+        status?: number;
+        error?: string;
+      }[] = [];
     const mark = (next: string) => {
       stage = next;
       stages.push({ stage, elapsedMs: Date.now() - started });
@@ -126,6 +133,34 @@ export class SmilesBrowserRunner {
       ).newContext({
         locale: "pt-BR",
         viewport: { width: 1440, height: 1000 },
+      });
+      // Failure diagnostics contain only public hosts/paths and status codes,
+      // never request headers, cookies, shopping IDs or URL query strings.
+      context.on("response", (r) => {
+        const u = new URL(r.url());
+        if (
+          network.length < 40 &&
+          u.hostname.endsWith(".smiles.com.br") &&
+          (u.pathname.startsWith("/v1/") ||
+            (!r.ok() &&
+              ["document", "script"].includes(r.request().resourceType())))
+        )
+          network.push({
+            kind: "response",
+            host: u.hostname,
+            path: u.pathname.slice(0, 250),
+            status: r.status(),
+          });
+      });
+      context.on("requestfailed", (r) => {
+        const u = new URL(r.url());
+        if (network.length < 40 && u.hostname.endsWith(".smiles.com.br"))
+          network.push({
+            kind: "request-failed",
+            host: u.hostname,
+            path: u.pathname.slice(0, 250),
+            error: r.failure()?.errorText.slice(0, 150),
+          });
       });
       signal.throwIfAborted();
       page = await context.newPage();
@@ -370,8 +405,15 @@ export class SmilesBrowserRunner {
         503,
         {
           stages,
+          network,
           title: (await page?.title().catch(() => ""))?.slice(0, 160),
           path: page ? new URL(page.url()).pathname : undefined,
+          visibleText: (
+            await page
+              ?.locator("body")
+              .innerText({ timeout: 1000 })
+              .catch(() => "")
+          )?.slice(0, 500),
           error:
             error instanceof Error ? error.message.slice(0, 500) : "unknown",
         },

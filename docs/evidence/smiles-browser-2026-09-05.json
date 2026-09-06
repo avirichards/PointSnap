@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-09-06T02:29:10.484464+00:00",
+  "checkedAt": "2026-09-06T02:40:37.074021+00:00",
   "programId": "G3_GOL_SMILES",
   "scope": "Fresh anonymous Smiles Brazilian search, ordinary booking form, complete rendered results and regular-member cash/miles and offered baggage choices. Exact travel fees paid in cash. No traveler login or data subscription.",
-  "status": "Enabled in the local PointSnap application. First hosted macOS test did not expose the booking form; hosted Smiles access remains unverified.",
+  "status": "Enabled in local PointSnap. Hosted Mac did not expose the booking form; hosted Linux submitted the search but received no expected flight API response within40 seconds. Hosted access remains unverified.",
   "nativeFixture": {
     "query": {
       "origin": "GRU",
@@ -639,6 +639,55 @@
       },
       "run": "https://github.com/avirichards/PointSnap/actions/runs/34005138631",
       "runtime": "GitHub macos-15 / standard WebKit"
+    },
+    {
+      "at": "2026-09-06T02:32:54.075Z",
+      "engine": "webkit",
+      "platform": "linux",
+      "architecture": "x64",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 58401,
+      "result": "error",
+      "complete": false,
+      "message": "Smiles's browser search could not complete at submit-search.",
+      "stage": "submit-search",
+      "diagnostic": {
+        "stages": [
+          {
+            "stage": "open-search",
+            "elapsedMs": 6236
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 6862,
+            "status": 200,
+            "path": "/portal/passagens"
+          },
+          {
+            "stage": "fill-route",
+            "elapsedMs": 13667
+          },
+          {
+            "stage": "date",
+            "elapsedMs": 17941
+          },
+          {
+            "stage": "submit-search",
+            "elapsedMs": 18243
+          }
+        ],
+        "title": "Viver o mundo come\u00e7a aqui",
+        "path": "/mfe/emissao-passagem/",
+        "error": "browserContext.waitForEvent: Timeout 40000ms exceeded while waiting for event \"response\""
+      },
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34006676715",
+      "runtime": "GitHub ubuntu-latest / standard WebKit"
     }
   ],
   "austinCorrection": {
