@@ -51,7 +51,43 @@
     "ua is not defined",
     "Hc(...).then(...).catch(...).finally is not a function"
   ],
-  "conclusion": "Ordinary browser execution resolves the earlier entry failure but the submitted calendar query requires authentication in this current flow. No Qatar source enabled and no native full-flight claim.",
-  "next": "Preserve operator-account fallback and separate investigation of the full award-booking component. Continue the approved connection pass; do not retry the unchanged anonymous calendar401 as a new idea.",
-  "browserClosed": true
+  "conclusion": "Shadow-aware inspection resolves the previously missed full-booking controls. The actual homepage Avios query opens member login before award inventory; the separate award-calendar request previously returned401. No Qatar source enabled.",
+  "next": "Evaluate justified operator-account access or another distinct published anonymous inventory entry; do not repeat the unchanged homepage member gate or calendar401 as new evidence.",
+  "browserClosed": true,
+  "fullBookingFollowup": {
+    "checkedAt": "2026-09-06T12:53:54.476448+00:00",
+    "runtime": "Same isolated app-owned ordinary Chrome; no member credentials, copied personal profile or security changes",
+    "entries": [
+      "https://www.qatarairways.com/en-us/Privilege-Club/fly-with-avios.html",
+      "https://www.qatarairways.com/en-ae/Privilege-Club/fly-with-avios.html",
+      "https://www.qatarairways.com/en-us/homepage.html"
+    ],
+    "correction": "The booking component uses an open shadow root. Plain document-only field enumeration missed it; shadow-aware locators and the accessibility tree reveal the actual form. Some controls also finish rendering after the initial document load.",
+    "query": {
+      "origin": "JFK",
+      "destination": "DOH",
+      "departureDate": "2026-10-05",
+      "oneWay": true,
+      "adults": 1,
+      "cabin": "Economy",
+      "bookUsingAvios": true
+    },
+    "normalInteractions": [
+      "Selected One way and Book using Avios.",
+      "Selected actual New York JFK and Doha DOH suggestions; corrected an early debounced picker selection of Aachen before submitting.",
+      "Selected the visible October 5 calendar cell; hidden adjacent-month duplicates were excluded.",
+      "Verified the entire displayed query and clicked Search flights.",
+      "Inspected the newly opened airline login tab."
+    ],
+    "outcome": {
+      "loginPage": "https://www.qatarairways.com/en-us/Privilege-Club/login.mobile.html",
+      "status": 200,
+      "visibleFields": [
+        "Email address or membership number"
+      ],
+      "inventoryReceived": false
+    },
+    "scope": "The full award submission requires member sign-in in this tested current flow. Anonymous affinity calendar responses are cash fare references, not native award flights. This is distinct from the earlier award-calendar request401.",
+    "browserClosed": true
+  }
 }

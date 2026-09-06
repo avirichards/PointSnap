@@ -1,0 +1,154 @@
+{
+  "checkedAt": "2026-09-06T13:26:59.221180+00:00",
+  "program": "QF_FF",
+  "status": "native-anonymous-access-and-parser-verified; worker/API/frontend integration pending",
+  "runtime": "App-owned ordinary installed Chrome with a dedicated Qantas profile. No airline account, personal browser state, subscription, request replay or security modification.",
+  "hypothesis": "The normal public Rewards booking flow may provide live inventory independently of the cached Flight Reward Finder.",
+  "entry": "https://www.qantas.com/en-us/book/flights",
+  "normalFlow": [
+    "Select Rewards and One way; choose actual airport suggestions.",
+    "Choose a departure date in the real calendar; dismiss the About reward seats information dialog normally.",
+    "Set the adult count with the actual passenger controls and verify the settled form.",
+    "Search flights; accept the explicit Australian-country/AUD continuation notice.",
+    "Read the browser-generated native flight response. Clear cabin filters and expand Show more flights."
+  ],
+  "inventoryResponse": {
+    "host": "book.qantas.com",
+    "path": "/qf-booking/dyn/air/booking/flexPricerAvailabilityActionFromLoad",
+    "status": 200,
+    "format": "modelInput.availability.bounds",
+    "freshness": "native response to the actual search"
+  },
+  "queries": [
+    {
+      "origin": "SYD",
+      "dest": "MEL",
+      "date": "2026-10-06",
+      "adults": 1,
+      "sourceItineraries": 40,
+      "sourceAwardFares": 69,
+      "renderedItineraries": 40,
+      "exactItineraries": 39,
+      "exactAwardFares": 68,
+      "otherAirportItineraries": 1,
+      "otherAirport": "AVV",
+      "validation": "Source list and expanded row count agree. The one-adult sample is covered by the parser fixture; every one-adult fare was not independently reconciled in the browser."
+    },
+    {
+      "origin": "SYD",
+      "dest": "MEL",
+      "date": "2026-10-05",
+      "adults": 2,
+      "sourceItineraries": 37,
+      "sourceAwardFares": 62,
+      "renderedItineraries": 37,
+      "matchedDisplayedAwardFares": 62,
+      "exactItineraries": 37,
+      "exactAwardFares": 62,
+      "mismatches": 0
+    },
+    {
+      "origin": "SYD",
+      "dest": "LAX",
+      "date": "2026-10-05",
+      "adults": 2,
+      "sourceItineraries": 12,
+      "sourceAwardFares": 19,
+      "renderedItineraryIds": 12,
+      "matchedDisplayedAwardFares": 19,
+      "exactItineraries": 12,
+      "exactAwardFares": 19,
+      "mismatches": 0,
+      "cabins": [
+        "Economy",
+        "Premium Economy",
+        "Business",
+        "First"
+      ],
+      "partnersObserved": [
+        "Philippine Airlines",
+        "Emirates"
+      ]
+    }
+  ],
+  "verifiedPriceExamples": [
+    {
+      "flight": "QF401",
+      "date": "2026-10-05",
+      "fare": "Economy Classic Plus",
+      "perAdultPoints": 18000,
+      "partyPoints": 36000,
+      "perAdultFees": 60.05,
+      "partyFees": 120.1,
+      "currency": "AUD",
+      "adults": 2,
+      "visibleFeeRoundedUp": 61
+    },
+    {
+      "flight": "QF401",
+      "date": "2026-10-05",
+      "fare": "Business Classic Plus",
+      "perAdultPoints": 33100,
+      "partyPoints": 66200,
+      "perAdultFees": 85.35,
+      "partyFees": 170.7,
+      "currency": "AUD",
+      "adults": 2,
+      "visibleFeeRoundedUp": 86
+    },
+    {
+      "flight": "QF11",
+      "date": "2026-10-05",
+      "fare": "Economy Classic Reward",
+      "perAdultPoints": 48200,
+      "partyPoints": 96400,
+      "perAdultFees": 247.99,
+      "partyFees": 495.98,
+      "currency": "AUD",
+      "adults": 2,
+      "visibleFeeRoundedUp": 248
+    }
+  ],
+  "lessons": [
+    "The global isAward flag is false even while Rewards is selected and Classic awards are returned; validate displayRewardsOnly and each actual marginal reward family.",
+    "Commercial fares also contain converted points; these are not Classic awards.",
+    "Only flexPricerAvailabilityActionFromLoad is the flight response. Later flexPricerCalendarActionFromLoad responses can overwrite an overly broad capture with a one-item calendar skeleton.",
+    "Domestic results use grouped fare buttons; international results use per-family radio cards. Unavailable radio controls may not have disabled=true; inspect the No seats label and actual priced recommendations.",
+    "An international Economy search already contains other cabin offers; selecting All reveals the complete returned fare set.",
+    "Nearby airport alternatives must be accounted for explicitly. Location keys such as SYD3 are terminal identifiers; resolve the supplied locationCode.",
+    "Times are airport-local clocks stored as epoch-shaped values. QF11 arrives earlier on the local clock after crossing the date line.",
+    "Cabin maps identify mixed and higher-cabin segments; do not flatten the entire itinerary to the marketed fare cabin.",
+    "Change search restored the original Oct5 date after selecting Oct6 on the result calendar. Recheck the actual form; clear an existing airport selection before replacing it."
+  ],
+  "parser": {
+    "path": "src/lib/award-search/qantas-native.ts",
+    "fixtures": 3,
+    "focusedTestsPassed": 12,
+    "strips": "Session, booking, account, contact and authentication metadata"
+  },
+  "bookingBoundary": "Domestic fare expansion explicitly says log in to select. International radio selection became checked but the cart remained zero; no final cart total, booking or login was completed. Exact party totals above are native response values, not a confirmed booking.",
+  "remaining": [
+    "Build and verify the independent PointSnap browser runner and API/frontend integration.",
+    "Broaden route/date/party and cabin-selected source-set completeness; these samples do not establish all Qantas inventory.",
+    "Validate technical-stop shapes and valid empty responses before accepting them.",
+    "Verify fare handoffs, applicable member eligibility and selected-cart totals.",
+    "Keep hosted and sustained production qualification for the later pass."
+  ],
+  "enabledNativeSource": false,
+  "cachedFinderUnchanged": true,
+  "browserClosed": true,
+  "validation": {
+    "focusedTests": 12,
+    "fullSuiteTests": 273,
+    "fullSuiteFiles": 34,
+    "typescript": "passed",
+    "focusedEslint": "passed",
+    "optimizedNode22Build": "passed",
+    "progressFrontend": {
+      "verified": true,
+      "pageErrors": 0,
+      "horizontalOverflow": false,
+      "nativeSourceStillNotEnabled": true
+    }
+  }
+}
