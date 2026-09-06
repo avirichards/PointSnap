@@ -11,13 +11,21 @@ on:
         options:
           - delta
           - american
+      runner:
+        description: Standard hosted runtime to verify
+        type: choice
+        required: true
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - macos-15
 
 permissions:
   contents: read
 
 jobs:
   browser-search:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

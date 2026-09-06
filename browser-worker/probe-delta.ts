@@ -77,6 +77,7 @@ async function main() {
     at: new Date().toISOString(),
     engine: "webkit",
     platform: process.platform,
+    architecture: process.arch,
     query,
     elapsedMs: Date.now() - started,
     ...report,
