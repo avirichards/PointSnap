@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-06T10:44:15.935Z",
+  "checkedAt": "2026-09-06T10:55:24.395Z",
   "programId": "AD_AZUL_TUDOAZUL",
   "method": "App-owned ordinary Chrome, anonymous official public search",
   "query": {
@@ -58,7 +58,7 @@
   ],
   "result": "Own Chrome has one real anonymous native inventory response via a public booking handoff, but ordinary fresh queries do not reproduce it. This is browser-level access evidence; no Azul native PointSnap connector is enabled.",
   "implementationCorrection": "Earlier origin click was intercepted by an English cookie banner; accepting both real settings labels fixed the ordinary form flow.",
-  "next": "Compare the verified public booking form in the remaining ordinary supported browser runtime, using exact request validation. Retain the native response for normalization and eligibility work if repeat access becomes available. Continue the broader airline connection pass; do not rerun identical failed Chrome queries or substitute marketing minima for flights.",
+  "next": "Ordinary Chrome, Firefox and WebKit public-form searches remain unsuccessful despite one earlier live Chrome response. Preserve the data contract and open access issue; revisit only with a materially different verified capability or entry. Continue native access work on other programs.",
   "publicHandoff": {
     "checkedAt": "2026-09-06T10:28:14.280Z",
     "entry": "https://passagens.voeazul.com.br/pt/pontos",
@@ -357,6 +357,100 @@
         }
       ],
       "outcome": "Correct VCP–SDU October5 two-adult form submitted. Actual inventory HTTP403; missing CORS allow-origin; no flights. Reused page alone does not explain the failure."
+    },
+    {
+      "method": "Managed standard firefox using a clean page and the actual independent top booking form on the public points page.",
+      "checkedAt": "2026-09-06T10:50:03.951Z",
+      "query": {
+        "origin": "VCP",
+        "dest": "SDU",
+        "departDate": "2026-10-05",
+        "pax": 2
+      },
+      "finalForm": {
+        "stage": "final-form",
+        "origin": "São Paulo - Campinas (VCP) (VCP)",
+        "dest": "Rio de Janeiro - Santos Dumont (SDU) (SDU)",
+        "date": "05/10/2026",
+        "pax": "2 Passageiro"
+      },
+      "submittedRequest": {
+        "criteria": [
+          {
+            "departureStation": "VCP",
+            "arrivalStation": "SDU",
+            "std": "10/05/2026",
+            "departureDate": "2026-10-05"
+          }
+        ],
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": "2",
+            "companionPass": false
+          }
+        ],
+        "flexibleDays": {
+          "daysToLeft": "3",
+          "daysToRight": "3"
+        },
+        "currencyCode": "BRL"
+      },
+      "inventory": [
+        {
+          "host": "b2c-api.voeazul.com.br",
+          "path": "/tudoAzulReservationAvailability/api/tudoazul/reservation/availability/v6/availability",
+          "status": 403
+        }
+      ],
+      "outcome": "Correct route, date and two-adult query submitted; inventory403, no flights."
+    },
+    {
+      "method": "Managed standard webkit using a clean page and the actual independent top booking form on the public points page.",
+      "checkedAt": "2026-09-06T10:51:35.602Z",
+      "query": {
+        "origin": "VCP",
+        "dest": "SDU",
+        "departDate": "2026-10-05",
+        "pax": 2
+      },
+      "finalForm": {
+        "stage": "final-form",
+        "origin": "São Paulo - Campinas (VCP) (VCP)",
+        "dest": "Rio de Janeiro - Santos Dumont (SDU) (SDU)",
+        "date": "05/10/2026",
+        "pax": "2 Passageiro"
+      },
+      "submittedRequest": {
+        "criteria": [
+          {
+            "departureStation": "VCP",
+            "arrivalStation": "SDU",
+            "std": "10/05/2026",
+            "departureDate": "2026-10-05"
+          }
+        ],
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": "2",
+            "companionPass": false
+          }
+        ],
+        "flexibleDays": {
+          "daysToLeft": "3",
+          "daysToRight": "3"
+        },
+        "currencyCode": "BRL"
+      },
+      "inventory": [
+        {
+          "host": "b2c-api.voeazul.com.br",
+          "path": "/tudoAzulReservationAvailability/api/tudoazul/reservation/availability/v6/availability",
+          "error": "Origin https://www.voeazul.com.br is not allowed by Access-Control-Allow-Origin. Status code: 403"
+        }
+      ],
+      "outcome": "Correct route, date and two-adult query submitted; inventory403, no flights."
     }
   ],
   "implementationCorrections": [

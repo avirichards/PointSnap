@@ -38,7 +38,7 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: **SAS integration verified; Azul is the next anonymous-browser opportunity**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
+Current focus: **Copa native anonymous access repeats successfully; parser added, worker and frontend integration next**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
 
 ## Priority 2 — intuitive depth and comparison
 
@@ -245,7 +245,7 @@ The US partner change is now verified in the actual app: 22 Smiles itineraries/1
 
 ### Further native and hosted access tests
 
-All68 requests remain logged and airline access remains the priority. Azul’s ordinary browser returns eight points flights; fresh WebKit/Firefox inventory403 and Chromium entry403 keep its native connector disabled. SAS’s normal points booker exposes all20 CPH–ARN itinerary rows and first-fare taxes anonymously, superseding the inference drawn from its denied award-finder path. Its independent worker attempts still fail; two form-automation mistakes are recorded separately from actual403s. Six hosted Smiles attempts have produced no flights, including a runtime sandbox launch failure that is not airline evidence. Local Smiles remains verified. Browser-only availability is not marked as a completed PointSnap connection.
+All68 requests remain logged and airline access remains the priority. Azul’s ordinary browser returns eight points flights; fresh WebKit/Firefox inventory HTTP 403 and Chromium entry403 keep its native connector disabled. SAS’s normal points booker exposes all20 CPH–ARN itinerary rows and first-fare taxes anonymously, superseding the inference drawn from its denied award-finder path. Its independent worker attempts still fail; two form-automation mistakes are recorded separately from actual403s. Six hosted Smiles attempts have produced no flights, including a runtime sandbox launch failure that is not airline evidence. Local Smiles remains verified. Browser-only availability is not marked as a completed PointSnap connection.
 
 ### Current American milestone — anonymous first
 
@@ -304,4 +304,12 @@ The normal multi-source CPH–ARN search also completed: 100 grouped itineraries
 
 The coverage-first decision is confirmed in the current plan, playbook, requirement87 and readable goal copy. The active goal already references that plan; no goal edit or scope reduction is needed. All87 requirement groups remain logged.
 
-Own ordinary Chrome now has one native anonymous Azul inventory response via the official public points-offer handoff: VCP–LIS December1, three source journeys /30 payment choices, including an explicitly separate OPO alternative. Fresh normal searches still fail; the corrected clean-page VCP–SDU two-adult query confirms inventory403. Route alternatives, account-holder discounts, cash fees and aircraft-versus-award seat counts are recorded for future normalization. No native Azul source is enabled and no all-airline milestone is marked complete. See [current Azul evidence](../docs/evidence/azul-anonymous-2026-09-06.json).
+Own ordinary Chrome now has one native anonymous Azul inventory response via the official public points-offer handoff: VCP–LIS December1, three source journeys /30 payment choices, including an explicitly separate OPO alternative. Fresh normal searches still fail; the corrected clean-page VCP–SDU two-adult query confirms inventory HTTP 403. Route alternatives, account-holder discounts, cash fees and aircraft-versus-award seat counts are recorded for future normalization. No native Azul source is enabled and no all-airline milestone is marked complete. See [current Azul evidence](../docs/evidence/azul-anonymous-2026-09-06.json).
+
+## September 6 — Copa native access and next integration
+
+The coverage-first plan and all 87 requirement groups remain active. Copa’s actual public homepage form now returns native anonymous awards in three verified searches, including a fresh collector process. Exact LAX counts are 47 / 65 for one adult and 46 / 60 for two; JFK–PTY is 8 / 17 after accounting for nearby alternatives. All returned rows were expanded and both CM306 passenger/cart totals verified. The new parser retains all matching fare choices, technical stops and conditional anonymous pricing; 11 regression tests cover real responses. Worker/API/frontend integration and full fare-card reconciliation are next, so Copa is not yet enabled.
+
+Azul’s remaining standard Firefox/WebKit public-form tests both reach correct-query inventory HTTP 403. Saudia’s actual public Book with Miles control requires member login and resets when dismissed. These findings update the per-airline record without pretending the unresolved programs are complete.
+
+Copa parser validation: all 256 tests across 32 files, TypeScript, focused ESLint and the optimized Node 22 production build passed. The existing progress page shows the new access evidence and pending integration without page errors or horizontal overflow. No additional source is enabled.

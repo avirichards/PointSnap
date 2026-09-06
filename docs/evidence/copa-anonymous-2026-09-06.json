@@ -1,0 +1,218 @@
+{
+  "observedAt": "2026-09-06T11:14:51.537Z",
+  "program": "CM_CONNECTMILES",
+  "status": "native_anonymous_browser_access_verified_integration_pending",
+  "method": {
+    "runtime": "App-owned ordinary Chrome; normal public homepage form",
+    "homepage": "https://www.copaair.com/",
+    "inventory": "https://api.copaair.com/ibe/booking/plan-redemptions",
+    "login": false,
+    "personalCookiesImported": false,
+    "subscription": false,
+    "securityChallengeBypassed": false
+  },
+  "experiments": [
+    {
+      "entry": "Derived public shopping link in ordinary Chrome",
+      "initializationStatus": 200,
+      "inventoryStatus": 403,
+      "result": "The visible failure text did not constitute a valid empty award result."
+    },
+    {
+      "entry": "Actual public homepage form",
+      "inventoryStatus": 200,
+      "requestVerified": true,
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 1
+      },
+      "sourceItineraries": 50,
+      "sourceFares": 68,
+      "exactItineraries": 47,
+      "exactFares": 65,
+      "nearbyDepartures": [
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA2226",
+            "CM229"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA5396",
+            "CM383"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA1263",
+            "CM477"
+          ]
+        }
+      ],
+      "displayedItineraries": 50,
+      "viewMoreExhausted": true,
+      "firstNonstop": {
+        "flight": "CM306",
+        "departure": "2026-10-05T02:22",
+        "arrival": "2026-10-05T10:55",
+        "durationMinutes": 393,
+        "family": "Economy Standard",
+        "perPerson": {
+          "miles": 40000,
+          "taxes": 33.6
+        },
+        "party": {
+          "miles": 40000,
+          "taxes": 33.6
+        },
+        "currency": "USD"
+      }
+    },
+    {
+      "entry": "Second actual public homepage form search",
+      "inventoryStatus": 200,
+      "requestVerified": true,
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 2
+      },
+      "sourceItineraries": 49,
+      "sourceFares": 63,
+      "exactItineraries": 46,
+      "exactFares": 60,
+      "nearbyDepartures": [
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA2226",
+            "CM229"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA5396",
+            "CM383"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA1263",
+            "CM477"
+          ]
+        }
+      ],
+      "displayedItineraries": 49,
+      "viewMoreExhausted": true,
+      "firstNonstop": {
+        "flight": "CM306",
+        "departure": "2026-10-05T02:22",
+        "arrival": "2026-10-05T10:55",
+        "durationMinutes": 393,
+        "family": "Economy Standard",
+        "perPerson": {
+          "miles": 40000,
+          "taxes": 33.6
+        },
+        "party": {
+          "miles": 80000,
+          "taxes": 67.2
+        },
+        "currency": "USD"
+      }
+    },
+    {
+      "entry": "Reusable public-form collector in a fresh app-owned Chrome process",
+      "query": {
+        "origin": "JFK",
+        "destination": "PTY",
+        "departureDate": "2026-10-06",
+        "adults": 2
+      },
+      "inventoryStatus": 200,
+      "requestVerified": true,
+      "sourceItineraries": 45,
+      "sourceFares": 60,
+      "exactItineraries": 8,
+      "exactFares": 17,
+      "nearbyAirportItineraries": 37,
+      "nearbyOrigins": [
+        "EWR",
+        "LGA"
+      ],
+      "displayedItineraries": 45,
+      "viewMoreExhausted": true,
+      "elapsedMs": 9967,
+      "loginRequired": false
+    }
+  ],
+  "reconciliation": {
+    "oneAdultCart": {
+      "flight": "CM306",
+      "family": "Economy Standard",
+      "points": 40000,
+      "cash": 33.6,
+      "currency": "USD"
+    },
+    "twoAdultCart": {
+      "flight": "CM306",
+      "family": "Economy Standard",
+      "points": 80000,
+      "cash": 67.2,
+      "currency": "USD"
+    },
+    "cartVerified": true,
+    "families": [
+      "Economy Saver",
+      "Economy Standard",
+      "Business Saver",
+      "Business Standard"
+    ],
+    "allExpandedFareCardsReconciled": false,
+    "resetFilters": {
+      "testedOnOneAdult": true,
+      "displayedRowsAfterReset": 50
+    },
+    "technicalStopExample": {
+      "flight": "CM392",
+      "airport": "SJO",
+      "arrival": "2026-10-06T08:07",
+      "departure": "2026-10-06T08:45"
+    },
+    "normalFormLesson": "The date confirmation can open passenger controls. An already selected fare uses Keep this fare. Earlier missing Select Economy Standard control was an interaction mistake, not an airline denial."
+  },
+  "boundaries": [
+    "Native parser and real-response regression tests are implemented; worker and PointSnap frontend integration are not yet enabled.",
+    "Three Ontario departures must not count as LAX results.",
+    "Anonymous prices and availability can differ after member login; the cart states the final cost may change.",
+    "Fare family determines the marketed cabin; connecting segment cabins remain unverified. Dreams aircraft branding is not a cabin assignment.",
+    "No award seat count or comparable cash fare has been established.",
+    "All returned rows are accounted for; broader inventory completeness and any backend cap remain unqualified.",
+    "Valid empty searches have not been verified."
+  ],
+  "next": "Build the scoped native connector from the successful actual form; reconcile every fare family, route, date, party and fee, then verify the actual PointSnap API and frontend.",
+  "implementation": {
+    "parser": "src/lib/award-search/copa.ts",
+    "fixtures": "Three allowlisted real responses, with session and offer references removed",
+    "tests": "11 new regression tests passed",
+    "workerEnabled": false,
+    "frontendVerified": false,
+    "validation": {
+      "tests": 256,
+      "testFiles": 32,
+      "typecheck": "passed",
+      "lint": "passed",
+      "optimizedNode22Build": "passed",
+      "progressFrontend": "No page errors or horizontal overflow; native source still disabled"
+    }
+  }
+}

@@ -2,6 +2,8 @@
 
 ## Current connection lessons — September 2026
 
+Copa demonstrates why the actual public form is a distinct access test from a derived shopping link: the latter failed, while the form succeeded repeatedly in app-owned ordinary Chrome. Date confirmation can already open passenger controls, and a retained fare changes its button to Keep this fare. Inspect current UI state before retrying. Nearby-airport results require explicit accounting; all source rows are not all exact-airport rows. Selected anonymous cart totals can still change after membership login, which needs a visible price qualification.
+
 Azul's public points-offer handoff yielded real anonymous inventory where its homepage failed, but fresh queries did not reproduce it. Keep browser access evidence separate from an enabled native connection. Public airport pickers can change a selection asynchronously: verify final fields and the actual request, not just a successful option click. Exclude nearby-airport alternatives from exact-route counts, retain account-holder pricing conditions and never confuse remaining aircraft capacity with award-fare seats.
 
 SAS reuses the app-owned ordinary Chrome lifecycle successfully after earlier HTTP/managed-browser failures. Its regular points response contains a cash reference total distinct from the actual tax copayment; verify selected-cart prices. Some international visible fare titles are blank while accessible fare-rule labels are correct. Internal cabin codes are airline-specific: SAS Y can be European Business or long-haul Premium. Record unknown segment cabins instead of guessing.
