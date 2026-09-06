@@ -199,6 +199,44 @@ export function parseAmerican(
   observedAt = new Date().toISOString(),
 ): AwardResult[] {
   const source = object(payload);
+  if (source.type === "american-connection-searches") {
+    const searches = array(source.searches).map(object);
+    if (!searches.length || searches[0].connectionCity !== null)
+      invalid("an unfinished set of connection searches");
+    const merged = new Map<string, AwardResult>();
+    const checked = new Set<string>();
+    const discovered = new Set<string>();
+    for (const [index, search] of searches.entries()) {
+      const city =
+        index === 0 ? null : text(search.connectionCity, /^[A-Z]{3}$/);
+      if (city && (city === q.origin || city === q.dest || checked.has(city)))
+        invalid("a repeated or invalid connecting airport");
+      if (city) checked.add(city);
+      const pair = object(search.payload);
+      if (pair.type !== "american-cabin-searches")
+        invalid("an unfinished connection cabin search");
+      const rows = parseAmerican(pair, q, observedAt);
+      if (
+        city &&
+        rows.some((row) => !americanConnections([row]).includes(city))
+      )
+        invalid("flights outside the requested connecting airport");
+      for (const airport of americanConnections(rows)) discovered.add(airport);
+      // A new all-cabin quote supersedes its earlier fare set. A premium-only
+      // appearance does not withdraw Economy when the all-cabin list omitted it.
+      const scopes = array(pair.searches).map(object);
+      for (const row of parseSingleAmerican(scopes[0].payload, q, observedAt))
+        merged.set(row.id, row);
+      for (const row of parseSingleAmerican(scopes[1].payload, q, observedAt))
+        mergeAmericanPremium(merged, row);
+    }
+    if (
+      checked.size !== discovered.size ||
+      [...discovered].some((city) => !checked.has(city))
+    )
+      invalid("unsearched connecting airports in the returned flight lists");
+    return [...merged.values()];
+  }
   if (source.type !== "american-cabin-searches")
     return parseSingleAmerican(source, q, observedAt);
   const searches = array(source.searches).map(object);
@@ -218,26 +256,49 @@ export function parseAmerican(
   )
     invalid("a different cabin search");
   const merged = new Map(all.map((row) => [row.id, row]));
-  for (const row of premium) {
-    const previous = merged.get(row.id);
-    if (!previous) {
-      merged.set(row.id, row);
-      continue;
-    }
-    // The later premium quote replaces that cabin's earlier prices, including
-    // withdrawals. Never retain a stale cheap price as another fare choice.
-    const fares = [
-      ...previous.fares!.filter(
-        (fare) => fare.cabin === "Y" || fare.cabin === "W",
-      ),
-      ...row.fares!,
-    ];
-    const prices = { ...row.prices };
-    for (const code of ["Y", "W"] as const)
-      if (previous.prices[code]) prices[code] = previous.prices[code];
-    merged.set(row.id, { ...previous, prices, fares });
-  }
+  for (const row of premium) mergeAmericanPremium(merged, row);
   return [...merged.values()];
+}
+
+/** Only observed changes of flight, not intermediate stops on one service. */
+export function americanConnections(rows: AwardResult[]): string[] {
+  return [
+    ...new Set(
+      rows.flatMap((row) =>
+        row.segments
+          .slice(0, -1)
+          .filter(
+            (segment, index) =>
+              segment.flightNumber !== row.segments[index + 1].flightNumber,
+          )
+          .map((segment) => segment.destination)
+          .filter((city) => city !== row.origin && city !== row.destination),
+      ),
+    ),
+  ];
+}
+
+function mergeAmericanPremium(
+  merged: Map<string, AwardResult>,
+  row: AwardResult,
+) {
+  const previous = merged.get(row.id);
+  if (!previous) {
+    merged.set(row.id, row);
+    return;
+  }
+  // The later premium quote replaces that cabin's earlier prices, including
+  // withdrawals. Never retain a stale cheap price as another fare choice.
+  const fares = [
+    ...previous.fares!.filter(
+      (fare) => fare.cabin === "Y" || fare.cabin === "W",
+    ),
+    ...row.fares!,
+  ];
+  const prices = { ...row.prices };
+  for (const code of ["Y", "W"] as const)
+    if (previous.prices[code]) prices[code] = previous.prices[code];
+  merged.set(row.id, { ...previous, prices, fares });
 }
 
 function parseSingleAmerican(

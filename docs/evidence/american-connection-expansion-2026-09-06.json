@@ -1,0 +1,165 @@
+{
+  "checkedAt": "2026-09-06T14:51:30.244Z",
+  "program": "AA_AADVANTAGE",
+  "status": "Connection expansion implemented experimentally; full run interrupted by airline verification. Not enabled in the app.",
+  "query": {
+    "origin": "LAX",
+    "dest": "AUS",
+    "departDate": "2026-10-05",
+    "pax": 2,
+    "minCabin": "Y"
+  },
+  "method": "Same fixed app-owned ordinary Chrome profile, official anonymous advanced form, exact airports, two adults, all airlines, all-cabin and Business/First scopes.",
+  "baseline": {
+    "observedAt": "2026-09-06T14:31:30.240Z",
+    "itineraries": 52,
+    "fares": 90
+  },
+  "dfw": {
+    "all": {
+      "itineraries": 40,
+      "fares": 80
+    },
+    "premium": {
+      "itineraries": 40,
+      "fares": 40
+    },
+    "combined": {
+      "itineraries": 43,
+      "fares": 83
+    },
+    "additionalBeyondBaseline": 26,
+    "sourcePageChecks": [
+      {
+        "cabin": "all",
+        "itineraries": 40,
+        "fares": 80,
+        "allFlightIdentitiesAndFarePricesMatch": true
+      },
+      {
+        "cabin": "premium",
+        "itineraries": 40,
+        "fares": 40,
+        "allFlightIdentitiesAndFarePricesMatch": true
+      }
+    ]
+  },
+  "expansion": {
+    "initialDiscoveredConnectionAirports": [
+      "DFW",
+      "JFK",
+      "PHL",
+      "MIA",
+      "SEA",
+      "PHX",
+      "ORD",
+      "CLT",
+      "PDX"
+    ],
+    "strategy": "Both cabin searches for each observed connecting airport; discover further connections from returned itineraries. Require every discovered airport to be searched before accepting a complete expansion. No arbitrary subset is reported as complete.",
+    "result": "failed",
+    "failedConnection": "SEA",
+    "elapsedMs": 92647,
+    "stage": "via-SEA-read-flight-response",
+    "evidence": {
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "activate-owned-page",
+          "elapsedMs": 2
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 2
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 227,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 815,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1653,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1917,
+          "path": "/booking/search/find-flights",
+          "status": 200
+        },
+        {
+          "stage": "booking-form",
+          "elapsedMs": 1942
+        },
+        {
+          "stage": "route-and-passengers",
+          "elapsedMs": 2883
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 4608
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5628,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 5654
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5691,
+          "path": "/challenge-assets/v7/captcha.html",
+          "status": 200
+        }
+      ],
+      "title": "Challenge Validation",
+      "path": "/booking/choose-flights/1",
+      "verification": true,
+      "errorType": "TimeoutError"
+    },
+    "causality": "The airline verification page is observed. Request volume, pacing and session state as causes are unproven.",
+    "appEnabled": false
+  },
+  "implementation": {
+    "preservesEveryParsedFlightAndFareField": true,
+    "compactProjectionVerifiedAcrossFourRealResponses": true,
+    "removesDuplicatedPresentationAndShoppingIdentifiers": true,
+    "latestAllCabinQuotesReplaceEarlierFareSet": true,
+    "premiumQuotesPreserveEarlierEconomyWhenAbsentFromSelectedList": true,
+    "diagnosticSavesEachSuccessfulScopeBeforeLaterFailure": true
+  },
+  "validation": {
+    "tests": 287,
+    "files": 36,
+    "focusedEslint": "passed",
+    "typescript": "passed",
+    "optimizedNode22Build": "passed",
+    "actualAppExpansion": "not passed; experimental expansion not enabled",
+    "progressFrontend": {
+      "actualProgressPageVerified": true,
+      "americanState": "integrating",
+      "experimentalExpansionDisclosed": true,
+      "verificationInterruptionDisclosed": true,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "next": "Keep the current scope limitation and observed verification explicit. Do not repeat the unchanged failing expansion or transplant personal browser state. Investigate a distinct source-scope or access hypothesis; preserve operator-account fallback only for a demonstrated need and continue remaining airline connections. Sustained hosting qualification remains deferred.",
+  "scope": "Observed source sets and tested route only. Neither a 40-row response nor closure over its observed connecting airports establishes every possible American itinerary."
+}

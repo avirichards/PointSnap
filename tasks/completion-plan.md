@@ -14,6 +14,8 @@ American's local native connector has passed the initial integration gate: actua
 
 Qantas's experimental native collector now passes initial domestic, international, API and frontend checks, but later repeat searches received HTTP 403 and an explicit Access Denied page. Keep this connection marked integrating. Preserve the successful samples and the current failure evidence; test a distinct access hypothesis before another unchanged request, while continuing the remaining airline connections.
 
+American's fresh DFW all-cabin and premium searches confirm 26 additional itineraries missing from its current baseline. The experimental expansion across observed connecting airports reached airline verification at SEA; it is not enabled in the app. Preserve the initial baseline success and current interruption separately. Continue the connection pass while investigating a distinct access or source-scope approach; do not claim post-challenge recovery or exhaustive American coverage.
+
 ## Outcome and constraints
 
 Deliver a practical, polished public award-search website with reliable native program data, complete flight and fare choices for each supported query, and all remaining product requirements verified in the actual browser. Customers must not need airline account connections or a helper installation. Keep existing working sources available.

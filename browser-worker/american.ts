@@ -7,7 +7,10 @@ import {
   type Page,
   type Response,
 } from "playwright";
-import { parseAmerican } from "../src/lib/award-search/american";
+import {
+  parseAmerican,
+  americanConnections,
+} from "../src/lib/award-search/american";
 import type { SearchQuery } from "../src/lib/types";
 import { chmod, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -100,6 +103,74 @@ export interface AmericanBrowserResult {
   stages: BrowserStage[];
 }
 
+/** After validation, omit duplicated presentation models and shopping identifiers. */
+export function compactAmericanPayload(value: unknown) {
+  const pick = (v: unknown, fields: string[]) => {
+    const object = v as Record<string, unknown>;
+    return Object.fromEntries(
+      fields.filter((key) => key in object).map((key) => [key, object[key]]),
+    );
+  };
+  const list = (v: unknown) => v as Record<string, unknown>[];
+  const flight = (v: unknown) =>
+    pick(v, ["carrierCode", "carrierName", "flightNumber"]);
+  const fare = (v: Record<string, unknown>): Record<string, unknown> => ({
+    ...pick(v, [
+      "productAvailable",
+      "productType",
+      "perPassengerAwardPoints",
+      "perPassengerTaxesAndFees",
+      "allPassengerTaxesAndFees",
+      "seatsRemaining",
+      "refundable",
+      "extendedFareCode",
+    ]),
+    ...(v.refundableProducts
+      ? { refundableProducts: list(v.refundableProducts).map(fare) }
+      : {}),
+  });
+  const p = value as Record<string, unknown>;
+  const meta = p.responseMetadata as Record<string, unknown>;
+  return {
+    ...pick(p, [
+      "error",
+      "totalCount",
+      "hasMore",
+      "nextPage",
+      "nextCursor",
+      "continuationToken",
+    ]),
+    responseMetadata: {
+      ...meta,
+      origin: pick(meta.origin, ["code"]),
+      destination: pick(meta.destination, ["code"]),
+    },
+    slices: list(p.slices).map((s) => ({
+      origin: pick(s.origin, ["code"]),
+      destination: pick(s.destination, ["code"]),
+      durationInMinutes: s.durationInMinutes,
+      segments: list(s.segments).map((s) => ({
+        flight: flight(s.flight),
+        legs: list(s.legs).map((l) => ({
+          ...pick(l, [
+            "departureDateTime",
+            "arrivalDateTime",
+            "aircraftCode",
+            "operationalDisclosure",
+          ]),
+          origin: pick(l.origin, ["code"]),
+          destination: pick(l.destination, ["code"]),
+          ...(l.flight ? { flight: flight(l.flight) } : {}),
+          productDetails: list(l.productDetails).map((p) =>
+            pick(p, ["productType", "cabinType", "bookingCode"]),
+          ),
+        })),
+      })),
+      pricingDetail: list(s.pricingDetail).map(fare),
+    })),
+  };
+}
+
 export class AmericanBrowserRunner {
   private browserPromise?: Promise<Browser>;
   private persistentSession?: PersistentBrowserSession;
@@ -113,6 +184,11 @@ export class AmericanBrowserRunner {
       temporaryProfile?: boolean;
       persistentProfile?: boolean;
       includePremium?: boolean;
+      includeConnections?: boolean;
+      onScope?: (scope: {
+        connectionCity: string | null;
+        result: AmericanBrowserResult;
+      }) => void | Promise<void>;
     } = {},
     session?: PersistentBrowserSession,
   ) {
@@ -191,10 +267,10 @@ export class AmericanBrowserRunner {
     q: SearchQuery,
     signal: AbortSignal,
   ): Promise<AmericanBrowserResult> {
-    if (!this.persistentSession) return this.searchScopes(q, signal);
+    if (!this.persistentSession) return this.searchAllScopes(q, signal);
     try {
       return await this.persistentSession.run(signal, (context) =>
-        this.searchScopes(q, signal, context),
+        this.searchAllScopes(q, signal, context),
       );
     } catch (error) {
       if (error instanceof BrowserSearchError) throw error;
@@ -216,18 +292,111 @@ export class AmericanBrowserRunner {
     }
   }
 
-  private async searchScopes(
+  private async searchAllScopes(
     q: SearchQuery,
     signal: AbortSignal,
     context?: BrowserContext,
   ): Promise<AmericanBrowserResult> {
     const started = Date.now();
-    const all = await this.searchInContext(q, signal, context);
+    const baseline = await this.searchScopes(q, signal, context);
+    if (!this.options.includeConnections) return baseline;
+    if (!this.options.includePremium)
+      throw new BrowserSearchError(
+        "Connection expansion requires both cabin searches.",
+        "configuration",
+      );
+    await this.options.onScope?.({ connectionCity: null, result: baseline });
+    const searches: { connectionCity: string | null; payload: unknown }[] = [
+      { connectionCity: null, payload: baseline.payload },
+    ];
+    const pending = new Set(
+      americanConnections(
+        parseAmerican(baseline.payload, q, baseline.observedAt),
+      ),
+    );
+    const checked = new Set<string>();
+    const stages = [...baseline.stages];
+    while (pending.size) {
+      signal.throwIfAborted();
+      const city = pending.values().next().value!;
+      pending.delete(city);
+      if (checked.has(city)) continue;
+      const scopeStart = Date.now() - started;
+      let result: AmericanBrowserResult;
+      try {
+        result = await this.searchScopes(q, signal, context, city);
+        const rows = parseAmerican(result.payload, q, result.observedAt);
+        if (rows.some((row) => !americanConnections([row]).includes(city)))
+          throw new BrowserSearchError(
+            "American returned an itinerary outside the selected connecting airport.",
+            "connection-query",
+          );
+        checked.add(city);
+        for (const next of americanConnections(rows))
+          if (!checked.has(next)) pending.add(next);
+      } catch (error) {
+        if (!(error instanceof BrowserSearchError)) throw error;
+        throw new BrowserSearchError(
+          `American's connection search through ${city} did not finish. The expanded flight list is incomplete.`,
+          `via-${city}-${error.stage}`,
+          error.status,
+          error.evidence,
+        );
+      }
+      searches.push({ connectionCity: city, payload: result.payload });
+      await this.options.onScope?.({ connectionCity: city, result });
+      stages.push(
+        ...result.stages.map((stage) => ({
+          ...stage,
+          stage: `via-${city}-${stage.stage}`,
+          elapsedMs: scopeStart + stage.elapsedMs,
+        })),
+      );
+    }
+    const payload = { type: "american-connection-searches", searches };
+    const rows = parseAmerican(payload, q, baseline.observedAt);
+    return {
+      ...baseline,
+      payload,
+      itineraryCount: rows.length,
+      fareCount: rows.reduce((n, row) => n + row.fares!.length, 0),
+      stages: [
+        ...stages,
+        {
+          stage: "reconciled-connection-searches",
+          elapsedMs: Date.now() - started,
+          itineraries: rows.length,
+          fares: rows.reduce((n, row) => n + row.fares!.length, 0),
+        },
+      ],
+    };
+  }
+
+  private async searchScopes(
+    q: SearchQuery,
+    signal: AbortSignal,
+    context?: BrowserContext,
+    connectionCity?: string,
+  ): Promise<AmericanBrowserResult> {
+    const started = Date.now();
+    const all = await this.searchInContext(
+      q,
+      signal,
+      context,
+      "all",
+      connectionCity,
+    );
     if (!this.options.includePremium) return all;
     const premiumStart = Date.now() - started;
     let premium: AmericanBrowserResult;
     try {
-      premium = await this.searchInContext(q, signal, context, "premium");
+      premium = await this.searchInContext(
+        q,
+        signal,
+        context,
+        "premium",
+        connectionCity,
+      );
     } catch (error) {
       if (!(error instanceof BrowserSearchError)) throw error;
       throw new BrowserSearchError(
@@ -275,6 +444,7 @@ export class AmericanBrowserRunner {
     signal: AbortSignal,
     persistentContext?: BrowserContext,
     cabinScope: "all" | "premium" = "all",
+    connectionCity?: string,
   ): Promise<AmericanBrowserResult> {
     const started = Date.now(),
       stages: BrowserStage[] = [];
@@ -373,7 +543,8 @@ export class AmericanBrowserRunner {
       if (
         this.options.entry === "homepage-form" &&
         cabinScope === "all" &&
-        !this.options.includePremium
+        !this.options.includePremium &&
+        !connectionCity
       ) {
         mark("homepage-route-and-passengers");
         for (const id of [
@@ -445,10 +616,27 @@ export class AmericanBrowserRunner {
           .fill(`${month}/${day}/${year}`);
         await page.locator("#matOneWayDatePicker").press("Tab");
         await page.locator("#passenger-count").selectOption(String(q.pax));
-        if (await page.locator("#connecting-airport-checkbox").isChecked())
+        if (
+          (await page.locator("#connecting-airport-checkbox").isChecked()) !==
+          Boolean(connectionCity)
+        )
           await page
             .locator('label[for="connecting-airport-checkbox"]')
             .click();
+        if (connectionCity) {
+          await page.locator("#matConnectingAirport").fill(connectionCity);
+          await page
+            .getByRole("option", { name: new RegExp(`^${connectionCity} -`) })
+            .click();
+          if (
+            (await page.locator("#matConnectingAirport").inputValue()) !==
+            connectionCity
+          )
+            throw new BrowserSearchError(
+              "American did not accept the connecting airport.",
+              stage,
+            );
+        }
         if (!(await page.locator("#redeem-miles").isChecked()))
           await page.locator("label[for='redeem-miles']").click();
         await page
@@ -482,9 +670,10 @@ export class AmericanBrowserRunner {
           "American returned an unreadable flight response.",
           stage,
         );
-      const payload = americanPayload(JSON.parse(raw)),
-        observedAt = new Date().toISOString();
+      let payload = americanPayload(JSON.parse(raw));
+      const observedAt = new Date().toISOString();
       const rows = parseAmerican(payload, q, observedAt);
+      payload = compactAmericanPayload(payload);
       mark("validated-complete-response");
       Object.assign(stages.at(-1)!, {
         itineraries: rows.length,
