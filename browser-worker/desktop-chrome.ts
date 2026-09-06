@@ -28,6 +28,8 @@ async function unusedLoopbackPort(): Promise<number> {
 
 /** Owns only its dedicated Chrome process and profile, never a user's browser. */
 class DesktopChrome {
+  constructor(private readonly program: "american" | "aeroplan" | "united") {}
+
   private process?: ChildProcess;
   private exited?: Promise<void>;
   private browser?: Browser;
@@ -62,7 +64,9 @@ class DesktopChrome {
       throw new Error(
         "Choose a Chrome startup deadline from 1000 to 60000 ms.",
       );
-    const profile = resolve("work/browser-profiles/american-desktop-collector");
+    const profile = resolve(
+      `work/browser-profiles/${this.program}-desktop-collector`,
+    );
     await mkdir(profile, { recursive: true, mode: 0o700 });
     await chmod(profile, 0o700);
     const port = await unusedLoopbackPort();
@@ -168,8 +172,10 @@ class DesktopChrome {
   }
 }
 
-export function createDesktopChromeSession() {
-  const desktop = new DesktopChrome();
+export function createDesktopChromeSession(
+  program: "american" | "aeroplan" | "united" = "american",
+) {
+  const desktop = new DesktopChrome(program);
   return new PersistentBrowserSession(
     () => desktop.open(),
     () => desktop.close(),

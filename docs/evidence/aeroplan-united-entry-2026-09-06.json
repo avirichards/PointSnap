@@ -1,0 +1,118 @@
+{
+  "checkedAt": "2026-09-06T07:04:03.783Z",
+  "purpose": "Coverage-first native access pass; distinguish member gate from runtime or verification failure.",
+  "runtime": "Installed ordinary Google Chrome on local macOS; app-owned airline-specific profiles; loopback control with noDefaults; no login or imported cookies.",
+  "aeroplan": {
+    "program": "AC_AEROPLAN",
+    "ordinaryReferenceBrowser": "Published points homepage explicitly requests sign-in; published PVG-SFO November 24 award-results link displays Aeroplan identifier/password form.",
+    "appOwnedBrowser": {
+      "method": "app-owned ordinary Chrome; no login",
+      "reports": [
+        {
+          "entry": "published-points-homepage",
+          "at": "2026-09-06T07:01:56.282Z",
+          "elapsedMs": 5954,
+          "navigationStatus": 200,
+          "title": "Book flights | Air Canada",
+          "path": "/home/ca/en/aco/flights",
+          "pointsSignInPrompt": true,
+          "loginForm": false,
+          "memberIdentifierLabel": false,
+          "verification": false,
+          "flightResultsText": false,
+          "inventoryRequests": []
+        },
+        {
+          "entry": "published-award-results",
+          "at": "2026-09-06T07:02:03.356Z",
+          "elapsedMs": 7074,
+          "navigationStatus": 200,
+          "title": "Sign in",
+          "path": "/clogin/pages/login",
+          "pointsSignInPrompt": false,
+          "loginForm": true,
+          "memberIdentifierLabel": true,
+          "verification": false,
+          "flightResultsText": false,
+          "inventoryRequests": []
+        }
+      ]
+    },
+    "preliminaryDiagnostics": "Two earlier entry diagnostics failed during DOM reading. Removing a locally named nested function from the serialized page callback allowed the diagnostic to complete. These preliminary read errors are not classified as airline denial or empty availability.",
+    "conclusion": "Both current public entries reach a member gate. The owned browser loads the website without observed verification; no native award inventory request or fare was observed.",
+    "next": "Authorized operator-account pilot remains a justified fallback. No authenticated award or MFA recovery has been established; do not promise perpetual sessions or universally eligible member prices."
+  },
+  "united": {
+    "program": "UA_MP",
+    "ordinaryReferenceBrowser": "Official award form submitted LAX-AUS October 6, one adult, Economy, all airlines. Result page selected Miles and opened member sign-in. Closing the dialog left Loading results and no flights.",
+    "appOwnedBrowser": {
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "date": "2026-10-06",
+        "pax": 1
+      },
+      "method": "app-owned ordinary Chrome; no login",
+      "reports": [
+        {
+          "phase": "award-submission",
+          "at": "2026-09-06T07:03:43.489Z",
+          "elapsedMs": 1166,
+          "state": {
+            "path": "/en/us/fsr/choose-flights",
+            "loginDialog": true,
+            "loading": true,
+            "verification": false,
+            "priceMode": [
+              "Miles"
+            ],
+            "flightSelectButtons": 0
+          },
+          "responses": [
+            {
+              "path": "/api/flight/recentSearch",
+              "status": 200
+            },
+            {
+              "path": "/api/Flight/ValidateShopRequest",
+              "status": 200
+            }
+          ]
+        },
+        {
+          "phase": "after-dismissed-login",
+          "at": "2026-09-06T07:04:03.783Z",
+          "elapsedMs": 21460,
+          "state": {
+            "path": "/en/us/fsr/choose-flights",
+            "loginDialog": false,
+            "loading": true,
+            "verification": false,
+            "priceMode": [
+              "Miles"
+            ],
+            "flightSelectButtons": 0
+          },
+          "responses": [
+            {
+              "path": "/api/flight/recentSearch",
+              "status": 200
+            },
+            {
+              "path": "/api/Flight/ValidateShopRequest",
+              "status": 200
+            }
+          ]
+        }
+      ]
+    },
+    "conclusion": "Normal form validation succeeds with HTTP 200; the miles flow requests member sign-in before FetchFlights inventory is observed. Closing the dialog still leaves loading after the bounded 20-second check. No verification challenge observed in this flow; the older direct HTTP428 remains separate evidence.",
+    "next": "Retain member-access fallback and any distinct published anonymous entry as separate candidates. Neither this observation nor the older direct-request failure establishes universal impossibility. Continue other airline connections without waiting on long-term session qualification."
+  },
+  "changes": [
+    "Ordinary Chrome launcher now selects a dedicated fixed airline profile: American, Aeroplan or United. Default American path is preserved.",
+    "No source was enabled or marked complete based on these access diagnostics.",
+    "All temporary diagnostic browsers closed; existing American worker remained ready and idle."
+  ],
+  "qualification": "No new native Aeroplan/MileagePlus connection or production qualification is claimed."
+}

@@ -69,6 +69,8 @@ Run only one worker or direct probe against this profile. American searches are 
 
 ## Live verification
 
+The ordinary Chrome launcher also accepts fixed `aeroplan` and `united` identities, each with its own app-owned profile; the default remains American. `pnpm exec tsx browser-worker/probe-aeroplan-entry.ts` checks the two published public entries. `pnpm exec tsx browser-worker/probe-united-entry.ts` submits the official LAX–AUS October 6 one-adult award form and checks whether dismissing sign-in allows results. Both are bounded access diagnostics, not enabled fare sources. Current runs reach member gates before inventory. They never import a personal profile or record credentials/cookies. [Entry evidence](../docs/evidence/aeroplan-united-entry-2026-09-06.json).
+
 These commands perform new airline searches. They do not use recorded fixtures:
 
 ```sh
