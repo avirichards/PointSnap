@@ -26,9 +26,16 @@ async function unusedLoopbackPort(): Promise<number> {
   });
 }
 
+type DesktopProgram =
+  | "american"
+  | "aeroplan"
+  | "united"
+  | "british-airways"
+  | "qatar";
+
 /** Owns only its dedicated Chrome process and profile, never a user's browser. */
 class DesktopChrome {
-  constructor(private readonly program: "american" | "aeroplan" | "united") {}
+  constructor(private readonly program: DesktopProgram) {}
 
   private process?: ChildProcess;
   private exited?: Promise<void>;
@@ -173,7 +180,7 @@ class DesktopChrome {
 }
 
 export function createDesktopChromeSession(
-  program: "american" | "aeroplan" | "united" = "american",
+  program: DesktopProgram = "american",
 ) {
   const desktop = new DesktopChrome(program);
   return new PersistentBrowserSession(
