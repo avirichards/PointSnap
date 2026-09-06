@@ -7,12 +7,37 @@ Source: all user messages supplied in this task through September 5, 2026, inclu
 - [ ] Finish the entire app and keep investigating every airline until all practical access paths are exhausted. Treat a failed method as evidence about that method, not proof that an airline is impossible.
 - [ ] Search every available flight, connection, cabin and fare option for the chosen route, day and party. JetBlue was specifically called out for missing flights. Current JetBlue adapter now returns 16 JFK–LAX itineraries / 119 fares, including connections, with exact cash matches; maintain this completeness standard for every source.
 - [x] Users can search working direct sources without connecting their personal airline accounts.
-- [ ] Latest steering: account connections are acceptable as an alternative. Evaluate local browser companions, hosted user sessions, provider-account connections and commercial arrangements alongside anonymous access. Keep optional anonymous search as the preferred experience; do not imply that entering credentials guarantees full airline coverage.
+- [ ] Approved public-site direction: customers must not need airline logins or a helper installation. For every airline, prioritize complete direct anonymous access, then app-operated anonymous browser access. Operator-held accounts are a fallback for demonstrated member-access needs, not the default; a denied request alone does not establish that a login will help.
 - [x] Keep calendar minima separate from individual-flight availability; partner coverage does not imply the native program is connected.
-- [ ] Connect remaining airlines without new paid data subscriptions, a commercial license, or paid scraping services. App-owned anonymous sessions are acceptable; access not reproducible in PointSnap is not marked enabled.
+- [ ] Connect remaining airlines without an award-data subscription. Prefer existing infrastructure and free allowances. Paid browser hosting/compute is an optional measured fallback within the approved total $100/month infrastructure ceiling; this does not authorize a paid award-data feed. App-owned anonymous sessions are acceptable; access not reproducible in PointSnap is not marked enabled.
 - [x] Research the authorized Seats.aero Pro session and its publicly delivered code. Do not assume private backend code is available or use personal Pro access as a commercial feed.
 - [x] Provide an actual live work feed per airline at /build-progress, including evidence and next attempts. Keep it accurate as investigation continues.
 - [x] Calculate cents per point only from a matching cash itinerary/cabin/fare and known same-currency award fees. Alaska and JetBlue supported; expand when providers supply comparable quotes.
+
+
+### Approved connection order (American-first planning update)
+
+Work through this list in order before the remaining programs. American-first supersedes the earlier Aeroplan-first order. Try anonymous access first for each program; the airline order does not prescribe login-based access. The main mission and all earlier product requirements remain active. The release list remains open to a later explicit scope decision.
+
+1. American AAdvantage
+2. Air Canada Aeroplan
+3. United MileagePlus
+4. British Airways Avios
+5. Qatar Privilege Club
+6. Virgin Atlantic Flying Club
+7. Singapore KrisFlyer
+8. Turkish Miles&Smiles
+9. Etihad Guest
+10. ANA Mileage Club
+11. Alaska Atmos Rewards
+12. Delta SkyMiles
+13. JetBlue TrueBlue
+14. Qantas Frequent Flyer
+15. Avianca LifeMiles
+16. Emirates Skywards
+17. Aeromexico Rewards
+
+Current focus: **American AAdvantage, anonymously**. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
 
 ## Priority 2 — intuitive depth and comparison
 
@@ -150,11 +175,29 @@ The following ledger traces the user's requests in conversation order. Repeated 
 | 67 | Challenge the claim that every option was tested; do not give up prematurely | Correct the earlier exhaustion wording. Full browser execution was a missing architecture, so test it end to end; record specific failures and still-unverified options. |
 | 68 | Other platforms demonstrate the capability; keep figuring it out | Continue concrete independent access experiments. Other platforms' availability does not establish their private backend method or prove our connector works; measured PointSnap results remain the acceptance criterion. |
 
+| 69 | Earlier goal update supplies an explicit 17-program connection order | Historical Aeroplan-first order, superseded by the later approved American-first plan in group 79. Preserve the remaining relative order and keep other programs afterward. |
+
+| 70 | What is the easiest way to complete PointSnap? | Compared licensed data with self-operated access. No provider purchase or inquiry authorized by this question. |
+| 71 | Exclude another provider subscription; evaluate registering airline accounts and searching while signed in; propose other self-operated approaches | Earlier Aeroplan-first and per-traveler proposals were evaluated, then superseded by the approved American-first public-site plan in group 79. An account is not proof of reliable automation or universal pricing. Do not create accounts merely from this exploratory question. |
+| 72 | Ask what is needed to use the existing Air Canada account | Prepare a dedicated persistent browser and perform sign-in on Air Canada's own site. Do not request credentials in project files or progress logs. |
+| 73 | Authorize Air Canada sign-in by providing account credentials | Use only for the requested airline sign-in. Credential values are intentionally excluded from this requirements record, code, evidence files and progress feed. |
+| 74 | Retain verification so another code is not needed three months later | Reuse the same dedicated browser session where Air Canada permits it. Its published policy requires 2FA for every new sign-in; do not promise a 90-day lifetime or reuse a one-time code. Detect expiry and provide a clear reconnect step. |
+| 75 | Stop and plan because continual re-login is not acceptable | Reevaluate the architecture and recovery requirements before expanding account integrations. Reusing an active session is not a guarantee against future verification. |
+| 76 | Explain why the successful direct anonymous approach cannot simply be duplicated everywhere | Separate public endpoint access, ordinary-browser access, runtime verification, member-only inventory and extraction completeness. Prefer the successful anonymous patterns on every new program, with current evidence. |
+| 77 | Originate ideas; explain American scraping and whether Brave Search or another browser would help | American's ordinary anonymous results are evidence of public access, while its independent worker still fails before inventory. Test genuine persistent profile reuse and an operator-side collector; distinguish a web-search API from browser execution. |
+| 78 | Produce a comprehensive completion plan | Approved plan saved in tasks/completion-plan.md, including early access proofs, a queued search service, product completion, cost limits and release qualification. |
+| 79 | Planning decisions: public site, no customer connections, operator recovery, infrastructure budget, freshness, American first and pilot workload | No customer airline login/helper; anonymous methods first; operator-account fallback with recovery proof; no data subscription; total infrastructure up to $100/month; recent observations plus automatic live refresh; 100 submitted searches/day and five simultaneous visitors; release airline list may be revised explicitly. Mailbox access was discussed but no OAuth consent or mailbox access has occurred. |
+| 80 | Ask whether the plan is credible | Distinguish confidence in the testable process from a guarantee of universal access. Prove repeated anonymous American searches, member-session recovery and operating cost before substantial infrastructure work. |
+| 81 | Approve the plan and start implementation | Execute the approved plan in Default mode, keeping airline access first and all earlier UI/product requirements active. |
+| 82 | Ask whether to set a goal before starting | Goal is optional; proposed wording references the full plan and measurable completion criteria. No goal was active at that setup check; the later explicit goal activation is recorded in group 84. |
+| 83 | Confirm free anonymous connections are prioritized in the plan and goal | Explicit order: direct anonymous connection, app-operated anonymous browser, then justified operator-account fallback. Prefer existing/free infrastructure; optional paid hosting remains within $100/month and no award-data subscription. Correct stale Aeroplan-first/traveler-connected recommendations and verify anonymous-first language in the active goal. |
+| 84 | Activate the approved completion goal | Goal state verified active through the goal tool. Keep the full approved objective, prioritize American anonymously, and continue toward complete native connections and the remaining product requirements. No token budget was specified. |
+
 ## Current completion boundary
 
-Eight scoped live individual-flight feeds are now enabled in the configured local app, including anonymous Delta and Smiles browser services, plus cached Qantas flights and the Virgin daily calendar. Additional partner inventory does not equal a native airline-program connection. Delta now has a reproducible native connection through the actual local PointSnap app. American and Southwest have ordinary anonymous-browser evidence but no working native PointSnap connection yet. Ethiopian now has a verified anonymous Node adapter and actual PointSnap API/browser evidence for Economy, Business, multiple passengers and connecting flights. Native all-airline coverage, full provider-by-provider completeness, city-wide search, redesigned calendars, hidden-city exploration, remaining advanced reference-data filters, the whole-product audit and hosted production verification remain unfinished. No document checkbox or progress-feed event should describe them as complete without fresh evidence.
+Nine scoped live individual-flight feeds are now enabled in the configured local app, including anonymous American, Delta and Smiles browser services, plus cached Qantas flights and the Virgin daily calendar. Additional partner inventory does not equal a native airline-program connection. Delta now has a reproducible native connection through the actual local PointSnap app. American now works natively through the actual local app without login: 40 domestic itineraries / 78 two-adult fares match the airline website, and normal restart succeeds. International extraction returns 40 / 116 but different independent source sets leave exhaustiveness unresolved. Southwest remains unconnected. Ethiopian now has a verified anonymous Node adapter and actual PointSnap API/browser evidence for Economy, Business, multiple passengers and connecting flights. Native all-airline coverage, full provider-by-provider completeness, city-wide search, redesigned calendars, hidden-city exploration, remaining advanced reference-data filters, the whole-product audit and hosted production verification remain unfinished. No document checkbox or progress-feed event should describe them as complete without fresh evidence.
 
-### Latest airline-first verification
+### Earlier airline-first verification — historical checkpoints
 
 American: fresh native browser evidence was reconciled against 40 itineraries and 69 fares. A replacement candidate parser now preserves all of them and rejects incomplete or mismatched data; native transport remains disabled. Matching AA's ordinary client-generated correlation cookie and header still produced API error309 and a server-rendered Challenge Validation page. United: the actual PointSnap page showed all four offered EWR–LHR partner itineraries for two adults. UA14 details correctly showed 40,000 TrueBlue points + USD5.60 per person, 80,000 + USD11.20 for the party, local AM/PM times and a fresh two-adult JetBlue handoff. Native MileagePlus still requires sign-in.
 
@@ -195,3 +238,16 @@ All68 requests remain logged and airline access stays first. A new exact-airport
 
 
 The US partner change is now verified in the actual app: 22 Smiles itineraries/168 fares, all three nonstops retained by the Nonstop filter, original BRL and USD conversion correct. AA2118 consolidates three booking programs and nine choices after timezone-aware exact matching. A stale group-level stop label was also fixed. All 192 tests and the optimized build pass. Native American and United access remain unfinished; no requirement is marked complete solely because partner flights are available.
+
+### Further native and hosted access tests
+
+All68 requests remain logged and airline access remains the priority. Azul’s ordinary browser returns eight points flights; fresh WebKit/Firefox inventory403 and Chromium entry403 keep its native connector disabled. SAS’s normal points booker exposes all20 CPH–ARN itinerary rows and first-fare taxes anonymously, superseding the inference drawn from its denied award-finder path. Its independent worker attempts still fail; two form-automation mistakes are recorded separately from actual403s. Six hosted Smiles attempts have produced no flights, including a runtime sandbox launch failure that is not airline evidence. Local Smiles remains verified. Browser-only availability is not marked as a completed PointSnap connection.
+
+### Current American milestone — anonymous first
+
+The active goal and saved plan both explicitly prioritize direct anonymous access, then an app-operated anonymous browser, then justified operator-account fallback. A dedicated ordinary Chrome process now returns native AAdvantage results through the local worker, streaming API and real frontend. Every LAX–AUS October 5 two-adult itinerary and fare matches the independent airline website: 40 itineraries, 78 prices, all three nonstops. Program grouping, both result pages, cabin prices, taxes and party totals verified. A normal browser/service restart preserves access. A cookie notice covering Search was caught in an international test and handled normally.
+
+JFK–LHR October 6 returns 40/116 in the worker and its own rendered browser. An independent browser has 40/123 with four different connections; all 36 shared itineraries match. Source-set exhaustiveness, hosted deployment, seven-day qualification and measured cost remain open. A trip-prefilled American handoff is being verified. See docs/evidence/american-persistent-session-2026-09-05.json. No airline-wide completion checkbox has been marked.
+
+
+Latest American completeness finding: the official Business/First form exposes ten itineraries absent from the independent all-cabin JFK–LHR search. Keep all-cabin/premium-scope union and remaining source limits ahead of UI work. A fresh trip deeplink failed with ERRCODE858 and remains disabled; the generic official form handoff is retained.

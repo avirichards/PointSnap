@@ -5,11 +5,13 @@ import {
   type Browser,
   type BrowserContext,
   type Page,
+  type Response,
 } from "playwright";
 import { parseAmerican } from "../src/lib/award-search/american";
 import type { SearchQuery } from "../src/lib/types";
-import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { resolve } from "node:path";
+import { PersistentBrowserSession } from "./persistent-session";
 
 export type BrowserStage = {
   stage: string;
@@ -95,6 +97,8 @@ export interface AmericanBrowserResult {
 
 export class AmericanBrowserRunner {
   private browserPromise?: Promise<Browser>;
+  private persistentSession?: PersistentBrowserSession;
+  private persistentPage?: Page;
   constructor(
     private options: {
       channel?: string;
@@ -102,8 +106,44 @@ export class AmericanBrowserRunner {
       entry?: "homepage" | "direct" | "homepage-form";
       engine?: "chromium" | "firefox" | "webkit";
       temporaryProfile?: boolean;
+      persistentProfile?: boolean;
     } = {},
-  ) {}
+    session?: PersistentBrowserSession,
+  ) {
+    if (session && (options.temporaryProfile || options.persistentProfile))
+      throw new Error(
+        "An injected session must own its own profile lifecycle.",
+      );
+    this.persistentSession = session;
+    if (options.temporaryProfile && options.persistentProfile)
+      throw new Error(
+        "Choose either a temporary or persistent American profile.",
+      );
+    if (options.persistentProfile) {
+      this.persistentSession = new PersistentBrowserSession(async () => {
+        const engine = this.options.engine ?? "chromium";
+        const channel = this.options.channel ?? "chromium";
+        // Fixed app-owned location; never accept a personal-profile path.
+        const profile = resolve(
+          "work/browser-profiles",
+          `american-persistent-${engine}-${channel.replace(/[^a-zA-Z0-9_-]/g, "_")}`,
+        );
+        await mkdir(profile, { recursive: true, mode: 0o700 });
+        await chmod(profile, 0o700);
+        return { chromium, firefox, webkit }[engine].launchPersistentContext(
+          profile,
+          {
+            ...(engine === "chromium"
+              ? { channel, chromiumSandbox: true }
+              : {}),
+            headless: this.options.headless ?? true,
+            locale: "en-US",
+            timeout: 30000,
+          },
+        );
+      });
+    }
+  }
 
   private async browser(): Promise<Browser> {
     const engine = this.options.engine ?? "chromium";
@@ -135,6 +175,7 @@ export class AmericanBrowserRunner {
   }
 
   async close() {
+    await this.persistentSession?.close();
     const pending = this.browserPromise;
     this.browserPromise = undefined;
     await pending?.then((browser) => browser.close()).catch(() => {});
@@ -144,6 +185,32 @@ export class AmericanBrowserRunner {
     q: SearchQuery,
     signal: AbortSignal,
   ): Promise<AmericanBrowserResult> {
+    if (!this.persistentSession) return this.searchInContext(q, signal);
+    try {
+      return await this.persistentSession.run(signal, (context) =>
+        this.searchInContext(q, signal, context),
+      );
+    } catch (error) {
+      if (error instanceof BrowserSearchError) throw error;
+      throw new BrowserSearchError(
+        signal.aborted
+          ? "The American browser search was cancelled or timed out."
+          : "The dedicated American browser profile could not open or was closed.",
+        signal.aborted ? "profile-queue" : "launch",
+        signal.aborted ? 504 : 503,
+        {
+          persistentProfile: true,
+          errorType: error instanceof Error ? error.name : "UnknownError",
+        },
+      );
+    }
+  }
+
+  private async searchInContext(
+    q: SearchQuery,
+    signal: AbortSignal,
+    persistentContext?: BrowserContext,
+  ): Promise<AmericanBrowserResult> {
     const started = Date.now(),
       stages: BrowserStage[] = [];
     let stage = "launch";
@@ -151,18 +218,22 @@ export class AmericanBrowserRunner {
       stage = next;
       stages.push({ stage, elapsedMs: Date.now() - started });
     };
-    let context: BrowserContext | undefined,
+    let context: BrowserContext | undefined = persistentContext,
       page: Page | undefined,
       profile: string | undefined;
     const abort = () => {
-      void context?.close().catch(() => {});
+      if (persistentContext) void page?.close().catch(() => {});
+      else void context?.close().catch(() => {});
     };
+    let onResponse: ((response: Response) => void) | undefined;
     signal.throwIfAborted();
     signal.addEventListener("abort", abort, { once: true });
     try {
-      // Every request gets a fresh anonymous context. No personal browser profile,
-      // imported login state, stealth patches or verification-cookie transport.
-      if (this.options.temporaryProfile) {
+      // Only this worker's anonymous state is reused. No personal profile,
+      // imported login state or verification-cookie transport is accepted.
+      if (persistentContext) {
+        mark("dedicated-profile-ready");
+      } else if (this.options.temporaryProfile) {
         const directory = resolve("work/browser-profiles");
         await mkdir(directory, { recursive: true, mode: 0o700 });
         profile = await mkdtemp(resolve(directory, "american-"));
@@ -186,9 +257,18 @@ export class AmericanBrowserRunner {
         context = await browser.newContext({ locale: "en-US" });
       }
       signal.throwIfAborted();
+      if (!context)
+        throw new BrowserSearchError("The browser did not open.", "launch");
       context.setDefaultTimeout(15000);
-      page = await context.newPage();
-      page.on("response", (response) => {
+      page =
+        persistentContext &&
+        this.persistentPage &&
+        !this.persistentPage.isClosed()
+          ? this.persistentPage
+          : await context.newPage();
+      if (persistentContext) this.persistentPage = page;
+      signal.throwIfAborted();
+      onResponse = (response: Response) => {
         if (!response.request().isNavigationRequest()) return;
         const url = new URL(response.url());
         if (url.hostname === "www.aa.com")
@@ -198,7 +278,8 @@ export class AmericanBrowserRunner {
             path: url.pathname,
             status: response.status(),
           });
-      });
+      };
+      page.on("response", onResponse);
       const homepage = this.options.entry !== "direct";
       mark(homepage ? "homepage" : "booking-form");
       const entryResponse = await page.goto(
@@ -292,6 +373,13 @@ export class AmericanBrowserRunner {
         await page.locator("#carriers").selectOption("ALL");
       }
       mark("submit-search");
+      // The airline can show its ordinary cookie notice after the form loads.
+      // Its panel covers Search in a desktop window; dismiss it through the UI.
+      const cookieNotice = page.getByRole("button", {
+        name: "Dismiss",
+        exact: true,
+      });
+      if (await cookieNotice.isVisible()) await cookieNotice.click();
       await page.getByRole("button", { name: "Search", exact: true }).click();
       await page.waitForURL(/\/booking\/choose-flights\/1(?:\?|$)/, {
         waitUntil: "domcontentloaded",
@@ -379,7 +467,10 @@ export class AmericanBrowserRunner {
       );
     } finally {
       signal.removeEventListener("abort", abort);
-      await context?.close().catch(() => {});
+      if (page && onResponse) page.off("response", onResponse);
+      if (persistentContext) {
+        if (signal.aborted) await page?.close().catch(() => {});
+      } else await context?.close().catch(() => {});
       if (profile) await rm(profile, { recursive: true, force: true });
     }
   }

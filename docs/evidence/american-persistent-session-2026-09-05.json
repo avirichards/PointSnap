@@ -1,0 +1,971 @@
+{
+  "ordinaryChromeReference": {
+    "query": {
+      "origin": "LAX",
+      "dest": "AUS",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "minCabin": "Y"
+    },
+    "method": "New ordinary Chrome tab through the enabled browser extension; official homepage form, one-way, redeem miles. No airline credentials entered.",
+    "itineraries": 40,
+    "visibleFareButtons": 79,
+    "nonstops": [
+      {
+        "flight": "AA6443",
+        "depart": "08:50",
+        "arrive": "14:03",
+        "economy": 21000,
+        "first": 81000,
+        "cash": 5.6,
+        "currency": "USD"
+      },
+      {
+        "flight": "AA2118",
+        "depart": "16:46",
+        "arrive": "21:42",
+        "economy": 8000,
+        "first": 71000,
+        "cash": 5.6,
+        "currency": "USD"
+      },
+      {
+        "flight": "AA4945",
+        "depart": "18:52",
+        "arrive": "23:59",
+        "economy": 18000,
+        "first": 54500,
+        "cash": 5.6,
+        "currency": "USD"
+      }
+    ],
+    "scope": "Visible itinerary and fare-button counts, not yet reconciled against a complete PointSnap worker response.",
+    "recordedAt": "2026-09-06T05:03:54.883222+00:00"
+  },
+  "persistentBrowserExperiment": {
+    "query": {
+      "origin": "LAX",
+      "dest": "AUS",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "minCabin": "Y"
+    },
+    "options": {
+      "engine": "chromium",
+      "channel": "chrome",
+      "headless": false,
+      "entry": "homepage-form",
+      "persistentProfile": true
+    },
+    "platform": "darwin",
+    "idleMs": 30000,
+    "reports": [
+      {
+        "phase": "initial",
+        "at": "2026-09-06T04:51:14.222Z",
+        "elapsedMs": 53825,
+        "result": "error",
+        "message": "American requested browser verification. This search could not complete automatically.",
+        "stage": "submit-search",
+        "status": 503,
+        "stages": [
+          {
+            "stage": "reuse-dedicated-profile",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "homepage",
+            "elapsedMs": 55
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 283,
+            "path": "/",
+            "status": 200
+          },
+          {
+            "stage": "homepage-route-and-passengers",
+            "elapsedMs": 626
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 2667,
+            "path": "/",
+            "status": 200
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 3460,
+            "path": "/",
+            "status": 301
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 3984,
+            "path": "/homePage.do",
+            "status": 200
+          },
+          {
+            "stage": "submit-search",
+            "elapsedMs": 6407
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 7257,
+            "path": "/booking/find-flights",
+            "status": 403
+          }
+        ],
+        "title": "Access Denied",
+        "path": "/booking/find-flights",
+        "verification": true,
+        "errorType": "TimeoutError"
+      },
+      {
+        "phase": "same-session-after-idle",
+        "at": "2026-09-06T04:52:31.242Z",
+        "elapsedMs": 47017,
+        "result": "error",
+        "message": "American requested browser verification. This search could not complete automatically.",
+        "stage": "submit-search",
+        "status": 503,
+        "stages": [
+          {
+            "stage": "reuse-dedicated-profile",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "homepage",
+            "elapsedMs": 1
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 202,
+            "path": "/",
+            "status": 301
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 608,
+            "path": "/homePage.do",
+            "status": 200
+          },
+          {
+            "stage": "homepage-route-and-passengers",
+            "elapsedMs": 1116
+          },
+          {
+            "stage": "submit-search",
+            "elapsedMs": 1672
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 1976,
+            "path": "/booking/find-flights",
+            "status": 403
+          }
+        ],
+        "title": "Access Denied",
+        "path": "/booking/find-flights",
+        "verification": true,
+        "errorType": "TimeoutError"
+      },
+      {
+        "phase": "after-browser-restart",
+        "at": "2026-09-06T04:53:21.050Z",
+        "elapsedMs": 49105,
+        "result": "error",
+        "message": "American requested browser verification. This search could not complete automatically.",
+        "stage": "submit-search",
+        "status": 503,
+        "stages": [
+          {
+            "stage": "reuse-dedicated-profile",
+            "elapsedMs": 0
+          },
+          {
+            "stage": "homepage",
+            "elapsedMs": 70
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 506,
+            "path": "/",
+            "status": 301
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 947,
+            "path": "/homePage.do",
+            "status": 200
+          },
+          {
+            "stage": "homepage-route-and-passengers",
+            "elapsedMs": 1708
+          },
+          {
+            "stage": "submit-search",
+            "elapsedMs": 2961
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 3291,
+            "path": "/booking/find-flights",
+            "status": 403
+          }
+        ],
+        "title": "Access Denied",
+        "path": "/booking/find-flights",
+        "verification": true,
+        "errorType": "TimeoutError"
+      }
+    ]
+  },
+  "conclusion": "Native American now works in the configured local PointSnap API and UI without an airline login or award-data subscription. All 40 domestic two-adult itineraries and 78 fares match the independent airline website. International extraction preserves all 40/116 fares shown by the owned browser, but an independent search returns a different set; wider completeness remains open. Managed persistence alone still failed. Normal service/browser restart succeeded.",
+  "nextExperiment": "Verify the ordinary Chrome flow on hosted macOS and Linux; investigate differing international result sets, a trip-prefilled handoff, representative routes, idle recovery, and measured seven-day reliability and cost.",
+  "ordinaryDesktopChromeExperiment": {
+    "recordedAt": "2026-09-06T04:57:25.832Z",
+    "elapsedMs": 11041,
+    "method": "ordinary-desktop-chrome-local-cdp",
+    "platform": "darwin",
+    "query": {
+      "origin": "LAX",
+      "dest": "AUS",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "minCabin": "Y"
+    },
+    "profileScope": "Dedicated app-owned directory, not a personal profile. Normal Chrome arguments plus user-data-dir and loopback debugging only. No imported state or browser-security changes.",
+    "result": "success",
+    "itineraries": 40,
+    "fares": 79,
+    "stages": [
+      {
+        "stage": "dedicated-profile-ready",
+        "elapsedMs": 0
+      },
+      {
+        "stage": "homepage",
+        "elapsedMs": 674
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 1066,
+        "path": "/",
+        "status": 200
+      },
+      {
+        "stage": "homepage-route-and-passengers",
+        "elapsedMs": 1430
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 3450,
+        "path": "/",
+        "status": 301
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 3882,
+        "path": "/homePage.do",
+        "status": 200
+      },
+      {
+        "stage": "submit-search",
+        "elapsedMs": 6047
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 6614,
+        "path": "/booking/find-flights",
+        "status": 302
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 6900,
+        "path": "/booking/search",
+        "status": 200
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 9980,
+        "path": "/booking/choose-flights/1",
+        "status": 200
+      },
+      {
+        "stage": "read-flight-response",
+        "elapsedMs": 10281
+      },
+      {
+        "stage": "validated-complete-response",
+        "elapsedMs": 10468
+      }
+    ]
+  },
+  "developmentIssues": [
+    "The first desktop diagnostic invocation failed TypeScript/CommonJS transformation before browser launch; wrapping its entrypoint in main corrected this. This is not an airline request or access failure."
+  ],
+  "localApplicationRuns": [
+    {
+      "id": "6f19d4b1-c302-4325-8995-4388c8f7689a",
+      "at": "2026-09-06T05:05:23.416Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 8121,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 40,
+      "fares": 79,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 29
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 280,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1178,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1863
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 3246
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3657,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3873,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6795,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 7194
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 7383
+        }
+      ]
+    },
+    {
+      "id": "522068b0-a822-47ec-82ef-91c90d81b9e7",
+      "at": "2026-09-06T05:06:26.783Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 5848,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 40,
+      "fares": 78,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 1
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 273,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 820,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1394
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 1774
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2205,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2436,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 5416,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 5669
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 5846
+        }
+      ]
+    },
+    {
+      "id": "085a4054-986f-442c-810a-65f6990c4ffa",
+      "at": "2026-09-06T05:06:50.942Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 7256,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 40,
+      "fares": 78,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 1
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 197,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 803,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1375
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 1752
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2100,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2801,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 6726,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 7083
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 7255
+        }
+      ]
+    },
+    {
+      "id": "fba51f34-9cc8-4488-9083-6c2ecb6420c7",
+      "at": "2026-09-06T05:15:02.957Z",
+      "query": {
+        "origin": "JFK",
+        "dest": "LHR",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 17270,
+      "result": "error",
+      "programId": "AA_AADVANTAGE",
+      "status": 502,
+      "stage": "submit-search",
+      "message": "American's browser search could not complete at submit-search. No availability was inferred.",
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 1
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 232,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 894,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1870
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 2251
+        }
+      ],
+      "title": "American Airlines - Airline tickets and low fares at aa.com",
+      "path": "/homePage.do",
+      "verification": false,
+      "errorType": "TimeoutError"
+    },
+    {
+      "id": "a40d020d-bd3c-4b22-b553-20b6f6d2367a",
+      "at": "2026-09-06T05:19:34.323Z",
+      "query": {
+        "origin": "JFK",
+        "dest": "LHR",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 10673,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 40,
+      "fares": 116,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 75
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 363,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1052,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1837
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 3162
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3575,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 3805,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 9372,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 9641
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 9833
+        }
+      ]
+    },
+    {
+      "id": "8fc2b61c-927b-4929-925a-410642dadc7e",
+      "at": "2026-09-06T05:20:28.950Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "departDate": "2026-10-05",
+        "pax": 2,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 4989,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 40,
+      "fares": 78,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 232,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 793,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1300
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 1701
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2115,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2288,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4588,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 4790
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 4986
+        }
+      ]
+    },
+    {
+      "id": "99174c07-af63-44d5-af5f-82b9d9c88452",
+      "at": "2026-09-06T05:21:59.479Z",
+      "query": {
+        "origin": "LAX",
+        "dest": "SFO",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 4848,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 30,
+      "fares": 59,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 198,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 636,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1237
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 1792
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2391,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2557,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4460,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 4647
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 4846
+        }
+      ]
+    },
+    {
+      "id": "1458e11c-5213-40c0-adb2-f74314088a69",
+      "at": "2026-09-06T05:23:59.267Z",
+      "query": {
+        "origin": "JFK",
+        "dest": "LHR",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 5060,
+      "result": "success",
+      "programId": "AA_AADVANTAGE",
+      "itineraries": 40,
+      "fares": 116,
+      "stages": [
+        {
+          "stage": "dedicated-profile-ready",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "homepage",
+          "elapsedMs": 0
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 350,
+          "path": "/",
+          "status": 301
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 845,
+          "path": "/homePage.do",
+          "status": 200
+        },
+        {
+          "stage": "homepage-route-and-passengers",
+          "elapsedMs": 1272
+        },
+        {
+          "stage": "submit-search",
+          "elapsedMs": 1654
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 1941,
+          "path": "/booking/find-flights",
+          "status": 302
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 2212,
+          "path": "/booking/search",
+          "status": 200
+        },
+        {
+          "stage": "document",
+          "elapsedMs": 4584,
+          "path": "/booking/choose-flights/1",
+          "status": 200
+        },
+        {
+          "stage": "read-flight-response",
+          "elapsedMs": 4822
+        },
+        {
+          "stage": "validated-complete-response",
+          "elapsedMs": 5058
+        }
+      ]
+    }
+  ],
+  "frontendVerification": {
+    "recordedAt": "2026-09-06T05:33:28.632189+00:00",
+    "query": {
+      "origin": "LAX",
+      "dest": "AUS",
+      "departDate": "2026-10-05",
+      "pax": 2
+    },
+    "method": "Actual PointSnap browser UI, American program filter, both 25-row pages then 50/page. Independent signed-out American website. Compare displayed flight sequences, cabins, points and USD fees.",
+    "referenceItineraries": 40,
+    "referenceFares": 78,
+    "appItineraries": 40,
+    "appFares": 78,
+    "matchingItineraries": 40,
+    "differences": [],
+    "nonstops": [
+      "AA6443",
+      "AA2118",
+      "AA4945"
+    ],
+    "partyExample": {
+      "flight": "AA2118",
+      "perPersonPoints": 8000,
+      "perPersonFeesUSD": 5.6,
+      "partyPoints": 16000,
+      "partyFeesUSD": 11.2
+    },
+    "programGrouping": "AA2118 remains one physical itinerary with American, Alaska and Smiles fare comparisons under the nonstop filter.",
+    "visualReview": "Actual rendered desktop layout and fare details reviewed. Source provenance, AM/PM clocks and exact party totals verified.",
+    "handoff": "Current generic American booking page needs a verified trip-prefilled handoff."
+  },
+  "internationalComparison": {
+    "recordedAt": "2026-09-06T05:33:28.632189+00:00",
+    "query": {
+      "origin": "JFK",
+      "dest": "LHR",
+      "departDate": "2026-10-06",
+      "pax": 1
+    },
+    "appItineraries": 40,
+    "appFares": 116,
+    "ownedBrowserRenderedItineraries": 40,
+    "ownedBrowserRenderedFares": 116,
+    "independentBrowserItineraries": 40,
+    "independentBrowserFares": 123,
+    "identicalItinerariesAndPrices": 36,
+    "onlyIndependentBrowser": [
+      "AA2017|AA38",
+      "AA1444|AA732",
+      "AA1444|AA734",
+      "AA1953|AA78"
+    ],
+    "onlyOwnedBrowser": [
+      "AA4397|BA212",
+      "BA176",
+      "AA3321|BA298",
+      "AA4710|BA222"
+    ],
+    "conclusion": "All 116 fares from the worker browser are retained in PointSnap. Two independent searches returned different 40-itinerary sets. No result-page control beyond the date carousel was observed. International inventory exhaustiveness is unresolved; do not equate complete extraction with every possible available routing."
+  },
+  "recoveryVerification": {
+    "normalRestart": "Stopped the idle worker with SIGTERM, confirmed its owned Chrome process exited, restarted with the same dedicated anonymous profile. JFK\u2013LHR returned 40/116; a subsequent LAX\u2013AUS two-adult search returned 40/78.",
+    "cookieNotice": "The first international request timed out because the ordinary privacy notice covered Search. Added a normal Dismiss button interaction; the restarted query succeeded. This was a UI implementation failure, not an access denial."
+  },
+  "updatedAt": "2026-09-06T05:42:52.399757+00:00",
+  "premiumSearchComparison": {
+    "query": {
+      "origin": "JFK",
+      "dest": "LHR",
+      "departDate": "2026-10-06",
+      "pax": 1
+    },
+    "method": "Official advanced form, Business / First, all airlines, signed out",
+    "itineraries": 40,
+    "fares": 52,
+    "additionalVersusIndependentAllCabins": [
+      "AA1229|AA732",
+      "AA2907|BA298",
+      "AA2907|AA54",
+      "AA4364|BA212",
+      "AA4599|BA222",
+      "AA1880|AA80",
+      "AA4350|BA222",
+      "AA3321|BA298",
+      "AA4397|BA212",
+      "AA4710|BA222"
+    ],
+    "conclusion": "Distinct ordinary cabin searches expose additional flights. Exhaustiveness is unqualified; source extraction preserved every returned row."
+  },
+  "bookingHandoffExperiment": {
+    "method": "Fresh public booking/search URL with route/date/party/award parameters, no session IDs",
+    "outcome": "Redirected to search/find-flights with ERRCODE858; requested domestic trip was not preserved",
+    "action": "Do not enable this deeplink; generic official form handoff retained."
+  },
+  "validation": {
+    "tests": 202,
+    "testFiles": 28,
+    "persistentSessionTests": 10,
+    "typecheck": "passed in optimized build",
+    "optimizedBuild": "passed on Node 22 with separate build directory",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 7
+    },
+    "ui": "Actual domestic search, full independent fare parity, international search and updated progress page reviewed"
+  }
+}

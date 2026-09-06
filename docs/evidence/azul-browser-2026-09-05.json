@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-06T02:57:52.514179+00:00",
+  "checkedAt": "2026-09-06T03:03:52.066753+00:00",
   "programId": "AD_AZUL_TUDOAZUL",
-  "status": "Native connector not enabled. Ordinary anonymous browser returns points flights; fresh WebKit inventory request receives 403 and Chromium entry receives 403.",
+  "status": "Native connector not enabled. Ordinary anonymous browser returns eight points flights; fresh WebKit and Firefox inventory requests receive403 and Chromium entry receives403.",
   "scope": "VCP to SDU, October 5 2026, one adult, one way, points selected through the current Brazilian public booking form. No login, copied browser state or purchase.",
   "ordinaryBrowser": {
     "entry": "https://www.voeazul.com.br/br/pt/home",
@@ -130,7 +130,86 @@
         }
       ],
       "result": "entry_403"
+    },
+    {
+      "at": "2026-09-06T02:58:56.598Z",
+      "engine": "firefox",
+      "platform": "darwin",
+      "elapsedMs": 62805,
+      "stages": [
+        {
+          "stage": "open-home",
+          "elapsedMs": 1245
+        },
+        {
+          "stage": "origin",
+          "elapsedMs": 15314
+        },
+        {
+          "stage": "destination",
+          "elapsedMs": 15714
+        },
+        {
+          "stage": "date",
+          "elapsedMs": 16423
+        },
+        {
+          "stage": "points",
+          "elapsedMs": 17202
+        },
+        {
+          "stage": "submit",
+          "elapsedMs": 17317
+        }
+      ],
+      "network": [
+        {
+          "host": "www.voeazul.com.br",
+          "path": "/br/pt/home",
+          "status": 200,
+          "type": "document"
+        },
+        {
+          "host": "www.voeazul.com.br",
+          "path": "/br/pt/home/selecao-voo",
+          "status": 200,
+          "type": "document"
+        },
+        {
+          "host": "b2c-api.voeazul.com.br",
+          "path": "/authentication/api/authentication/v1/token",
+          "status": 200,
+          "type": "xhr",
+          "shape": {
+            "data": "string",
+            "notifications": {
+              "array": 0,
+              "first": "undefined"
+            }
+          }
+        },
+        {
+          "host": "b2c-api.voeazul.com.br",
+          "path": "/reservationavailability/api/reservation/availability/v1/bookings",
+          "status": 200,
+          "type": "xhr",
+          "shape": {
+            "data": {},
+            "notifications": {
+              "array": 0,
+              "first": "undefined"
+            }
+          }
+        },
+        {
+          "host": "b2c-api.voeazul.com.br",
+          "path": "/tudoAzulReservationAvailability/api/tudoazul/reservation/availability/v6/availability",
+          "status": 403,
+          "type": "xhr"
+        }
+      ],
+      "result": "inventory_403"
     }
   ],
-  "next": "Test a distinct standard browser engine; do not disable CORS, bypass security checks or substitute ordinary-browser observations for a live app source."
+  "next": "A normal browser companion is an unverified architectural option. No automated runtime is currently proven to return Azul points inventory."
 }

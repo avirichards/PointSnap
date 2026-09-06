@@ -16,7 +16,7 @@ pnpm dev
 
 Open http://localhost:3000. All environment values may stay blank to use the eight direct sources: six live flight feeds, Qantas cached flight inventory and Virgin Atlantic's daily calendar. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
 
-An optional [browser service](browser-worker/README.md) now adds native Delta SkyMiles searches without a traveler login or data subscription. Local verification returned all 46 LAX–JFK itineraries across 3 pages, 167 available fares for one adult and 166 for two. JFK–LHR returned 17 itineraries/41 fares, including offered Air France/KLM flights booked with SkyMiles. The service requires separate browser binaries and runtime configuration; it is not bundled into a serverless deployment. Native American remains unfinished.
+An optional [browser service](browser-worker/README.md) now adds native Delta SkyMiles searches without a traveler login or data subscription. Local verification returned all 46 LAX–JFK itineraries across 3 pages, 167 available fares for one adult and 166 for two. JFK–LHR returned 17 itineraries/41 fares, including offered Air France/KLM flights booked with SkyMiles. The service requires separate browser binaries and runtime configuration; it is not bundled into a serverless deployment. It also supports native Smiles and the new ordinary-Chrome American connection. American LAX–AUS: 40 itineraries / 78 two-adult fares, all matching the independent website; normal restart verified. International source sets and hosted reliability still need qualification.
 
 ## Live coverage
 
@@ -30,10 +30,13 @@ An optional [browser service](browser-worker/README.md) now adds native Delta Sk
 | Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
 | Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |
 | Aeromexico Rewards | Individual itineraries and supplied Classic/Dynamic fares; per-person points and MXN cash fees | Direct public search |
+| American AAdvantage | Native award itineraries and all supplied cabin fares; exact party taxes, partners and mixed cabins | Dedicated anonymous ordinary-Chrome service; local proof, wider qualification pending |
+| Delta SkyMiles | All supplied pages and eligible fare families, native and offered partner awards | Anonymous WebKit service; local and hosted Mac proof |
+| GOL Smiles | Native and offered partner itineraries, regular payment choices and baggage offers | Anonymous WebKit service; local proof |
 | Seats.aero | Individual award itineraries for its supported programs | App-owned commercial Live Search key |
 | AwardTool | Individual award itineraries for contract-enabled programs | App-owned API key |
 
-**Universal airline coverage is not complete.** The eight source connections were verified on September 5, 2026; requesting cached Qantas inventory does not turn it into live availability. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
+**Universal airline coverage is not complete.** The configured local app has nine scoped live feeds, plus cached Qantas and the Virgin daily calendar; requesting cached Qantas inventory does not turn it into live availability. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
 
 The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” Virgin calendar summaries appear separately from flight results and do not count as complete flight integrations. JetBlue now returns complete itinerary and fare records for the audited searches. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
 

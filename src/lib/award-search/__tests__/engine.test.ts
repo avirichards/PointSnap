@@ -148,7 +148,7 @@ describe("multi-program orchestration", () => {
       coverage: {
         programId: "AA_AADVANTAGE",
         state: "empty",
-        source: "American · browser pilot",
+        source: "American AAdvantage · direct airline",
       },
     });
   });

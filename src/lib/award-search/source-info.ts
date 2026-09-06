@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  AA_AADVANTAGE: {
+    inventory: "flights",
+    label: "American AAdvantage & offered partner awards",
+    detail:
+      "Anonymous American searches with all fares supplied in the returned itinerary list. Additional flights can appear in a separate cabin search, so this is not exhaustive availability. Requires the browser service. Recheck the selected itinerary with American before booking.",
+  },
   G3_GOL_SMILES: {
     inventory: "flights",
     label: "GOL Smiles & offered partner awards",

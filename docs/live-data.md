@@ -329,3 +329,10 @@ An ordinary LAX–AUS October 5 search includes 15 Ontario (ONT) departures amon
 
 
 Fresh actual-app verification returned 22 Smiles itineraries/168 fares. All three supplied American nonstops survive filtering, no ONT rows appear, and the source panel discloses two withdrawals and 14 other-airport offers in this new observation. AA2118 now groups Alaska, cached Qantas and Smiles into one row with nine fares: airport-local and offset timestamps normalize to the same instant using known IANA zones. Repeated/nonexistent DST clocks and unknown-zone conversions remain conservative. A filtered group now uses a remaining offer with confirmed stop details instead of an earlier excluded/uncertain source. All 192 tests, focused lint, TypeScript and optimized build pass; actual page console is clean. The complete multi-source page has 91 grouped itineraries/374 fares, versus 107 before correcting time-format grouping.
+
+
+## Anonymous American integration — September 5, local evening
+
+The dedicated ordinary-Chrome worker now supplies native AAdvantage awards to PointSnap without login or a customer helper. LAX–AUS October 5 returns 40 itineraries / 79 fares for one adult and 40 / 78 for two. Every two-adult itinerary and fare matches the independent signed-out site, including all three nonstops. The actual frontend verifies pagination, grouping, program filters, exact fees and party totals. Normal worker/browser restart succeeds.
+
+JFK–LHR October 6 returns 40 / 116. Its own DOM agrees with the entire parsed response; an independent all-cabin search returns 40 / 123, with four different itineraries on each side and identical fares on all 36 common itineraries. An ordinary Business/First search yields ten additional itineraries relative to that reference all-cabin search. Expanded source coverage remains open. The fresh trip deeplink failed with ERRCODE858 and has not been enabled. These new observations supersede earlier local native-access failures without changing their historical record. [Current American evidence](evidence/american-persistent-session-2026-09-05.json).

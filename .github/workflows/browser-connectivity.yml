@@ -12,6 +12,7 @@ on:
           - delta
           - smiles
           - american
+          - american-desktop
       runner:
         description: Standard hosted runtime to verify
         type: choice
@@ -74,6 +75,12 @@ jobs:
         env:
           POINTSNAP_BROWSER_ENTRY: direct
         run: pnpm exec tsx browser-worker/probe.ts webkit
+      - name: Ordinary Chrome with profile reuse and restart (macOS)
+        if: inputs.program == 'american-desktop' && runner.os == 'macOS'
+        run: pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome
+      - name: Ordinary Chrome with profile reuse and restart (Linux)
+        if: inputs.program == 'american-desktop' && runner.os == 'Linux'
+        run: xvfb-run -a pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome
       - uses: actions/upload-artifact@v4
         if: always()
         with:

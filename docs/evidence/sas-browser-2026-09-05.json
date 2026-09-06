@@ -1,0 +1,329 @@
+{
+  "checkedAt": "2026-09-06T03:16:09.496239+00:00",
+  "programId": "SK_EUROBONUS",
+  "status": "Normal anonymous booking displays20 points itineraries, but PointSnap native worker remains unconnected.",
+  "ordinaryBrowser": {
+    "entry": "https://www.flysas.com/en/eurobonus/award-flights",
+    "searchEntry": "https://www.flysas.com/en?&payWithPoints",
+    "resultUrl": "https://www.flysas.com/en/book/flights/?search=OW_CPH-ARN-20261005_a1c0i0y0&view=upsell&bookingFlow=points&sortBy=rec&filterBy=all",
+    "query": {
+      "origin": "CPH",
+      "dest": "ARN",
+      "departDate": "2026-10-05",
+      "pax": 1
+    },
+    "listedItineraries": 20,
+    "showMoreFlightsExpanded": true,
+    "nonstops": 14,
+    "connections": 6,
+    "firstFlight": {
+      "flightNumber": "SK402",
+      "departure": "07:00",
+      "arrival": "08:15",
+      "economy": {
+        "points": 10000,
+        "fareName": "ECONOMY BONUS",
+        "cash": 38.01,
+        "currency": "EUR",
+        "cashScope": "Total for selected one-adult Economy Bonus fare"
+      },
+      "business": {
+        "points": 20000,
+        "fareName": "BUSINESS BONUS",
+        "cashVerified": false
+      }
+    },
+    "loginUsed": false,
+    "boundary": "The page asks for login to proceed with booking. Prices, fare-family details and selected Economy taxes were visible before login. All20 itinerary rows were exposed; not every fare family/tax was audited."
+  },
+  "workerAttempts": [
+    {
+      "at": "2026-09-06T03:03:21.235Z",
+      "engine": "webkit",
+      "entryMode": "homepage",
+      "elapsedMs": 53637,
+      "stages": [
+        {
+          "stage": "entry",
+          "elapsedMs": 602
+        },
+        {
+          "stage": "origin",
+          "elapsedMs": 2039
+        },
+        {
+          "stage": "destination",
+          "elapsedMs": 2326
+        },
+        {
+          "stage": "date",
+          "elapsedMs": 2909
+        },
+        {
+          "stage": "submit",
+          "elapsedMs": 3492
+        }
+      ],
+      "title": "Scandinavian Airlines – Book Your Next Flight on Flysas.com | SAS",
+      "message": "locator.waitFor: Timeout 50000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('table', { name: 'Select flights', exact: true }) to be visible\u001b[22m\n",
+      "result": "implementation_failure_destination_not_retained",
+      "network": [
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 200,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 401,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 401,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/suggestions/shared/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/dynamic-banners/destinations/price-banners/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/suggestions/shared/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/suggestions/shared/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/dynamic-banners/destinations/price-banners/v1",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-06T03:05:00.421Z",
+      "engine": "webkit",
+      "entryMode": "homepage",
+      "elapsedMs": 17074,
+      "stages": [
+        {
+          "stage": "entry",
+          "elapsedMs": 592
+        }
+      ],
+      "title": "Scandinavian Airlines – Book Your Next Flight on Flysas.com | SAS",
+      "message": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Log in', exact: true }) to be visible\u001b[22m\n",
+      "result": "implementation_failure_login_control_locator",
+      "network": [
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 200,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 401,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/suggestions/shared/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/dynamic-banners/destinations/price-banners/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-06T03:05:39.208Z",
+      "engine": "webkit",
+      "entryMode": "homepage",
+      "elapsedMs": 19708,
+      "stages": [
+        {
+          "stage": "entry",
+          "elapsedMs": 673
+        }
+      ],
+      "title": "Scandinavian Airlines – Book Your Next Flight on Flysas.com | SAS",
+      "message": "locator.selectOption: Timeout 18000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('combobox', { name: 'Trip type', exact: true })\u001b[22m\n",
+      "result": "public_form_initialization_403",
+      "network": [
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 200,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/content/top-banner/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/locations/v2",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/suggestions/shared/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/en",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/auth/profile",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/dynamic-banners/destinations/price-banners/v1",
+          "status": 403,
+          "error": null
+        },
+        {
+          "host": "www.flysas.com",
+          "path": "/bff/location-picker/suggestions/shared/v1",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-06T03:06:41.833Z",
+      "engine": "firefox",
+      "entryMode": "direct",
+      "elapsedMs": 3876,
+      "stages": [
+        {
+          "stage": "entry",
+          "elapsedMs": 3036
+        }
+      ],
+      "title": "Just a moment...",
+      "message": "Entry HTTP 403",
+      "result": "entry_403",
+      "network": [
+        {
+          "host": "www.flysas.com",
+          "path": "/en/book/flights/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "at": "2026-09-06T03:10:01.095Z",
+      "engine": "chromium",
+      "entryMode": "direct",
+      "elapsedMs": 19451,
+      "stages": [
+        {
+          "stage": "entry",
+          "elapsedMs": 1119
+        }
+      ],
+      "title": "Denied boarding",
+      "message": "Entry HTTP 403",
+      "result": "entry_403",
+      "network": [
+        {
+          "host": "www.flysas.com",
+          "path": "/en/book/flights/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "next": "Fresh app-owned native search remains unverified. A browser companion is a separate unimplemented option, not a completed source."
+}

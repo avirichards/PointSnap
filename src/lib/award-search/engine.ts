@@ -117,7 +117,7 @@ export async function runSearch(ids: string[], ctx: ProviderContext) {
               ? "Smiles · airline browser"
               : id === "DL_SKYMILES"
                 ? "Delta · airline browser"
-                : "American · browser pilot";
+                : "American AAdvantage · direct airline";
           rows = await browserSearch(ctx.query, ctx.signal, id, (notice) => {
             sourceNotice = notice;
           });

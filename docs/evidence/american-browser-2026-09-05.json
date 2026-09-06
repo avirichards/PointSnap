@@ -1217,5 +1217,9 @@
     }
   ],
   "systemWebViewStatus": "Two fresh macOS system WKWebView tests returned entry HTTP 403. Two additional newly created regular-profile tests also failed: standard Chrome homepage 403; WebKit completed the homepage form and reached Challenge Validation before inventory. Twelve local and seven hosted attempts are recorded. Native AAdvantage remains disabled.",
-  "temporaryProfileScope": "Profiles were created empty by the diagnostic, never loaded from a personal browser, and deleted after each search. Browser defaults, sandbox and verification behavior were retained."
+  "temporaryProfileScope": "Profiles were created empty by the diagnostic, never loaded from a personal browser, and deleted after each search. Browser defaults, sandbox and verification behavior were retained.",
+  "supersededBy": {
+    "evidence": "american-persistent-session-2026-09-05.json",
+    "scope": "These historical managed-browser failures remain valid. A separately launched ordinary Chrome process now supplies native American data through the local PointSnap app; wider completeness and hosted reliability remain open."
+  }
 }

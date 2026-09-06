@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-09-06T02:57:52.514179+00:00",
+  "checkedAt": "2026-09-06T03:16:09.496239+00:00",
   "programId": "G3_GOL_SMILES",
   "scope": "Fresh anonymous Smiles Brazilian search, ordinary booking form, complete rendered results and regular-member cash/miles and offered baggage choices. Exact travel fees paid in cash. No traveler login or data subscription.",
-  "status": "Enabled in local PointSnap. Three hosted WebKit attempts did not return flights: two could not expose the booking form, one submitted and received no expected inventory response. Hosted access remains unverified.",
+  "status": "Enabled and verified locally. Six distinct hosted attempts returned no flight data: WebKit form/inventory timeouts, Linux Chromium sandbox launch failure, Linux Firefox search406, and Mac Chromium inventory network failure. No permanent hosted service is verified.",
   "nativeFixture": {
     "query": {
       "origin": "GRU",
@@ -735,6 +735,285 @@
       "run": "https://github.com/avirichards/PointSnap/actions/runs/34007239210",
       "runtime": "ubuntu-latest",
       "interpretation": "HTTP 200 public landing page rendered, but no origin form was exposed. No award API response or HTTP 403 was observed; this is not evidence of CAPTCHA or inventory denial."
+    },
+    {
+      "at": "2026-09-06T02:58:54.022Z",
+      "engine": "chromium",
+      "platform": "linux",
+      "architecture": "x64",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 314,
+      "result": "error",
+      "complete": false,
+      "message": "Smiles's browser search could not complete at launch.",
+      "stage": "launch",
+      "diagnostic": {
+        "stages": [],
+        "network": [],
+        "error": "browserType.launch: Target page, context or browser has been closed\nBrowser logs:\nChromium sandboxing failed!\n================================\nTo avoid the sandboxing issue, do either of the following:\n  - (preferred): Configure your environment to support sandboxing\n  - (alternative): Launch Chromium without sandbox using 'chromiumSandbox: false' option\n================================\n\nCall log:\n  - <launching> /home/runner/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome --disable-fie"
+      },
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34007802107",
+      "runtime": "ubuntu-latest",
+      "interpretation": "Chromium sandbox could not start on the hosted runtime. No airline request was made; this is a runtime setup failure, not an airline denial. Browser security was not disabled."
+    },
+    {
+      "at": "2026-09-06T03:05:12.646Z",
+      "engine": "firefox",
+      "platform": "linux",
+      "architecture": "x64",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 16866,
+      "result": "error",
+      "complete": false,
+      "message": "Smiles's search returned HTTP 406.",
+      "stage": "submit-search",
+      "diagnostic": {},
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34008046573",
+      "runtime": "ubuntu-latest",
+      "interpretation": "Fresh Firefox submitted the ordinary search. The native search endpoint returned HTTP406."
+    },
+    {
+      "at": "2026-09-06T03:06:08.356Z",
+      "engine": "chromium",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "query": {
+        "origin": "GRU",
+        "dest": "GIG",
+        "departDate": "2026-10-06",
+        "pax": 1,
+        "minCabin": "Y"
+      },
+      "elapsedMs": 63216,
+      "result": "error",
+      "complete": false,
+      "message": "Smiles's browser search could not complete at submit-search.",
+      "stage": "submit-search",
+      "diagnostic": {
+        "stages": [
+          {
+            "stage": "open-search",
+            "elapsedMs": 4910
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 13104,
+            "status": 200,
+            "path": "/portal/passagens"
+          },
+          {
+            "stage": "fill-route",
+            "elapsedMs": 16906
+          },
+          {
+            "stage": "date",
+            "elapsedMs": 22157
+          },
+          {
+            "stage": "submit-search",
+            "elapsedMs": 22558
+          }
+        ],
+        "network": [
+          {
+            "kind": "response",
+            "host": "airports-blue.smiles.com.br",
+            "path": "/v1/airports",
+            "status": 200
+          },
+          {
+            "kind": "response",
+            "host": "members-blue.smiles.com.br",
+            "path": "/v1/members",
+            "status": 452
+          },
+          {
+            "kind": "response",
+            "host": "airports-blue.smiles.com.br",
+            "path": "/v1/airports",
+            "status": 200
+          },
+          {
+            "kind": "response",
+            "host": "airports-blue.smiles.com.br",
+            "path": "/v1/airports",
+            "status": 200
+          },
+          {
+            "kind": "response",
+            "host": "airports-blue.smiles.com.br",
+            "path": "/v1/airports",
+            "status": 200
+          },
+          {
+            "kind": "request-failed",
+            "host": "www.smiles.com.br",
+            "path": "/mfe-apps/flight-availability/0.32.1074/static/media/slick.29518378.woff",
+            "error": "net::ERR_ABORTED"
+          },
+          {
+            "kind": "request-failed",
+            "host": "www.smiles.com.br",
+            "path": "/mfe-apps/flight-availability/0.32.1074/static/media/slick.c94f7671.ttf",
+            "error": "net::ERR_ABORTED"
+          },
+          {
+            "kind": "request-failed",
+            "host": "api-air-flightsearch-blue.smiles.com.br",
+            "path": "/v1/airlines/search",
+            "error": "net::ERR_FAILED"
+          },
+          {
+            "kind": "response",
+            "host": "members-blue.smiles.com.br",
+            "path": "/v1/members",
+            "status": 452
+          }
+        ],
+        "title": "Viver o mundo começa aqui",
+        "path": "/mfe/emissao-passagem/",
+        "formFields": [
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": null,
+            "placeholder": "Pesquisar...",
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": null,
+            "placeholder": "Pesquisar na Smiles",
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": null,
+            "placeholder": "Origem",
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": null,
+            "placeholder": "Destino",
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": "Data",
+            "placeholder": "Data",
+            "name": "startDateId"
+          },
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": "Volta",
+            "placeholder": "Volta",
+            "name": "endDateId"
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": "ot-group-id-C0002"
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": "ot-group-id-C0003"
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": "ot-group-id-C0004"
+          },
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "label": "Pesquisa na lista de cookies",
+            "placeholder": "Pesquisar...",
+            "name": "vendor-search-handler"
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": null
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "label": null,
+            "placeholder": null,
+            "name": null
+          }
+        ],
+        "frames": [
+          {
+            "host": "www.smiles.com.br",
+            "path": "/mfe/emissao-passagem/"
+          },
+          {
+            "host": "",
+            "path": "blank"
+          }
+        ],
+        "visibleText": "Smiles\nGRU\nGIG\nTer, 06 out\n1 pessoa adulta\nAlterar busca\nAcesse ou crie a sua conta\n\nJunte milhas e comece a viajar\n\nAcessar conta\nCriar conta\nTaxas da viagem\nVocê vai visualizar as taxas de viagem depois de escolher os voos.\nAguarde enquanto buscamos os melhores voos para sua viagem\n\nSmiles. A mais completa plataforma de viagens\n\nSuas milhas podem fazer seus sonhos decolarem para mais de 1.600 destinos!\n\n+ 55 companhias aéreas\n\nAlguma dúvida sobre a Smiles?\n\nAtendimento Smiles\nE perguntas frequ",
+        "error": "browserContext.waitForEvent: Timeout 40000ms exceeded while waiting for event \"response\""
+      },
+      "run": "https://github.com/avirichards/PointSnap/actions/runs/34008047566",
+      "runtime": "macos-15",
+      "interpretation": "Fresh Chromium submitted the ordinary search on hosted Mac. The inventory request failed with net::ERR_FAILED; no HTTP status or flight result was returned. No status code is inferred from that network error."
     }
   ],
   "austinCorrection": {

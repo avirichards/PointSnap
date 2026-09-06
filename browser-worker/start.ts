@@ -2,6 +2,7 @@ import { AmericanBrowserRunner } from "./american";
 import { createBrowserWorker } from "./server";
 import { DeltaBrowserRunner } from "./delta";
 import { SmilesBrowserRunner } from "./smiles";
+import { createDesktopChromeSession } from "./desktop-chrome";
 
 const channel = process.env.POINTSNAP_BROWSER_CHANNEL || "chromium";
 const headless = process.env.POINTSNAP_BROWSER_HEADLESS !== "0";
@@ -17,7 +18,26 @@ const entry =
     : process.env.POINTSNAP_BROWSER_ENTRY === "direct"
       ? "direct"
       : "homepage";
-const runner = new AmericanBrowserRunner({ channel, headless, entry, engine });
+const persistentProfile =
+  process.env.POINTSNAP_BROWSER_PERSISTENT_PROFILE === "1";
+const americanMode = process.env.POINTSNAP_AMERICAN_BROWSER_MODE ?? "managed";
+if (americanMode !== "managed" && americanMode !== "desktop-chrome")
+  throw new Error(
+    "Choose managed or desktop-chrome for POINTSNAP_AMERICAN_BROWSER_MODE.",
+  );
+const runner =
+  americanMode === "desktop-chrome"
+    ? new AmericanBrowserRunner(
+        { entry: "homepage-form" },
+        createDesktopChromeSession(),
+      )
+    : new AmericanBrowserRunner({
+        channel,
+        headless,
+        entry,
+        engine,
+        persistentProfile,
+      });
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",
   evidenceDirectory: process.env.POINTSNAP_BROWSER_EVIDENCE_DIR,
@@ -34,7 +54,7 @@ const host = process.env.POINTSNAP_BROWSER_HOST || "127.0.0.1";
 const port = Number(process.env.POINTSNAP_BROWSER_PORT || "3002");
 worker.server.listen(port, host, () => {
   console.log(
-    `PointSnap browser worker listening on ${host}:${port}; engine=${engine}; channel=${channel}; headless=${headless}; entry=${entry}`,
+    `PointSnap browser worker listening on ${host}:${port}; americanMode=${americanMode}; engine=${engine}; channel=${channel}; headless=${americanMode === "desktop-chrome" ? false : headless}; entry=${entry}; persistentProfile=${americanMode === "desktop-chrome" || persistentProfile}`,
   );
 });
 for (const event of ["SIGINT", "SIGTERM"] as const)
