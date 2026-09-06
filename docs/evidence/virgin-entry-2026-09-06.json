@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-09-06T07:44:06.114Z",
+  "program": "VS_FLYING_CLUB",
+  "runtime": "App-owned ordinary installed Chrome with a dedicated Virgin Atlantic profile; no login or personal browser state imported",
+  "experiments": [
+    {
+      "entry": "https://flights.virginatlantic.com/en-us/points-flight-deals",
+      "entryStatus": 200,
+      "query": {
+        "origin": "JFK",
+        "destination": "LHR",
+        "departure": "2026-10-06",
+        "return": "2026-10-13",
+        "adults": 1,
+        "cabin": "Economy"
+      },
+      "actions": [
+        "Opened the first advertised New York–London points deal using Search latest fare.",
+        "Submitted the resulting populated booking dialog with Find flights."
+      ],
+      "outcome": {
+        "host": "identity.virginatlantic.com",
+        "path": "/Identity.Virginatlantic.com/oauth2/v2.0/authorize",
+        "visibleLogin": true,
+        "individualFlightInventory": false
+      },
+      "scope": "The deal is a cached round-trip starting price collected within 48 hours, not live inventory. The advertised next step reaches Flying Club sign-in."
+    },
+    {
+      "entry": "https://www.virginatlantic.com/reward-flight-finder",
+      "entryStatus": 200,
+      "query": {
+        "origin": "JFK",
+        "destination": "LHR",
+        "month": "2026-10",
+        "adults": 1
+      },
+      "actions": [
+        "Selected JFK, LHR and October 2026 using the visible form.",
+        "Submitted Find reward seats."
+      ],
+      "outcome": {
+        "calendarRequestStatus": 303,
+        "calendarResponseStatus": 200,
+        "day": "2026-10-05",
+        "points": {
+          "Y": 38000,
+          "W": 90000,
+          "J": 255000
+        },
+        "individualFlightInventory": false
+      },
+      "scope": "The current page explicitly describes one-person daily minima across flights; taxes and exact itinerary prices require the booking search. Clicking a day and Find my reward seats opened a further handoff dialog; that final dialog action was not submitted in this diagnostic."
+    }
+  ],
+  "conclusion": "A distinct public points-deal entry also reaches login in PointSnap-owned Chrome. Existing anonymous calendar remains available; full native Flying Club flights remain unconnected. No account actions performed.",
+  "next": "Keep member fallback open, preserve calendar scope, and continue the next native program.",
+  "browserClosed": true,
+  "calendarHandoffContract": {
+    "source": "https://www.virginatlantic.com/reward-flight-finder/_next/static/chunks/2b4db6401aa706e4.js",
+    "status": 200,
+    "observation": "The published setHandoffUrl function sends the calendar dialog to /advanced-search/reward-flight with both route directions. This is the dedicated full-reward form already tested, not a distinct flight-detail API.",
+    "buttonSource": "https://www.virginatlantic.com/reward-flight-finder/_next/static/chunks/22c629a64165547f.js"
+  }
+}

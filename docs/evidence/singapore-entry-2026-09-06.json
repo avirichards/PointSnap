@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-09-06T07:47:57.667Z",
+  "program": "SQ_KRISFLYER",
+  "entry": "https://www.singaporeair.com/en_UK/us/home",
+  "entryStatus": 200,
+  "runtime": "App-owned ordinary installed Chrome with a dedicated Singapore profile; no account or personal state imported",
+  "experiments": [
+    {
+      "mode": "Standard booking",
+      "action": "Clicked Redeem flights after dismissing the cookie banner",
+      "visibleLogin": true,
+      "inventoryReturned": false
+    },
+    {
+      "mode": "Advertised new booking experience",
+      "actions": [
+        "Clicked the new booking experience switch.",
+        "Confirmed the introductory dialog with OKAY.",
+        "Clicked Redeem flights."
+      ],
+      "visibleLogin": true,
+      "inventoryReturned": false
+    }
+  ],
+  "loginFields": [
+    "KrisFlyer number / Email Address",
+    "Password"
+  ],
+  "implementationLessons": [
+    "Bring the app-owned page to the front before normal interactions; observed stability timeouts disappeared after activation.",
+    "Use the visible label for a custom checkbox; confirm its dialog before assessing the changed flow."
+  ],
+  "conclusion": "Both tested current modes request KrisFlyer login before award inventory. No anonymous native Singapore connection established; member fallback remains open.",
+  "browserClosed": true
+}

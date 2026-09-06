@@ -4,7 +4,7 @@ Source: all user messages supplied in this task through September 5, 2026, inclu
 
 ## Priority 1 — live award coverage
 
-- [ ] Coverage-first sequence approved: establish the native airline connections through PointSnap with real flight/fare accuracy and frontend checks before substantial production reliability, hosting/load optimization or seven-day qualification. Keep those release requirements for a later pass; do not hold all other airlines behind American's hosting. American's initial integration gate is verified; Aeroplan and United are next.
+- [ ] Coverage-first sequence approved: establish the native airline connections through PointSnap with real flight/fare accuracy and frontend checks before substantial production reliability, hosting/load optimization or seven-day qualification. Keep those release requirements for a later pass; do not hold all other airlines behind American's hosting. American's initial integration gate is verified; continue the approved connection order while retaining earlier unresolved programs.
 - [ ] Finish the entire app and keep investigating every airline until all practical access paths are exhausted. Treat a failed method as evidence about that method, not proof that an airline is impossible.
 - [ ] Search every available flight, connection, cabin and fare option for the chosen route, day and party. JetBlue was specifically called out for missing flights. Current JetBlue adapter now returns 16 JFK–LAX itineraries / 119 fares, including connections, with exact cash matches; maintain this completeness standard for every source.
 - [x] Users can search working direct sources without connecting their personal airline accounts.
@@ -38,7 +38,7 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: **Aeroplan, then United, with anonymous methods first**. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
+Current focus: **Etihad, then ANA, with anonymous methods first**. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
 
 ## Priority 2 — intuitive depth and comparison
 

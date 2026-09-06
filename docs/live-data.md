@@ -339,3 +339,15 @@ JFK–LHR October 6 returns 40 / 116. Its own DOM agrees with the entire parsed 
 
 
 American cabin expansion: the official all-cabin and Business/First responses are now validated separately and combined into unique itineraries, with later premium quotes replacing older prices. PointSnap shows 51 JFK–LHR itineraries / 130 fares; all 40 independent premium itineraries and 52 fare amounts match. LAX–AUS for two adults now returns 52 / 90 after restart, preserving all three nonstops. Both actual result pages and detailed segment cabins were checked. All 206 tests, TypeScript, focused lint and optimized build pass. Hosted ordinary Mac reaches verification after normal submission; Linux fails before browser readiness. These are separate unresolved hosting results, not a reversal of local anonymous success.
+
+## Virgin public-deal handoff (September 6, 2026)
+
+An app-owned ordinary Chrome profile opened the airline’s public points-deals page, selected the advertised JFK–LHR October 6–13 Economy deal, and submitted the populated booking dialog. The actual next page was Flying Club login, with no flight inventory. This is distinct from the previously tested dedicated reward form. The anonymous October calendar still returned daily prices; its page explicitly says one-person minima across flights, with exact itinerary pricing and taxes determined in booking. The calendar’s final handoff dialog was observed but not submitted in this diagnostic. No full native Virgin source enabled. Sanitized evidence: [Virgin entry](evidence/virgin-entry-2026-09-06.json).
+
+The calendar’s current published `setHandoffUrl` function was also inspected: its final dialog opens `/advanced-search/reward-flight` with the two route directions, the already-tested full-reward form. It does not reveal a separate anonymous flight-detail endpoint.
+
+## Singapore and Turkish current entry pass (September 6, 2026)
+
+Singapore’s standard Redeem flights option and its advertised new booking mode both opened KrisFlyer login in a dedicated ordinary Chrome profile. The new mode was actually confirmed with its OKAY dialog before checking redemption. No credentials entered or inventory obtained. [Singapore evidence](evidence/singapore-entry-2026-09-06.json).
+
+Turkish’s isolated ordinary Chrome now completed the public award form without the earlier visible challenge. Normal keyboard interactions selected IST, LHR, October 5, one-way, one adult and Economy. The submitted `/api/v1/availability/validate` request returned HTTP 403 and a visible technical error. Location/date metadata responses were successful but are not inventory. No challenge was solved, and this observation is not evidence that a member account is required. [Turkish evidence](evidence/turkish-entry-2026-09-06.json).

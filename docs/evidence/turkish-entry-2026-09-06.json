@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-09-06T07:51:48.806Z",
+  "program": "TK_MILES_SMILES",
+  "entry": "https://www.turkishairlines.com/en-int/miles-and-smiles/book-award-tickets/",
+  "entryStatus": 200,
+  "runtime": "App-owned ordinary installed Chrome, dedicated Turkish profile; anonymous",
+  "query": {
+    "origin": "IST",
+    "destination": "LHR",
+    "departure": "2026-10-05",
+    "oneWay": true,
+    "adults": 1,
+    "children": 0,
+    "infants": 0,
+    "cabin": "Economy"
+  },
+  "actions": [
+    "Dismissed cookies with the necessary-only button using Enter.",
+    "Selected one-way, the actual IST airport suggestion and the actual LHR suggestion.",
+    "Selected October 5, 2026 in the normal calendar, then confirmed.",
+    "Verified the displayed route, date, one adult and Economy selection.",
+    "Submitted Search flights using Enter."
+  ],
+  "observedResponses": [
+    {
+      "path": "/api/v1/booking/locations/TK/en",
+      "status": 200
+    },
+    {
+      "path": "/com.thy.web.online.ibs/ibs/booking/daterestrictions",
+      "status": 200
+    },
+    {
+      "path": "/com.thy.web.online.ibs/ibs/booking/routerestrictionmessage",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/availability/validate",
+      "status": 403
+    }
+  ],
+  "visibleOutcome": "A technical error has occurred.",
+  "inventoryReturned": false,
+  "visibleHumanChallengeInThisRun": false,
+  "implementationLessons": [
+    "The accessible keyboard flow succeeded where pointer clicks waited for stability. Use the website\u2019s normal keyboard interactions; do not treat locator timeouts as airline denials.",
+    "Autocomplete selection must confirm the actual airport rather than only typing a code.",
+    "Calendar day text is inside a child element of its button; target that actual day, then verify the displayed date."
+  ],
+  "conclusion": "This isolated ordinary browser progressed through route/date entry without the earlier visible challenge, but the actual award validation request was denied with 403. This is not a member-login finding or an empty inventory result. No Turkish native source enabled.",
+  "next": "Preserve the distinct current failure stage and anonymous award evidence; continue Etihad and remaining programs rather than repeat the unchanged 403.",
+  "browserClosed": true
+}

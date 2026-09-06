@@ -73,6 +73,8 @@ The ordinary Chrome launcher also accepts fixed `aeroplan` and `united` identiti
 
 Separate `british-airways` and `qatar` profiles were also exercised through their current official flows. BA's advertised entry links require member login; its legacy public finder still fails after correcting the route and adult controls. Qatar's finder now renders, but the submitted calendar request returns HTTP 401. These are access diagnostics, not enabled native fare sources. The dated evidence files retain the distinct browser, form and HTTP outcomes.
 
+The fixed `virgin-atlantic`, `singapore` and `turkish` profiles were also exercised. Virgin public-deal and Singapore standard/new booking submissions reach member login. Turkish completes form entry but its submitted validation returns 403. These profiles support isolated access investigation; adding an identity does not enable a fare source. See their September 6 evidence in `docs/evidence`.
+
 These commands perform new airline searches. They do not use recorded fixtures:
 
 ```sh

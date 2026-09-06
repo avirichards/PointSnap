@@ -79,3 +79,7 @@ The user explicitly prioritizes airline access and asked not to stop until conne
 - Qantas: public cached search can work through a compatible Node HTTP client while default fetch returns403. Test transport separately from login and data-contract hypotheses. Keep original observation times; a successful fetch is not a live availability check.
 - Never equate a source’s “direct” count with nonstop: QF1 SYD–LHR is a single represented flight with an omitted intermediate stop. Preserve data and disclose uncertainty rather than inventing segments or offering a false nonstop match.
 - An isolated tsx diagnostic in this CommonJS package must wrap await calls in async main; a typecheck alone does not verify its runtime entry.
+
+## September 6 — Virgin, Singapore and Turkish connection pass
+
+Current evidence is stored in the three dated entry reports. Virgin’s public deal handoff reaches login; its calendar final dialog uses the already-tested full-reward form. Singapore’s advertised new booking mode was confirmed before checking redemption and still requests login. Turkish’s normal keyboard controls completed the actual query before validation returned 403. Treat a form-interaction failure separately from an access denial, and never count metadata or calendar minima as full flight inventory. Etihad and ANA are next in the approved order; earlier native gaps remain open.

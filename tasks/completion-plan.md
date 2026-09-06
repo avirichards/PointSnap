@@ -10,7 +10,7 @@ For each program, get real native award searches working through PointSnap itsel
 
 Hosted deployment, multi-user load, prolonged idle/restart recovery, the 50-search/seven-day reliability qualification and operating-cost optimization remain required before public release. They are a later pass, not a gate that holds all subsequent airline connections behind American. Do not launch further hosted American qualification merely because another hosting experiment is available. Use hosting research now only if it is needed to establish an otherwise unavailable native connection.
 
-American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; proceed to Aeroplan, then United, while keeping working sources functional.
+American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. The current anonymous entry pass has reached Turkish; Etihad and ANA are next. Aeroplan, United, BA, Qatar, Virgin full flights, Singapore and Turkish retain their documented unresolved native-access work.
 
 ## Outcome and constraints
 

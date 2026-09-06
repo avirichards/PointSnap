@@ -31,7 +31,10 @@ type DesktopProgram =
   | "aeroplan"
   | "united"
   | "british-airways"
-  | "qatar";
+  | "qatar"
+  | "virgin-atlantic"
+  | "singapore"
+  | "turkish";
 
 /** Owns only its dedicated Chrome process and profile, never a user's browser. */
 class DesktopChrome {
