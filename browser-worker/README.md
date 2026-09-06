@@ -1,6 +1,6 @@
 # PointSnap airline browser service
 
-PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American and Etihad reuse separate dedicated app-owned anonymous Chrome profiles. No traveler login, personal browser profile, copied cookies or data subscription is used.
+PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American, Etihad and Southwest reuse separate dedicated app-owned anonymous Chrome profiles. No traveler login, personal browser profile, copied cookies or data subscription is used.
 
 **Delta has verified local live responses.** LAX–JFK October 5: all 46 itineraries on 3 pages, 167 bookable fares for one adult and 166 for two. JFK–LHR:17 itineraries/41 fares, including offered Air France and KLM awards priced in SkyMiles. Delta's public brand catalog supplies partner cabin definitions. These observations establish the tested scope, not every route, runtime or future search.
 
@@ -123,7 +123,7 @@ American's default `POINTSNAP_AMERICAN_BROWSER_MODE=managed` retains the earlier
 
 With the normal worker stopped, `pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome 2026-10-05 LAX AUS 2` checks an initial search, 30 seconds of idle time and a normal browser restart. The same probe accepts managed engines for controlled comparisons. It writes sanitized counts and stages, never cookies or account state. Do not run it concurrently against the worker's profile.
 
-`probe-southwest.ts` tests the official points booker. Its recorded WebKit/Firefox attempts returned shopping HTTP 403; no Southwest source is enabled.
+`probe-southwest.ts` records earlier managed-browser shopping HTTP 403 attempts. These are superseded by the ordinary-Chrome Southwest runtime below; the historical failures remain evidence for those runtimes.
 
 `POINTSNAP_BROWSER_TEMPORARY_PROFILE=1 pnpm exec tsx browser-worker/probe.ts webkit` tests an empty regular profile instead of a nonpersistent context. It creates and removes its own directory under `work/browser-profiles/`; it never accepts a personal-profile path. Local WebKit still reaches verification after form submission; standard Chrome still receives homepage 403. This diagnostic does not enable American in the app.
 
@@ -148,3 +148,17 @@ Run 34016368911 at 5ec36be returns native anonymous American awards on Linux wit
 ### Coverage-first checkpoint
 
 The user approved native connection breadth before substantial hosted qualification. A subsequent expanded hosted Linux diagnostic timed out at startup, so the successful baseline diagnostic does not establish consistent launch reliability. `POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS` accepts1000–60000ms and defaults20000; a60-second follow-up is prepared but deferred. The worker now activates its own reused page before UI interaction and clears a remembered connecting-city restriction for unrestricted searches. This recovered local API52/90 for two adults and actual UI52/91 for one adult. Continue the next native programs while preserving the remaining American scope and hosting work.
+
+## Southwest ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_SOUTHWEST="1"` in both private environment files, restart the worker and verify authenticated health reports `WN_RAPID_REWARDS`. Install standard Google Chrome using the desktop-runtime instructions above. The dedicated `southwest-desktop-collector` profile is independent of other airlines and personal browser state.
+
+A new page performs the official points search for each request, followed by the same route/date/adult cash search. The runner validates the site's own POST request, reconciles every rendered flight and fare-family button with the response, and removes selection/account metadata. Cash matches require identical flights and fare families; comparison failure retains valid award fares. Basic, Choice, Choice Preferred and Choice Extra are Economy. Same-flight intermediate stops remain distinct from nonstops. Exact seat quantities and refund conditions are unknown.
+
+```sh
+POINTSNAP_TEST_PROGRAM=WN_RAPID_REWARDS pnpm test:browser-live DEN LAS 2026-10-05 2
+# Direct diagnostic only while the normal worker is stopped:
+pnpm exec tsx browser-worker/probe-southwest-live.ts BWI CUN 2026-10-05 2
+```
+
+The actual local API returned DEN–LAS 26 itineraries / 104 available fares in 8.7 seconds and BWI–CUN 16 / 62 in 5.7 seconds, each for two adults. Corresponding standalone normal-browser searches also passed. These are scoped observations, not a promise of all-route coverage or sustained hosted reliability. Empty-list semantics still need verification and remain explicit errors. Use one runner per owned profile.

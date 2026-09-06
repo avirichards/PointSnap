@@ -33,6 +33,7 @@ An optional [browser service](browser-worker/README.md) now adds native Delta Sk
 | American AAdvantage | Native award itineraries and all supplied cabin fares; exact party taxes, partners and mixed cabins | Dedicated anonymous ordinary-Chrome service; local proof, wider qualification pending |
 | Delta SkyMiles | All supplied pages and eligible fare families, native and offered partner awards | Anonymous WebKit service; local and hosted Mac proof |
 | GOL Smiles | Native and offered partner itineraries, regular payment choices and baggage offers | Anonymous WebKit service; local proof |
+| Southwest Rapid Rewards | Native points fares across all four Economy families, connections, same-flight stops and exact-fare cash comparisons | Dedicated anonymous ordinary-Chrome service; verified domestic and Mexico routes, wider qualification pending |
 | Seats.aero | Individual award itineraries for its supported programs | App-owned commercial Live Search key |
 | AwardTool | Individual award itineraries for contract-enabled programs | App-owned API key |
 

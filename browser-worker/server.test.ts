@@ -40,6 +40,49 @@ async function start(
 }
 
 describe("background browser request boundary", () => {
+  it("enables Southwest independently and releases its owned browser on shutdown", async () => {
+    const disabled = await start();
+    expect(
+      (
+        await fetch(disabled.url.replace("american", "southwest"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify(q),
+        })
+      ).status,
+    ).toBe(404);
+    const search = vi
+      .fn()
+      .mockResolvedValue({
+        programId: "WN_RAPID_REWARDS",
+        query: q,
+        complete: true,
+        observedAt: new Date().toISOString(),
+        payload: {},
+        itineraryCount: 26,
+        fareCount: 104,
+        stages: [],
+      });
+    const close = vi.fn().mockResolvedValue(undefined);
+    const enabled = await start(undefined, {
+      southwestRunner: { search, close },
+    });
+    const result = await fetch(enabled.url.replace("american", "southwest"), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(q),
+    });
+    expect(result.status).toBe(200);
+    expect((await result.json()).programId).toBe("WN_RAPID_REWARDS");
+    expect(search).toHaveBeenCalledWith(q, expect.any(AbortSignal));
+    expect(enabled.search).not.toHaveBeenCalled();
+    expect(
+      (await (await fetch(new URL("/health", enabled.url), { headers })).json())
+        .programs,
+    ).toContain("WN_RAPID_REWARDS");
+    await cleanups.pop()!();
+    expect(close).toHaveBeenCalledOnce();
+  });
   it("dispatches Etihad only when configured and exposes it in authenticated health", async () => {
     const first = await start();
     expect(
@@ -51,18 +94,16 @@ describe("background browser request boundary", () => {
         })
       ).status,
     ).toBe(404);
-    const search = vi
-      .fn()
-      .mockResolvedValue({
-        programId: "EY_GUEST",
-        query: q,
-        complete: true,
-        observedAt: new Date().toISOString(),
-        payload: {},
-        itineraryCount: 6,
-        fareCount: 38,
-        stages: [],
-      });
+    const search = vi.fn().mockResolvedValue({
+      programId: "EY_GUEST",
+      query: q,
+      complete: true,
+      observedAt: new Date().toISOString(),
+      payload: {},
+      itineraryCount: 6,
+      fareCount: 38,
+      stages: [],
+    });
     const close = vi.fn().mockResolvedValue(undefined);
     const second = await start(undefined, { etihadRunner: { search, close } });
     const result = await fetch(second.url.replace("american", "etihad"), {

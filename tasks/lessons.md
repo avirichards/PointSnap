@@ -96,3 +96,13 @@ Current evidence is stored in the three dated entry reports. Virgin’s public d
 - Check the actual booking handoff from the selected fare. First now opens Etihad’s premium search instead of the default Economy search.
 - Wait for dialogs and their transitions before visual screenshots. Desktop and 390px mobile views, source grouping, original fees and rail details were inspected; no horizontal overflow or page errors in the final check.
 - Preserve only flight/fare evidence. Selection tokens, office/corporate metadata and account fields never belong in normalized payloads or permanent fixtures.
+
+## September 6 — transferable Southwest and member-entry lessons
+
+- Reusing the proven app-owned ordinary Chrome lifecycle unlocked Southwest after direct HTTP and managed WebKit/Firefox failures. Reuse the runtime, then independently validate each airline's request and data contract; it does not remove ANA, LifeMiles or Emirates member gates.
+- Create a new page for each Southwest request. Validate both adult-count fields in the site's own POST. A reused page or visible old result does not establish the new passenger query.
+- Reconcile available and unavailable fare buttons separately. Southwest's internal BUSRED is Choice Extra in Economy, not Business. The aggregate containsAvailability flag was false despite actual available fares and cannot be trusted as inventory status.
+- Same-flight stopsDetails includes the final arrival. Exclude that arrival from intermediate stops and validate physical-leg duration, layover and plane-change data. Never promote a service with an intermediate stop to nonstop.
+- Preserve per-person points and fees, exact party totals, unknown seats/refund terms and optional same-flight/family cash matches. Do not infer a booking guarantee from a positive source price.
+- Check the normal multi-source page, not just a provider-only diagnostic. Start short queries early; expensive collectors can consume another source's deadline in a shared queue. The regression test proves Southwest can finish while four other browser sources remain pending, with all five eventually attempted.
+- Browser checks should operate the visible label of styled inputs and use the mobile drawer's Show flights action or Escape; desktop Done and direct clicks on clipped inputs are not interchangeable. Close each owned QA browser before launching another so duplicate diagnostics do not compete for airline sessions.

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { browserPrograms, browserSearch } from "../browser";
 import { americanFixture } from "./fixtures/american";
 import etihadFixture from "./fixtures/etihad.json";
+import southwestFixture from "./fixtures/southwest-den.json";
 import deltaFixture from "./fixtures/delta.json";
 import smilesFixture from "./fixtures/smiles.json";
 import smilesAmericanFixture from "./fixtures/smiles-american.json";
@@ -29,6 +30,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_DELTA", "0");
   vi.stubEnv("POINTSNAP_BROWSER_SMILES", "0");
   vi.stubEnv("POINTSNAP_BROWSER_ETIHAD", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_SOUTHWEST", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -36,6 +38,68 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches Southwest's complete award list and retains awards without a cash comparison", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_SOUTHWEST", "1");
+    expect(browserPrograms()).toEqual(["WN_RAPID_REWARDS"]);
+    const query = {
+      origin: "DEN",
+      dest: "LAS",
+      departDate: "2026-10-05",
+      pax: 2,
+      minCabin: "Y" as const,
+    };
+    const body = {
+      ...response(),
+      programId: "WN_RAPID_REWARDS",
+      query,
+      payload: southwestFixture,
+      itineraryCount: 26,
+      fareCount: 104,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const notice = vi.fn();
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "WN_RAPID_REWARDS",
+      notice,
+    );
+    expect(rows).toHaveLength(26);
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/southwest",
+    );
+    expect(notice).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Cash comparisons match each flight and fare family",
+      ),
+    );
+    fetch.mockResolvedValue(Response.json({ ...body, fareCount: 103 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "WN_RAPID_REWARDS"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+    fetch.mockResolvedValue(
+      Response.json({
+        ...body,
+        payload: {
+          type: southwestFixture.type,
+          points: southwestFixture.points,
+        },
+      }),
+    );
+    const noCash = await browserSearch(
+      query,
+      new AbortController().signal,
+      "WN_RAPID_REWARDS",
+      notice,
+    );
+    expect(noCash.flatMap((r) => r.fares!)).toHaveLength(104);
+    expect(noCash.every((r) => r.fares!.every((f) => !f.cashFare))).toBe(true);
+    expect(notice).toHaveBeenLastCalledWith(
+      expect.stringContaining("missing comparisons do not remove award fares"),
+    );
+  });
   it("dispatches Etihad with both cabin responses and checks complete fare counts", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_ETIHAD", "1");

@@ -2,9 +2,13 @@
 const base = process.env.POINTSNAP_TEST_URL || "http://127.0.0.1:3000";
 const program = process.env.POINTSNAP_TEST_PROGRAM || "AA_AADVANTAGE";
 if (
-  !["AA_AADVANTAGE", "DL_SKYMILES", "G3_GOL_SMILES", "EY_GUEST"].includes(
-    program,
-  )
+  ![
+    "AA_AADVANTAGE",
+    "DL_SKYMILES",
+    "G3_GOL_SMILES",
+    "EY_GUEST",
+    "WN_RAPID_REWARDS",
+  ].includes(program)
 )
   throw new Error("Unsupported browser program.");
 const [

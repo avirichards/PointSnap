@@ -67,11 +67,13 @@ export const PROGRAM_IDS = [
   "G3_GOL_SMILES",
   "VA_VELOCITY",
   "F9_FRONTIER_MILES",
+  "WN_RAPID_REWARDS",
 ] as const;
 
 export type ProgramId = (typeof PROGRAM_IDS)[number];
 
 export const PROGRAMS: readonly ProgramCatalogEntry[] = [
+  { id: "WN_RAPID_REWARDS", iata: "WN", name: "Southwest Rapid Rewards", country: "us", authRequired: "optional" },
   { id: "F9_FRONTIER_MILES", iata: "F9", name: "Frontier Miles", country: "us", authRequired: "optional" },
   // Existing 13
   {

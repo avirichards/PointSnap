@@ -49,6 +49,47 @@ async function run(ids: string[]) {
   return events;
 }
 describe("multi-program orchestration", () => {
+  it("lets a fast Southwest result arrive while other browser sources are still pending", async () => {
+    const ids = [
+      "AA_AADVANTAGE",
+      "DL_SKYMILES",
+      "G3_GOL_SMILES",
+      "EY_GUEST",
+      "WN_RAPID_REWARDS",
+    ];
+    mock.browserIds.mockReturnValue(ids);
+    let release!: () => void;
+    const slow = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    mock.browser.mockImplementation(async (_q, _signal, id) => {
+      if (id !== "WN_RAPID_REWARDS") await slow;
+      return [];
+    });
+    const events: AwardEvent[] = [];
+    const pending = runSearch(ids, {
+      query: q,
+      signal: new AbortController().signal,
+      emit: (e) => events.push(e),
+    });
+    try {
+      await vi.waitFor(() =>
+        expect(events).toContainEqual(
+          expect.objectContaining({
+            type: "coverage",
+            coverage: expect.objectContaining({
+              programId: "WN_RAPID_REWARDS",
+            }),
+          }),
+        ),
+      );
+      expect(events.filter((e) => e.type === "coverage")).toHaveLength(1);
+    } finally {
+      release();
+      await pending;
+    }
+    expect(events.filter((e) => e.type === "coverage")).toHaveLength(5);
+  });
   it("keeps Smiles withdrawal notices in source coverage even when no quoted offer remains", async () => {
     mock.browserIds.mockReturnValue(["G3_GOL_SMILES"]);
     mock.browser.mockImplementation(async (_q, _signal, _id, notice) => {
@@ -56,9 +97,14 @@ describe("multi-program orchestration", () => {
       return [];
     });
     const events = await run(["G3_GOL_SMILES"]);
-    expect(events.at(-1)).toMatchObject({ type: "coverage", coverage: {
-      programId: "G3_GOL_SMILES", state: "empty", message: expect.stringContaining("withdrew 1 listed offer"),
-    } });
+    expect(events.at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: {
+        programId: "G3_GOL_SMILES",
+        state: "empty",
+        message: expect.stringContaining("withdrew 1 listed offer"),
+      },
+    });
   });
   it("routes an enabled Delta search to its own browser adapter", async () => {
     mock.browserIds.mockReturnValue(["DL_SKYMILES"]);

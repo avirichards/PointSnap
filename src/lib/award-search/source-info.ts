@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  WN_RAPID_REWARDS: {
+    inventory: "flights",
+    label: "Southwest Rapid Rewards award flights",
+    detail:
+      "Anonymous Southwest points searches with all available fare families in the returned list. Basic, Choice, Choice Preferred and Choice Extra are Economy fares. Includes connections and stops without changing planes. Cash comparisons require the same flights and fare family. Taxes are quoted in USD; exact seat counts and refund conditions are not reported. Requires the browser service. Broader route coverage remains under verification.",
+  },
   EY_GUEST: {
     inventory: "flights",
     label: "Etihad Guest & offered partner awards",

@@ -29,6 +29,7 @@ export const BOOKING_SITES: Record<string, string> = {
   G3_GOL_SMILES: "https://www.smiles.com.br/portal/passagens",
   VA_VELOCITY: "https://www.virginaustralia.com/",
   F9_FRONTIER_MILES: "https://booking.flyfrontier.com/Flight/InternalSelect",
+  WN_RAPID_REWARDS: "https://www.southwest.com/",
 };
 export function skywardsPartnerUrl(q: SearchQuery) {
   const [year, month, day] = q.departDate.split("-");
@@ -68,10 +69,37 @@ export function etihadBookingUrl(
   return u.href;
 }
 
+export function southwestBookingUrl(
+  q: SearchQuery,
+  fareType: "POINTS" | "USD" = "POINTS",
+) {
+  const params = new URLSearchParams({
+    adultPassengersCount: String(q.pax),
+    adultsCount: String(q.pax),
+    departureDate: q.departDate,
+    departureTimeOfDay: "ALL_DAY",
+    destinationAirportCode: q.dest,
+    fareType,
+    lapInfantPassengersCount: "0",
+    olderChildCount: "0",
+    originationAirportCode: q.origin,
+    passengerType: "ADULT",
+    promoCode: "",
+    returnAirportCode: "",
+    returnDate: "",
+    returnTimeOfDay: "ALL_DAY",
+    teensCount: "0",
+    tripType: "oneway",
+    youngerChildCount: "0",
+  });
+  return `https://www.southwest.com/air/booking/select-depart.html?${params}`;
+}
+
 export function bookingUrl(program: string, q: SearchQuery) {
   const base = BOOKING_SITES[program] ?? "https://www.alaskaair.com/";
   if (!q.origin || !q.dest || !q.departDate) return new URL(base).origin;
   if (program === "EY_GUEST") return etihadBookingUrl(q);
+  if (program === "WN_RAPID_REWARDS") return southwestBookingUrl(q);
   if (program === "AS_MILEAGEPLAN")
     return `${base}?${new URLSearchParams({ O: q.origin, D: q.dest, OD: q.departDate, A: String(q.pax), C: "0", L: "0", RT: "false", ShoppingMethod: "onlineaward", awardType: "MilesOnly" })}`;
   if (program === "B6_TRUEBLUE")

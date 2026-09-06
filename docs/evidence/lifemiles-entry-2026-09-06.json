@@ -1,0 +1,42 @@
+{
+  "programId": "AV_LIFEMILES",
+  "observedDate": "2026-09-06",
+  "entry": "https://www.lifemiles.com/fly/find",
+  "runtime": "Dedicated app-owned ordinary Chrome, anonymous",
+  "status": "Current ordinary form reaches member login before flight inventory",
+  "actions": [
+    "Load the public booker",
+    "Accept the cookie notice through its normal button",
+    "Select One-Way",
+    "Choose Bogota BOG and Medellin MDE from actual airport suggestions",
+    "Open departure-date selection; observe the ongoing application initialization redirect to member login"
+  ],
+  "responses": [
+    {
+      "path": "/svc/air-redemption-par-booker/en/us/usd/SMR",
+      "status": 200,
+      "meaning": "Public form configuration, not award inventory"
+    },
+    {
+      "path": "/svc/account-user-login",
+      "status": 403
+    },
+    {
+      "path": "/svc/air-redemption-par-header-private",
+      "status": 403
+    }
+  ],
+  "finalPath": "/auth/realms/lifemiles/protocol/openid-connect/auth",
+  "visibleChoices": [
+    "Google",
+    "Apple ID",
+    "Email or Lifemiles number"
+  ],
+  "observedAt": "2026-09-06T09:02:22Z",
+  "departureDateSubmitted": false,
+  "credentialsUsed": false,
+  "featureFlagsModified": false,
+  "privateRequestsCrafted": false,
+  "note": "The normal airline page itself issued the private initialization request. This confirms the earlier feature-flag interpretation in an actual app-owned browser; it is not a complete future-date search or an empty result.",
+  "next": "Native operator-account fallback and session behavior remain unverified; no native source enabled."
+}

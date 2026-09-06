@@ -3,6 +3,7 @@ import { createBrowserWorker } from "./server";
 import { EtihadBrowserRunner } from "./etihad";
 import { DeltaBrowserRunner } from "./delta";
 import { SmilesBrowserRunner } from "./smiles";
+import { SouthwestBrowserRunner } from "./southwest";
 import { createDesktopChromeSession } from "./desktop-chrome";
 
 const channel = process.env.POINTSNAP_BROWSER_CHANNEL || "chromium";
@@ -46,6 +47,10 @@ const runner =
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",
   evidenceDirectory: process.env.POINTSNAP_BROWSER_EVIDENCE_DIR,
+  southwestRunner:
+    process.env.POINTSNAP_BROWSER_SOUTHWEST === "1"
+      ? new SouthwestBrowserRunner()
+      : undefined,
   etihadRunner:
     process.env.POINTSNAP_BROWSER_ETIHAD === "1"
       ? new EtihadBrowserRunner()

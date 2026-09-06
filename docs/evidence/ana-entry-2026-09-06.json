@@ -1,0 +1,79 @@
+{
+  "programId": "NH_ANA",
+  "observedDate": "2026-09-06",
+  "runtime": "Dedicated app-owned ordinary Chrome; no personal profile or airline login",
+  "status": "Member login reached in current anonymous award entries; native feed remains unconnected",
+  "observations": [
+    {
+      "entry": "https://www.ana.co.jp/en/jp/guide/amc/award/",
+      "action": "Activate published international Reservation / Seat Availability link",
+      "requestPath": "/international_asw/pages/award/search/roundtrip/award_search_roundtrip_input.xhtml",
+      "redirectStatus": 302,
+      "finalPath": "/rei21c/international_asw/pages/common/login_standard.xhtml",
+      "finalStatus": 200,
+      "visibleFields": [
+        "AMC number",
+        "Password"
+      ],
+      "observedAt": "2026-09-06T08:56:46Z"
+    },
+    {
+      "entry": "https://cam.ana.co.jp/psz/tokutencal/form_e.jsp",
+      "finalStatus": 200,
+      "title": "ANA SKY WEB - Member Login",
+      "visibleFields": [
+        "ANA Number",
+        "Password"
+      ],
+      "observedAt": "2026-09-06T08:57:11Z"
+    },
+    {
+      "entry": "https://www.ana.co.jp/other/aswbe/meta/0251.html",
+      "action": "Current domestic award handoff",
+      "finalPath": "/rei22b/international_asw/pages/common/login_standard.xhtml",
+      "finalStatus": 200,
+      "visibleFields": [
+        "AMC number",
+        "Password"
+      ],
+      "observedAt": "2026-09-06T08:57:22Z"
+    },
+    {
+      "entry": "https://www.ana.co.jp/other/aswbe/meta/0031.html",
+      "action": "Domestic availability calendar; wait for delayed redirect",
+      "finalPath": "/psz/tokutencal/form_dom_e.jsp",
+      "title": "ANA SKY WEB - Member Login",
+      "visibleFields": [
+        "ANA Number",
+        "Password"
+      ],
+      "observedAt": "2026-09-06T08:57:57Z"
+    },
+    {
+      "entry": "https://www.ana.co.jp/en/jp/guide/amc/award/domestic/reservation/",
+      "action": "Activate older domestic award link on the official guide",
+      "finalPath": "/9Eile48/dms/red22o/dyc/be/common/businessAbortError.xhtml",
+      "errorCode": "BE002039",
+      "outcome": "Technical error; this is not authentication evidence and does not establish current inventory access",
+      "observedAt": "2026-09-06T08:59:14Z"
+    },
+    {
+      "entry": "https://www.ana.co.jp/en/jp/search/international/flight/",
+      "action": "Select Flight Awards within the public booking widget, then Flight Award Reservations",
+      "finalPath": "/rei22a/international_asw/pages/common/login_standard.xhtml",
+      "title": "Member Login | ANA",
+      "visibleFields": [
+        "AMC number",
+        "Password"
+      ],
+      "observedAt": "2026-09-06T09:01:10Z"
+    }
+  ],
+  "interactionCorrections": [
+    "A duplicated/unstable guide link initially timed out; ordinary keyboard Enter activated the intended link. No denial was inferred from the locator failure.",
+    "The public booking widget required the exact visible Flight Awards label; a broad text match initially selected multiple elements.",
+    "Blank documents during navigation were re-inspected after loading; they were not labeled empty inventory."
+  ],
+  "nativeInventoryObserved": false,
+  "next": "Operator-account fallback is justified for the tested member flows, but no account access or session persistence has been verified. Keep the anonymous architecture review open if a distinct current public entry is found. Continue other native connections."
+}

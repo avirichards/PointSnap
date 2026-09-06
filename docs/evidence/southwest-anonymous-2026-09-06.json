@@ -1,0 +1,96 @@
+{
+  "recordedAt": "2026-09-06T09:38:29.605011Z",
+  "programId": "WN_RAPID_REWARDS",
+  "method": "App-owned ordinary Chrome, anonymous official Southwest booking flow; own points and USD POST responses. No credentials, personal browser profile or paid provider.",
+  "queryValidation": [
+    "Exact origin and destination",
+    "Date and both adult-count fields",
+    "One way, all-day, no other passenger types",
+    "POINTS versus USD request"
+  ],
+  "observations": [
+    {
+      "route": "DEN-LAS",
+      "date": "2026-10-05",
+      "adults": 2,
+      "itineraries": 26,
+      "availableFares": 104,
+      "cashMatches": 104,
+      "nonstops": 9,
+      "connectingItineraries": 15,
+      "sameFlightStops": 2,
+      "standaloneMs": 9906,
+      "pointSnapApiMs": 8666
+    },
+    {
+      "route": "BWI-CUN",
+      "date": "2026-10-05",
+      "adults": 2,
+      "itineraries": 16,
+      "availableFares": 62,
+      "unavailableFareChoices": 2,
+      "cashMatches": 62,
+      "standaloneMs": 8346,
+      "pointSnapApiMs": 5747
+    }
+  ],
+  "priceChecks": [
+    {
+      "flight": "WN1629",
+      "fare": "Basic",
+      "pointsPerPerson": 9500,
+      "feesPerPerson": 5.6,
+      "feeCurrency": "USD",
+      "cashFarePerPerson": 139.4,
+      "partyPoints": 19000,
+      "partyFees": 11.2,
+      "usdCentsPerPoint": 1.4084
+    },
+    {
+      "flight": "WN1609",
+      "fare": "Basic",
+      "pointsPerPerson": 11500,
+      "feesPerPerson": 63.08,
+      "feeCurrency": "USD",
+      "cashFarePerPerson": 237.98,
+      "partyPoints": 23000,
+      "partyFees": 126.16
+    }
+  ],
+  "normalization": [
+    "All four current fare families are Economy, including internal BUSRED (Choice Extra).",
+    "Every rendered flight and fare choice reconciled; known unavailable families excluded.",
+    "Exact flight segments/times and corresponding family required for cash matching; missing comparison cannot erase valid awards.",
+    "StopsDetails includes final arrival, which is excluded from technical-stop list; each duration and connection reconciled.",
+    "Seat quantity and refundability remain unknown."
+  ],
+  "limitations": [
+    "Scoped domestic and Mexico observations; universal route/date/party coverage unproven.",
+    "Genuinely empty response semantics not yet validated; empty lists currently fail explicitly.",
+    "Taxes and cash USD only in verified source contract.",
+    "Hosted deployment, sustained reliability and load/cost qualification deferred under approved coverage-first sequence.",
+    "Main comparison UI uses the lowest matching cash fare in the itinerary/cabin as explicitly labeled; source-level per-family quotes are retained."
+  ],
+  "validation": {
+    "tests": 232,
+    "typecheck": "passed",
+    "focusedLint": "passed",
+    "optimizedBuild": "passed"
+  },
+  "frontend": {
+    "normalMultiSourceSearch": true,
+    "nativeItineraries": 26,
+    "availableFares": 104,
+    "pagination": "25 on first page and final WN1849 on second",
+    "fareDialog": "four families; WN1629 Basic party 19000 points + USD11.20; USD278.80 cash comparison; correct route/date/two-adult points and cash links",
+    "sameFlightStop": "WN1589 FAT 14:45-15:20, 35 minutes",
+    "desktopWidth": 1440,
+    "desktopScrollWidth": 1440,
+    "mobileWidth": 390,
+    "mobileScrollWidth": 390,
+    "pageErrors": [],
+    "mobileNonstopItineraries": 9,
+    "mobileNonstopFares": 36,
+    "mobileDialogsAfterDismiss": 0
+  }
+}
