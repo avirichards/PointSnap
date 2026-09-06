@@ -1,5 +1,14 @@
 # PointSnap completion plan
 
+## Latest scope and operating preferences — September 6
+
+The user set the final expansion targets to British Airways, Qatar Airways, Singapore Airlines and Turkish Airlines. Preserve the connection work already underway, then pause adding programs after this batch and solidify the connected sources before further expansion. This supersedes the earlier open-ended airline expansion order. Stabilization includes complete flight/fare capture, consistent search results, session reuse/recovery, speed and the actual user experience. No new hosting purchase is implied by this sequence change.
+
+Browser collectors must not bring their windows to the foreground or interrupt typing. Run investigations and searches in the background; foreground sign-in is only appropriate when the user explicitly needs to interact. The finished public app should run collectors on its infrastructure, with no customer browser windows or recurring customer airline sign-ins.
+
+After an airline accepts a verification code, archive that exact verification email. Do not archive unrelated mail or unused/pending codes. Gmail access and airline sign-in authorization already supplied remain valid; credentials and code values must not be recorded in project notes.
+
+
 Approved in conversation; updated September 6, 2026 UTC with the user's coverage-first sequencing decision. Implementation is authorized. This plan and the current priorities in user-requirements.md supersede older access recommendations; historical findings remain evidence, not instructions or completion claims.
 
 ## Current execution priority — connect the airlines first

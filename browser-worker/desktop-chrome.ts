@@ -1,14 +1,47 @@
-import { spawn, type ChildProcess } from "node:child_process";
-import { access, chmod, mkdir } from "node:fs/promises";
+import { execFile, spawn, type ChildProcess } from "node:child_process";
+import { access, chmod, mkdir, readlink } from "node:fs/promises";
 import { constants } from "node:fs";
 import { createServer } from "node:net";
 import { isAbsolute, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { promisify } from "node:util";
 import { chromium, type Browser, type BrowserContext } from "playwright";
+import { registerBackgroundDesktopContext } from "./background-page";
 import {
   BrowserSessionLaunchError,
   PersistentBrowserSession,
 } from "./persistent-session";
+
+const runFile = promisify(execFile);
+
+// On macOS Launch Services owns Chrome; our child process is only `open -W`.
+// Verify the profile AND this launch's unique debugging port before signalling
+// Chrome. A stale lock or another owner must never identify a process to kill.
+async function ownedChromePid(
+  profile: string,
+  executable: string,
+  port: number,
+) {
+  try {
+    const lock = await readlink(resolve(profile, "SingletonLock"));
+    const pid = Number(lock.match(/-(\d+)$/)?.[1]);
+    if (!Number.isSafeInteger(pid) || pid <= 1) return;
+    const { stdout } = await runFile(
+      "/bin/ps",
+      ["-p", String(pid), "-o", "command="],
+      { timeout: 1000 },
+    );
+    const command = `${stdout.trim()} `;
+    if (
+      command.startsWith(`${executable} `) &&
+      command.includes(` --user-data-dir=${profile} `) &&
+      command.includes(` --remote-debugging-port=${port} `)
+    )
+      return pid;
+  } catch {
+    /* An exited process or missing lock needs no cleanup. */
+  }
+}
 
 async function unusedLoopbackPort(): Promise<number> {
   const server = createServer();
@@ -51,6 +84,7 @@ class DesktopChrome {
   private process?: ChildProcess;
   private exited?: Promise<void>;
   private browser?: Browser;
+  private launch?: { profile: string; executable: string; port: number };
 
   async open(): Promise<BrowserContext> {
     // An interrupted prior process must release the profile before relaunch.
@@ -89,17 +123,28 @@ class DesktopChrome {
     await chmod(profile, 0o700);
     const port = await unusedLoopbackPort();
     const endpoint = `http://127.0.0.1:${port}`;
+    const chromeArgs = [
+      `--user-data-dir=${profile}`,
+      "--remote-debugging-address=127.0.0.1",
+      `--remote-debugging-port=${port}`,
+      ...(process.env.POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN === "1"
+        ? ["--no-first-run"]
+        : []),
+      "about:blank",
+    ];
+    const appBundle = executable.match(
+      /^(.*\.app)\/Contents\/MacOS\/[^/]+$/,
+    )?.[1];
+    if (process.platform === "darwin" && !appBundle)
+      throw new Error(
+        "Background Chrome requires an installed macOS application bundle.",
+      );
+    this.launch = { profile, executable, port };
     const child = spawn(
-      executable,
-      [
-        `--user-data-dir=${profile}`,
-        "--remote-debugging-address=127.0.0.1",
-        `--remote-debugging-port=${port}`,
-        ...(process.env.POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN === "1"
-          ? ["--no-first-run"]
-          : []),
-        "about:blank",
-      ],
+      process.platform === "darwin" ? "/usr/bin/open" : executable,
+      process.platform === "darwin"
+        ? ["-g", "-n", "-W", "-a", appBundle!, "--args", ...chromeArgs]
+        : chromeArgs,
       { stdio: ["ignore", "ignore", "pipe"] },
     );
     // Keep a bounded startup diagnostic in memory. Only an issue category is
@@ -159,6 +204,7 @@ class DesktopChrome {
         throw new Error(
           "Chrome did not provide its dedicated browser context.",
         );
+      registerBackgroundDesktopContext(context);
       return context;
     } catch (error) {
       await this.close();
@@ -170,15 +216,40 @@ class DesktopChrome {
   async close() {
     const child = this.process,
       exited = this.exited,
-      browser = this.browser;
+      browser = this.browser,
+      launch = this.launch;
     this.process = undefined;
     this.exited = undefined;
     this.browser = undefined;
+    this.launch = undefined;
     if (browser)
       await Promise.race([
-        browser.close().catch(() => {}),
+        (async () => {
+          // Playwright's close() only disconnects a CDP attachment. Close the
+          // actual owned browser first so the profile is released cleanly.
+          const session = await browser.newBrowserCDPSession();
+          await session.send("Browser.close").catch(() => {});
+          await browser.close().catch(() => {});
+        })().catch(() => {}),
         delay(3000, undefined, { ref: false }),
       ]);
+    if (process.platform === "darwin" && launch) {
+      await Promise.race([exited, delay(1000, undefined, { ref: false })]);
+      for (const signal of ["SIGTERM", "SIGKILL"] as const) {
+        const pid = await ownedChromePid(
+          launch.profile,
+          launch.executable,
+          launch.port,
+        );
+        if (!pid) break;
+        try {
+          process.kill(pid, signal);
+        } catch {
+          /* Already exited. */
+        }
+        await Promise.race([exited, delay(1000, undefined, { ref: false })]);
+      }
+    }
     if (child && child.exitCode === null && child.signalCode === null) {
       child.kill("SIGTERM");
       await Promise.race([exited, delay(3000, undefined, { ref: false })]);

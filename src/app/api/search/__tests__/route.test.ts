@@ -37,8 +37,47 @@ beforeEach(() => {
     ctx.emit({ type: "meta", programs: ids });
   });
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
 describe("search endpoint", () => {
+  it.each(["UA_MP", "G3_GOL_SMILES", "CM_CONNECTMILES", "QF_FF"])(
+    "delivers a completed %s inventory after the short-source deadline",
+    async (program) => {
+      vi.useFakeTimers();
+      vi.spyOn(AbortSignal, "timeout").mockImplementation((ms) => {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), ms);
+        return controller.signal;
+      });
+      mocks.run.mockImplementation(async (ids, ctx) => {
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(() => {
+            ctx.emit({
+              type: "coverage",
+              coverage: { programId: ids[0], state: "success" },
+            });
+            resolve();
+          }, 126000);
+          ctx.signal.addEventListener(
+            "abort",
+            () => {
+              clearTimeout(timer);
+              resolve();
+            },
+            { once: true },
+          );
+        });
+      });
+      const res = await GET(request({ programs: program }));
+      const body = res.text();
+      await vi.advanceTimersByTimeAsync(126001);
+      const text = await body;
+      expect(text).toContain('"state":"success"');
+      expect(text).toContain('"type":"complete"');
+    },
+  );
   it("rejects malformed inputs before any provider work", async () => {
     expect((await GET(request({ pax: "10" }))).status).toBe(400);
     expect(mocks.run).not.toHaveBeenCalled();

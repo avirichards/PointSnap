@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 import { mkdir, writeFile } from "node:fs/promises";
 import type { SearchQuery } from "../src/lib/types";
 import { sasBookingUrl } from "../src/lib/bookingHandoff";
@@ -24,13 +25,13 @@ export class SasBrowserRunner {
   async search(q: SearchQuery, signal: AbortSignal): Promise<SasBrowserResult> {
     const started = Date.now();
     return this.session.run(signal, async (context) => {
-      const page = await context.newPage();
+      const page = await createCollectorPage(context);
       const abort = () => {
         void page.close().catch(() => {});
       };
       signal.addEventListener("abort", abort, { once: true });
       try {
-        await page.bringToFront();
+        await prepareCollectorPage(page);
         const pending = page.waitForResponse(
           (r) => {
             const u = new URL(r.url());

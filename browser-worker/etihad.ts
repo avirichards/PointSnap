@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 import { z } from "zod";
 import { mkdir, writeFile } from "node:fs/promises";
 import type { SearchQuery } from "../src/lib/types";
@@ -80,7 +81,7 @@ export class EtihadBrowserRunner {
     const started = Date.now(),
       stages: BrowserStage[] = [];
     return this.session.run(signal, async (context) => {
-      const page = await context.newPage();
+      const page = await createCollectorPage(context);
       page.setDefaultTimeout(15000);
       const abort = () => {
         void page.close().catch(() => {});
@@ -93,7 +94,7 @@ export class EtihadBrowserRunner {
           ["B", ["BUSINESS", "FIRST"]],
         ] as const) {
           signal.throwIfAborted();
-          await page.bringToFront();
+          await prepareCollectorPage(page);
           const responsePromise = page.waitForResponse(
             (r) => {
               const u = new URL(r.url());

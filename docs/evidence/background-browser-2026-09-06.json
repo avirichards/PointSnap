@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-09-06T23:08:05.392339+00:00",
+  "scope": "macOS app-owned browser background operation",
+  "localQualification": {
+    "coldLaunch": true,
+    "newTab": true,
+    "normalInputAndPopup": true,
+    "reusedPage": true,
+    "disconnectedOwnerRecovery": true,
+    "ownedProcessCleanup": true,
+    "foregroundPreserved": true
+  },
+  "virgin": {
+    "query": {
+      "origin": "JFK",
+      "dest": "LHR",
+      "date": "2026-10-08",
+      "adults": 2
+    },
+    "itineraries": 6,
+    "fares": 17,
+    "actualPointSnapApi": true,
+    "latestDurationMs": 11431,
+    "foregroundSamples": 13,
+    "foregroundPreserved": true,
+    "desktopAndMobileRendered": true,
+    "pageErrors": 0,
+    "horizontalOverflow": false
+  },
+  "united": {
+    "nativeRunnerReconciledItineraries": 40,
+    "nativeRunnerDurationMs": 125943,
+    "repeatApiRecoveryVerified": false,
+    "latestInventoryStatus": 428,
+    "noUnchangedRetriesAfter428": true
+  },
+  "changes": [
+    "Background macOS application launch",
+    "Background tab creation and virtual page focus",
+    "Owned process cleanup after CDP disconnect",
+    "United form recovery",
+    "Search stream budget aligned with180-second collectors"
+  ],
+  "automatedChecks": {
+    "tests": 337,
+    "testFiles": 40,
+    "typecheck": true,
+    "focusedLint": true
+  },
+  "limits": [
+    "No universal airline completeness or session persistence claim",
+    "United background recovery remains unresolved",
+    "Local background behavior does not provision hosted collectors"
+  ],
+  "credentialsIncluded": false,
+  "codesIncluded": false
+}

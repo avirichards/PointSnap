@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 import { mkdir, writeFile } from "node:fs/promises";
 import type { BrowserContext } from "playwright";
 import { z } from "zod";
@@ -93,13 +94,13 @@ export class SouthwestBrowserRunner {
     currency: "POINTS" | "USD",
   ): Promise<Payload["points"]> {
     signal.throwIfAborted();
-    const page = await context.newPage();
+    const page = await createCollectorPage(context);
     const abort = () => {
       void page.close().catch(() => {});
     };
     signal.addEventListener("abort", abort, { once: true });
     try {
-      await page.bringToFront();
+      await prepareCollectorPage(page);
       const pending = page.waitForResponse(
         (r) => {
           const url = new URL(r.url());

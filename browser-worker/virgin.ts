@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 import { setTimeout as delay } from "node:timers/promises";
 import type { Page, Request, Response } from "playwright";
 import {
@@ -172,7 +173,7 @@ export class VirginBrowserRunner {
           .pages()
           .find((p) =>
             /virginatlantic\.com$/.test(new URL(p.url()).hostname),
-          ) ?? (await context.newPage());
+          ) ?? (await createCollectorPage(context));
       page.setDefaultTimeout(12000);
       const inflight = new Set<Request>(),
         pending = new Set<Promise<void>>();
@@ -239,7 +240,7 @@ export class VirginBrowserRunner {
       try {
         // This is the actual public search URL produced by Virgin's booking form.
         // The browser keeps its own member session and follows all normal redirects.
-        await page.bringToFront();
+        await prepareCollectorPage(page);
         const document = await page.goto(virginBookingUrl(q), {
           waitUntil: "domcontentloaded",
           timeout: 45000,

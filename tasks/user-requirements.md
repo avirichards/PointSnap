@@ -1,6 +1,15 @@
 # PointSnap — consolidated user requirements
 
-Source: all user messages supplied in this task through September 6, 2026, including screenshots, browser comments, preference replies, and the request to reconcile the whole chat. This is the continuing scope; a newer UX request never replaces the live-search mission. Recorded does not mean implemented; checked implementation items still have the verification limits described below.
+## Latest scope and operating preferences — September 6
+
+The user set the final expansion targets to British Airways, Qatar Airways, Singapore Airlines and Turkish Airlines. Preserve the connection work already underway, then pause adding programs after this batch and solidify the connected sources before further expansion. This supersedes the earlier open-ended airline expansion order. Stabilization includes complete flight/fare capture, consistent search results, session reuse/recovery, speed and the actual user experience. No new hosting purchase is implied by this sequence change.
+
+Browser collectors must not bring their windows to the foreground or interrupt typing. Run investigations and searches in the background; foreground sign-in is only appropriate when the user explicitly needs to interact. The finished public app should run collectors on its infrastructure, with no customer browser windows or recurring customer airline sign-ins.
+
+After an airline accepts a verification code, archive that exact verification email. Do not archive unrelated mail or unused/pending codes. Gmail access and airline sign-in authorization already supplied remain valid; credentials and code values must not be recorded in project notes.
+
+
+Source: all user messages supplied in this task through September 6, 2026, including screenshots, browser comments, preference replies, and the request to reconcile the whole chat. This is the continuing scope; ordinary UX requests do not replace the live-search mission, while the latest explicit four-airline expansion boundary supersedes the earlier open-ended expansion order. Recorded does not mean implemented; checked implementation items still have the verification limits described below.
 
 ## Priority 1 — live award coverage
 
@@ -38,7 +47,8 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: **Qantas native integration passed initial samples; subsequent access denials remain under investigation; continue remaining native connections**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
+Current focus: Virgin native integration is verified and committed, Flying Blue native fare validation is underway, and Aeroplan remains unresolved after sign-in. British Airways, Qatar, Singapore and Turkish are the final requested expansion targets before stabilization. The immediate focus fix prevents browser work from interrupting typing. Earlier successful samples retain their stated completeness and access limits.
+
 
 ## Priority 2 — intuitive depth and comparison
 

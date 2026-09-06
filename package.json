@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit",
     "test:live": "node scripts/check-live-search.mjs",
     "browser:worker": "tsx browser-worker/start.ts",
-    "test:browser-live": "node scripts/check-browser-search.mjs"
+    "test:browser-live": "node scripts/check-browser-search.mjs",
+    "test:browser-background": "node scripts/check-background-browser.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.3.5",
