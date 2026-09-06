@@ -1,5 +1,21 @@
 import type { BrowserContext } from "playwright";
 
+export class BrowserSessionLaunchError extends Error {
+  constructor(
+    public issue:
+      | "browser-not-installed"
+      | "display-unavailable"
+      | "sandbox-unavailable"
+      | "profile-in-use"
+      | "process-exited"
+      | "debugging-startup-timeout"
+      | "debugging-connection-failed",
+  ) {
+    super("The dedicated browser could not start.");
+    this.name = "BrowserSessionLaunchError";
+  }
+}
+
 function waitForTurn(previous: Promise<void>, signal: AbortSignal) {
   signal.throwIfAborted();
   return new Promise<void>((resolve, reject) => {

@@ -7,7 +7,7 @@ export const SOURCE_INFO: Record<
     inventory: "flights",
     label: "American AAdvantage & offered partner awards",
     detail:
-      "Anonymous American searches with all fares supplied in the returned itinerary list. Additional flights can appear in a separate cabin search, so this is not exhaustive availability. Requires the browser service. Recheck the selected itinerary with American before booking.",
+      "Anonymous American searches with all fares supplied in each returned itinerary list. The airline can expose different flight sets by cabin or route, so coverage is not exhaustive. Requires the browser service. Recheck the selected itinerary with American before booking.",
   },
   G3_GOL_SMILES: {
     inventory: "flights",

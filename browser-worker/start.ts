@@ -21,6 +21,7 @@ const entry =
 const persistentProfile =
   process.env.POINTSNAP_BROWSER_PERSISTENT_PROFILE === "1";
 const americanMode = process.env.POINTSNAP_AMERICAN_BROWSER_MODE ?? "managed";
+const includePremium = process.env.POINTSNAP_AMERICAN_EXPAND_CABINS === "1";
 if (americanMode !== "managed" && americanMode !== "desktop-chrome")
   throw new Error(
     "Choose managed or desktop-chrome for POINTSNAP_AMERICAN_BROWSER_MODE.",
@@ -28,7 +29,10 @@ if (americanMode !== "managed" && americanMode !== "desktop-chrome")
 const runner =
   americanMode === "desktop-chrome"
     ? new AmericanBrowserRunner(
-        { entry: "homepage-form" },
+        {
+          entry: "homepage-form",
+          includePremium,
+        },
         createDesktopChromeSession(),
       )
     : new AmericanBrowserRunner({
@@ -54,7 +58,7 @@ const host = process.env.POINTSNAP_BROWSER_HOST || "127.0.0.1";
 const port = Number(process.env.POINTSNAP_BROWSER_PORT || "3002");
 worker.server.listen(port, host, () => {
   console.log(
-    `PointSnap browser worker listening on ${host}:${port}; americanMode=${americanMode}; engine=${engine}; channel=${channel}; headless=${americanMode === "desktop-chrome" ? false : headless}; entry=${entry}; persistentProfile=${americanMode === "desktop-chrome" || persistentProfile}`,
+    `PointSnap browser worker listening on ${host}:${port}; americanMode=${americanMode}; engine=${engine}; channel=${americanMode === "desktop-chrome" ? "chrome" : channel}; headless=${americanMode === "desktop-chrome" ? false : headless}; entry=${americanMode === "desktop-chrome" ? "homepage-form" : entry}; persistentProfile=${americanMode === "desktop-chrome" || persistentProfile}; expandCabins=${americanMode === "desktop-chrome" && includePremium}`,
   );
 });
 for (const event of ["SIGINT", "SIGTERM"] as const)

@@ -153,6 +153,16 @@ export async function browserSearch(
     throw new ProviderError(
       `${name}'s browser response has incomplete flight or fare counts.`,
     );
+  if (
+    programId === "AA_AADVANTAGE" &&
+    data.payload &&
+    typeof data.payload === "object" &&
+    "type" in data.payload &&
+    data.payload.type === "american-cabin-searches"
+  )
+    onNotice?.(
+      "Combined American's all-cabin and Business/First searches. The later premium quote replaces an earlier price for the same cabin and flight.",
+    );
   if (programId === "G3_GOL_SMILES") {
     const { withdrawn, otherAirports } = smilesObservationCounts(data.payload);
     const notices: string[] = [];

@@ -5,7 +5,10 @@ import { createServer } from "node:net";
 import { isAbsolute, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium, type Browser, type BrowserContext } from "playwright";
-import { PersistentBrowserSession } from "./persistent-session";
+import {
+  BrowserSessionLaunchError,
+  PersistentBrowserSession,
+} from "./persistent-session";
 
 async function unusedLoopbackPort(): Promise<number> {
   const server = createServer();
@@ -43,11 +46,11 @@ class DesktopChrome {
       throw new Error(
         "Configure the absolute path to an installed standard Chrome executable.",
       );
-    await access(executable, constants.X_OK);
+    await access(executable, constants.X_OK).catch(() => {
+      throw new BrowserSessionLaunchError("browser-not-installed");
+    });
     if (process.platform === "linux" && !process.env.DISPLAY)
-      throw new Error(
-        "Desktop Chrome requires a display, such as an operator display or Xvfb.",
-      );
+      throw new BrowserSessionLaunchError("display-unavailable");
     const profile = resolve("work/browser-profiles/american-desktop-collector");
     await mkdir(profile, { recursive: true, mode: 0o700 });
     await chmod(profile, 0o700);
@@ -61,8 +64,17 @@ class DesktopChrome {
         `--remote-debugging-port=${port}`,
         "about:blank",
       ],
-      { stdio: "ignore" },
+      { stdio: ["ignore", "ignore", "pipe"] },
     );
+    // Keep a bounded startup diagnostic in memory. Only an issue category is
+    // returned; raw stderr, debugging URLs and profile paths are never logged.
+    let startupDiagnostic = "";
+    child.stderr?.on("data", (chunk: Buffer) => {
+      if (startupDiagnostic.length < 8192)
+        startupDiagnostic += chunk
+          .toString()
+          .slice(0, 8192 - startupDiagnostic.length);
+    });
     this.process = child;
     let stopped = false;
     this.exited = new Promise<void>((done) => {
@@ -87,7 +99,21 @@ class DesktopChrome {
         await delay(250);
       }
       if (!ready || stopped)
-        throw new Error("The dedicated Chrome process could not start.");
+        throw new BrowserSessionLaunchError(
+          /no usable sandbox|failed to move to new namespace|sandbox.*operation not permitted/i.test(
+            startupDiagnostic,
+          )
+            ? "sandbox-unavailable"
+            : /processsingleton|profile.*in use/i.test(startupDiagnostic)
+              ? "profile-in-use"
+              : /missing x server|failed to initialize.*platform|cannot open display/i.test(
+                    startupDiagnostic,
+                  )
+                ? "display-unavailable"
+                : stopped
+                  ? "process-exited"
+                  : "debugging-startup-timeout",
+        );
       this.browser = await chromium.connectOverCDP(endpoint, {
         noDefaults: true,
         timeout: 10000,
@@ -98,9 +124,10 @@ class DesktopChrome {
           "Chrome did not provide its dedicated browser context.",
         );
       return context;
-    } catch {
+    } catch (error) {
       await this.close();
-      throw new Error("The dedicated desktop Chrome session could not open.");
+      if (error instanceof BrowserSessionLaunchError) throw error;
+      throw new BrowserSessionLaunchError("debugging-connection-failed");
     }
   }
 

@@ -11,13 +11,18 @@ import { parseAmerican } from "../src/lib/award-search/american";
 import type { SearchQuery } from "../src/lib/types";
 import { chmod, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { resolve } from "node:path";
-import { PersistentBrowserSession } from "./persistent-session";
+import {
+  BrowserSessionLaunchError,
+  PersistentBrowserSession,
+} from "./persistent-session";
 
 export type BrowserStage = {
   stage: string;
   elapsedMs: number;
   status?: number;
   path?: string;
+  itineraries?: number;
+  fares?: number;
 };
 export class BrowserSearchError extends Error {
   constructor(
@@ -107,6 +112,7 @@ export class AmericanBrowserRunner {
       engine?: "chromium" | "firefox" | "webkit";
       temporaryProfile?: boolean;
       persistentProfile?: boolean;
+      includePremium?: boolean;
     } = {},
     session?: PersistentBrowserSession,
   ) {
@@ -185,10 +191,10 @@ export class AmericanBrowserRunner {
     q: SearchQuery,
     signal: AbortSignal,
   ): Promise<AmericanBrowserResult> {
-    if (!this.persistentSession) return this.searchInContext(q, signal);
+    if (!this.persistentSession) return this.searchScopes(q, signal);
     try {
       return await this.persistentSession.run(signal, (context) =>
-        this.searchInContext(q, signal, context),
+        this.searchScopes(q, signal, context),
       );
     } catch (error) {
       if (error instanceof BrowserSearchError) throw error;
@@ -201,15 +207,74 @@ export class AmericanBrowserRunner {
         {
           persistentProfile: true,
           errorType: error instanceof Error ? error.name : "UnknownError",
+          launchIssue:
+            error instanceof BrowserSessionLaunchError
+              ? error.issue
+              : undefined,
         },
       );
     }
+  }
+
+  private async searchScopes(
+    q: SearchQuery,
+    signal: AbortSignal,
+    context?: BrowserContext,
+  ): Promise<AmericanBrowserResult> {
+    const started = Date.now();
+    const all = await this.searchInContext(q, signal, context);
+    if (!this.options.includePremium) return all;
+    const premiumStart = Date.now() - started;
+    let premium: AmericanBrowserResult;
+    try {
+      premium = await this.searchInContext(q, signal, context, "premium");
+    } catch (error) {
+      if (!(error instanceof BrowserSearchError)) throw error;
+      throw new BrowserSearchError(
+        "American's additional premium-cabin search could not complete. The combined flight list is incomplete.",
+        `premium-${error.stage}`,
+        error.status,
+        error.evidence,
+      );
+    }
+    const payload = {
+      type: "american-cabin-searches",
+      searches: [
+        { cabin: "all", payload: all.payload },
+        { cabin: "premium", payload: premium.payload },
+      ],
+    };
+    let rows;
+    try {
+      rows = parseAmerican(payload, q, all.observedAt);
+    } catch {
+      throw new BrowserSearchError(
+        "American's cabin-search responses could not be reconciled completely.",
+        "reconcile-cabins",
+      );
+    }
+    return {
+      ...all,
+      payload,
+      itineraryCount: rows.length,
+      fareCount: rows.reduce((n, row) => n + row.fares!.length, 0),
+      stages: [
+        ...all.stages,
+        ...premium.stages.map((stage) => ({
+          ...stage,
+          stage: `premium-${stage.stage}`,
+          elapsedMs: premiumStart + stage.elapsedMs,
+        })),
+        { stage: "reconciled-cabin-searches", elapsedMs: Date.now() - started },
+      ],
+    };
   }
 
   private async searchInContext(
     q: SearchQuery,
     signal: AbortSignal,
     persistentContext?: BrowserContext,
+    cabinScope: "all" | "premium" = "all",
   ): Promise<AmericanBrowserResult> {
     const started = Date.now(),
       stages: BrowserStage[] = [];
@@ -298,7 +363,11 @@ export class AmericanBrowserRunner {
           503,
         );
       const [year, month, day] = q.departDate.split("-");
-      if (this.options.entry === "homepage-form") {
+      if (
+        this.options.entry === "homepage-form" &&
+        cabinScope === "all" &&
+        !this.options.includePremium
+      ) {
         mark("homepage-route-and-passengers");
         for (const id of [
           "flightSearchForm.tripType.oneWay",
@@ -334,6 +403,8 @@ export class AmericanBrowserRunner {
           .fill(`${month}/${day}/${year}`);
         await page.locator("#aa-leavingOn:visible").press("Tab");
       } else {
+        // Expanded searches set both cabin and carrier scope explicitly in the
+        // advanced form, avoiding a previous search's remembered preference.
         if (homepage) {
           // Follow the airline's own published link so redirects and ordinary
           // session initialization happen in the same anonymous browser.
@@ -369,7 +440,13 @@ export class AmericanBrowserRunner {
         await page.locator("#passenger-count").selectOption(String(q.pax));
         if (!(await page.locator("#redeem-miles").isChecked()))
           await page.locator("label[for='redeem-miles']").click();
-        await page.locator("#cabin").selectOption("SHOW_ALL");
+        await page
+          .locator("#cabin")
+          .selectOption(
+            cabinScope === "premium"
+              ? { label: "Business / First" }
+              : "SHOW_ALL",
+          );
         await page.locator("#carriers").selectOption("ALL");
       }
       mark("submit-search");
@@ -398,6 +475,10 @@ export class AmericanBrowserRunner {
         observedAt = new Date().toISOString();
       const rows = parseAmerican(payload, q, observedAt);
       mark("validated-complete-response");
+      Object.assign(stages.at(-1)!, {
+        itineraries: rows.length,
+        fares: rows.reduce((n, row) => n + (row.fares?.length ?? 0), 0),
+      });
       return {
         programId: "AA_AADVANTAGE",
         query: q,

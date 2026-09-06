@@ -109,6 +109,16 @@ async function main() {
           2,
         ) + "\n",
       );
+      if (result.stage === "launch") {
+        console.log(
+          JSON.stringify({
+            event: "remaining-phases-skipped",
+            reason:
+              "No browser started; profile reuse and idle recovery could not be tested.",
+          }),
+        );
+        break;
+      }
     }
   } finally {
     await runner.close();

@@ -6,7 +6,7 @@ PointSnap sends a route, date and passenger count to a separate authenticated br
 
 **Smiles has verified local native and partner responses.** GRU–GIG October 5, two adults: five flights / 42 regular award, cash-plus-miles and baggage choices. GRU–CDG: 40 itineraries / 280 choices. The actual app preserves every option and original BRL travel fees, with display conversion. Club/elite discounts are excluded. HTTP 452/code 113 means the airline withdrew a listed offer after its seat recheck; the app reports that count and retains verified offers. Other failures remain explicit. Hosted verification is separate from local success.
 
-**American now has verified local native responses through ordinary Chrome.** LAX–AUS October 5 returns 40 itineraries / 79 fares for one adult and 40 / 78 for two. Every two-adult itinerary and fare matches the independent signed-out airline website, including all three nonstops. Normal worker/browser restart succeeds. JFK–LHR returns 40 / 116; a separate all-cabin search returns a different set, and the official Business/First form exposes additional itineraries. Broad completeness, hosted execution and seven-day reliability remain unqualified. [Detailed evidence](../docs/evidence/american-persistent-session-2026-09-05.json).
+**American now has verified local native responses through ordinary Chrome.** The baseline domestic two-adult search matches all 40 airline itineraries / 78 fares, including three nonstops. Enabling the additional premium search produces 52 LAX–AUS itineraries / 90 fares after a normal restart and 51 JFK–LHR itineraries / 130 fares in the actual UI. All 40 independently observed premium international itineraries and 52 fares match. The source can expose different itinerary sets, so broad completeness and seven-day reliability remain unqualified. Hosted Mac reaches verification; hosted Linux fails during startup. [Detailed evidence](../docs/evidence/american-persistent-session-2026-09-05.json).
 
 ## Setup
 
@@ -56,11 +56,14 @@ Install standard Google Chrome. Add these settings to the worker's ignored envir
 POINTSNAP_BROWSER_AMERICAN="1"
 POINTSNAP_AMERICAN_BROWSER_MODE="desktop-chrome"
 POINTSNAP_BROWSER_ENTRY="homepage-form"
+POINTSNAP_AMERICAN_EXPAND_CABINS="1"
 ```
 
 Enable `POINTSNAP_BROWSER_AMERICAN="1"` in Next.js only after verifying that worker runtime. Desktop mode launches a separate ordinary Chrome process and attaches through its documented loopback debugging interface. It uses only `work/browser-profiles/american-desktop-collector`, with owner-only permissions. No customer helper is needed. The browser persists its own anonymous state; no state is imported from a user's Chrome.
 
 The default executable is standard Chrome's application path on macOS or `/usr/bin/google-chrome` on Linux. An operator may supply an absolute installed executable path with `POINTSNAP_DESKTOP_CHROME_EXECUTABLE`. Linux requires a display such as Xvfb; the diagnostic workflow tests that configuration separately. A browser's successful launch is not proof of airline access.
+
+`POINTSNAP_AMERICAN_EXPAND_CABINS=1` submits both all-cabin and Business/First searches through the official advanced form, explicitly resetting cabin, carrier and nearby-airport settings. Each response is validated independently. Shared itineraries appear once; the later premium quote replaces earlier premium prices, while Economy/Premium Economy are retained. If either required search fails, the combined source reports failure instead of claiming completeness. The scope notice remains visible because two searches do not prove exhaustive airline inventory.
 
 Run only one worker or direct probe against this profile. American searches are serialized within the process; Delta and Smiles retain the shared worker concurrency limit. Cancellation closes only the active American page. Normal shutdown closes the owned browser process; a later worker can reopen the same profile. Profile disconnection or launch failure is reported, and recovery is attempted on a subsequent request rather than repeatedly retrying a denial.
 
@@ -89,7 +92,7 @@ The first exercises PointSnap's streaming API. A completed stream with a failed 
 - Exact formatted taxes are preserved; rounded UI taxes are not substituted. Local airport clocks remain local. Delta's arrival-day marker is not added to elapsed trip duration.
 - Available primary and secondary fare families, segment cabins, mixed cabins and operating flight numbers are retained. Unknown cabin definitions, promotional eligibility or malformed available fares fail explicitly instead of disappearing.
 - The app independently revalidates the returned query, observation time, program, complete payload and counts. Fixtures are used only for regression tests.
-- American validates the entire returned response, all available cabin products, segment details, airport-local timestamps, route, date and passenger totals. A complete response extraction does not prove the airline exposed every possible itinerary. The international result-set discrepancy remains an explicit completeness investigation.
+- American validates the entire returned response, all available cabin products, segment details, airport-local timestamps, route, date and passenger totals. A complete response extraction does not prove the airline exposed every possible itinerary. The separate cabin-search union improves coverage; connection-city variants and wider result-set completeness still need investigation.
 - Smiles requires the rendered end marker, all source itineraries, all regular cash/miles offers, offered baggage checks and either a matching tax quote or the airline’s explicit no-seat response for every flight. Fees are per traveler even when the source tax response is a party total. Cash-only prices from a different fare family are not used for redemption value. Zero-result semantics have not yet been validated and therefore fail explicitly.
 
 ## Remaining diagnostics
@@ -112,3 +115,6 @@ Earlier managed American attempts failed in the hosted Mac runtime: Chrome recei
 Smiles may include nearby airports despite an exact-airport search. The worker validates every candidate and quote, then returns only the requested route; the app discloses other-airport exclusions and seat withdrawals. Diagnostics with `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` save sanitized rejected observations separately as `*-rejected-flights.json`. These are diagnostic evidence only and never live fallback data. Airport entry can fall back to a city name but always selects the exact IATA airport.
 
 Smiles diagnostics can explicitly select a standard engine with `POINTSNAP_SMILES_ENGINE=webkit|chromium|firefox`. The application continues to use WebKit. Reports include the engine in their filenames; failure diagnostics retain only public paths, response status, visible text and form labels, never input values, session cookies or request headers. The manual hosted workflow exposes the same engine choice. An experiment failure does not automatically trigger other engines.
+
+
+The first ordinary-Chrome hosted diagnostics are now recorded: macOS run 34014790643 reaches airline verification after each valid submission; Linux run 34014791646 cannot establish browser readiness. Linux has not yet tested airline access in this mode. Startup diagnostics now emit only a bounded issue category, never raw browser logs, and skip idle/restart phases if no browser opened.

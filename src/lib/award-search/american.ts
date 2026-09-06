@@ -198,6 +198,53 @@ export function parseAmerican(
   q: SearchQuery,
   observedAt = new Date().toISOString(),
 ): AwardResult[] {
+  const source = object(payload);
+  if (source.type !== "american-cabin-searches")
+    return parseSingleAmerican(source, q, observedAt);
+  const searches = array(source.searches).map(object);
+  if (
+    searches.length !== 2 ||
+    searches[0].cabin !== "all" ||
+    searches[1].cabin !== "premium"
+  )
+    invalid("an unfinished set of cabin searches");
+  // Validate each response independently before merging any itinerary.
+  const all = parseSingleAmerican(searches[0].payload, q, observedAt);
+  const premium = parseSingleAmerican(searches[1].payload, q, observedAt);
+  if (
+    premium.some((row) =>
+      row.fares!.some((fare) => !["J", "F"].includes(fare.cabin)),
+    )
+  )
+    invalid("a different cabin search");
+  const merged = new Map(all.map((row) => [row.id, row]));
+  for (const row of premium) {
+    const previous = merged.get(row.id);
+    if (!previous) {
+      merged.set(row.id, row);
+      continue;
+    }
+    // The later premium quote replaces that cabin's earlier prices, including
+    // withdrawals. Never retain a stale cheap price as another fare choice.
+    const fares = [
+      ...previous.fares!.filter(
+        (fare) => fare.cabin === "Y" || fare.cabin === "W",
+      ),
+      ...row.fares!,
+    ];
+    const prices = { ...row.prices };
+    for (const code of ["Y", "W"] as const)
+      if (previous.prices[code]) prices[code] = previous.prices[code];
+    merged.set(row.id, { ...previous, prices, fares });
+  }
+  return [...merged.values()];
+}
+
+function parseSingleAmerican(
+  payload: unknown,
+  q: SearchQuery,
+  observedAt: string,
+): AwardResult[] {
   if (!Number.isInteger(q.pax) || q.pax < 1 || q.pax > 9)
     invalid("an invalid passenger request");
   const source = object(payload);

@@ -13,6 +13,85 @@ const q: SearchQuery = {
 };
 
 describe("American native response candidate", () => {
+  function cabinSearches() {
+    const all = americanFixture(),
+      premium = americanFixture();
+    all.slices = all.slices.slice(0, 2);
+    premium.slices = premium.slices.slice(1, 3);
+    for (const row of premium.slices)
+      row.pricingDetail = row.pricingDetail.filter(
+        (fare) => fare.productType === "FIRST",
+      );
+    return {
+      type: "american-cabin-searches",
+      searches: [
+        { cabin: "all", payload: all },
+        { cabin: "premium", payload: premium },
+      ],
+    };
+  }
+
+  it("adds premium-search itineraries without duplicating flights or keeping superseded prices", () => {
+    const payload = cabinSearches();
+    payload.searches[1].payload.slices[0].pricingDetail[0].perPassengerAwardPoints = 77777;
+    const rows = parseAmerican(payload, q);
+    expect(rows).toHaveLength(3);
+    expect(new Set(rows.map((row) => row.id)).size).toBe(3);
+    expect(rows[1].prices.Y?.points).toBe(32000);
+    expect(rows[1].prices.F?.points).toBe(77777);
+    expect(rows[1].fares?.filter((fare) => fare.cabin === "F")).toHaveLength(1);
+    expect(rows[2].prices.F).toBeDefined();
+    expect(rows[2].prices.Y).toBeUndefined();
+  });
+
+  it("removes an earlier First quote when the later same-itinerary premium search only supplies Business", () => {
+    const payload = cabinSearches(),
+      premium = payload.searches[1].payload.slices[0];
+    premium.pricingDetail[0].productType = "BUSINESS";
+    for (const segment of premium.segments)
+      for (const leg of segment.legs)
+        for (const product of leg.productDetails)
+          if (product.productType === "FIRST") {
+            product.productType = "BUSINESS";
+            product.cabinType = "BUSINESS";
+          }
+    const row = parseAmerican(payload, q)[1];
+    expect(row.prices.F).toBeUndefined();
+    expect(row.fares?.some((fare) => fare.cabin === "F")).toBe(false);
+    expect(row.prices.J?.points).toBe(39000);
+    expect(row.prices.Y?.points).toBe(32000);
+  });
+
+  it("requires both distinct complete cabin responses and validates their query independently", () => {
+    for (const mutate of [
+      (p: ReturnType<typeof cabinSearches>) => {
+        p.searches.pop();
+      },
+      (p: ReturnType<typeof cabinSearches>) => {
+        p.searches[1].cabin = "all";
+      },
+      (p: ReturnType<typeof cabinSearches>) => {
+        p.searches[1].payload.responseMetadata.destination.code = "JFK";
+      },
+      (p: ReturnType<typeof cabinSearches>) => {
+        Object.assign(p.searches[1].payload, { hasMore: true });
+      },
+      (p: ReturnType<typeof cabinSearches>) => {
+        p.searches[1].payload.slices[0].pricingDetail[0].allPassengerTaxesAndFees.amount = 999;
+      },
+    ]) {
+      const payload = cabinSearches();
+      mutate(payload);
+      expect(() => parseAmerican(payload, q)).toThrow();
+    }
+  });
+
+  it("rejects an all-cabin result mislabeled as a premium search", () => {
+    const payload = cabinSearches();
+    payload.searches[1].payload = americanFixture();
+    expect(() => parseAmerican(payload, q)).toThrow("different cabin search");
+  });
+
   it("retains all 40 source itineraries and 69 available fares, including partners and the final overnight result", () => {
     const rows = parseAmerican(americanFixture(), q);
     expect(rows).toHaveLength(40);
