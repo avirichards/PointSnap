@@ -72,3 +72,9 @@ The first exercises PointSnap's streaming API. A completed stream with a failed 
 `POINTSNAP_BROWSER_AMERICAN=1` enables the separate American pilot. Its engine can be `chromium`, `webkit` or `firefox`; `POINTSNAP_BROWSER_CHANNEL=chrome` selects installed standard Chrome for Chromium. `POINTSNAP_BROWSER_HEADLESS=0` opens its own temporary browser visibly. Entry modes are `homepage`, `direct` and `homepage-form`. These choices are explicit experiments, not an automatic retry loop after denial.
 
 `probe-southwest.ts` tests the official points booker. Its recorded WebKit/Firefox attempts returned shopping HTTP 403; no Southwest source is enabled.
+
+## Hosted runtime evidence
+
+The same Delta runner succeeds on a fresh GitHub macOS 15 / arm64 WebKit runtime: LAX–JFK October 6, one adult, all 49 itineraries / 173 fares / 9 nonstops in 24.0 seconds. The standard hosted Linux WebKit test reaches verification. These diagnostics use fresh anonymous contexts and are manual-only. They do not deploy a permanent browser service or establish load reliability.
+
+American still fails in the hosted Mac runtime: Chrome receives homepage Access Denied; WebKit submits the form and reaches Challenge Validation. Keep `POINTSNAP_BROWSER_AMERICAN=0`. See the per-airline evidence under `docs/evidence/`.
