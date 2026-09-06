@@ -3,6 +3,7 @@ import { browserPrograms, browserSearch } from "../browser";
 import { americanFixture } from "./fixtures/american";
 import etihadFixture from "./fixtures/etihad.json";
 import sasFixture from "./fixtures/sas-arn.json";
+import copaFixture from "./fixtures/copa-lax-two.json";
 import southwestFixture from "./fixtures/southwest-den.json";
 import deltaFixture from "./fixtures/delta.json";
 import smilesFixture from "./fixtures/smiles.json";
@@ -33,6 +34,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_ETIHAD", "0");
   vi.stubEnv("POINTSNAP_BROWSER_SOUTHWEST", "0");
   vi.stubEnv("POINTSNAP_BROWSER_SAS", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_COPA", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -40,6 +42,55 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches native Copa, reconciles exact-airport counts and discloses member pricing", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_COPA", "1");
+    expect(browserPrograms()).toEqual(["CM_CONNECTMILES"]);
+    const query = {
+      origin: "LAX",
+      dest: "PTY",
+      departDate: "2026-10-05",
+      pax: 2,
+      minCabin: "Y" as const,
+    };
+    const body = {
+      ...response(),
+      programId: "CM_CONNECTMILES",
+      query,
+      payload: copaFixture,
+      itineraryCount: 46,
+      fareCount: 60,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const notice = vi.fn();
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "CM_CONNECTMILES",
+      notice,
+    );
+    expect(rows).toHaveLength(46);
+    expect(rows[0].fares?.[0].bookingNotes?.join(" ")).toContain(
+      "final cost may differ",
+    );
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/copa",
+    );
+    expect(notice.mock.calls[0][0]).toContain(
+      "3 itineraries for nearby airports",
+    );
+    fetch.mockResolvedValue(
+      Response.json({ ...body, itineraryCount: 49, fareCount: 63 }),
+    );
+    await expect(
+      browserSearch(query, new AbortController().signal, "CM_CONNECTMILES"),
+    ).rejects.toThrow(/incomplete flight or fare counts/);
+    vi.stubEnv("POINTSNAP_BROWSER_COPA", "0");
+    await expect(
+      browserSearch(query, new AbortController().signal, "CM_CONNECTMILES"),
+    ).rejects.toThrow(/not enabled/);
+  });
   it("dispatches SAS's native fares and rejects incomplete bridge counts", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_SAS", "1");

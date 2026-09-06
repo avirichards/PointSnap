@@ -4,6 +4,7 @@ import { EtihadBrowserRunner } from "./etihad";
 import { DeltaBrowserRunner } from "./delta";
 import { SmilesBrowserRunner } from "./smiles";
 import { SasBrowserRunner } from "./sas";
+import { CopaBrowserRunner } from "./copa";
 import { SouthwestBrowserRunner } from "./southwest";
 import { createDesktopChromeSession } from "./desktop-chrome";
 
@@ -48,6 +49,10 @@ const runner =
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",
   evidenceDirectory: process.env.POINTSNAP_BROWSER_EVIDENCE_DIR,
+  copaRunner:
+    process.env.POINTSNAP_BROWSER_COPA === "1"
+      ? new CopaBrowserRunner()
+      : undefined,
   sasRunner:
     process.env.POINTSNAP_BROWSER_SAS === "1"
       ? new SasBrowserRunner()

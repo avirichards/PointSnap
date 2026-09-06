@@ -9,6 +9,7 @@ if (
     "EY_GUEST",
     "WN_RAPID_REWARDS",
     "SK_EUROBONUS",
+    "CM_CONNECTMILES",
   ].includes(program)
 )
   throw new Error("Unsupported browser program.");

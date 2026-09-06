@@ -187,7 +187,7 @@ export const PROGRAMS: readonly ProgramCatalogEntry[] = [
     iata: "CM",
     name: "Copa ConnectMiles",
     country: "pa",
-    authRequired: "required",
+    authRequired: "optional",
   },
   {
     id: "EK_SKYWARDS",

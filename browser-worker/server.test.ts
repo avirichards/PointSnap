@@ -43,6 +43,7 @@ describe("background browser request boundary", () => {
   it.each([
     { path: "southwest", id: "WN_RAPID_REWARDS", option: "southwestRunner" },
     { path: "sas", id: "SK_EUROBONUS", option: "sasRunner" },
+    { path: "copa", id: "CM_CONNECTMILES", option: "copaRunner" },
   ])(
     "enables $path independently and releases its owned browser on shutdown",
     async ({ path, id, option }) => {

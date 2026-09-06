@@ -38,7 +38,7 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: **Copa native anonymous access repeats successfully; parser added, worker and frontend integration next**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
+Current focus: **Copa native local integration verified; continue the remaining airline-connection pass**. Etihad now has verified native local API and frontend integration; its remaining scope limits stay open. The latest Virgin, Singapore and Turkish entry experiments are recorded; none established a new native flight feed. American has a verified initial local connection; its remaining inventory gaps and deferred production qualification stay logged. A program is not complete merely because a partner sells its flights or a normal browser shows prices. The full [approved completion plan](completion-plan.md) carries the product, capacity, recovery and qualification decisions.
 
 ## Priority 2 — intuitive depth and comparison
 
@@ -261,7 +261,7 @@ Expanded American checkpoint: 206 automated tests, TypeScript, focused lint and 
 
 ### September 6 UTC — saved connection lessons and hosted American progress
 
-All85 request groups remain logged. The connection playbook consolidates evidence and reusable implementation for subsequent airlines. Standard hosted Linux Chrome now returns native anonymous American results on initial search, after30 seconds idle and after restart:40 itineraries/80 fares in each test. This follows the explicit first-run startup diagnostic; previous Linux launch failures were not proof of airline denial. Expanded hosted searches and remaining completeness work are still in progress.
+All 85 request groups remain logged. The connection playbook consolidates evidence and reusable implementation for subsequent airlines. Standard hosted Linux Chrome now returns native anonymous American results on initial search, after30 seconds idle and after restart:40 itineraries/80 fares in each test. This follows the explicit first-run startup diagnostic; previous Linux launch failures were not proof of airline denial. Expanded hosted searches and remaining completeness work are still in progress.
 
 ## September 6 — Etihad initial integration checkpoint
 
@@ -302,7 +302,7 @@ The normal multi-source CPH–ARN search also completed: 100 grouped itineraries
 
 ## September 6 — Azul access evidence and priority confirmation
 
-The coverage-first decision is confirmed in the current plan, playbook, requirement87 and readable goal copy. The active goal already references that plan; no goal edit or scope reduction is needed. All87 requirement groups remain logged.
+The coverage-first decision is confirmed in the current plan, playbook, requirement87 and readable goal copy. The active goal already references that plan; no goal edit or scope reduction is needed. All 87 requirement groups remain logged.
 
 Own ordinary Chrome now has one native anonymous Azul inventory response via the official public points-offer handoff: VCP–LIS December1, three source journeys /30 payment choices, including an explicitly separate OPO alternative. Fresh normal searches still fail; the corrected clean-page VCP–SDU two-adult query confirms inventory HTTP 403. Route alternatives, account-holder discounts, cash fees and aircraft-versus-award seat counts are recorded for future normalization. No native Azul source is enabled and no all-airline milestone is marked complete. See [current Azul evidence](../docs/evidence/azul-anonymous-2026-09-06.json).
 
@@ -313,3 +313,15 @@ The coverage-first plan and all 87 requirement groups remain active. Copa’s ac
 Azul’s remaining standard Firefox/WebKit public-form tests both reach correct-query inventory HTTP 403. Saudia’s actual public Book with Miles control requires member login and resets when dismissed. These findings update the per-airline record without pretending the unresolved programs are complete.
 
 Copa parser validation: all 256 tests across 32 files, TypeScript, focused ESLint and the optimized Node 22 production build passed. The existing progress page shows the new access evidence and pending integration without page errors or horizontal overflow. No additional source is enabled.
+
+## September 6 — Copa integration verification in progress
+
+The worker and PointSnap bridge are now implemented and enabled locally for testing. LAX–PTY October 5 for two adults passed the actual API with 46 exact itineraries / 60 fares, after all 49 source itineraries / 63 fares were reconciled. A December 1 worker query passed with 30 exact itineraries / 35 fares after navigating the real calendar and verifying two adults. These successful samples do not establish complete Copa coverage.
+
+Actual JFK–PTY frontend testing found an applied airline-site filter hiding United-operated UA1021: the page showed 44 of 45 source itineraries, and Reset all restored the missing result without another search. This supersedes the initial nonconsecutive-ID diagnosis. Flight matching now uses physical identity, and separates the total journey duration from the layover duration. Fare-panel animation and cabin switching remain under investigation; the latest implementation has not passed the JFK frontend gate. Keep Copa marked integrating, with normal API access evidence separate from frontend completion. All 87 requirement groups and the connections-first priority remain active.
+
+## September 6 — Copa frontend gate passed
+
+The final real public-form collector reconciled all 45 JFK–PTY source itineraries and 60 fare choices, then delivered 8 exact-JFK itineraries and 17 fares through PointSnap in 90.9 seconds. All 8 rows/cards are present on desktop and 390px mobile, with no horizontal overflow or page errors. CM807 Business shows 80,000 +USD33.60 per person and 160,000 +USD67.20 for two. Switching AV245/CM412 from Business Saver to Standard changes the party total from 170,000 to 190,000 points while preserving fees. Connecting seat types and final member pricing are explicitly unconfirmed. The booking link is the official homepage; trip-prefilling remains open. Normal multi-source verification is next. Earlier failures above are retained as historical findings, not the latest status.
+
+Final normal multi-source verification: LAX–PTY October 5, two adults, returned 112 grouped itineraries / 392 fares from six sources in 195.5 seconds. Copa contributed 40 exact itineraries / 52 fares; its latest native response contained 43 / 55 including three other-airport results, and all 55 fares were reconciled in 85.8 seconds. Program filtering and both Copa pages (25 + 15 rows) passed. These later source counts differ from the earlier sample; historical counts are not fixed expectations. All 261 tests, TypeScript, focused lint and the optimized Node 22 build passed. Broader access and inventory limits remain open.

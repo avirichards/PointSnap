@@ -3,6 +3,7 @@ import type { SearchQuery } from "@/lib/types";
 import { parseAmerican } from "./american";
 import { parseEtihad } from "./etihad";
 import { parseSas } from "./sas";
+import { parseCopa, copaObservationCounts, copaPayloadSchema } from "./copa";
 import { parseSouthwest } from "./southwest";
 import { parseDelta } from "./delta";
 import { parseSmiles, smilesObservationCounts } from "./smiles";
@@ -40,6 +41,7 @@ function configuration() {
 export function browserPrograms(): string[] {
   if (!configuration()) return [];
   return [
+    ...(process.env.POINTSNAP_BROWSER_COPA === "1" ? ["CM_CONNECTMILES"] : []),
     ...(process.env.POINTSNAP_BROWSER_SAS === "1" ? ["SK_EUROBONUS"] : []),
     ...(process.env.POINTSNAP_BROWSER_AMERICAN === "1"
       ? ["AA_AADVANTAGE"]
@@ -60,6 +62,7 @@ const envelope = z.object({
     "EY_GUEST",
     "WN_RAPID_REWARDS",
     "SK_EUROBONUS",
+    "CM_CONNECTMILES",
   ]),
   query: z.object({
     origin: z.string(),
@@ -81,17 +84,19 @@ export async function browserSearch(
   onNotice?: (notice: string) => void,
 ) {
   const name =
-    programId === "SK_EUROBONUS"
-      ? "SAS"
-      : programId === "WN_RAPID_REWARDS"
-        ? "Southwest"
-        : programId === "EY_GUEST"
-          ? "Etihad"
-          : programId === "G3_GOL_SMILES"
-            ? "Smiles"
-            : programId === "DL_SKYMILES"
-              ? "Delta"
-              : "American";
+    programId === "CM_CONNECTMILES"
+      ? "Copa"
+      : programId === "SK_EUROBONUS"
+        ? "SAS"
+        : programId === "WN_RAPID_REWARDS"
+          ? "Southwest"
+          : programId === "EY_GUEST"
+            ? "Etihad"
+            : programId === "G3_GOL_SMILES"
+              ? "Smiles"
+              : programId === "DL_SKYMILES"
+                ? "Delta"
+                : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -101,7 +106,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -119,7 +124,11 @@ export async function browserSearch(
         }),
         signal: AbortSignal.any([
           signal,
-          AbortSignal.timeout(programId === "G3_GOL_SMILES" ? 185000 : 100000),
+          AbortSignal.timeout(
+            programId === "G3_GOL_SMILES" || programId === "CM_CONNECTMILES"
+              ? 185000
+              : 100000,
+          ),
         ]),
         cache: "no-store",
         redirect: "error",
@@ -161,17 +170,19 @@ export async function browserSearch(
       `${name}'s browser response is not a fresh observation.`,
     );
   const rows = (
-    programId === "SK_EUROBONUS"
-      ? parseSas
-      : programId === "WN_RAPID_REWARDS"
-        ? parseSouthwest
-        : programId === "EY_GUEST"
-          ? parseEtihad
-          : programId === "G3_GOL_SMILES"
-            ? parseSmiles
-            : programId === "DL_SKYMILES"
-              ? parseDelta
-              : parseAmerican
+    programId === "CM_CONNECTMILES"
+      ? parseCopa
+      : programId === "SK_EUROBONUS"
+        ? parseSas
+        : programId === "WN_RAPID_REWARDS"
+          ? parseSouthwest
+          : programId === "EY_GUEST"
+            ? parseEtihad
+            : programId === "G3_GOL_SMILES"
+              ? parseSmiles
+              : programId === "DL_SKYMILES"
+                ? parseDelta
+                : parseAmerican
   )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||
@@ -218,6 +229,17 @@ export async function browserSearch(
         `Smiles also returned ${otherAirports} ${otherAirports === 1 ? "offer" : "offers"} for other airports. Only ${q.origin}–${q.dest} flights are shown.`,
       );
     if (notices.length) onNotice?.(notices.join(" "));
+  }
+  if (programId === "CM_CONNECTMILES") {
+    const payload = copaPayloadSchema.parse(data.payload);
+    const { otherAirportItineraries } = copaObservationCounts(
+      payload.response,
+      q,
+    );
+    if (otherAirportItineraries)
+      onNotice?.(
+        `Copa also returned ${otherAirportItineraries} itineraries for nearby airports; only ${q.origin}–${q.dest} flights are shown.`,
+      );
   }
   return rows;
 }

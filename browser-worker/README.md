@@ -133,11 +133,9 @@ The same Delta runner succeeds on a fresh GitHub macOS 15 / arm64 WebKit runtime
 
 Earlier managed American attempts failed in the hosted Mac runtime: Chrome received homepage Access Denied; WebKit submitted the form and reached Challenge Validation. These are different from the locally verified ordinary-Chrome launch. The manual workflow's `american-desktop` choice tests that new launch with profile reuse and restart on macOS or Linux. Inspect its actual results before enabling a hosted source. No permanent browser service is deployed by these diagnostic jobs.
 
-
 Smiles may include nearby airports despite an exact-airport search. The worker validates every candidate and quote, then returns only the requested route; the app discloses other-airport exclusions and seat withdrawals. Diagnostics with `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` save sanitized rejected observations separately as `*-rejected-flights.json`. These are diagnostic evidence only and never live fallback data. Airport entry can fall back to a city name but always selects the exact IATA airport.
 
 Smiles diagnostics can explicitly select a standard engine with `POINTSNAP_SMILES_ENGINE=webkit|chromium|firefox`. The application continues to use WebKit. Reports include the engine in their filenames; failure diagnostics retain only public paths, response status, visible text and form labels, never input values, session cookies or request headers. The manual hosted workflow exposes the same engine choice. An experiment failure does not automatically trigger other engines.
-
 
 The first ordinary-Chrome hosted diagnostics are now recorded: macOS run 34014790643 reaches airline verification after each valid submission; Linux run 34014791646 cannot establish browser readiness. Linux has not yet tested airline access in this mode. Startup diagnostics now emit only a bounded issue category, never raw browser logs, and skip idle/restart phases if no browser opened.
 
@@ -176,3 +174,20 @@ pnpm exec tsx browser-worker/probe-sas-live.ts CPH JFK 2026-10-05 2
 ```
 
 Actual local PointSnap searches verified CPH–ARN 20 itineraries / 74 fares and CPH–JFK 7 / 14 for two adults. Empty-response semantics, broader route/party coverage, technical stops, exact cash comparisons, refund rules and hosted qualification remain open. An unverified empty or incomplete response is an explicit source error.
+
+## Copa ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_COPA="1"` in both private environment files, restart the idle worker, and verify authenticated health includes `CM_CONNECTMILES`. Copa uses its dedicated `copa-desktop-collector` profile. The collector submits the actual public homepage form anonymously; a derived direct shopping link previously returned verification and is not used as the collector entry. Customers do not connect an airline account or install a helper.
+
+The actual native request must match origin, destination, departure date, adults, one-way miles mode and absence of promotional/member pricing. The collector navigates the visible calendar month controls, checks the form state, expands the full flight list and reconciles every available Saver and Standard fare card. It preserves party totals and cash taxes, counts nearby-airport alternatives separately, and retains technical stops and named partner operators. Prices are anonymous quotes that can change after member login. Connecting segment cabins, exact award seats, comparable cash fares and refundability remain unknown unless independently verified.
+
+```sh
+# Standalone only while no running worker owns the Copa profile:
+POINTSNAP_SAVE_PUBLIC_FIXTURE=1 node --import tsx browser-worker/probe-copa-live.ts LAX PTY 2026-12-01 2
+# Actual PointSnap API with the configured worker:
+POINTSNAP_TEST_PROGRAM=CM_CONNECTMILES node scripts/check-browser-search.mjs LAX PTY 2026-10-05 2
+```
+
+No returned list is labeled airline-wide exhaustive. Valid empty searches, broader inventory limits, hosted operation and sustained reliability remain open. Missing, inconsistent or unfinished responses fail explicitly. Debug output contains allowlisted public flight data; never persist booking references, authentication headers or personal browser state.
+
+Copa local verification: LAX–PTY October 5 / two adults returned 46 exact itineraries and 60 fares; JFK–PTY October 6 returned 8 / 17 after accounting for all 45 source rows and 60 fares. The JFK source also returned 37 nearby-airport alternatives. A December 1 query returned 30 / 35. The actual desktop/mobile UI verified fare switching, party totals and booking conditions. The 90.9-second JFK full-page check justified a bounded 180-second Copa worker timeout and 185-second bridge timeout. No source flights or fares are dropped to fit that deadline.

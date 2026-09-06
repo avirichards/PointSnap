@@ -40,7 +40,8 @@ type DesktopProgram =
   | "lifemiles"
   | "emirates"
   | "southwest"
-  | "sas";
+  | "sas"
+  | "copa";
 
 /** Owns only its dedicated Chrome process and profile, never a user's browser. */
 class DesktopChrome {

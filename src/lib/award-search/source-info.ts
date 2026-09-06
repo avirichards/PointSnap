@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  CM_CONNECTMILES: {
+    inventory: "flights",
+    label: "Copa ConnectMiles & offered partner awards",
+    detail:
+      "Anonymous Copa searches with every returned matching Saver and Standard fare. Nearby-airport alternatives are counted separately from your exact airport search. Taxes and points are quoted per person; member availability and final cost may change after login. Connecting segment cabins and exact award seat counts remain unconfirmed. Requires the browser service. Broader route coverage remains under verification.",
+  },
   SK_EUROBONUS: {
     inventory: "flights",
     label: "SAS EuroBonus award flights",

@@ -113,3 +113,13 @@ Copa returns nearby airports even for exact airport inputs. Record every source 
 Next: integrate the new allowlisted parser with the bounded actual public-form worker, reconcile every available fare card, and verify PointSnap API/frontend. The reusable diagnostic is in work/copa-current/probe-public-form.mjs; permanent evidence is [Copa access](evidence/copa-anonymous-2026-09-06.json). Extended hosting qualification stays queued behind native connections.
 
 Copa parser validation: all 256 tests across 32 files, TypeScript, focused ESLint and the optimized Node 22 production build passed. The existing progress page shows the new access evidence and pending integration without page errors or horizontal overflow. No additional source is enabled.
+
+## Copa integration lessons — September 6
+
+The local worker/API and real desktop/mobile frontend now pass the initial connection gate. A retained airline-site filter hid one of 45 source rows; the public Reset all control restored United-operated UA1021 without another native search. Clear filters before collecting, match by physical flight identity, distinguish layover duration from total journey duration, and recheck the final row count.
+
+Fare panels animate and move click targets. The verified collector uses ordinary pointer activation after scrolling settles, allows the transition to finish and repeats a click only within a bounded count when its panel did not open. It captures a complete matched fare snapshot atomically. Keyboard-only, direct-click and overly strict panel-closure alternatives failed and remain logged. The final JFK check matched all 45 rows / 60 fares and showed all 8 exact-airport itineraries / 17 fares in PointSnap, with correct party costs. The measured 90.9 seconds justified a 180-second Copa worker deadline and a 185-second bridge deadline; incomplete responses still fail.
+
+Continue remaining native connections before extended production qualification. Copa’s broader completeness, valid-empty responses and trip-prefilled booking handoff stay open.
+
+Final normal multi-source verification: LAX–PTY October 5, two adults, returned 112 grouped itineraries / 392 fares from six sources in 195.5 seconds. Copa contributed 40 exact itineraries / 52 fares; its latest native response contained 43 / 55 including three other-airport results, and all 55 fares were reconciled in 85.8 seconds. Program filtering and both Copa pages (25 + 15 rows) passed. These later source counts differ from the earlier sample; historical counts are not fixed expectations. All 261 tests, TypeScript, focused lint and the optimized Node 22 build passed. Broader access and inventory limits remain open.
