@@ -68,10 +68,12 @@ export function RouteGlobe({
   origin,
   destination,
   onDestination,
+  showLabels = true,
 }: {
   origin: string;
   destination: string;
   onDestination?: (iata: string) => void;
+  showLabels?: boolean;
 }) {
   const uid = useId().replaceAll(":", "");
   const from = airport(origin),
@@ -194,7 +196,7 @@ export function RouteGlobe({
       ];
     });
   }, [origin, destination]);
-  const labels = new Set([origin, destination, hover]);
+  const labels = new Set(showLabels ? [origin, destination, hover] : []);
   const labelPositions = new Map<string, { x: number; y: number }>();
   for (const code of labels) {
     const a = markers.find((marker) => marker.iata === code);
@@ -233,7 +235,7 @@ export function RouteGlobe({
         viewBox="0 0 600 520"
         className="globe-svg"
         role="group"
-        aria-label={`Interactive route globe, ${origin} to ${destination}. Drag or use arrow keys to rotate. Airport markers choose your destination.`}
+        aria-label={`Interactive route globe, ${origin} to ${destination}. Drag or use arrow keys to rotate.${onDestination ? " Airport markers choose your destination." : ""}`}
         tabIndex={0}
         onKeyDown={(e) => {
           const delta: { [key: string]: [number, number] } = {

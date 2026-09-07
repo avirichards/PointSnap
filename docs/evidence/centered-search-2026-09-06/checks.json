@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Desktop city selection, slash shortcut and date flexibility work above the globe",
+    "Route suggestions update both airports and selection state without starting a search",
+    "Exposed globe is draggable, rotates automatically, holds rotation while grabbed, keeps route trails moving and coasts on release without selecting text",
+    "Submit uses the existing query and transitions to the compact results header; all search requests intercepted",
+    "Phone layout has no horizontal overflow, the full calendar fits, and flexibility and party controls work",
+    "Choosing a phone route suggestion brings the updated form back into view and focuses departure"
+  ],
+  "browserErrors": [],
+  "liveCollectorsRequested": false,
+  "interceptedSearchRequests": 15
+}

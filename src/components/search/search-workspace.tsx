@@ -3,22 +3,14 @@ import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ChevronDown,
-  Radio,
-  Globe2,
-  CornerDownRight,
-  Check,
-  ScanLine,
-} from "lucide-react";
+import { ArrowRight, ChevronDown, Radio, Globe2, Check } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SearchForm } from "./search-form";
 import { ResultsSearchHeader } from "./results-search-header";
 import { AwardResults, programName } from "./award-results";
 import { useAwardSearch } from "@/hooks/use-award-search";
 import { parseQuery, queryParams } from "@/lib/award-search/query";
-import { physicalAirport, placeName } from "@/lib/search-places";
+import { physicalAirport } from "@/lib/search-places";
 import type { SearchQuery } from "@/lib/types";
 import { SavedSearches, NearbyDates } from "./search-tools";
 import { bookingUrl } from "@/lib/bookingHandoff";
@@ -145,6 +137,20 @@ function Workspace() {
   function choose(origin: string, dest: string) {
     setDraft((previous) => ({ ...previous, origin, dest }));
     setFormRevision((n) => n + 1);
+    requestAnimationFrame(() => {
+      document.getElementById("origin")?.focus({ preventScroll: true });
+      const form = document.querySelector(".search-hero-form");
+      const bounds = form?.getBoundingClientRect();
+      if (bounds && (bounds.top < 0 || bounds.bottom > window.innerHeight)) {
+        form?.scrollIntoView({
+          block: "center",
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+            .matches
+            ? "instant"
+            : "smooth",
+        });
+      }
+    });
   }
   const checked = stream.coverage.filter(
     (c) => c.state === "success" || c.state === "empty",
@@ -163,143 +169,111 @@ function Workspace() {
       >
         {!query && (
           <>
-            <div className="workspace-topline">
-              <p className="mono-label flex items-center gap-2">
-                <ScanLine className="size-3.5 text-primary" />
-                AWARD SEARCH{" "}
-                <span className="hidden sm:inline text-muted-foreground/50">
-                  /
-                </span>
-                <span className="hidden sm:inline">
-                  {query ? "FLIGHT COMPARISON" : "ROUTE EXPLORER"}
-                </span>
-              </p>
-              <Link
-                href="/airlines"
-                className="flex items-center gap-2 text-xs text-muted-foreground"
-              >
-                <span className="status-dot" />
-                {enabled.length || "—"} data sources enabled
-                <ArrowRight className="size-3" />
-              </Link>
-            </div>
-            <section className="search-panel" aria-label="Find award flights">
-              <SearchForm
-                key={`${raw}-${formRevision}`}
-                initialQuery={query ?? draft}
-                onDraftChange={setDraft}
-                onSubmit={search}
-                isStreaming={stream.loading}
-              />
-            </section>
-            <SavedSearches query={query} />
-          </>
-        )}
-        {parsed === "invalid" && (
-          <p
-            role="alert"
-            className="rounded-xl border border-destructive/30 p-4 my-4"
-          >
-            This search link has invalid dates or airports. Update the search
-            above.
-          </p>
-        )}
-        {!query && (
-          <>
             <section
-              className="discovery-grid"
-              aria-label="Explore award routes"
+              className="search-hero"
+              aria-label="Find your next award flight"
             >
-              <div className="discovery-intro">
-                <p className="mono-label text-primary flex items-center gap-2">
-                  <span className="size-1.5 bg-primary rounded-full" />
-                  THE NEXT GREAT REDEMPTION
-                </p>
-                <h1>
-                  Go further. <br />
-                  Spend <br />
-                  <span>fewer points.</span>
-                </h1>
-                <p className="discovery-description">
-                  The route. The cabin. The real cost.
-                  <br />
-                  Find an award worth your points.
-                </p>
-                <div className="route-readout">
-                  <span className="mono-label">ON YOUR RADAR</span>
-                  <div className="flex items-center gap-3 mt-3 text-2xl font-medium tracking-tight">
-                    <span>{draft.origin}</span>
-                    <ArrowRight className="size-4 text-primary" />
-                    <span>{draft.dest}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {placeName(draft.origin)} to {placeName(draft.dest)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-4 flex items-center gap-2">
-                    <CornerDownRight className="size-3.5" />
-                    Select an airport to change your route.
-                  </p>
-                </div>
+              <div className="search-hero-globe">
+                <RouteGlobe
+                  key={`${draft.origin}-${draft.dest}`}
+                  origin={physicalAirport(draft.origin)}
+                  destination={physicalAirport(draft.dest)}
+                  showLabels={false}
+                />
               </div>
-              <RouteGlobe
-                key={`${draft.origin}-${draft.dest}`}
-                origin={physicalAirport(draft.origin)}
-                destination={physicalAirport(draft.dest)}
-                onDestination={(dest) => choose(draft.origin, dest)}
-              />
-              <aside className="route-shortcuts">
-                <div className="flex items-center gap-2 mb-2">
-                  <Radio className="size-4 text-primary" />
-                  <h2 className="font-medium">Worth a look</h2>
-                </div>
-                <p className="text-xs text-muted-foreground mb-6">
-                  Three routes. Different possibilities.
+              <div className="search-hero-heading">
+                <p className="mono-label">THE NEXT GREAT REDEMPTION</p>
+                <h1>
+                  Go further. <span>Spend fewer points.</span>
+                </h1>
+                <p>
+                  Find your flight. Compare the points. Make more of your next
+                  trip.
                 </p>
+              </div>
+              <div className="search-hero-form">
+                <section
+                  className="search-panel"
+                  aria-label="Find award flights"
+                >
+                  <SearchForm
+                    key={`${raw}-${formRevision}`}
+                    initialQuery={draft}
+                    onDraftChange={setDraft}
+                    onSubmit={search}
+                    isStreaming={stream.loading}
+                  />
+                </section>
+                {parsed === "invalid" && (
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-destructive/30 bg-card p-4 mt-3 text-sm"
+                  >
+                    This search link has invalid dates or airports. Update the
+                    search above.
+                  </p>
+                )}
+                <div className="search-hero-reassurance">
+                  <span>
+                    <Check aria-hidden /> Points + cash, side by side. Every
+                    available cabin.
+                  </span>
+                  <Link href="/airlines">
+                    <span className="status-dot" />
+                    {enabled.length || "—"} data sources enabled{" "}
+                    <ArrowRight aria-hidden />
+                  </Link>
+                </div>
+                <SavedSearches query={null} />
+              </div>
+            </section>
+            <section
+              className="discovery-suggestions"
+              aria-labelledby="route-ideas-title"
+            >
+              <div className="suggestions-heading">
+                <h2 id="route-ideas-title">
+                  <Radio aria-hidden /> Worth a look
+                </h2>
+                <p>A few ideas for your next trip.</p>
+              </div>
+              <div className="suggestion-routes">
                 {shortcuts.map((r, i) => (
                   <button
                     key={r.dest}
                     onClick={() => choose(r.origin, r.dest)}
-                    className={`shortcut ${draft.origin === r.origin && draft.dest === r.dest ? "is-selected" : ""}`}
+                    aria-pressed={
+                      draft.origin === r.origin && draft.dest === r.dest
+                    }
+                    className="suggestion-route"
                   >
-                    <span className="mono-label shortcut-number">0{i + 1}</span>
-                    <div>
-                      <div className="flex items-center justify-between gap-4">
-                        <h3 className="text-lg font-medium">{r.city}</h3>
-                        <ArrowRight className="size-4" />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
+                    <span className="mono-label suggestion-number">
+                      0{i + 1}
+                    </span>
+                    <span className="suggestion-description">
+                      <strong>{r.city}</strong>
+                      <span>
                         {r.name}{" "}
-                        <span className="font-mono text-[10px] ml-1">
+                        <span className="font-mono">
                           {r.origin}–{r.dest}
                         </span>
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/80 mt-3">
-                        {r.program}
-                      </p>
-                    </div>
+                      </span>
+                      <small>{r.program}</small>
+                    </span>
+                    <ArrowRight aria-hidden />
                   </button>
                 ))}
-                <p className="text-[11px] leading-relaxed text-muted-foreground mt-5">
-                  Choose a route, then Find awards to check your date. Routes
-                  shown are ideas, not confirmed availability.
+              </div>
+              <div className="suggestions-footer">
+                <p>
+                  Route ideas, not confirmed availability. Select one, then
+                  search your dates.
                 </p>
-              </aside>
-            </section>
-            <footer className="discovery-footer">
-              <div className="flex items-center gap-3">
-                <span className="mono-label text-primary">Y / W / J / F</span>
-                <span className="text-xs text-muted-foreground">
-                  Every available cabin. Points + cash, side by side.
+                <span>
+                  <kbd className="shortcut-key">/</kbd> to start a search
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground flex items-center gap-2">
-                <Check className="size-3.5 text-primary" />
-                No personal airline login needed
-                <span className="hidden lg:inline border-l h-4 mx-3" />
-                <kbd className="hidden lg:inline shortcut-key">/</kbd>
-                <span className="hidden lg:inline">to focus search</span>
-              </div>
-            </footer>
+            </section>
           </>
         )}
         {query && (
