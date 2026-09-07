@@ -241,4 +241,17 @@ describe("multi-program orchestration", () => {
     });
     expect(events.some((e) => e.type === "results")).toBe(false);
   });
+  it("identifies Qatar's native source correctly in coverage", async () => {
+    mock.browserIds.mockReturnValue(["QR_PRIVILEGE"]);
+    mock.browser.mockResolvedValue([]);
+    const events = await run(["QR_PRIVILEGE"]);
+    expect(events.at(-1)).toMatchObject({
+      type: "coverage",
+      coverage: {
+        programId: "QR_PRIVILEGE",
+        state: "empty",
+        source: "Qatar Privilege Club · member airline browser",
+      },
+    });
+  });
 });

@@ -3,6 +3,7 @@ const base = process.env.POINTSNAP_TEST_URL || "http://127.0.0.1:3000";
 const program = process.env.POINTSNAP_TEST_PROGRAM || "AA_AADVANTAGE";
 if (
   ![
+    "QR_PRIVILEGE",
     "AF_FLYINGBLUE",
     "VS_FLYING_CLUB",
     "UA_MP",
@@ -36,6 +37,7 @@ try {
   const response = await fetch(`${base}/api/search?${query}`, {
     signal: AbortSignal.timeout(
       [
+        "QR_PRIVILEGE",
         "AF_FLYINGBLUE",
         "G3_GOL_SMILES",
         "UA_MP",

@@ -1,0 +1,935 @@
+{
+  "type": "qatar-native-cabin-searches",
+  "searches": [
+    {
+      "request": {
+        "channel": "WEB_DESKTOP",
+        "itineraries": [
+          {
+            "origin": "DOH",
+            "destination": "LHR",
+            "departureDate": "2026-10-05",
+            "isRequested": true
+          }
+        ],
+        "cabinClass": "ECONOMY",
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": 2
+          }
+        ],
+        "includeMixedCabin": "Yes",
+        "multiSegmentOffers": true
+      },
+      "response": {
+        "flightOffers": [
+          {
+            "id": "abae338dfc593a5117d6fd3b",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "d30cc6ca289f2366d9ae0f70",
+                "flightNumber": "QR105",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T01:10:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T06:25:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "1993cd08363ca42355e9eb10",
+                "availableSeats": 2,
+                "price": {
+                  "base": 43000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "d30cc6ca289f2366d9ae0f70",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "32b9ac9106c9d38eb9dd3bb1",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "93365bb48891022d499b996d",
+                "flightNumber": "QR011",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T01:10:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T06:25:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "f132f51991f82ea9d0f5729a",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "93365bb48891022d499b996d",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "8e8f4696128a708fe7cb7305",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "86f2ec2baed254ea8715d1ce",
+                "flightNumber": "QR119",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T02:45:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T08:00:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "3832caca424c0131f91b7a56",
+                "availableSeats": 9,
+                "price": {
+                  "base": 43000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "86f2ec2baed254ea8715d1ce",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "d62b8c64dc26198129613b67",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "467bdce69a9b3d13b73824e6",
+                "flightNumber": "QR003",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T08:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T13:15:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "8783cfa4b4a96cd58e631178",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "467bdce69a9b3d13b73824e6",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "a90e5242e57a4a9fd468d882",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "a03a30c125695bb69800d181",
+                "flightNumber": "QR007",
+                "vehicle": {
+                  "code": "77L",
+                  "name": "Boeing 777-200lr",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T08:55:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T14:10:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "a08dd12ad8cd1209cf062b74",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "a03a30c125695bb69800d181",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "b6a02215406e87a483a4086c",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 30000,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "cbf936e8f349b234c67f86cc",
+                "flightNumber": "QR001",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T12:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T18:00:00"
+                },
+                "duration": 30000,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "48586b8dc9ca3c012bb920eb",
+                "availableSeats": 9,
+                "price": {
+                  "base": 43000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "cbf936e8f349b234c67f86cc",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              },
+              {
+                "boundId": "7507bbdd5a9fb2f627682142",
+                "availableSeats": 3,
+                "price": {
+                  "base": 172000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "BUSINESS",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "cbf936e8f349b234c67f86cc",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "feffa9ee94bf762a1bf826d4",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "b6ba237a875f4c8dbd5f68cc",
+                "flightNumber": "QR015",
+                "vehicle": {
+                  "code": "77L",
+                  "name": "Boeing 777-200lr",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T15:10:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T20:25:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "6c6146674bd8135efd2cf1b7",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "b6ba237a875f4c8dbd5f68cc",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "channel": "WEB_DESKTOP",
+        "itineraries": [
+          {
+            "origin": "DOH",
+            "destination": "LHR",
+            "departureDate": "2026-10-05",
+            "isRequested": true
+          }
+        ],
+        "cabinClass": "PREMIUM",
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": 2
+          }
+        ],
+        "includeMixedCabin": "Yes",
+        "multiSegmentOffers": true
+      },
+      "response": {
+        "flightOffers": [
+          {
+            "id": "37c52b017b960c6dd29068ab",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "0f3007d6555807065d4f3d22",
+                "flightNumber": "QR011",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T01:10:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T06:25:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "36e69ab3643e95ab9bdaef25",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "0f3007d6555807065d4f3d22",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "20b65b5df96e41ea072c021d",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "f9076dc0aa1848f3cc67dc4d",
+                "flightNumber": "QR105",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T01:10:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T06:25:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "223da1b5e7da2fefedfdfeff",
+                "availableSeats": 2,
+                "price": {
+                  "base": 43000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "f9076dc0aa1848f3cc67dc4d",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "99e7fbb85c0ce08f046f8c7a",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "f2a9923cfc98248613186974",
+                "flightNumber": "QR119",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T02:45:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T08:00:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "2f9ebbb533525ec932601d8f",
+                "availableSeats": 9,
+                "price": {
+                  "base": 43000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "f2a9923cfc98248613186974",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "920733d2ed9c4e7d82fb201e",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "4b9c058bce2070ce44936239",
+                "flightNumber": "QR003",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T08:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T13:15:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "850bae377ea6423d8a3fd2d8",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "4b9c058bce2070ce44936239",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "35fc12f4d328cc05bd4a8689",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "ce4ef005610b59c675a4fab3",
+                "flightNumber": "QR007",
+                "vehicle": {
+                  "code": "77L",
+                  "name": "Boeing 777-200lr",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T08:55:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T14:10:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "41a39d7c39df83562efcd82a",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "ce4ef005610b59c675a4fab3",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "5da694b112966e463f06dd9c",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 30000,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "713ef1ffb61e969f31bccf09",
+                "flightNumber": "QR001",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T12:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T18:00:00"
+                },
+                "duration": 30000,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "5048fa96947b8948600be374",
+                "availableSeats": 9,
+                "price": {
+                  "base": 43000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "713ef1ffb61e969f31bccf09",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              },
+              {
+                "boundId": "248f4b23540c26ffc87ea19d",
+                "availableSeats": 3,
+                "price": {
+                  "base": 172000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "BUSINESS",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "713ef1ffb61e969f31bccf09",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "d169a63e9abf592baa28f05a",
+            "origin": {
+              "iataCode": "DOH"
+            },
+            "destination": {
+              "iataCode": "LHR"
+            },
+            "duration": 29700,
+            "numberOfStops": 0,
+            "segments": [
+              {
+                "flightId": "2165e4854ea55b83ab477719",
+                "flightNumber": "QR015",
+                "vehicle": {
+                  "code": "77L",
+                  "name": "Boeing 777-200lr",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T15:10:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "LHR"
+                  },
+                  "dateTime": "2026-10-05T20:25:00"
+                },
+                "duration": 29700,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "ed8f78001688948ed2d8373b",
+                "availableSeats": 9,
+                "price": {
+                  "base": 86000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "2165e4854ea55b83ab477719",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          }
+        ]
+      }
+    }
+  ]
+}

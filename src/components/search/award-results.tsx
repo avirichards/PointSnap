@@ -938,7 +938,9 @@ function Details({
     Math.max(0, options.indexOf(row.prices[cabin]!)),
   );
   const price = options[fareIndex] ?? row.prices[cabin]!;
-  const continueUrl = ["ET_SHEBAMILES", "EY_GUEST"].includes(row.programId)
+  const continueUrl = ["ET_SHEBAMILES", "EY_GUEST", "QR_PRIVILEGE"].includes(
+    row.programId,
+  )
     ? bookingUrl(row.programId, {
         origin: row.origin,
         dest: row.destination,

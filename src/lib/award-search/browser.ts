@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { parseUnited, unitedPayloadSchema } from "./united";
 import { parseFlyingBlueNative } from "./flying-blue-native";
+import { parseQatarNative } from "./qatar-native";
 import { parseVirginNative } from "./virgin-native";
 import { parseAmerican } from "./american";
 import { parseEtihad } from "./etihad";
@@ -45,6 +46,7 @@ function configuration() {
 export function browserPrograms(): string[] {
   if (!configuration()) return [];
   return [
+    ...(process.env.POINTSNAP_BROWSER_QATAR === "1" ? ["QR_PRIVILEGE"] : []),
     ...(process.env.POINTSNAP_BROWSER_FLYING_BLUE === "1"
       ? ["AF_FLYINGBLUE"]
       : []),
@@ -66,6 +68,7 @@ export function browserPrograms(): string[] {
 }
 const envelope = z.object({
   programId: z.enum([
+    "QR_PRIVILEGE",
     "AF_FLYINGBLUE",
     "VS_FLYING_CLUB",
     "UA_MP",
@@ -98,27 +101,29 @@ export async function browserSearch(
   onNotice?: (notice: string) => void,
 ) {
   const name =
-    programId === "AF_FLYINGBLUE"
-      ? "Flying Blue"
-      : programId === "VS_FLYING_CLUB"
-        ? "Virgin Atlantic"
-        : programId === "UA_MP"
-          ? "United"
-          : programId === "QF_FF"
-            ? "Qantas"
-            : programId === "CM_CONNECTMILES"
-              ? "Copa"
-              : programId === "SK_EUROBONUS"
-                ? "SAS"
-                : programId === "WN_RAPID_REWARDS"
-                  ? "Southwest"
-                  : programId === "EY_GUEST"
-                    ? "Etihad"
-                    : programId === "G3_GOL_SMILES"
-                      ? "Smiles"
-                      : programId === "DL_SKYMILES"
-                        ? "Delta"
-                        : "American";
+    programId === "QR_PRIVILEGE"
+      ? "Qatar"
+      : programId === "AF_FLYINGBLUE"
+        ? "Flying Blue"
+        : programId === "VS_FLYING_CLUB"
+          ? "Virgin Atlantic"
+          : programId === "UA_MP"
+            ? "United"
+            : programId === "QF_FF"
+              ? "Qantas"
+              : programId === "CM_CONNECTMILES"
+                ? "Copa"
+                : programId === "SK_EUROBONUS"
+                  ? "SAS"
+                  : programId === "WN_RAPID_REWARDS"
+                    ? "Southwest"
+                    : programId === "EY_GUEST"
+                      ? "Etihad"
+                      : programId === "G3_GOL_SMILES"
+                        ? "Smiles"
+                        : programId === "DL_SKYMILES"
+                          ? "Delta"
+                          : "American";
   const config = configuration();
   if (!config || !browserPrograms().includes(programId))
     throw new ProviderError(`${name}'s browser connection is not enabled.`);
@@ -128,7 +133,7 @@ export async function browserSearch(
   try {
     response = await fetch(
       new URL(
-        `/v1/search/${programId === "AF_FLYINGBLUE" ? "flying-blue" : programId === "VS_FLYING_CLUB" ? "virgin" : programId === "UA_MP" ? "united" : programId === "QF_FF" ? "qantas" : programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
+        `/v1/search/${programId === "QR_PRIVILEGE" ? "qatar" : programId === "AF_FLYINGBLUE" ? "flying-blue" : programId === "VS_FLYING_CLUB" ? "virgin" : programId === "UA_MP" ? "united" : programId === "QF_FF" ? "qantas" : programId === "CM_CONNECTMILES" ? "copa" : programId === "SK_EUROBONUS" ? "sas" : programId === "WN_RAPID_REWARDS" ? "southwest" : programId === "EY_GUEST" ? "etihad" : programId === "G3_GOL_SMILES" ? "smiles" : programId === "DL_SKYMILES" ? "delta" : "american"}`,
         config.url,
       ),
       {
@@ -147,7 +152,8 @@ export async function browserSearch(
         signal: AbortSignal.any([
           signal,
           AbortSignal.timeout(
-            programId === "AF_FLYINGBLUE" ||
+            programId === "QR_PRIVILEGE" ||
+              programId === "AF_FLYINGBLUE" ||
               programId === "UA_MP" ||
               programId === "G3_GOL_SMILES" ||
               programId === "CM_CONNECTMILES" ||
@@ -196,27 +202,29 @@ export async function browserSearch(
       `${name}'s browser response is not a fresh observation.`,
     );
   const rows = (
-    programId === "AF_FLYINGBLUE"
-      ? parseFlyingBlueNative
-      : programId === "VS_FLYING_CLUB"
-        ? parseVirginNative
-        : programId === "UA_MP"
-          ? parseUnited
-          : programId === "QF_FF"
-            ? parseQantasNative
-            : programId === "CM_CONNECTMILES"
-              ? parseCopa
-              : programId === "SK_EUROBONUS"
-                ? parseSas
-                : programId === "WN_RAPID_REWARDS"
-                  ? parseSouthwest
-                  : programId === "EY_GUEST"
-                    ? parseEtihad
-                    : programId === "G3_GOL_SMILES"
-                      ? parseSmiles
-                      : programId === "DL_SKYMILES"
-                        ? parseDelta
-                        : parseAmerican
+    programId === "QR_PRIVILEGE"
+      ? parseQatarNative
+      : programId === "AF_FLYINGBLUE"
+        ? parseFlyingBlueNative
+        : programId === "VS_FLYING_CLUB"
+          ? parseVirginNative
+          : programId === "UA_MP"
+            ? parseUnited
+            : programId === "QF_FF"
+              ? parseQantasNative
+              : programId === "CM_CONNECTMILES"
+                ? parseCopa
+                : programId === "SK_EUROBONUS"
+                  ? parseSas
+                  : programId === "WN_RAPID_REWARDS"
+                    ? parseSouthwest
+                    : programId === "EY_GUEST"
+                      ? parseEtihad
+                      : programId === "G3_GOL_SMILES"
+                        ? parseSmiles
+                        : programId === "DL_SKYMILES"
+                          ? parseDelta
+                          : parseAmerican
   )(data.payload, q, data.observedAt);
   if (
     rows.length !== data.itineraryCount ||
@@ -296,6 +304,10 @@ export async function browserSearch(
   if (programId === "AF_FLYINGBLUE")
     onNotice?.(
       "Flying Blue member quotes include every displayed itinerary and expanded cabin fare. Exact fees are shown per person. Connecting segment cabins and broader route completeness remain under verification.",
+    );
+  if (programId === "QR_PRIVILEGE")
+    onNotice?.(
+      "Qatar’s member quotes combine its Economy and Business/First searches. Avios are shown per person. Taxes, fees and surcharges were not supplied; confirm them with Qatar before booking. Connecting segment cabins remain unconfirmed.",
     );
   if (programId === "VS_FLYING_CLUB")
     onNotice?.(

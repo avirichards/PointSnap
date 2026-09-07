@@ -7,6 +7,7 @@ import qantasFixture from "./fixtures/qantas-native-domestic-two.json";
 import unitedFixture from "../fixtures/united-lax-aus.json";
 import flyingBlueFixture from "../fixtures/flying-blue-native-jfk-ams-two.json";
 import virginFixture from "../fixtures/virgin-native-jfk-lhr-two.json";
+import qatarFixture from "../fixtures/qatar-native-doh-lhr-two.json";
 import { sourceInfo } from "../source-info";
 import { parseQantasNative } from "../qantas-native";
 import copaFixture from "./fixtures/copa-lax-two.json";
@@ -45,6 +46,7 @@ beforeEach(() => {
   vi.stubEnv("POINTSNAP_BROWSER_UNITED", "0");
   vi.stubEnv("POINTSNAP_BROWSER_VIRGIN", "0");
   vi.stubEnv("POINTSNAP_BROWSER_FLYING_BLUE", "0");
+  vi.stubEnv("POINTSNAP_BROWSER_QATAR", "0");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -52,6 +54,52 @@ afterEach(() => {
 });
 
 describe("browser search bridge", () => {
+  it("dispatches Qatar with whole-party conversion and explicit unknown fees", async () => {
+    vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
+    vi.stubEnv("POINTSNAP_BROWSER_QATAR", "1");
+    expect(browserPrograms()).toEqual(["QR_PRIVILEGE"]);
+    const query = {
+      origin: "DOH",
+      dest: "LHR",
+      departDate: "2026-10-05",
+      pax: 2,
+      minCabin: "Y" as const,
+    };
+    const body = {
+      ...response(),
+      programId: "QR_PRIVILEGE",
+      query,
+      payload: qatarFixture,
+      itineraryCount: 7,
+      fareCount: 8,
+    };
+    const fetch = vi.fn().mockResolvedValue(Response.json(body));
+    vi.stubGlobal("fetch", fetch);
+    const notice = vi.fn();
+    const rows = await browserSearch(
+      query,
+      new AbortController().signal,
+      "QR_PRIVILEGE",
+      notice,
+    );
+    expect(String(fetch.mock.calls[0][0])).toBe(
+      "http://127.0.0.1:3002/v1/search/qatar",
+    );
+    expect(rows).toHaveLength(7);
+    expect(
+      rows.every((r) =>
+        r.fares!.every((f) => f.cash === null && f.currency === null),
+      ),
+    ).toBe(true);
+    expect(notice).toHaveBeenCalledWith(
+      expect.stringContaining("not supplied"),
+    );
+    expect(sourceInfo("QR_PRIVILEGE", true)?.inventory).toBe("flights");
+    fetch.mockResolvedValue(Response.json({ ...body, fareCount: 7 }));
+    await expect(
+      browserSearch(query, new AbortController().signal, "QR_PRIVILEGE"),
+    ).rejects.toThrow("incomplete flight or fare counts");
+  });
   it("dispatches Flying Blue and rejects an incomplete cabin response", async () => {
     vi.stubEnv("POINTSNAP_BROWSER_AMERICAN", "0");
     vi.stubEnv("POINTSNAP_BROWSER_FLYING_BLUE", "1");

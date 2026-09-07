@@ -1,0 +1,2727 @@
+{
+  "type": "qatar-native-cabin-searches",
+  "searches": [
+    {
+      "request": {
+        "channel": "WEB_DESKTOP",
+        "itineraries": [
+          {
+            "origin": "JFK",
+            "destination": "BKK",
+            "departureDate": "2026-10-05",
+            "isRequested": true
+          }
+        ],
+        "cabinClass": "ECONOMY",
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": 1
+          }
+        ],
+        "includeMixedCabin": "Yes",
+        "multiSegmentOffers": true
+      },
+      "response": {
+        "flightOffers": [
+          {
+            "id": "4295df2f694efb4158613eca",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 76800,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "aa8842d320f64afcfa7b8753",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "1495bcd8abbd8aa3233d3eab",
+                "flightNumber": "QR838",
+                "vehicle": {
+                  "code": "789",
+                  "name": "Boeing 787-9",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T19:25:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T06:20:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "cc09c8f408018d965bcabb6f",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "aa8842d320f64afcfa7b8753",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "1495bcd8abbd8aa3233d3eab",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "438975d9c879cf52f1955b91",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 79500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "4408526ccb85a3d6cec10743",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "6e889b92e902c4ee1b6c3b3a",
+                "flightNumber": "QR826",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T09:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T20:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "6301c2c34685d25d6e286622",
+                "availableSeats": 2,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "4408526ccb85a3d6cec10743",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "6e889b92e902c4ee1b6c3b3a",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "668c51582a20dfbf0a687326",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 81300,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "d2a8c687684f047e2ee77d33",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "fd9e3a6b24d18a91d63f8ab9",
+                "flightNumber": "QR830",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T20:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T07:35:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "e453016be5c6fcae070d758e",
+                "availableSeats": 1,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "d2a8c687684f047e2ee77d33",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "fd9e3a6b24d18a91d63f8ab9",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "bbcaf228a03da76068342500",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 88500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "30645df5b0c6be4457bd05d9",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "544c1f607d560173e1d14c11",
+                "flightNumber": "QR834",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T02:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T12:55:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "c6e4c4ff4f274cdd5fe3af73",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "30645df5b0c6be4457bd05d9",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "544c1f607d560173e1d14c11",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "b1a46e4bf74ffef709935a9a",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 93900,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "c9753f9de4a6aa79a5af1db1",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "7f19fa3bbfc0767a46620c17",
+                "flightNumber": "QR836",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T03:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T14:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "f5c2120d0eb77b9c7c4431ad",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "c9753f9de4a6aa79a5af1db1",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "7f19fa3bbfc0767a46620c17",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "cd6c40669ed19b9143e52bd7",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 100500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "5d83f054e82cc60fdd7da886",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "249fe52a03713395214bbf05",
+                "flightNumber": "QR834",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T02:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T12:55:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "dcb30ef1c9a220b81b245799",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "5d83f054e82cc60fdd7da886",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "249fe52a03713395214bbf05",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "490ad98cc7ee1fdd0f100460",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 105900,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "8e3e55ca5dbb17f4f7ffd96b",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "a73798e4c5ebc025e835d1a1",
+                "flightNumber": "QR836",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T03:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T14:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "d3ab126340c8467d76f32642",
+                "availableSeats": 2,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "8e3e55ca5dbb17f4f7ffd96b",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "a73798e4c5ebc025e835d1a1",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "eb9d3eefcaa19b46724cd121",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 115200,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "5a59eab699eb89d9752c149e",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "17f8c3b39c729fe0007c9e9d",
+                "flightNumber": "QR838",
+                "vehicle": {
+                  "code": "789",
+                  "name": "Boeing 787-9",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T19:25:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T06:20:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "0885b2a30d339d401d3a56e8",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "5a59eab699eb89d9752c149e",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "17f8c3b39c729fe0007c9e9d",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "b61d873c3d484dba5efe3ad9",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 115500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "31057624fedbd5b2a6b4770f",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "40305747ec534bd8d9f0830c",
+                "flightNumber": "QR826",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T09:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T20:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "f9cee67ccdf3e307cebfd42a",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "31057624fedbd5b2a6b4770f",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "40305747ec534bd8d9f0830c",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "17e50ced581cb284824392c9",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 119700,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "992b1f38b6f8e12f6f46fe2f",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "d43488472fb9274a61369304",
+                "flightNumber": "QR830",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T20:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T07:35:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "ecc51c944d01042aed243c9c",
+                "availableSeats": 1,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "992b1f38b6f8e12f6f46fe2f",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "d43488472fb9274a61369304",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "998fb0e14f7c0d03f29644cf",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 127500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "73cb7ec68b9040042c148625",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "6d65b86b92caaf928d66a955",
+                "flightNumber": "QR826",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T09:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T20:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "c354bf20b9afd3956b69eec4",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "73cb7ec68b9040042c148625",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "6d65b86b92caaf928d66a955",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "c76b36e79d53298828cec899",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 138900,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "892f137e6d120e60dcee2e0e",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "99528c2aca6e8ec38cc15648",
+                "flightNumber": "QR834",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T02:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T12:55:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "513980662e71188751b6658c",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "892f137e6d120e60dcee2e0e",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "99528c2aca6e8ec38cc15648",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "1d357e3cb9b0502f2bf75b77",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 144300,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "68225a43a0c6eba0c00ac7e7",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "ff44c4b2e0676d7fb782d74c",
+                "flightNumber": "QR836",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T03:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T14:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "8302097a4ecb042dbe243c8a",
+                "availableSeats": 3,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "68225a43a0c6eba0c00ac7e7",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "ff44c4b2e0676d7fb782d74c",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "458ec2a37abfdbdcfc82e6e7",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 151200,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "7c6a9b9a8ceaca9a5c1355c3",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "d196635a2e6feb9067069a88",
+                "flightNumber": "QR838",
+                "vehicle": {
+                  "code": "789",
+                  "name": "Boeing 787-9",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T19:25:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T06:20:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "4132d63774709bc23b6bb9e5",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "7c6a9b9a8ceaca9a5c1355c3",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "d196635a2e6feb9067069a88",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "6f79b6819e0d005a12211953",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 155700,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "0170758569e01f642c87ddda",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "b37b6f44b2f22d12f8509234",
+                "flightNumber": "QR830",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T20:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T07:35:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "5efd80cc0012c0222e126fb1",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "0170758569e01f642c87ddda",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "b37b6f44b2f22d12f8509234",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "channel": "WEB_DESKTOP",
+        "itineraries": [
+          {
+            "origin": "JFK",
+            "destination": "BKK",
+            "departureDate": "2026-10-05",
+            "isRequested": true
+          }
+        ],
+        "cabinClass": "PREMIUM",
+        "passengers": [
+          {
+            "type": "ADT",
+            "count": 1
+          }
+        ],
+        "includeMixedCabin": "Yes",
+        "multiSegmentOffers": true
+      },
+      "response": {
+        "flightOffers": [
+          {
+            "id": "33b32b510f4477eb1d9f6773",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 76800,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "b59df72824d523e5f10370ad",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "fe604b002c3e8b2fca6b2722",
+                "flightNumber": "QR838",
+                "vehicle": {
+                  "code": "789",
+                  "name": "Boeing 787-9",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T19:25:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T06:20:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "5e3a4e168bf7852f02e967ff",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "b59df72824d523e5f10370ad",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "fe604b002c3e8b2fca6b2722",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "282c096e50b073cdb0ee7791",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 79500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "005634a2fec1721ad0b15721",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "911c39b4a57ef3084a14799d",
+                "flightNumber": "QR826",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T09:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T20:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "2f8ce26eb0f7bd43ddba0416",
+                "availableSeats": 2,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "005634a2fec1721ad0b15721",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "911c39b4a57ef3084a14799d",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "f19e3ef5a2c52ccd00d48555",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 81300,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "0b736b9ef3f6b595e043aae7",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "8ba7cec724be86dd898d5fee",
+                "flightNumber": "QR830",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T20:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T07:35:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "9307b89d75caba0e0a1ffa9d",
+                "availableSeats": 1,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "0b736b9ef3f6b595e043aae7",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "8ba7cec724be86dd898d5fee",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "5a8a904f60c327c835b1c43d",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 88500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "2712e48e65f5dadb578c218c",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "7c519ea00db4c0447a92c0a8",
+                "flightNumber": "QR834",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T02:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T12:55:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "17f88defbd7c7ed8f14dd8ea",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "2712e48e65f5dadb578c218c",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "7c519ea00db4c0447a92c0a8",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "e5d114dbe1c317e2d8924f53",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 93900,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "bbd57994b09501142d86d0b5",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "9d6bdd21003105958f78843a",
+                "flightNumber": "QR836",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T03:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T14:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "85d17cdcd8d68732de458a0a",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "bbd57994b09501142d86d0b5",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "9d6bdd21003105958f78843a",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "dbde81317df466c2b522d1bb",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 100500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "9a6a1248a6e99c2a235bdd18",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "7857041cf514d96553c0c0e6",
+                "flightNumber": "QR834",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T02:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T12:55:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "5d342845203c6ad5ffb53c72",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "9a6a1248a6e99c2a235bdd18",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "7857041cf514d96553c0c0e6",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "828f62f44ffb722a6f63b81d",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 105900,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "06efe662a58f5ce9f7dca610",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "7eb5be3a04ebbbf9f041dacf",
+                "flightNumber": "QR836",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T03:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T14:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "3ce2ce555a462a797691eed1",
+                "availableSeats": 2,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "06efe662a58f5ce9f7dca610",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "7eb5be3a04ebbbf9f041dacf",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "52f714c3490fc5d382dcdc7c",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 115200,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "eb3e3e128219795d5f9fb475",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "b0c7e6ecc1c6a64ebdeabb65",
+                "flightNumber": "QR838",
+                "vehicle": {
+                  "code": "789",
+                  "name": "Boeing 787-9",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T19:25:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T06:20:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "436f44105cfcf9c98114c1bb",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "eb3e3e128219795d5f9fb475",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "b0c7e6ecc1c6a64ebdeabb65",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "aed2f0b1d4bec1f265ce1e7d",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 115500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "db608bf2d382341ceff973fa",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "07fd902b590a8c870cb177a2",
+                "flightNumber": "QR826",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T09:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-06T20:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "df308110a0a0c4245825abdf",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "db608bf2d382341ceff973fa",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "07fd902b590a8c870cb177a2",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "d256a9a7a989638d6fc1fd02",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 119700,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "67cb8e8e936de88707bef0e6",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "52f992d007777f98b7c5b09b",
+                "flightNumber": "QR830",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T20:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T07:35:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "042f43fb2d43e10724920922",
+                "availableSeats": 1,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "67cb8e8e936de88707bef0e6",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "52f992d007777f98b7c5b09b",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "df0b7eb67e6cc00cebd7fb74",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 127500,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "6fa7c1b096f1f460f1ac91e2",
+                "flightNumber": "QR702",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T22:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T17:20:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "77e2a192ef905740ea24824c",
+                "flightNumber": "QR826",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T09:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T20:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "e0a595f6856546e1ed12db1b",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "6fa7c1b096f1f460f1ac91e2",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "77e2a192ef905740ea24824c",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "3716c6d3ddf3dbf76257f49a",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 138900,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "9e8712cfe1ceb67cc3aace8e",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "192df53f84c0178ef88d5dea",
+                "flightNumber": "QR834",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T02:00:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T12:55:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "c77241f52d11ad981bdca25c",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "9e8712cfe1ceb67cc3aace8e",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "192df53f84c0178ef88d5dea",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "81a4833ca7230fd9623c94db",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 144300,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "630edd1dad086f7774321461",
+                "flightNumber": "QR704",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T11:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T06:40:00"
+                },
+                "duration": 44400,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "b5c466da9aff7a504abbcd33",
+                "flightNumber": "QR836",
+                "vehicle": {
+                  "code": "388",
+                  "name": "Airbus A380-800",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-07T03:30:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T14:25:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "5897101e6b05605013be7ca0",
+                "availableSeats": 3,
+                "price": {
+                  "base": 47500,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "630edd1dad086f7774321461",
+                    "isFlexiFare": false
+                  },
+                  {
+                    "flightId": "b5c466da9aff7a504abbcd33",
+                    "isFlexiFare": false
+                  }
+                ],
+                "isFlexiFare": false,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "f1fb28549c28871d6e20f373",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 151200,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "b4eebc1fff84cd3001db0d1a",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "7ccd94209bf1244a76c1c639",
+                "flightNumber": "QR838",
+                "vehicle": {
+                  "code": "789",
+                  "name": "Boeing 787-9",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T19:25:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T06:20:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": false
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "221cc8b4d036e8d79c6e9be5",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "b4eebc1fff84cd3001db0d1a",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "7ccd94209bf1244a76c1c639",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          },
+          {
+            "id": "7ba25cd39e5c65d535d59a7f",
+            "origin": {
+              "iataCode": "JFK"
+            },
+            "destination": {
+              "iataCode": "BKK"
+            },
+            "duration": 155700,
+            "numberOfStops": 1,
+            "segments": [
+              {
+                "flightId": "a6e855575daea567e802c0fe",
+                "flightNumber": "QR706",
+                "vehicle": {
+                  "code": "359",
+                  "name": "Airbus A350-900",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "JFK"
+                  },
+                  "dateTime": "2026-10-05T01:20:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-05T21:05:00"
+                },
+                "duration": 45900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              },
+              {
+                "flightId": "9258cceb2b8cf56c32ce5bf4",
+                "flightNumber": "QR830",
+                "vehicle": {
+                  "code": "77W",
+                  "name": "Boeing 777-300er",
+                  "type": "AIRCRAFT"
+                },
+                "departure": {
+                  "origin": {
+                    "iataCode": "DOH"
+                  },
+                  "dateTime": "2026-10-06T20:40:00"
+                },
+                "arrival": {
+                  "destination": {
+                    "iataCode": "BKK"
+                  },
+                  "dateTime": "2026-10-07T07:35:00"
+                },
+                "duration": 24900,
+                "stops": [],
+                "operatingAirlineName": "Qatar Airways",
+                "qSuiteEquipped": true
+              }
+            ],
+            "fareOffers": [
+              {
+                "boundId": "77f92c31266159424f4ceb74",
+                "availableSeats": 9,
+                "price": {
+                  "base": 95000,
+                  "currencyCode": "AVIOS"
+                },
+                "cabinType": "ECONOMY",
+                "cabinOfferType": "SINGLE",
+                "fareInformation": [
+                  {
+                    "flightId": "a6e855575daea567e802c0fe",
+                    "isFlexiFare": true
+                  },
+                  {
+                    "flightId": "9258cceb2b8cf56c32ce5bf4",
+                    "isFlexiFare": true
+                  }
+                ],
+                "isFlexiFare": true,
+                "privilegePickIndicator": false,
+                "offPeakIndicator": true
+              }
+            ],
+            "airportChanges": []
+          }
+        ]
+      }
+    }
+  ]
+}

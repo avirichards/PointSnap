@@ -17,6 +17,7 @@ import type { CopaBrowserResult } from "./copa";
 import type { UnitedBrowserResult } from "./united";
 import type { FlyingBlueBrowserResult } from "./flying-blue";
 import type { VirginBrowserResult } from "./virgin";
+import type { QatarBrowserResult } from "./qatar";
 import type { QantasBrowserResult } from "./qantas";
 import type { SouthwestBrowserResult } from "./southwest";
 
@@ -30,6 +31,7 @@ type SearchRunner = {
     | SmilesBrowserResult
     | EtihadBrowserResult
     | SasBrowserResult
+    | QatarBrowserResult
     | QantasBrowserResult
     | FlyingBlueBrowserResult
     | VirginBrowserResult
@@ -54,6 +56,8 @@ type WorkerOptions = {
   unitedRunner?: SearchRunner;
   copaRunner?: SearchRunner;
   qantasRunner?: SearchRunner;
+  qatarRunner?: SearchRunner;
+  operatorPausedSources?: string[];
 };
 
 async function readQuery(req: IncomingMessage) {
@@ -117,6 +121,32 @@ export function createBrowserWorker(
     throw new Error(
       "Browser concurrency must be 1–4 and timeout must be positive.",
     );
+  const sourceRunners: Record<string, SearchRunner | undefined> = {
+    american: runner,
+    delta: options.deltaRunner,
+    smiles: options.smilesRunner,
+    etihad: options.etihadRunner,
+    southwest: options.southwestRunner,
+    sas: options.sasRunner,
+    "flying-blue": options.flyingBlueRunner,
+    virgin: options.virginRunner,
+    united: options.unitedRunner,
+    copa: options.copaRunner,
+    qantas: options.qantasRunner,
+    qatar: options.qatarRunner,
+  };
+  const getRunner = (source: string) =>
+    Object.hasOwn(sourceRunners, source) ? sourceRunners[source] : undefined;
+  const paused = new Set(options.operatorPausedSources ?? []);
+  for (const source of paused)
+    if (!getRunner(source))
+      throw new Error("Cannot pause an unconfigured browser source.");
+  const activeBySource = new Map<string, number>();
+  const pauseState = (source: string) => ({
+    source,
+    paused: paused.has(source),
+    active: activeBySource.get(source) ?? 0,
+  });
   let active = 0;
   const queue: (() => void)[] = [],
     requests = new Set<AbortController>();
@@ -150,6 +180,7 @@ export function createBrowserWorker(
         status: "ready",
         active,
         queued: queue.length,
+        operatorPauses: [...paused].map(pauseState),
         program: "AA_AADVANTAGE",
         programs: [
           "AA_AADVANTAGE",
@@ -157,6 +188,7 @@ export function createBrowserWorker(
           ...(options.smilesRunner ? ["G3_GOL_SMILES"] : []),
           ...(options.etihadRunner ? ["EY_GUEST"] : []),
           ...(options.sasRunner ? ["SK_EUROBONUS"] : []),
+          ...(options.qatarRunner ? ["QR_PRIVILEGE"] : []),
           ...(options.qantasRunner ? ["QF_FF"] : []),
           ...(options.flyingBlueRunner ? ["AF_FLYINGBLUE"] : []),
           ...(options.virginRunner ? ["VS_FLYING_CLUB"] : []),
@@ -167,34 +199,31 @@ export function createBrowserWorker(
       });
       return;
     }
-    const selectedRunner =
-      req.url === "/v1/search/flying-blue"
-        ? options.flyingBlueRunner
-        : req.url === "/v1/search/virgin"
-          ? options.virginRunner
-          : req.url === "/v1/search/united"
-            ? options.unitedRunner
-            : req.url === "/v1/search/qantas"
-              ? options.qantasRunner
-              : req.url === "/v1/search/copa"
-                ? options.copaRunner
-                : req.url === "/v1/search/sas"
-                  ? options.sasRunner
-                  : req.url === "/v1/search/southwest"
-                    ? options.southwestRunner
-                    : req.url === "/v1/search/etihad"
-                      ? options.etihadRunner
-                      : req.url === "/v1/search/american"
-                        ? runner
-                        : req.url === "/v1/search/delta"
-                          ? options.deltaRunner
-                          : req.url === "/v1/search/smiles"
-                            ? options.smilesRunner
-                            : undefined;
+    // Private worker control: pause only this source, let its active search drain,
+    // then renew its ordinary operator session without stopping other airlines.
+    const operator = req.url?.match(
+      /^\/v1\/operator\/([a-z-]+)\/(pause|resume)$/,
+    );
+    if (req.method === "POST" && operator && getRunner(operator[1])) {
+      if (operator[2] === "pause") paused.add(operator[1]);
+      else paused.delete(operator[1]);
+      reply(res, 200, pauseState(operator[1]));
+      return;
+    }
+    const source = req.url?.match(/^\/v1\/search\/([a-z-]+)$/)?.[1] ?? "";
+    const selectedRunner = getRunner(source);
     if (req.method !== "POST" || !selectedRunner) {
       reply(res, 404, { message: "Unknown browser search." });
       return;
     }
+    const checkOperatorPause = () => {
+      if (paused.has(source))
+        throw new BrowserSearchError(
+          "This airline connection is temporarily paused for operator sign-in recovery. Other sources can still return results.",
+          "operator_recovery",
+          503,
+        );
+    };
     const id = randomUUID(),
       started = Date.now(),
       cancel = new AbortController();
@@ -205,6 +234,7 @@ export function createBrowserWorker(
           req.url === "/v1/search/united" ||
           req.url === "/v1/search/smiles" ||
           req.url === "/v1/search/copa" ||
+          req.url === "/v1/search/qatar" ||
           req.url === "/v1/search/qantas"
           ? (options.timeoutMs ?? 180000)
           : timeoutMs,
@@ -215,9 +245,11 @@ export function createBrowserWorker(
       if (!res.writableEnded) cancel.abort();
     });
     let acquired = false,
+      executing = false,
       q: SearchQuery | undefined;
     try {
       q = await readQuery(req);
+      checkOperatorPause();
       if (active >= concurrency) {
         if (queue.length >= 8)
           throw new BrowserSearchError(
@@ -254,6 +286,9 @@ export function createBrowserWorker(
         acquired = true;
       }
       signal.throwIfAborted();
+      checkOperatorPause();
+      executing = true;
+      activeBySource.set(source, (activeBySource.get(source) ?? 0) + 1);
       const result = await selectedRunner.search(q, signal);
       signal.throwIfAborted();
       await record({
@@ -282,27 +317,29 @@ export function createBrowserWorker(
         elapsedMs: Date.now() - started,
         result: "error",
         programId:
-          req.url === "/v1/search/flying-blue"
-            ? "AF_FLYINGBLUE"
-            : req.url === "/v1/search/virgin"
-              ? "VS_FLYING_CLUB"
-              : req.url === "/v1/search/united"
-                ? "UA_MP"
-                : req.url === "/v1/search/qantas"
-                  ? "QF_FF"
-                  : req.url === "/v1/search/copa"
-                    ? "CM_CONNECTMILES"
-                    : req.url === "/v1/search/sas"
-                      ? "SK_EUROBONUS"
-                      : req.url === "/v1/search/southwest"
-                        ? "WN_RAPID_REWARDS"
-                        : req.url === "/v1/search/etihad"
-                          ? "EY_GUEST"
-                          : req.url === "/v1/search/smiles"
-                            ? "G3_GOL_SMILES"
-                            : req.url === "/v1/search/delta"
-                              ? "DL_SKYMILES"
-                              : "AA_AADVANTAGE",
+          req.url === "/v1/search/qatar"
+            ? "QR_PRIVILEGE"
+            : req.url === "/v1/search/flying-blue"
+              ? "AF_FLYINGBLUE"
+              : req.url === "/v1/search/virgin"
+                ? "VS_FLYING_CLUB"
+                : req.url === "/v1/search/united"
+                  ? "UA_MP"
+                  : req.url === "/v1/search/qantas"
+                    ? "QF_FF"
+                    : req.url === "/v1/search/copa"
+                      ? "CM_CONNECTMILES"
+                      : req.url === "/v1/search/sas"
+                        ? "SK_EUROBONUS"
+                        : req.url === "/v1/search/southwest"
+                          ? "WN_RAPID_REWARDS"
+                          : req.url === "/v1/search/etihad"
+                            ? "EY_GUEST"
+                            : req.url === "/v1/search/smiles"
+                              ? "G3_GOL_SMILES"
+                              : req.url === "/v1/search/delta"
+                                ? "DL_SKYMILES"
+                                : "AA_AADVANTAGE",
         status,
         stage,
         message,
@@ -311,6 +348,8 @@ export function createBrowserWorker(
       reply(res, status, { message, stage, complete: false });
     } finally {
       requests.delete(cancel);
+      if (executing)
+        activeBySource.set(source, (activeBySource.get(source) ?? 1) - 1);
       if (acquired) {
         active--;
         queue.shift()?.();
@@ -334,6 +373,7 @@ export function createBrowserWorker(
       await options.unitedRunner?.close();
       await options.copaRunner?.close();
       await options.qantasRunner?.close();
+      await options.qatarRunner?.close();
       server.closeAllConnections();
       await new Promise<void>((done) => server.close(() => done()));
     },

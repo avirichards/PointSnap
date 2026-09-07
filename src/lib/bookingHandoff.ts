@@ -106,9 +106,41 @@ export function sasBookingUrl(q: SearchQuery) {
   return `https://www.flysas.com/en/book/flights/?${params}`;
 }
 
+/** Parameters emitted by the airline's normal one-way Avios booking form. */
+export function qatarBookingUrl(
+  q: SearchQuery,
+  cabin: "E" | "B" = q.minCabin === "J" || q.minCabin === "F" ? "B" : "E",
+) {
+  const u = new URL(
+    "https://www.qatarairways.com/app/booking/flight-selection",
+  );
+  u.search = new URLSearchParams({
+    widget: "QR",
+    searchType: "F",
+    addTaxToFare: "Y",
+    minPurTime: "0",
+    selLang: "en",
+    tripType: "O",
+    fromStation: q.origin,
+    toStation: q.dest,
+    departing: q.departDate,
+    bookingClass: cabin,
+    adults: String(q.pax),
+    children: "0",
+    infants: "0",
+    ofw: "0",
+    teenager: "0",
+    flexibleDate: "off",
+    qmilesFlow: "true",
+    allowRedemption: "Y",
+  }).toString();
+  return u.href;
+}
+
 export function bookingUrl(program: string, q: SearchQuery) {
   const base = BOOKING_SITES[program] ?? "https://www.alaskaair.com/";
   if (!q.origin || !q.dest || !q.departDate) return new URL(base).origin;
+  if (program === "QR_PRIVILEGE") return qatarBookingUrl(q);
   if (program === "EY_GUEST") return etihadBookingUrl(q);
   if (program === "WN_RAPID_REWARDS") return southwestBookingUrl(q);
   if (program === "SK_EUROBONUS") return sasBookingUrl(q);

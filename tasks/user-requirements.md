@@ -47,7 +47,7 @@ Work through this list in order before the remaining programs. American-first su
 16. Emirates Skywards
 17. Aeromexico Rewards
 
-Current focus: Virgin native integration is verified and committed, Flying Blue native fare validation is underway, and Aeroplan remains unresolved after sign-in. British Airways, Qatar, Singapore and Turkish are the final requested expansion targets before stabilization. The immediate focus fix prevents browser work from interrupting typing. Earlier successful samples retain their stated completeness and access limits.
+Current focus: Qatar’s native collector has passed nonstop and connecting-route checks; PointSnap API/frontend integration is being verified. British and Turkish need normal human verification. Singapore is explicitly deferred by the user until the other connections work fully. Existing-source recovery and stabilization follow; earlier successful samples retain their documented limits.
 
 
 ## Priority 2 — intuitive depth and comparison
@@ -400,3 +400,11 @@ The user returned to Option D after exploring alternatives and explicitly approv
 - User supplied account access for British Airways, Qatar, Singapore and Turkish; secrets are not recorded in this document. Test the normal member flows, then stabilize the agreed program batch.
 - User authorized reading airline verification SMS messages in Messages on this Mac. Confirmed the current Qatar SMS appears there; use only the matching recent sender/code for an active sign-in. Continue archiving accepted email codes only, not SMS messages.
 - Consider a dedicated PointSnap number and operator email inbox after airline acceptance is tested. This separates personal communications from service operation; it does not guarantee permanent sessions or remove human checks.
+
+## September 7 — Singapore deferred; stabilize existing connections
+
+The user can add KrisFlyer miles later but explicitly deferred Singapore until the other connections work fully. Do not spend or transfer points and do not keep retrying its unchanged balance-gated redemption search. Continue Qatar qualification and existing-source stabilization. British and Turkish remain at the normal human-verification step; completion of those checks and later session reuse must be demonstrated separately.
+
+## September 7 — Qatar native integration and recovery
+
+Qatar now returns real PointSnap flights: DOH–LHR October 5 for two adults, 7 itineraries/8 fares, and JFK–BKK October 5 for one, 15/15. Both cabin scopes and expanded flight details are reconciled; desktop/mobile, party totals, correct premium booking link and source labels are checked. Cash taxes remain unknown and explicitly shown. A browser restart needed normal password/SMS recovery, completed through the authorized Messages channel. A private source-specific pause now protects operator sign-in without stopping other airlines. Singapore remains deferred, BA/Turkish human checks unresolved, and extended session reliability is unfinished.

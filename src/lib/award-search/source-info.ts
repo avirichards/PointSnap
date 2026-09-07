@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  QR_PRIVILEGE: {
+    inventory: "flights",
+    label: "Qatar Privilege Club · member award flights",
+    detail:
+      "Native Avios searches through an authorized operator session. Both Economy and Business/First views are reconciled with expanded flight details. Points are quoted per person; taxes, fees and surcharges are not supplied by this response. Confirm total cost and eligibility with Qatar. Connecting segment cabins, wider partner coverage and session recovery remain under qualification. Customers do not connect an airline account to search.",
+  },
   AF_FLYINGBLUE: {
     inventory: "flights",
     label: "Flying Blue · member award flights",

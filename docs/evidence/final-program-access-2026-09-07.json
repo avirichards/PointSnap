@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-07T01:22:00Z",
+  "checkedAt": "2026-09-07T02:46:00Z",
   "credentialsIncluded": false,
   "codesIncluded": false,
   "scope": "British Airways, Qatar, Singapore and Turkish final connection batch",
@@ -10,7 +10,8 @@
       "normalAccountFormSubmitted": true,
       "sourcePath": "/u/login",
       "sourceStatus": 400,
-      "flightInventoryConfirmed": false
+      "flightInventoryConfirmed": false,
+      "latestRecheck": "2026-09-07T01:28:58Z: same Verify you are human screen; no password rejection confirmed."
     },
     "QR_PRIVILEGE": {
       "normalPasswordAndSMSAccepted": true,
@@ -38,14 +39,110 @@
       "nativeStatus": 200,
       "taxesIncludedInDisplayedPointsPrice": false,
       "fareSelectionBoundary": "Native award-flight-air-offers returned 200, but the UI said more Avios were required before continuing. No complete tax quote established.",
-      "appIntegrated": false
+      "appIntegrated": true,
+      "nativeRunner": {
+        "route": "DOH-LHR",
+        "date": "2026-10-05",
+        "adults": 2,
+        "itineraries": 7,
+        "fares": 8,
+        "elapsedMs": 91496,
+        "bothCabinViewsReconciled": true,
+        "expandedFlightDetailsReconciled": true,
+        "businessPartyAvios": 172000,
+        "businessPerPersonAvios": 86000
+      },
+      "premiumCalendarBoundary": "DOH-LHR October 7 premium calendar said Available but actual native response had only Economy fares and returned to the calendar. October 5 normal booking entry returned verified Business fares. Calendar availability is not treated as a confirmed cabin price.",
+      "connectingNativeRunner": {
+        "route": "JFK-BKK",
+        "date": "2026-10-05",
+        "adults": 1,
+        "itineraries": 15,
+        "fares": 15,
+        "elapsedMs": 133662,
+        "bothCabinViewsReconciled": true,
+        "expandedFlightDetailsReconciled": true
+      },
+      "restartRecovery": {
+        "firstAppSearch": {
+          "route": "DOH-LHR",
+          "date": "2026-10-05",
+          "adults": 2,
+          "elapsedMs": 81300,
+          "itineraries": 0,
+          "fares": 0,
+          "outcome": "Operator logged out after browser restart; no award response."
+        },
+        "afterGuardFix": {
+          "elapsedMs": 3086,
+          "outcome": "Explicit sign-in-required source error; not an empty or sold-out result."
+        },
+        "ordinarySignInRecoveredAt": "2026-09-07T02:33:36Z",
+        "freshSMSRequired": true,
+        "codeReadFromAuthorizedMessages": true,
+        "verificationStatus": 200,
+        "operatorSourcePauseUsed": true,
+        "credentialsOrCodesStored": false
+      },
+      "appSamples": [
+        {
+          "route": "DOH-LHR",
+          "date": "2026-10-05",
+          "adults": 2,
+          "itineraries": 7,
+          "fares": 8,
+          "elapsedMs": 18859,
+          "actualFrontend": true
+        },
+        {
+          "route": "JFK-BKK",
+          "date": "2026-10-05",
+          "adults": 1,
+          "itineraries": 15,
+          "fares": 15,
+          "elapsedMs": 26790,
+          "sessionReusedWithoutNewLogin": true
+        },
+        {
+          "route": "DOH-LHR",
+          "date": "2026-10-05",
+          "adults": 2,
+          "itineraries": 7,
+          "fares": 8,
+          "elapsedMs": 72100,
+          "actualFrontendRefresh": true
+        }
+      ],
+      "uiVerification": {
+        "desktop": "1440x1100",
+        "mobile": "390x844",
+        "horizontalOverflow": false,
+        "pageErrors": 0,
+        "allFlightsReachable": true,
+        "perPersonAndPartyPoints": true,
+        "unknownFeesExplicit": true,
+        "businessHandoffCabin": "B",
+        "nativeCoverageSourceCorrected": true,
+        "sourceLabelAndCabinLinkRecheckedInActualUI": true
+      }
     },
     "SQ_KRISFLYER": {
       "initialLoginRejected": true,
       "userThenReportedAccessWorking": true,
       "normalRetrySignedIn": true,
-      "next": "Qualify native LAX-SIN 2026-10-07 one adult search",
-      "appIntegrated": false
+      "next": "Deferred until the other connections work fully; no miles transfer or purchase requested.",
+      "appIntegrated": false,
+      "redemptionSearch": {
+        "route": "LAX-SIN",
+        "date": "2026-10-07",
+        "adults": 1,
+        "cabin": "Economy",
+        "path": "/redemption/searchFlight.form",
+        "status": 200,
+        "outcome": "Unable to proceed because current miles balance is insufficient for flight redemption searches.",
+        "inventoryConfirmed": false
+      },
+      "deferredByUser": true
     },
     "TK_MILES_SMILES": {
       "nativeLoginStatus": 403,
@@ -58,5 +155,28 @@
     "emailCodes": "Use authorized Gmail and archive the exact message only after accepted",
     "smsCodes": "User authorized airline-only verification texts in Messages; current Qatar SMS confirmed synced",
     "futureDedicatedNumber": "Evaluate airline acceptance and dedicated service ownership after connections are proven"
+  },
+  "existingSourceRestartChecks": {
+    "AF_FLYINGBLUE": {
+      "route": "JFK-AMS",
+      "date": "2026-10-08",
+      "adults": 2,
+      "itineraries": 14,
+      "fares": 33,
+      "elapsedMs": 147789,
+      "freshPinRequired": false
+    },
+    "VS_FLYING_CLUB": {
+      "initialStatus": 444,
+      "visibleOutcome": "Member sign-in then email verification required. Recovery pending current email delivery.",
+      "normalPasswordSubmitted": true,
+      "newEmailVerificationSubmitted": true,
+      "postVerificationFlightPageReached": true,
+      "flightApiStatusAfterVerification": 444,
+      "subsequentPage": "member sign-in",
+      "connectedAfterRecovery": false,
+      "usedVerificationEmailArchived": true,
+      "messageIdOrCodeStored": false
+    }
   }
 }

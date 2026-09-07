@@ -8,6 +8,7 @@ import { UnitedBrowserRunner } from "./united";
 import { FlyingBlueBrowserRunner } from "./flying-blue";
 import { VirginBrowserRunner } from "./virgin";
 import { CopaBrowserRunner } from "./copa";
+import { QatarBrowserRunner } from "./qatar";
 import { QantasBrowserRunner } from "./qantas";
 import { SouthwestBrowserRunner } from "./southwest";
 import { createDesktopChromeSession } from "./desktop-chrome";
@@ -52,7 +53,16 @@ const runner =
       });
 const worker = createBrowserWorker(runner, {
   token: process.env.POINTSNAP_BROWSER_WORKER_TOKEN || "",
+  operatorPausedSources: process.env.POINTSNAP_OPERATOR_PAUSED_SOURCES?.split(
+    ",",
+  )
+    .map((s) => s.trim())
+    .filter(Boolean),
   evidenceDirectory: process.env.POINTSNAP_BROWSER_EVIDENCE_DIR,
+  qatarRunner:
+    process.env.POINTSNAP_BROWSER_QATAR === "1"
+      ? new QatarBrowserRunner()
+      : undefined,
   qantasRunner:
     process.env.POINTSNAP_BROWSER_QANTAS === "1"
       ? new QantasBrowserRunner()

@@ -9,7 +9,7 @@ const q = {
   dest: "AUS",
   departDate: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
   pax: 1,
-  minCabin: "Y",
+  minCabin: "Y" as const,
 };
 const headers = {
   Authorization: `Bearer ${token}`,
@@ -40,7 +40,141 @@ async function start(
 }
 
 describe("background browser request boundary", () => {
+  it("rejects unconfigured and prototype-named operator sources", async () => {
+    const { url, search } = await start();
+    for (const path of [
+      "/v1/search/constructor",
+      "/v1/operator/constructor/pause",
+      "/v1/operator/qatar/pause",
+    ]) {
+      expect(
+        (
+          await fetch(new URL(path, url), {
+            method: "POST",
+            headers,
+            body: JSON.stringify(q),
+          })
+        ).status,
+      ).toBe(404);
+    }
+    expect(search).not.toHaveBeenCalled();
+  });
+  it("drains a paused source without stopping another source, then resumes it", async () => {
+    let finish!: () => void;
+    const result = {
+      programId: "QR_PRIVILEGE",
+      query: q,
+      complete: true,
+      observedAt: new Date().toISOString(),
+      payload: {},
+      itineraryCount: 0,
+      fareCount: 0,
+      stages: [],
+    };
+    const qatarSearch = vi.fn(async () => {
+      await new Promise<void>((r) => {
+        finish = r;
+      });
+      return result;
+    });
+    const other = vi
+      .fn()
+      .mockResolvedValue({ ...result, programId: "AA_AADVANTAGE" });
+    const { url } = await start(other, {
+      qatarRunner: { search: qatarSearch, close: async () => {} },
+    });
+    const searchQatar = () =>
+      fetch(url.replace("american", "qatar"), {
+        method: "POST",
+        headers,
+        body: JSON.stringify(q),
+      });
+    const pauseUrl = new URL("/v1/operator/qatar/pause", url);
+    expect((await fetch(pauseUrl, { method: "POST" })).status).toBe(401);
+    const running = searchQatar();
+    await vi.waitFor(() => expect(qatarSearch).toHaveBeenCalledOnce());
+    const pause = await fetch(pauseUrl, { method: "POST", headers });
+    expect(await pause.json()).toMatchObject({
+      source: "qatar",
+      paused: true,
+      active: 1,
+    });
+    expect((await searchQatar()).status).toBe(503);
+    expect(
+      (await fetch(url, { method: "POST", headers, body: JSON.stringify(q) }))
+        .status,
+    ).toBe(200);
+    finish();
+    expect((await running).status).toBe(200);
+    const health = await (
+      await fetch(new URL("/health", url), { headers })
+    ).json();
+    expect(health.operatorPauses).toEqual([
+      { source: "qatar", paused: true, active: 0 },
+    ]);
+    qatarSearch.mockResolvedValue(result);
+    expect(
+      (
+        await fetch(new URL("/v1/operator/qatar/resume", url), {
+          method: "POST",
+          headers,
+        })
+      ).status,
+    ).toBe(200);
+    expect((await searchQatar()).status).toBe(200);
+    expect(qatarSearch).toHaveBeenCalledTimes(2);
+  });
+  it("does not launch already-queued work after its source is paused", async () => {
+    let finish!: () => void;
+    const result = {
+      programId: "AA_AADVANTAGE" as const,
+      query: q,
+      complete: true as const,
+      observedAt: new Date().toISOString(),
+      payload: {},
+      itineraryCount: 0,
+      fareCount: 0,
+      stages: [],
+    };
+    const busy = vi.fn(async () => {
+      await new Promise<void>((r) => {
+        finish = r;
+      });
+      return result;
+    });
+    const qatar = vi.fn();
+    const { url } = await start(busy, {
+      concurrency: 1,
+      qatarRunner: { search: qatar, close: async () => {} },
+    });
+    const active = fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(q),
+    });
+    await vi.waitFor(() => expect(busy).toHaveBeenCalledOnce());
+    const queued = fetch(url.replace("american", "qatar"), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(q),
+    });
+    await vi.waitFor(async () =>
+      expect(
+        (await (await fetch(new URL("/health", url), { headers })).json())
+          .queued,
+      ).toBe(1),
+    );
+    await fetch(new URL("/v1/operator/qatar/pause", url), {
+      method: "POST",
+      headers,
+    });
+    finish();
+    expect((await active).status).toBe(200);
+    expect((await queued).status).toBe(503);
+    expect(qatar).not.toHaveBeenCalled();
+  });
   it.each([
+    { path: "qatar", id: "QR_PRIVILEGE", option: "qatarRunner" },
     { path: "flying-blue", id: "AF_FLYINGBLUE", option: "flyingBlueRunner" },
     { path: "virgin", id: "VS_FLYING_CLUB", option: "virginRunner" },
     { path: "southwest", id: "WN_RAPID_REWARDS", option: "southwestRunner" },

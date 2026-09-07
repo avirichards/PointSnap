@@ -232,3 +232,19 @@ Virgin labels partner cabins differently: Air France supplies Economy Standard; 
 The user supplied British Airways, Qatar, Singapore and Turkish account access. Qatar completed normal password plus SMS verification and displayed its member award calendar. British Airways requires a human-verification check before login completes. Singapore initially rejected the supplied details, then the normal retry succeeded after user confirmation. Turkish login-status returned 403, and a CAPTCHA iframe intercepts its sign-in control; no Turkish password rejection has occurred. Credentials and verification codes stay out of source files and notes.
 
 Messages on the Mac contains the matching current Qatar SMS; user authorized reading airline verification texts there. Verify sender, timestamp and active airline challenge before consuming a code. Archive only accepted email codes, as separately requested. A dedicated operator number/inbox is a future service arrangement to validate after the airline flows work, not a promise to eliminate MFA.
+
+## September 7 — Qatar inventory and cross-program UI lessons
+
+Qatar’s native response contains cross-cabin fares even when the visible cabin scope filters the card list. Validate the exact route/date/adult request and reconcile the relevant visible cards for both Economy and Premium requests. Use the later premium view for Business/First so a withdrawn earlier fare cannot linger. Verify passenger totals: 172,000 Avios for two adults means 86,000 per person. Initial flight offers exclude all cash taxes; the balance-gated fare selection is not a zero-fee quote. A calendar “Available” label is not confirmed Business inventory.
+
+Duplicate desktop/mobile controls need visibility-scoped selectors. CSS-transformed uppercase button text can differ from its accessible label. Qatar’s Continue with my booking anchor has no href and therefore is not an accessible link. Its actual compact flight-detail close icon has tabindex but no role; the normal Enter interaction closes it. Independent attached-browser proofs must register the owned context with the same background-page support as the deployed runner, or they fail to exercise the production rendering setup. Whole-hour durations omit the zero-minute suffix.
+
+Singapore login succeeded but redemption search explicitly requires miles; user deferred it without a transfer or purchase. Keep that decision separate from BA/Turkish human verification and from an invalid-password conclusion.
+
+## September 7 — source-specific recovery and Qatar handoff
+
+A retained profile does not guarantee a retained login: Qatar displayed its logged-out dialog after normal browser restart. Detect that explicit page state promptly, preserve the normal sign-in screen, and report a source error rather than waiting for an inventory response that cannot arrive. Normal password plus fresh SMS restored access; the subsequent live PointSnap queries reused it without another login. Do not promise durable MFA retention.
+
+The private worker now supports authenticated POST /v1/operator/{source}/pause and /resume. Pause refuses new and already-queued searches for that source, while any active search finishes. Wait until its authenticated health entry reports active:0 before operating its app-owned browser. Resume only after the operator detaches. Other sources continue. POINTSNAP_OPERATOR_PAUSED_SOURCES can start selected configured sources paused; pause does not itself sign anyone in.
+
+Check the actual fare handoff, not just the standalone URL helper: Qatar Business and First must open bookingClass=B; Economy uses E. The actual UI review also caught a missing Qatar coverage-source mapping. These are covered by regression checks. Qatar flight offers still omit cash fees, and member-account eligibility stays visible; unknown taxes never become zero or an invented value-per-point estimate.
