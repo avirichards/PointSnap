@@ -3,6 +3,12 @@ export const SOURCE_INFO: Record<
   string,
   { inventory: "flights" | "calendar"; label: string; detail: string }
 > = {
+  AF_FLYINGBLUE: {
+    inventory: "flights",
+    label: "Flying Blue · member award flights",
+    detail:
+      "Native KLM reward searches through an authorized Flying Blue operator session, including offered Air France and partner flights. Every displayed itinerary and expanded cabin price is reconciled with the airline page. Exact points and fees are quoted per person. Member benefits may affect prices; confirm eligibility before transferring points. Connecting segment cabins, wider routes and session recovery remain under qualification. Customers do not connect an airline account to search.",
+  },
   UA_MP: {
     inventory: "flights",
     label: "United MileagePlus · account-observed awards",

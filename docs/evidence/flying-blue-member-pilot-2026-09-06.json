@@ -25,5 +25,33 @@
   "completeFareFamilyDetailsVerified": false,
   "next": "Inspect expanded fare choices and segment cabins, reconcile every offered fare, validate a second query and party totals, then implement the native worker.",
   "credentialsIncluded": false,
-  "codesIncluded": false
+  "codesIncluded": false,
+  "followUp": {
+    "checkedAt": "2026-09-06T23:10:48.013680+00:00",
+    "query": {
+      "origin": "JFK",
+      "destination": "AMS",
+      "date": "2026-10-08",
+      "adults": 2
+    },
+    "flights": 13,
+    "cabinSlots": 39,
+    "availableBaseFares": 32,
+    "expandedFlights": 13,
+    "expandedFares": 32,
+    "expandedPricesAndFeesMatchBase": true,
+    "directFlights": 2,
+    "connectingFlights": 11,
+    "separateBusinessSearch": {
+      "flights": 9,
+      "additionalFlightsComparedWithBaseBusiness": 0,
+      "allPricesMatch": true
+    },
+    "segmentCabinsObtained": true,
+    "flightQueryBindingObserved": true,
+    "memberBenefitsApply": true,
+    "completeUiReconciliation": false,
+    "appIntegrationVerified": false,
+    "next": "Complete per-cabin segment detail capture, validate exact request metadata and every visible fare, then implement the native parser and worker."
+  }
 }

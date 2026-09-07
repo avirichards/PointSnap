@@ -1,6 +1,23 @@
 # PointSnap — airline connection playbook
 
+## Latest scope and operating preferences — September 6
+
+The user set the final expansion targets to British Airways, Qatar Airways, Singapore Airlines and Turkish Airlines. Preserve the connection work already underway, then pause adding programs after this batch and solidify the connected sources before further expansion. This supersedes the earlier open-ended airline expansion order. Stabilization includes complete flight/fare capture, consistent search results, session reuse/recovery, speed and the actual user experience. No new hosting purchase is implied by this sequence change.
+
+Browser collectors must not bring their windows to the foreground or interrupt typing. Run investigations and searches in the background; foreground sign-in is only appropriate when the user explicitly needs to interact. The finished public app should run collectors on its infrastructure, with no customer browser windows or recurring customer airline sign-ins.
+
+After an airline accepts a verification code, archive that exact verification email. Do not archive unrelated mail or unused/pending codes. Gmail access and airline sign-in authorization already supplied remain valid; credentials and code values must not be recorded in project notes.
+
+
 Updated September 6, 2026 UTC. This is the current set of lessons carried between connectors. The dated evidence files preserve individual experiments; this document records what changes in the next implementation. Observations are scoped to the route, date, party and runtime actually tested.
+
+## Background browser operation — September 6
+
+On macOS, a direct Chrome process launch and Playwright `context.newPage()` can each activate Chrome. Launch the dedicated application through `open -g -n -W`, create collector pages in the background and keep their ordinary UI responsive with page focus emulation. Do not call `bringToFront()`. These changes do not import personal profiles, alter airline authentication or suppress security checks. Close the actual owned browser through CDP before disconnecting; `open -W` is only a launcher. Process fallback cleanup must verify both the dedicated profile and the launch’s unique local debugging port.
+
+Run `pnpm test:browser-background` on macOS to check cold launch, tab creation, input, popup, reuse, disconnect recovery and owned-process cleanup without airline traffic. The local check passed while Codex retained foreground focus. Virgin’s actual PointSnap search also passed with focus preserved throughout; it returned6 flights/17 fares and rendered correctly on desktop and mobile. United’s full native runner reconciled40 itineraries in126 seconds, but repeat background searches remain inconsistent and the latest native inventory returned HTTP 428. Preserve that failure and resume only after a distinct recovery/cooldown; do not infer reliability from one success.
+
+United’s form restores earlier input state. Wait for the page load, prepare its background focus again and clear airport fields before typing a fresh IATA code so a partially entered prior value does not suppress choices. The search endpoint also had a110-second outer deadline despite United/Copa/Qantas having180-second collectors. Align the outer budget with those collectors and verify that a126-second result still reaches the stream; four regression cases cover the affected long-running programs including Smiles.
 
 ## Virgin native member connection — September 6
 
@@ -183,3 +200,14 @@ The experimental collector now searches both cabin scopes for each connecting ai
 The full expansion reached American's Challenge Validation page while searching through SEA after 92.6 seconds. The official results document returned HTTP200 followed by the airline's challenge page; no valid SEA inventory was accepted. This is an observed verification interruption, not proof that login is required or that request pacing caused it. No bypass, profile rotation, imported cookies, account or repeated unchanged attempt was used. The existing normal worker was restored with connection expansion disabled; its prior two-cabin search remains implemented, but no post-challenge live success is claimed.
 
 The new expansion is available only as an explicit diagnostic, not enabled for application users. The next diagnostic records each verified scope before a later failure so progress is not lost. App integration and real frontend verification of the complete expansion remain open, along with wider route inventory. All 287 tests across 36 files, focused lint, TypeScript and the optimized Node 22 build pass. See [American expansion evidence](evidence/american-connection-expansion-2026-09-06.json). All 87 requirements and coverage-first sequencing remain active.
+
+
+## September 6 — Flying Blue native PointSnap connection
+
+Flying Blue now works through the authorized operator session and ordinary KLM reward search. Two independent full native runs returned JFK–AMS October7 one adult:14 itineraries/32 fares, and October8 two adults:13/32, about46 seconds each. After the owned-browser restart, the existing sign-in was reused without a new PIN. The actual PointSnap API and frontend returned a fresh14/33 result in51–52 seconds. All54 foreground samples stayed in Codex. These changing counts are live observations, not fixed expectations.
+
+The collector checks the actual REWARD request route/date/adult count, all direct and connecting flight cards, every available cabin tab and each expanded fare-family heading. Exact points and cash are whole-party amounts and are divided per passenger; KL642 Economy is29,000 +USD138 each or58,000 +USD276 for two. Native booking classes and public conditions are retained. Customer/traveler identifiers and member metadata are removed at the inventory boundary; every fare remains visibly conditional on member eligibility. Economy with upsell cabins included all19 Premium/Business fares from separately checked cabin-filtered queries.
+
+All14 returned itineraries/33 fares are present in the actual desktop/mobile app. Fare details, AM/PM clocks, party totals and the official trip-prefilled KLM link were checked. No horizontal overflow or page errors occurred. Connecting segment cabins remain unconfirmed until their per-fare flight-details binding is qualified; unknown does not become a guessed all-Business itinerary. Exact seats, First eligibility, broader routes, technical stops, valid empty searches and long-term/hosted operation remain open. The UI task received the observed issue that routine fare conditions are styled as excessive amber warnings.
+
+All368 tests across42 files, TypeScript, focused lint and the optimized Node22 build pass. The finalBA/Qatar/Singapore/Turkish batch remains the expansion scope, followed by stabilization. Member access for that batch has not been supplied. United recovery remains unresolved after its latest native428; earlier native successes remain documented separately. See [Flying Blue evidence](../docs/evidence/flying-blue-native-member-2026-09-06.json).

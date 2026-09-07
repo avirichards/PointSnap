@@ -63,8 +63,21 @@ export async function GET(req: NextRequest) {
   const signal = AbortSignal.any([
     req.signal,
     cancel.signal,
-    // Smiles quotes every itinerary's taxes and payment choices sequentially.
-    AbortSignal.timeout(ids.includes("G3_GOL_SMILES") ? 200000 : 110000),
+    // These collectors have a 180-second worker budget. The stream must
+    // outlive that budget so completed inventory is not cut off prematurely.
+    AbortSignal.timeout(
+      ids.some((id) =>
+        [
+          "AF_FLYINGBLUE",
+          "UA_MP",
+          "G3_GOL_SMILES",
+          "CM_CONNECTMILES",
+          "QF_FF",
+        ].includes(id),
+      )
+        ? 200000
+        : 110000,
+    ),
   ]);
   const started = Date.now();
   let closed = false;

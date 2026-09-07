@@ -1,5 +1,14 @@
 # PointSnap completion plan
 
+## Latest scope and operating preferences — September 6
+
+The user set the final expansion targets to British Airways, Qatar Airways, Singapore Airlines and Turkish Airlines. Preserve the connection work already underway, then pause adding programs after this batch and solidify the connected sources before further expansion. This supersedes the earlier open-ended airline expansion order. Stabilization includes complete flight/fare capture, consistent search results, session reuse/recovery, speed and the actual user experience. No new hosting purchase is implied by this sequence change.
+
+Browser collectors must not bring their windows to the foreground or interrupt typing. Run investigations and searches in the background; foreground sign-in is only appropriate when the user explicitly needs to interact. The finished public app should run collectors on its infrastructure, with no customer browser windows or recurring customer airline sign-ins.
+
+After an airline accepts a verification code, archive that exact verification email. Do not archive unrelated mail or unused/pending codes. Gmail access and airline sign-in authorization already supplied remain valid; credentials and code values must not be recorded in project notes.
+
+
 Approved in conversation; updated September 6, 2026 UTC with the user's coverage-first sequencing decision. Implementation is authorized. This plan and the current priorities in user-requirements.md supersede older access recommendations; historical findings remain evidence, not instructions or completion claims.
 
 ## Current execution priority — connect the airlines first
@@ -10,7 +19,7 @@ For each program, get real native award searches working through PointSnap itsel
 
 Hosted deployment, multi-user load, prolonged idle/restart recovery, the 50-search/seven-day reliability qualification and operating-cost optimization remain required before public release. They are a later pass, not a gate that holds all subsequent airline connections behind American. Do not launch further hosted American qualification merely because another hosting experiment is available. Use hosting research now only if it is needed to establish an otherwise unavailable native connection.
 
-American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. Etihad has now passed the initial local integration gate; ANA’s current public award entries have been rechecked and reach member login; Southwest, SAS and Copa have now passed their initial local integration gates in PointSnap. United and Virgin Atlantic have also passed their initial native member integration gates. Flying Blue native inventory is obtained and being integrated. Aeroplan, BA, Qatar, Singapore and Turkish retain their documented unresolved native-access work.
+American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. Etihad has now passed the initial local integration gate; ANA’s current public award entries have been rechecked and reach member login; Southwest, SAS and Copa have now passed their initial local integration gates in PointSnap. United and Virgin Atlantic have also passed their initial native member integration gates. Flying Blue has now passed native runner, API and frontend checks. Aeroplan, BA, Qatar, Singapore and Turkish retain their documented unresolved native-access work.
 
 Qantas's experimental native collector now passes initial domestic, international, API and frontend checks, but later repeat searches received HTTP 403 and an explicit Access Denied page. Keep this connection marked integrating. Preserve the successful samples and the current failure evidence; test a distinct access hypothesis before another unchanged request, while continuing the remaining airline connections.
 
@@ -43,7 +52,7 @@ Read and update the [airline connection playbook](../docs/airline-connection-pla
 
 Virgin native flight search is verified in PointSnap: JFK–LHR October 8, two adults, 6 itineraries / 17 fares; JFK–DEL connecting search also reconciles 6 / 17. Exact source fees, all available cabin choices, per-person and party totals, account eligibility and trip-prefilled links passed desktop/mobile checks. The full 333-test suite and optimized build pass. A worker restart required normal sign-in and a fresh Virgin email code; the authorized Gmail connector completed it. This is interactive operator recovery, not an unattended mailbox service or durable sign-in guarantee. United was restored and freshly reverified at 40 / 89 after the same restart.
 
-Flying Blue now supplies native JFK–AMS inventory after normal PIN sign-in; inspect all expanded fares and segment cabins before enabling the worker. Aeroplan sign-in succeeded but its first inventory request returned429; perform one normal recovery check after cooldown. Keep remaining native connections first.
+Flying Blue now returns native JFK–AMS inventory in PointSnap after normal PIN sign-in:14 itineraries/33 fares in the latest two-adult API/frontend check. Every displayed cabin price is reconciled; firstKL642 is29,000 miles +USD138 per person. Sign-in survived the short owned-browser restart without a new code. Connecting segment cabins remain explicitly unconfirmed pending per-fare detail binding. Aeroplan sign-in succeeded but its first inventory request returned429; perform one normal recovery check after cooldown. Keep remaining native connections first.
 
 ## United — native member connection verified locally
 

@@ -1,0 +1,4943 @@
+{
+  "type": "flying-blue-member-awards",
+  "request": {
+    "activeConnectionIndex": 0,
+    "bookingFlow": "REWARD",
+    "availableOfferRequestBody": {
+      "commercialCabins": [
+        "ECONOMY"
+      ],
+      "passengers": [
+        {
+          "type": "ADT"
+        }
+      ],
+      "requestedConnections": [
+        {
+          "origin": {
+            "code": "JFK",
+            "type": "AIRPORT"
+          },
+          "destination": {
+            "code": "AMS",
+            "type": "AIRPORT"
+          },
+          "departureDate": "2026-10-07"
+        }
+      ],
+      "bookingFlow": "REWARD",
+      "withUpsellCabins": true
+    }
+  },
+  "result": {
+    "offerItineraries": [
+      {
+        "activeConnection": {
+          "duration": 440,
+          "isDirect": true,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-07T16:40:00",
+              "marketingFlight": {
+                "number": "0642",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "0642",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T06:00:00",
+              "duration": 440,
+              "transferDuration": null,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 787-10"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 29000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 138,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 326000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 230.9,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 6,
+                "price": {
+                  "amount": 341500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 347.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 450,
+          "isDirect": true,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-07T19:10:00",
+              "marketingFlight": {
+                "number": "0646",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "0646",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T08:40:00",
+              "duration": 450,
+              "transferDuration": null,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-200"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 1,
+                "price": {
+                  "amount": 30500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 138,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 2,
+                "price": {
+                  "amount": 94000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 230.9,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 6,
+                "price": {
+                  "amount": 341500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 347.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 435,
+          "isDirect": true,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-07T21:15:00",
+              "marketingFlight": {
+                "number": "0644",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "0644",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T10:30:00",
+              "duration": 435,
+              "transferDuration": null,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 787-10"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 8,
+                "price": {
+                  "amount": 29000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 138,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 2,
+                "price": {
+                  "amount": 94000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 230.9,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 3,
+                "price": {
+                  "amount": 341500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 347.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 605,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CDG"
+              },
+              "departureDateTime": "2026-10-07T16:30:00",
+              "marketingFlight": {
+                "number": "0001",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "0001",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T05:55:00",
+              "duration": 445,
+              "transferDuration": 75,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-200"
+            },
+            {
+              "origin": {
+                "code": "CDG"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T07:10:00",
+              "marketingFlight": {
+                "number": "1240",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "1240",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T08:35:00",
+              "duration": 85,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A220-300"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 29000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 157.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 326000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 250,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 1,
+                "price": {
+                  "amount": 341500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 366.2,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 595,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CPH"
+              },
+              "departureDateTime": "2026-10-07T18:55:00",
+              "marketingFlight": {
+                "number": "0916",
+                "suffix": null,
+                "carrier": {
+                  "code": "SK"
+                },
+                "operatingFlight": {
+                  "number": "0916",
+                  "carrier": {
+                    "code": "SK",
+                    "name": "Scandinavian Airlines"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T08:40:00",
+              "duration": 465,
+              "transferDuration": 45,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A330-300"
+            },
+            {
+              "origin": {
+                "code": "CPH"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T09:25:00",
+              "marketingFlight": {
+                "number": "1268",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1268",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T10:50:00",
+              "duration": 85,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 737-900"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 62800,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 54,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 610,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CDG"
+              },
+              "departureDateTime": "2026-10-07T17:30:00",
+              "marketingFlight": {
+                "number": "0003",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "0003",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T07:00:00",
+              "duration": 450,
+              "transferDuration": 75,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-300"
+            },
+            {
+              "origin": {
+                "code": "CDG"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T08:15:00",
+              "marketingFlight": {
+                "number": "1340",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "1340",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T09:40:00",
+              "duration": 85,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A318"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 29000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 157.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 2,
+                "price": {
+                  "amount": 94000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 250,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 5,
+                "price": {
+                  "amount": 341500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 366.2,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 610,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CDG"
+              },
+              "departureDateTime": "2026-10-07T21:30:00",
+              "marketingFlight": {
+                "number": "0007",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "0007",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T11:10:00",
+              "duration": 460,
+              "transferDuration": 65,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-300"
+            },
+            {
+              "origin": {
+                "code": "CDG"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T12:15:00",
+              "marketingFlight": {
+                "number": "1740",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "1740",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T13:40:00",
+              "duration": 85,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A220-300"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 2,
+                "price": {
+                  "amount": 39000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 157.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 2,
+                "price": {
+                  "amount": 334500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 250,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 5,
+                "price": {
+                  "amount": 341500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 366.2,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 615,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CDG"
+              },
+              "departureDateTime": "2026-10-07T23:30:00",
+              "marketingFlight": {
+                "number": "0009",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "0009",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T12:55:00",
+              "duration": 445,
+              "transferDuration": 95,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-300"
+            },
+            {
+              "origin": {
+                "code": "CDG"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T14:30:00",
+              "marketingFlight": {
+                "number": "1408",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1408",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T15:45:00",
+              "duration": 75,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 737-700"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 41500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 159,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 370500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 251.9,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 401000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 368.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 625,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CDG"
+              },
+              "departureDateTime": "2026-10-07T18:30:00",
+              "marketingFlight": {
+                "number": "0005",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "0005",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T08:05:00",
+              "duration": 455,
+              "transferDuration": 95,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-300"
+            },
+            {
+              "origin": {
+                "code": "CDG"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T09:40:00",
+              "marketingFlight": {
+                "number": "1404",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1404",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T10:55:00",
+              "duration": 75,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 737-800"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 41500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 159,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 370500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 251.9,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 2,
+                "price": {
+                  "amount": 401000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 368.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 645,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "CDG"
+              },
+              "departureDateTime": "2026-10-07T17:30:00",
+              "marketingFlight": {
+                "number": "0003",
+                "suffix": null,
+                "carrier": {
+                  "code": "AF"
+                },
+                "operatingFlight": {
+                  "number": "0003",
+                  "carrier": {
+                    "code": "AF",
+                    "name": "Air France"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T07:00:00",
+              "duration": 450,
+              "transferDuration": 115,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 777-300"
+            },
+            {
+              "origin": {
+                "code": "CDG"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T08:55:00",
+              "marketingFlight": {
+                "number": "1402",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1402",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T10:15:00",
+              "duration": 80,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 737-800"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 35000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 159,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 370500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 251.9,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 7,
+                "price": {
+                  "amount": 401000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 368.1,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 630,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "LHR"
+              },
+              "departureDateTime": "2026-10-07T18:30:00",
+              "marketingFlight": {
+                "number": "0010",
+                "suffix": null,
+                "carrier": {
+                  "code": "VS"
+                },
+                "operatingFlight": {
+                  "number": "0010",
+                  "carrier": {
+                    "code": "VS",
+                    "name": "Virgin Atlantic Airways"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T06:45:00",
+              "duration": 435,
+              "transferDuration": 115,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A330-900NEO"
+            },
+            {
+              "origin": {
+                "code": "LHR"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T08:40:00",
+              "marketingFlight": {
+                "number": "1002",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1002",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T11:00:00",
+              "duration": 80,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A321NEO"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 33000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 111.2,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 640,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "FRA"
+              },
+              "departureDateTime": "2026-10-07T18:50:00",
+              "marketingFlight": {
+                "number": "0106",
+                "suffix": null,
+                "carrier": {
+                  "code": "DL"
+                },
+                "operatingFlight": {
+                  "number": "0106",
+                  "carrier": {
+                    "code": "DL",
+                    "name": "Delta Air Lines"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T08:40:00",
+              "duration": 470,
+              "transferDuration": 95,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A330-200"
+            },
+            {
+              "origin": {
+                "code": "FRA"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T10:15:00",
+              "marketingFlight": {
+                "number": "1816",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1816",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM Cityhopper"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T11:30:00",
+              "duration": 75,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Embraer 195 E2"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 59500,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 79,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 640,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "ZRH"
+              },
+              "departureDateTime": "2026-10-07T20:45:00",
+              "marketingFlight": {
+                "number": "0052",
+                "suffix": null,
+                "carrier": {
+                  "code": "DL"
+                },
+                "operatingFlight": {
+                  "number": "0052",
+                  "carrier": {
+                    "code": "DL",
+                    "name": "Delta Air Lines"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T10:35:00",
+              "duration": 470,
+              "transferDuration": 75,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 767-300"
+            },
+            {
+              "origin": {
+                "code": "ZRH"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T11:50:00",
+              "marketingFlight": {
+                "number": "1920",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1920",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T13:25:00",
+              "duration": 95,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Boeing 737-800"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 9,
+                "price": {
+                  "amount": 66000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 53.3,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "activeConnection": {
+          "duration": 660,
+          "isDirect": false,
+          "segments": [
+            {
+              "origin": {
+                "code": "JFK"
+              },
+              "destination": {
+                "code": "LHR"
+              },
+              "departureDateTime": "2026-10-07T18:00:00",
+              "marketingFlight": {
+                "number": "0004",
+                "suffix": null,
+                "carrier": {
+                  "code": "VS"
+                },
+                "operatingFlight": {
+                  "number": "0004",
+                  "carrier": {
+                    "code": "VS",
+                    "name": "Virgin Atlantic Airways"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T06:20:00",
+              "duration": 440,
+              "transferDuration": 140,
+              "highestPriority": true,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A330-900NEO"
+            },
+            {
+              "origin": {
+                "code": "LHR"
+              },
+              "destination": {
+                "code": "AMS"
+              },
+              "departureDateTime": "2026-10-08T08:40:00",
+              "marketingFlight": {
+                "number": "1002",
+                "suffix": null,
+                "carrier": {
+                  "code": "KL"
+                },
+                "operatingFlight": {
+                  "number": "1002",
+                  "carrier": {
+                    "code": "KL",
+                    "name": "KLM"
+                  }
+                }
+              },
+              "arrivalDateTime": "2026-10-08T11:00:00",
+              "duration": 80,
+              "transferDuration": null,
+              "highestPriority": false,
+              "stopsAt": null,
+              "equipmentType": "AIRCRAFT",
+              "equipmentName": "Airbus A321NEO"
+            }
+          ]
+        },
+        "upsellCabinProducts": [
+          {
+            "connections": [
+              {
+                "cabinClass": "ECONOMY",
+                "cabinClassTitle": "Economy",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": 7,
+                "price": {
+                  "amount": 33000,
+                  "currencyCode": "MILES"
+                },
+                "tax": {
+                  "amount": 111.2,
+                  "currencyCode": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "PREMIUM",
+                "cabinClassTitle": "Premium Comfort",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          },
+          {
+            "connections": [
+              {
+                "cabinClass": "BUSINESS",
+                "cabinClassTitle": "Business",
+                "passengerCount": 1,
+                "numberOfSeatsAvailable": null,
+                "price": {
+                  "amount": null,
+                  "currencyCode": null
+                },
+                "tax": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "expanded": [
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 440,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-07T16:40:00",
+                "marketingFlight": {
+                  "number": "0642",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 29000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 138
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 29000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "W"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 326000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 230.9
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 326000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 341500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 347.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 341500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 450,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-07T19:10:00",
+                "marketingFlight": {
+                  "number": "0646",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "RWSFB0SY",
+                    "sellingClassCode": "R"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 30500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 138
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 30500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "SWSFB0JY",
+                    "sellingClassCode": "S"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 94000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 230.9
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 94000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 341500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 347.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 341500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 435,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-07T21:15:00",
+                "marketingFlight": {
+                  "number": "0644",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 29000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 138
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 29000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "SWSFB0JY",
+                    "sellingClassCode": "S"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 94000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 230.9
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 94000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 341500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 347.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 341500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 605,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departureDateTime": "2026-10-07T16:30:00",
+                "marketingFlight": {
+                  "number": "0001",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T07:10:00",
+                "marketingFlight": {
+                  "number": "1240",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  },
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "L"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 29000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 157.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 29000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "W"
+                  },
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "Y"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 326000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 250
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 326000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "J"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 341500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 366.2
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 341500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 610,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departureDateTime": "2026-10-07T17:30:00",
+                "marketingFlight": {
+                  "number": "0003",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T08:15:00",
+                "marketingFlight": {
+                  "number": "1340",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  },
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "L"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 29000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 157.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 29000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "SWSFB0JY",
+                    "sellingClassCode": "S"
+                  },
+                  {
+                    "fareBasisCode": "SWSFB0JY",
+                    "sellingClassCode": "Y"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 94000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 250
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 94000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "J"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 341500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 366.2
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 341500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 645,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departureDateTime": "2026-10-07T17:30:00",
+                "marketingFlight": {
+                  "number": "0003",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T08:55:00",
+                "marketingFlight": {
+                  "number": "1402",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  },
+                  {
+                    "fareBasisCode": "GWSFB0SY",
+                    "sellingClassCode": "G"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 35000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 159
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 35000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "W"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 370500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 251.9
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 370500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 401000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 368.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 401000
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 660,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departureDateTime": "2026-10-07T18:00:00",
+                "marketingFlight": {
+                  "number": "0004",
+                  "carrier": {
+                    "code": "VS"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "LHR"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T08:40:00",
+                "marketingFlight": {
+                  "number": "1002",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "YSM",
+                    "sellingClassCode": "A"
+                  },
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 33000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 111.2
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)* **"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 33000
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 625,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departureDateTime": "2026-10-07T18:30:00",
+                "marketingFlight": {
+                  "number": "0005",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T09:40:00",
+                "marketingFlight": {
+                  "number": "1404",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "RWSFB0SY",
+                    "sellingClassCode": "R"
+                  },
+                  {
+                    "fareBasisCode": "GWSFB0SY",
+                    "sellingClassCode": "G"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 41500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 159
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 41500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "W"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 370500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 251.9
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 370500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 401000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 368.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 401000
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 630,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departureDateTime": "2026-10-07T18:30:00",
+                "marketingFlight": {
+                  "number": "0010",
+                  "carrier": {
+                    "code": "VS"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "LHR"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T08:40:00",
+                "marketingFlight": {
+                  "number": "1002",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "YSM",
+                    "sellingClassCode": "A"
+                  },
+                  {
+                    "fareBasisCode": "VWSFB0SY",
+                    "sellingClassCode": "V"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 33000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 111.2
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)* **"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 33000
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 640,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "FRA"
+                },
+                "departureDateTime": "2026-10-07T18:50:00",
+                "marketingFlight": {
+                  "number": "0106",
+                  "carrier": {
+                    "code": "DL"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "FRA"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T10:15:00",
+                "marketingFlight": {
+                  "number": "1816",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "YSM",
+                    "sellingClassCode": "N"
+                  },
+                  {
+                    "fareBasisCode": "XWSFB0SY",
+                    "sellingClassCode": "X"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 59500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 79
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)* **"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 59500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 595,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CPH"
+                },
+                "departureDateTime": "2026-10-07T18:55:00",
+                "marketingFlight": {
+                  "number": "0916",
+                  "carrier": {
+                    "code": "SK"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CPH"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T09:25:00",
+                "marketingFlight": {
+                  "number": "1268",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "YSM",
+                    "sellingClassCode": "X"
+                  },
+                  {
+                    "fareBasisCode": "HWSFB0SY",
+                    "sellingClassCode": "H"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 62800
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 54
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)* **"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 62800
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 640,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "ZRH"
+                },
+                "departureDateTime": "2026-10-07T20:45:00",
+                "marketingFlight": {
+                  "number": "0052",
+                  "carrier": {
+                    "code": "DL"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "ZRH"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T11:50:00",
+                "marketingFlight": {
+                  "number": "1920",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "YSM",
+                    "sellingClassCode": "N"
+                  },
+                  {
+                    "fareBasisCode": "RWSFB0SY",
+                    "sellingClassCode": "R"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 66000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 53.3
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)* **"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 66000
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 610,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departureDateTime": "2026-10-07T21:30:00",
+                "marketingFlight": {
+                  "number": "0007",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T12:15:00",
+                "marketingFlight": {
+                  "number": "1740",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "NWSFB0SY",
+                    "sellingClassCode": "N"
+                  },
+                  {
+                    "fareBasisCode": "NWSFB0SY",
+                    "sellingClassCode": "L"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 39000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 157.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 39000
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "W"
+                  },
+                  {
+                    "fareBasisCode": "OWSFB0JY",
+                    "sellingClassCode": "O"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 334500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 250
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 334500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "J"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 341500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 366.2
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 341500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "upsellRecommendations": [
+        {
+          "activeFlightConnection": {
+            "duration": 615,
+            "segments": [
+              {
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departureDateTime": "2026-10-07T23:30:00",
+                "marketingFlight": {
+                  "number": "0009",
+                  "carrier": {
+                    "code": "AF"
+                  }
+                }
+              },
+              {
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "AMS"
+                },
+                "departureDateTime": "2026-10-08T14:30:00",
+                "marketingFlight": {
+                  "number": "1408",
+                  "carrier": {
+                    "code": "KL"
+                  }
+                }
+              }
+            ]
+          },
+          "upsellFlightProducts": [
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "ECONOMY",
+                "commercialCabinLabel": "Economy",
+                "fareFamily": {
+                  "title": "Economy",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "RWSFB0SY",
+                    "sellingClassCode": "R"
+                  },
+                  {
+                    "fareBasisCode": "GWSFB0SY",
+                    "sellingClassCode": "G"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 41500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 159
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 41500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "PREMIUM",
+                "commercialCabinLabel": "Premium Comfort",
+                "fareFamily": {
+                  "title": "Premium",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "WWSFB0JY",
+                    "sellingClassCode": "W"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 370500
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 251.9
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (23 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 370500
+              }
+            },
+            {
+              "activeConnectionUpsell": {
+                "commercialCabin": "BUSINESS",
+                "commercialCabinLabel": "Business",
+                "fareFamily": {
+                  "title": "Business",
+                  "bundleCode": null
+                },
+                "segments": [
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  },
+                  {
+                    "fareBasisCode": "DWSFB0JY",
+                    "sellingClassCode": "D"
+                  }
+                ],
+                "price": {
+                  "currency": "MILES",
+                  "relevantPrice": 401000
+                },
+                "taxDetails": {
+                  "currency": "USD",
+                  "relevantPrice": 368.1
+                },
+                "primaryConditions": [
+                  {
+                    "attributeSource": "FARE",
+                    "code": "ACCESSORY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "1 small bag (40 x 30 x 15 cm)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "HAND_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 hand baggage item(s) (55 x 35 x 25 cm)*"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "MERGED_BAGGAGE_ALLOWANCE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "2 checked bag(s) (32 kg each)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SEAT_SELECTION",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Free standard seat selection at check-in"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CHANGE",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Changeable (EUR 70 fee + possible fare difference)"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "CANCEL",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Refundable at a EUR 70 fee if you cancel before the 1st flight of your trip"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "LOUNGE_ACCESS",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "Lounge access included"
+                    }
+                  },
+                  {
+                    "attributeSource": "FARE",
+                    "code": "SKY_PRIORITY",
+                    "included": true,
+                    "commercialLabel": {
+                      "text": "SkyPriority benefits"
+                    }
+                  }
+                ]
+              },
+              "price": {
+                "currency": "MILES",
+                "relevantPrice": 401000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

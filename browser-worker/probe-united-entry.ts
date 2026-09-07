@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 // Current official form, dedicated ordinary Chrome; no account or cookie import.
 import { mkdir, writeFile } from "node:fs/promises";
 import { createDesktopChromeSession } from "./desktop-chrome";
@@ -9,7 +10,7 @@ async function main() {
   let stage = "launch";
   try {
     await session.run(AbortSignal.timeout(150000), async (context) => {
-      const page = context.pages()[0] || (await context.newPage());
+      const page = context.pages()[0] || (await createCollectorPage(context));
       page.setDefaultTimeout(15000);
       const responses: { path: string; status: number }[] = [];
       page.on("response", (response) => {
@@ -21,7 +22,7 @@ async function main() {
           responses.push({ path: url.pathname, status: response.status() });
       });
       stage = "award-form";
-      await page.bringToFront();
+      await prepareCollectorPage(page);
       await page.goto(
         "https://www.united.com/en/us/book-flight/united-award-travel",
         { waitUntil: "domcontentloaded", timeout: 45000 },

@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 // Bounded current-flow diagnostic: ordinary Chrome, isolated airline profile.
 // No login, credentials, cookies, response bodies or personal state are read.
 import { mkdir, writeFile } from "node:fs/promises";
@@ -11,7 +12,7 @@ async function main() {
   try {
     await session.run(AbortSignal.timeout(120000), async (context) => {
       stage = "page";
-      const page = context.pages()[0] || (await context.newPage());
+      const page = context.pages()[0] || (await createCollectorPage(context));
       page.setDefaultTimeout(15000);
       const inventoryRequests: { path: string; status: number }[] = [];
       page.on("response", (response) => {
@@ -38,7 +39,7 @@ async function main() {
         const started = Date.now();
         stage = `${entry}:activate`;
         inventoryRequests.length = 0;
-        await page.bringToFront();
+        await prepareCollectorPage(page);
         stage = `${entry}:navigate`;
         const response = await page.goto(url, {
           waitUntil: "domcontentloaded",

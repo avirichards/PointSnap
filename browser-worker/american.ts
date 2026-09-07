@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 import {
   chromium,
   firefox,
@@ -500,14 +501,12 @@ export class AmericanBrowserRunner {
         this.persistentPage &&
         !this.persistentPage.isClosed()
           ? this.persistentPage
-          : await context.newPage();
+          : await createCollectorPage(context);
       if (persistentContext) this.persistentPage = page;
       if (persistentContext) {
-        // A reused ordinary Chrome tab can be backgrounded while idle. Its
-        // animation frames can throttle and stall normal click stability checks.
-        // Activate only this app-owned page before using its ordinary UI.
-        await page.bringToFront();
-        mark("activate-owned-page");
+        // Keep a reused owned tab responsive without taking OS focus.
+        await prepareCollectorPage(page);
+        mark("prepare-background-page");
       }
       signal.throwIfAborted();
       onResponse = (response: Response) => {

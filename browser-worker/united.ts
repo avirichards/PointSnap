@@ -1,3 +1,4 @@
+import { createCollectorPage, prepareCollectorPage } from "./background-page";
 import type { Page, Response, Request } from "playwright";
 import { setTimeout as delay } from "node:timers/promises";
 import type { SearchQuery } from "../src/lib/types";
@@ -187,6 +188,7 @@ export async function reconcileUnitedPage(
   value: unknown,
   q: SearchQuery,
 ) {
+  await prepareCollectorPage(page);
   const { flights } = unitedFlights(value, q);
   await page.getByRole("button", { name: "Reset all", exact: true }).click();
   await mixedMode(page, true);
@@ -219,13 +221,15 @@ export async function reconcileUnitedPage(
   };
 }
 export async function submitUnitedForm(page: Page, q: SearchQuery) {
-  await page.goto(entry, { waitUntil: "domcontentloaded", timeout: 45000 });
+  await page.goto(entry, { waitUntil: "load", timeout: 45000 });
+  await prepareCollectorPage(page);
   await page.getByRole("tab", { name: "One-way", exact: true }).click();
   for (const [name, code] of [
     ["From departing city, airport name, or airport code.", q.origin],
     ["To destination city, airport name, or airport code.", q.dest],
   ]) {
     const input = page.getByRole("combobox", { name, exact: true });
+    await input.fill("");
     await input.fill(code);
     const option = page.getByRole("button", {
       name: new RegExp("\\(" + code + "(?: - [^)]+)?\\)$"),
@@ -332,7 +336,7 @@ export class UnitedBrowserRunner {
           } catch {
             return false;
           }
-        }) ?? (await context.newPage());
+        }) ?? (await createCollectorPage(context));
       page.setDefaultTimeout(15000);
       const abort = () => {
         void page.close().catch(() => {});
@@ -392,7 +396,7 @@ export class UnitedBrowserRunner {
       page.on("requestfailed", failed);
       page.on("response", response);
       try {
-        await page.bringToFront();
+        await prepareCollectorPage(page);
         if (
           await page
             .locator("#MPIDEmailField:visible,input[type=password]:visible")
@@ -480,10 +484,12 @@ export class UnitedBrowserRunner {
       } catch (e) {
         signal.throwIfAborted();
         if (e instanceof BrowserSearchError) throw e;
-        throw new BrowserSearchError(
+        const failure = new BrowserSearchError(
           "United’s member award search could not be completed.",
           "collector",
         );
+        failure.cause = e;
+        throw failure;
       } finally {
         page.off("request", request);
         page.off("requestfinished", finished);

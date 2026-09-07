@@ -415,3 +415,14 @@ AA Browser-API-mint agent finding (Session 14):
 This is the Sekinal deep-link pattern, but routed through **BD Browser API** (which clears Akamai) instead of Camoufox+Fly-egress or Camoufox+BD-Residential (both IP-flagged, failed earlier). One agent can template this for AA + DL, then it likely extends to any anonymous-search Akamai airline.
 
 **Next**: after the T5' agent finishes, dispatch a "BD Browser API in-page XHR capture" agent for AA + DL. Then consolidated deploy + test.
+
+
+## September 6 — Flying Blue native PointSnap connection
+
+Flying Blue now works through the authorized operator session and ordinary KLM reward search. Two independent full native runs returned JFK–AMS October7 one adult:14 itineraries/32 fares, and October8 two adults:13/32, about46 seconds each. After the owned-browser restart, the existing sign-in was reused without a new PIN. The actual PointSnap API and frontend returned a fresh14/33 result in51–52 seconds. All54 foreground samples stayed in Codex. These changing counts are live observations, not fixed expectations.
+
+The collector checks the actual REWARD request route/date/adult count, all direct and connecting flight cards, every available cabin tab and each expanded fare-family heading. Exact points and cash are whole-party amounts and are divided per passenger; KL642 Economy is29,000 +USD138 each or58,000 +USD276 for two. Native booking classes and public conditions are retained. Customer/traveler identifiers and member metadata are removed at the inventory boundary; every fare remains visibly conditional on member eligibility. Economy with upsell cabins included all19 Premium/Business fares from separately checked cabin-filtered queries.
+
+All14 returned itineraries/33 fares are present in the actual desktop/mobile app. Fare details, AM/PM clocks, party totals and the official trip-prefilled KLM link were checked. No horizontal overflow or page errors occurred. Connecting segment cabins remain unconfirmed until their per-fare flight-details binding is qualified; unknown does not become a guessed all-Business itinerary. Exact seats, First eligibility, broader routes, technical stops, valid empty searches and long-term/hosted operation remain open. The UI task received the observed issue that routine fare conditions are styled as excessive amber warnings.
+
+All368 tests across42 files, TypeScript, focused lint and the optimized Node22 build pass. The finalBA/Qatar/Singapore/Turkish batch remains the expansion scope, followed by stabilization. Member access for that batch has not been supplied. United recovery remains unresolved after its latest native428; earlier native successes remain documented separately. See [Flying Blue evidence](../docs/evidence/flying-blue-native-member-2026-09-06.json).
