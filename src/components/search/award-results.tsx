@@ -6,7 +6,6 @@ import {
   DisplayCurrencyProvider,
   useDisplayCurrency,
   Money,
-  DisplayPreferences,
 } from "./display-currency";
 import { PointsGuide } from "@/components/points/points-guide";
 import { useSessionPoints } from "@/hooks/use-session-points";
@@ -316,7 +315,6 @@ function Results({
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <DisplayPreferences />
           {pax > 1 && (
             <label className="flex items-center gap-2 text-sm min-h-11">
               <input

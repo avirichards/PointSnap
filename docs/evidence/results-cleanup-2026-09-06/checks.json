@@ -1,0 +1,15 @@
+{
+  "liveCollectorsRequested": false,
+  "checks": [
+    "Results route map and control removed; homepage globe retained",
+    "Currency/time/layout update results immediately; display choices do not count as filters or reset with Reset all",
+    "All three display settings persist after reload",
+    "Phone menu has no horizontal overflow; keyboard disclosure and settings work; changes apply to results"
+  ],
+  "screenshots": [
+    "desktop-display-preferences",
+    "desktop-results",
+    "mobile-display-preferences"
+  ],
+  "browserErrors": []
+}

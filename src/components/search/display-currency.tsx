@@ -13,13 +13,7 @@ import {
   money,
   type ExchangeRates,
 } from "@/lib/currency";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { SlidersHorizontal } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { TimeFormatPicker, useTimeFormat } from "./time-preference";
 import { ResultDensityPicker } from "./result-density";
 import countryCurrencies from "@/lib/country-currencies.json";
@@ -114,30 +108,29 @@ export function DisplayPreferences() {
   const { currency } = useDisplayCurrency();
   const { format } = useTimeFormat();
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-11 rounded-full text-xs text-muted-foreground"
-          aria-label="Display preferences"
-        >
-          <SlidersHorizontal />
-          {currency} · {format === "12h" ? "AM/PM" : "24-hour"}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className="rounded-2xl w-80 max-w-[calc(100vw-24px)] p-5 space-y-5"
-      >
-        <h3 className="font-semibold">Display preferences</h3>
+    <details className="filter-display-preferences">
+      <summary>
+        <SlidersHorizontal className="size-4 shrink-0" aria-hidden />
+        <span className="flex-1">
+          <strong>Display preferences</strong>
+          <small>
+            {currency} · {format === "12h" ? "AM/PM" : "24-hour"}
+          </small>
+        </span>
+        <ChevronDown
+          className="size-4 shrink-0 disclosure-chevron"
+          aria-hidden
+        />
+      </summary>
+      <div className="space-y-5 pt-4">
         <CurrencyPicker />
         <TimeFormatPicker />
         <ResultDensityPicker />
         <p className="text-xs text-muted-foreground">
           Saved on this device. Flight times stay local to each airport.
         </p>
-      </PopoverContent>
-    </Popover>
+      </div>
+    </details>
   );
 }
 export function CurrencyPicker() {
