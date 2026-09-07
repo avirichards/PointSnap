@@ -19,7 +19,7 @@ The user assigned this task to features and UI on September 6, 2026, while the o
 
 ## Later features requiring data coordination
 
-- Stabilize broad city/date batches under the shared request limit; physical city expansion and independent return windows are now implemented.
+- Server-side persistent batching remains a later stabilization item. The browser queue now resumes HTTP 429 responses automatically while respecting the shared request limit; physical city expansion and independent return windows are implemented.
 - Hidden-city exploration with real full-ticket pricing, a clear distinction from ordinary itineraries, and the actual unused-segment and baggage implications.
 - Additional transfer and redemption comparisons when the relevant program data is available.
 
@@ -36,3 +36,11 @@ Delivery sequence: (1) design system and complete search-to-booking flow; (2) ve
 New search contracts must preserve single-airport URLs and every source fare. Transfer seed data requires a source/eligibility/ratio/minimum/increment audit before use. Personalization begins with temporary guest inputs; persistence is explicit and account-scoped. No point transfers or purchases are executed.
 
 The approved first product pass is implemented and has been exercised in the browser on desktop and phone. Implementation, evidence, remaining data-dependent features and hosted database integration steps are tracked in `docs/product-ui-handoff.md`. Keep the airline work and all original requirements open independently. No hosted migration or canonical runtime update is claimed until verified.
+
+## September 6 — appearance and calendar feedback
+
+- User wants the light globe to fit the warm light palette, and dark mode to be more readable, less green, and feel like the same product. Implemented separate globe palettes, neutral charcoal surfaces, ivory text, cream primary actions and restrained sage accents. Airport labels now avoid overlapping while rotating.
+- User wants flexibility inside the bottom of both calendars. Latest refinement supersedes the full 1–14 dropdown: show **Exact date, ±1, ±3, ±7 and ±14** tags. Implemented independent departure/return settings, a Done action, persistent closed-calendar summaries, and a centered phone dialog with the whole calendar visible at 390×844. Existing saved custom ranges remain usable.
+- Search parsing and date expansion support ±14 (up to 29 dates). HTTP 429 now pauses and resumes remaining browser checks with a shared cooldown; Stop search cancels it. No server limit increase or collector changes.
+- The two chats work independently; the user clarified that necessary cross-chat context/handoff messages are fine. Avoid routine cross-chat progress chatter.
+- Verification and evidence: `docs/appearance-calendar-refinement.md`. Airline connection and hosted account-storage tasks remain with their existing owner.

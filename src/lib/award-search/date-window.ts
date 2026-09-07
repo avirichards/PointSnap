@@ -1,5 +1,6 @@
 import { airportPairs } from "@/lib/search-places";
 import type { Coverage } from "./types";
+export const MAX_DATE_FLEX_DAYS = 14;
 export interface DaySearch {
   date: string;
   state: "queued" | "searching" | "complete" | "error" | "cancelled";
@@ -17,7 +18,7 @@ export function searchDates(
     !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
     !Number.isInteger(flex) ||
     flex < 0 ||
-    flex > 7
+    flex > MAX_DATE_FLEX_DAYS
   )
     throw new Error("Invalid date window");
   const t = Date.parse(date + "T12:00:00Z");

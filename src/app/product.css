@@ -39,41 +39,91 @@
 }
 .dark {
   color-scheme: dark;
-  --background: #0d1518;
-  --foreground: #eef3ef;
-  --card: #162024;
-  --card-foreground: #eef3ef;
-  --popover: #1c282c;
-  --popover-foreground: #eef3ef;
-  --primary: #b8e6d5;
-  --primary-foreground: #123a30;
-  --secondary: #283c34;
-  --secondary-foreground: #d2ebdf;
-  --muted: #202c30;
-  --muted-foreground: #afbbb5;
-  --accent: #293a35;
-  --accent-foreground: #e1f1e8;
-  --border: #34423f;
-  --input: #43534b;
-  --ring: #b8e6d5;
-  --destructive: #ed9e94;
+  --background: #191918;
+  --foreground: #f4f1e8;
+  --card: #242422;
+  --card-foreground: #f4f1e8;
+  --popover: #2d2d29;
+  --popover-foreground: #f4f1e8;
+  --primary: #e9e4d6;
+  --primary-foreground: #252820;
+  --secondary: #30302b;
+  --secondary-foreground: #e7e4da;
+  --muted: #30302d;
+  --muted-foreground: #c2c0b7;
+  --accent: #383831;
+  --accent-foreground: #f4f1e8;
+  --border: #484840;
+  --input: #6e6e63;
+  --ring: #e9e4d6;
+  --destructive: #f0aaa0;
   --destructive-foreground: #38130e;
-  --cabin-y: #202e2d;
-  --cabin-y-fg: #d2dfd6;
-  --cabin-w: #22373c;
-  --cabin-w-fg: #b9dfe9;
-  --cabin-j: #253c30;
-  --cabin-j-fg: #cce9d2;
-  --cabin-f: #3d3626;
-  --cabin-f-fg: #ecd9ab;
-  --fresh: #82bc9c;
-  --fresh-fg: #a8dfba;
+  --cabin-y: #30302c;
+  --cabin-y-fg: #ece9df;
+  --cabin-w: #2e3539;
+  --cabin-w-fg: #d5e1e7;
+  --cabin-j: #303930;
+  --cabin-j-fg: #dce5d6;
+  --cabin-f: #3d372c;
+  --cabin-f-fg: #ecdfc4;
+  --fresh: #a6c3ac;
+  --fresh-fg: #c1dbbd;
   --stale: #d3b472;
   --stale-fg: #e4ca94;
   --stale-critical: #ed9e94;
   --stale-critical-fg: #f8b8ae;
-  --surface-shadow: 0 4px 20px #00000014;
+  --surface-shadow: 0 4px 20px #00000020, 0 1px 0 #ffffff04;
 }
+/* The globe belongs to the same material palette in both appearances. */
+:root {
+  --brand-accent: #145c50;
+  --globe-ocean-top: #789b9a;
+  --globe-ocean-mid: #4e7978;
+  --globe-ocean-edge: #345c60;
+  --globe-land-top: #d4ddc9;
+  --globe-land-mid: #b0c1ab;
+  --globe-land-edge: #89a18f;
+  --globe-shore: #e1e8d8;
+  --globe-grid: #e0ece2;
+  --globe-rim: #729286;
+  --globe-shadow: #223d36;
+  --globe-shadow-mid: 0.07;
+  --globe-shadow-edge: 0.3;
+  --globe-halo: #a7b7a7;
+  --globe-label: #fffdf4;
+  --globe-label-border: #738879;
+  --globe-label-ink: #223b33;
+  --globe-label-muted: #52675b;
+  --globe-label-dot: #28604d;
+  --globe-marker: #bcd3c4;
+  --globe-marker-selected: #fffdf0;
+  --globe-route-edge: #315a55;
+}
+.dark {
+  --brand-accent: #a8beb0;
+  --globe-ocean-top: #465557;
+  --globe-ocean-mid: #2d4044;
+  --globe-ocean-edge: #202e32;
+  --globe-land-top: #8b9a8d;
+  --globe-land-mid: #63766a;
+  --globe-land-edge: #45554a;
+  --globe-shore: #b2c0ac;
+  --globe-grid: #afc2b8;
+  --globe-rim: #849b8d;
+  --globe-shadow: #101714;
+  --globe-shadow-mid: 0.12;
+  --globe-shadow-edge: 0.48;
+  --globe-halo: #9ca99a;
+  --globe-label: #2b2e29;
+  --globe-label-border: #727e6c;
+  --globe-label-ink: #f4f1e8;
+  --globe-label-muted: #c4c8b9;
+  --globe-label-dot: #b8ccb5;
+  --globe-marker: #a3b6a6;
+  --globe-marker-selected: #f5f2e6;
+  --globe-route-edge: #172c28;
+}
+
 body {
   letter-spacing: -0.012em;
 }
@@ -120,7 +170,7 @@ input[type="radio"] {
   width: 32px;
   height: 32px;
   stroke-width: 1.3;
-  color: var(--primary);
+  color: var(--brand-accent);
 }
 .primary-nav {
   display: flex;
@@ -324,21 +374,10 @@ input[type="radio"] {
 }
 .date-flexibility {
   display: block;
-}
-.date-flexibility select {
   font-size: 12px;
-  padding: 1px 14px 1px 0;
+  padding-block: 1px;
   min-height: 24px;
   color: var(--muted-foreground);
-  width: auto;
-  max-width: 100%;
-  border: 0;
-  background: transparent;
-}
-.date-flexibility select:disabled {
-  appearance: none;
-  opacity: 1;
-  cursor: default;
 }
 .travelers-trigger {
   min-height: 54px;
@@ -366,13 +405,22 @@ input[type="radio"] {
   box-shadow: none;
   padding-inline: 16px !important;
 }
-.search-form-error {
+.search-form-error,
+.search-form-note {
   grid-column: 1/-1;
   font-size: 14px;
+}
+.search-form-note {
+  color: var(--muted-foreground);
+}
+.search-form-error {
   color: var(--destructive);
 }
 .calendar-popover {
   width: min(344px, calc(100vw - 24px));
+  max-height: var(--radix-popover-content-available-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px;
   border-radius: 16px;
   box-shadow: 0 15px 45px #142d251c;
@@ -384,6 +432,24 @@ input[type="radio"] {
   font-size: 15px;
   font-weight: 550;
   margin-bottom: 10px;
+}
+.calendar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 79;
+  background: #14191266;
+}
+.calendar-sheet {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 80;
+  max-height: calc(100dvh - 32px);
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  outline: none;
 }
 .calendar-heading button {
   display: grid;
@@ -454,24 +520,97 @@ input[type="radio"] {
   font-size: 12px;
   color: var(--muted-foreground);
 }
-.calendar-footer input {
+.calendar-footer input[type="date"] {
   min-width: 0;
   width: 155px;
-  min-height: 38px;
-  border: 1px solid var(--border);
+  min-height: 40px;
+  border: 1px solid var(--input);
   border-radius: 7px;
   padding: 6px;
   color: var(--foreground);
   background: var(--background);
 }
-.calendar-clear {
+.calendar-flexibility {
+  margin-top: 16px;
+  min-width: 0;
+}
+.calendar-flexibility legend {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-bottom: 9px;
+}
+.calendar-flex-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.calendar-flex-options label {
+  position: relative;
+  flex: 1;
+  cursor: pointer;
+}
+.calendar-flex-options label:first-child {
+  flex: 1.5;
+}
+.calendar-flex-options span {
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  padding: 6px;
+  border: 1px solid var(--input);
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.calendar-flex-options input:checked + span {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 550;
+}
+.calendar-flex-options label:hover span {
+  border-color: var(--primary);
+}
+.calendar-flex-options input:focus-visible + span {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.calendar-flex-options input:disabled + span {
+  opacity: 0.45;
+  cursor: default;
+}
+.calendar-flexibility-hint {
   margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.calendar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+.calendar-done {
+  min-height: 40px;
+  padding: 8px 22px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 13px;
+  font-weight: 550;
+}
+.calendar-done:hover {
+  filter: brightness(0.94);
+}
+.calendar-clear {
+  margin-right: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 100%;
-  min-height: 38px;
+  min-height: 40px;
   border-radius: 7px;
   color: var(--primary);
   font-size: 13px;
@@ -726,9 +865,6 @@ input[type="radio"] {
     min-height: 48px;
     align-self: center;
     width: 100%;
-  }
-  .date-flexibility select {
-    font-size: 12px;
   }
   .discovery-intro h1 {
     font-size: 38px;
@@ -1504,4 +1640,21 @@ input[type="radio"] {
 }
 #compare-heading {
   scroll-margin-top: 160px;
+}
+
+/* Keep green as a small brand cue, rather than tinting every dark surface. */
+.primary-nav a[aria-current] {
+  border-bottom-color: var(--brand-accent);
+}
+.discovery-intro h1 span {
+  color: var(--brand-accent);
+}
+.globe-airport:focus-visible > circle:first-child {
+  stroke: var(--globe-label-ink);
+}
+.dark .search-field-label {
+  font-weight: 500;
+}
+.dark .inspector-overlay {
+  background: #11110f80;
 }

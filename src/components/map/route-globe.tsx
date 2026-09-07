@@ -195,6 +195,31 @@ export function RouteGlobe({
     });
   }, [origin, destination]);
   const labels = new Set([origin, destination, hover]);
+  const labelPositions = new Map<string, { x: number; y: number }>();
+  for (const code of labels) {
+    const a = markers.find((marker) => marker.iata === code);
+    if (!a) continue;
+    const [x, y] = projection(coordinates(a))!;
+    const preferredX = x > 385 ? x - 130 : x + 14;
+    const preferredY = y + (code === origin ? -40 : 10);
+    const candidates = [0, 50, -50, 100, -100].flatMap((shift) =>
+      [preferredX, x > 385 ? x + 14 : x - 130].map((horizontal) => ({
+        x: Math.max(8, Math.min(474, horizontal)),
+        y: Math.max(8, Math.min(470, preferredY + shift)),
+      })),
+    );
+    const position =
+      candidates.find((candidate) =>
+        [...labelPositions.values()].every(
+          (placed) =>
+            candidate.x + 124 <= placed.x ||
+            placed.x + 124 <= candidate.x ||
+            candidate.y + 48 <= placed.y ||
+            placed.y + 48 <= candidate.y,
+        ),
+      ) ?? candidates[0];
+    labelPositions.set(code, position);
+  }
   return (
     <div className="route-globe">
       <div className="globe-coordinate mono-label">
@@ -297,24 +322,36 @@ export function RouteGlobe({
       >
         <defs>
           <radialGradient id={`${uid}ocean`} cx="36%" cy="25%" r="78%">
-            <stop offset="0" stopColor="#213f46" />
-            <stop offset=".55" stopColor="#102b31" />
-            <stop offset="1" stopColor="#061116" />
+            <stop offset="0" stopColor="var(--globe-ocean-top)" />
+            <stop offset=".55" stopColor="var(--globe-ocean-mid)" />
+            <stop offset="1" stopColor="var(--globe-ocean-edge)" />
           </radialGradient>
           <radialGradient id={`${uid}land`} cx="30%" cy="20%" r="90%">
-            <stop offset="0" stopColor="#60897e" />
-            <stop offset=".55" stopColor="#35574f" />
-            <stop offset="1" stopColor="#132d2c" />
+            <stop offset="0" stopColor="var(--globe-land-top)" />
+            <stop offset=".55" stopColor="var(--globe-land-mid)" />
+            <stop offset="1" stopColor="var(--globe-land-edge)" />
           </radialGradient>
           <radialGradient id={`${uid}shade`} cx="32%" cy="28%" r="72%">
-            <stop offset=".35" stopColor="#000" stopOpacity="0" />
-            <stop offset=".83" stopColor="#000" stopOpacity=".18" />
-            <stop offset="1" stopColor="#000" stopOpacity=".75" />
+            <stop
+              offset=".35"
+              stopColor="var(--globe-shadow)"
+              stopOpacity="0"
+            />
+            <stop
+              offset=".83"
+              stopColor="var(--globe-shadow)"
+              stopOpacity="var(--globe-shadow-mid)"
+            />
+            <stop
+              offset="1"
+              stopColor="var(--globe-shadow)"
+              stopOpacity="var(--globe-shadow-edge)"
+            />
           </radialGradient>
           <radialGradient id={`${uid}halo`}>
-            <stop offset=".78" stopColor="#87d9c6" stopOpacity="0" />
-            <stop offset=".9" stopColor="#67d8c0" stopOpacity=".1" />
-            <stop offset="1" stopColor="#67d8c0" stopOpacity="0" />
+            <stop offset=".78" stopColor="var(--globe-halo)" stopOpacity="0" />
+            <stop offset=".9" stopColor="var(--globe-halo)" stopOpacity=".1" />
+            <stop offset="1" stopColor="var(--globe-halo)" stopOpacity="0" />
           </radialGradient>
           <filter id={`${uid}glow`}>
             <feGaussianBlur stdDeviation="3" />
@@ -324,21 +361,21 @@ export function RouteGlobe({
         <path
           d={path({ type: "Sphere" }) ?? ""}
           fill={`url(#${uid}ocean)`}
-          stroke="#7ea79d"
+          stroke="var(--globe-rim)"
           strokeOpacity=".5"
           strokeWidth=".7"
         />
         <path
           d={path(grid) ?? ""}
           fill="none"
-          stroke="#8bd4c0"
+          stroke="var(--globe-grid)"
           strokeOpacity=".13"
           strokeWidth=".55"
         />
         <path
           d={path(land) ?? ""}
           fill={`url(#${uid}land)`}
-          stroke="#8fb7a3"
+          stroke="var(--globe-shore)"
           strokeOpacity=".36"
           strokeWidth=".55"
         />
@@ -386,7 +423,15 @@ export function RouteGlobe({
               <path
                 d={trail}
                 fill="none"
-                stroke="#e6f5f6"
+                stroke="var(--globe-route-edge)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                opacity=".55"
+              />
+              <path
+                d={trail}
+                fill="none"
+                stroke="#f8fbf7"
                 strokeWidth="1.4"
                 strokeLinecap="round"
                 opacity=".9"
@@ -409,8 +454,7 @@ export function RouteGlobe({
         {markers.map((a) => {
           const [x, y] = projection(coordinates(a))!;
           const selected = a.iata === origin || a.iata === destination;
-          const label = labels.has(a.iata);
-          const left = x > 385;
+          const label = labelPositions.get(a.iata);
           return (
             <g
               key={a.iata}
@@ -444,30 +488,46 @@ export function RouteGlobe({
               <circle r="14" fill="transparent" />
               <circle
                 r={selected ? 8 : 3}
-                fill="#b8f3d6"
+                fill="var(--globe-marker)"
                 opacity={selected ? 0.12 : 0.25}
               />
               <circle
                 r={selected ? 3.7 : 1.8}
-                fill={selected ? "#d5ffe8" : "#83b5a6"}
+                fill={
+                  selected
+                    ? "var(--globe-marker-selected)"
+                    : "var(--globe-marker)"
+                }
               />
               {label && (
+                <line
+                  x1="0"
+                  y1="0"
+                  x2={Math.max(label.x, Math.min(x, label.x + 118)) - x}
+                  y2={Math.max(label.y, Math.min(y, label.y + 42)) - y}
+                  stroke="var(--globe-label-border)"
+                  strokeWidth=".7"
+                  opacity=".6"
+                  pointerEvents="none"
+                />
+              )}
+              {label && (
                 <g
-                  transform={`translate(${left ? -130 : 14},${a.iata === origin ? -40 : 10})`}
+                  transform={`translate(${label.x - x},${label.y - y})`}
                   pointerEvents="none"
                 >
                   <rect
                     width="118"
                     height="42"
                     rx="5"
-                    fill="#0b1719"
-                    stroke="#3b5b54"
+                    fill="var(--globe-label)"
+                    stroke="var(--globe-label-border)"
                   />
-                  <circle cx="13" cy="21" r="2" fill="#b8f3d6" />
+                  <circle cx="13" cy="21" r="2" fill="var(--globe-label-dot)" />
                   <text
                     x="24"
                     y="18"
-                    fill="#e9f3ee"
+                    fill="var(--globe-label-ink)"
                     fontSize="11"
                     fontWeight="500"
                   >
@@ -476,7 +536,7 @@ export function RouteGlobe({
                   <text
                     x="24"
                     y="32"
-                    fill="#8faaa0"
+                    fill="var(--globe-label-muted)"
                     fontSize="9"
                     fontFamily="monospace"
                   >

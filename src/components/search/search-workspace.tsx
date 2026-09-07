@@ -348,7 +348,11 @@ function Workspace() {
                   <RefreshCw
                     className={`size-4 ${stream.loading ? "animate-spin motion-reduce:animate-none" : ""}`}
                   />
-                  {stream.loading ? "Searching…" : "Refresh"}
+                  {stream.rateLimitUntil
+                    ? "Waiting to resume…"
+                    : stream.loading
+                      ? "Searching…"
+                      : "Refresh"}
                 </Button>
               </div>
             </div>
@@ -400,6 +404,16 @@ function Workspace() {
                 }}
               />
             )}
+            {stream.rateLimitUntil && (
+              <p
+                role="status"
+                className="rounded-xl border bg-card p-4 text-sm"
+              >
+                Waiting for the search limit to reset. Your remaining dates will
+                resume automatically. Results already found remain available
+                below.
+              </p>
+            )}
             {stream.error && (
               <div
                 role="alert"
@@ -419,9 +433,11 @@ function Workspace() {
               <p role="status" className="text-xs text-muted-foreground">
                 {stream.tasks.filter((t) => t.state === "complete").length} of{" "}
                 {stream.tasks.length} airport/date searches completed
-                {stream.loading
-                  ? " · Two searches run at a time. Results appear as sources respond."
-                  : " · See source coverage for incomplete checks."}
+                {stream.rateLimitUntil
+                  ? " · Remaining checks are queued. You can stop the search at any time."
+                  : stream.loading
+                    ? " · Two searches run at a time. Results appear as sources respond."
+                    : " · See source coverage for incomplete checks."}
               </p>
             )}
             <AwardResults

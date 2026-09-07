@@ -65,7 +65,11 @@ describe("real flexible date searches", () => {
       "2026-10-02",
     ]);
     expect(searchDates("2026-10-05", 7, now)).toHaveLength(15);
-    expect(() => searchDates("2026-10-05", 8, now)).toThrow();
+    const widest = searchDates("2026-10-05", 14, now);
+    expect(widest).toHaveLength(29);
+    expect(widest[0]).toBe("2026-09-21");
+    expect(widest.at(-1)).toBe("2026-10-19");
+    expect(() => searchDates("2026-10-05", 15, now)).toThrow();
   });
   it("clips to valid outbound and return windows", () =>
     expect(
