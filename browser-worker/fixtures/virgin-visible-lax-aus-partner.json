@@ -1,0 +1,89 @@
+{
+  "cards": [
+    {
+      "text": "05 Oct\n\n2h 53m  |  Direct\n\n05 Oct\n\n18:32\n23:25\nFlying with \nDelta Air Lines\n | DL692\nLAX\nAUS\n\nMain Cabin\n\n16,500\n\n+US$6\n\nPremium\n\nNot available\n\nUpper Class\n\nNot available\n\nOne way for 1 person, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "18:32",
+        "23:25"
+      ],
+      "fareButtons": [
+        {
+          "text": "Main Cabin\n\n16,500\n\n+US$6",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\nNot available",
+          "disabled": true
+        },
+        {
+          "text": "Upper Class\n\nNot available",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "text": "05 Oct\n\n6h 33m  |  1 change\n\n05 Oct\n\n13:10\n21:43\nFlying with \nDelta Air Lines\n | DL2728\nLAX\nAUS\n\nMain Cabin\n\n27,500\n\n+US$6\n\nPremium\n\nNot available\n\nUpper Class\n\nNot available\n\nOne way for 1 person, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "13:10",
+        "21:43"
+      ],
+      "fareButtons": [
+        {
+          "text": "Main Cabin\n\n27,500\n\n+US$6",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\nNot available",
+          "disabled": true
+        },
+        {
+          "text": "Upper Class\n\nNot available",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "text": "05 Oct\n\n8h 9m  |  1 change\n\n05 Oct\n\n11:34\n21:43\nFlying with \nDelta Air Lines\n | DL2728\nLAX\nAUS\n\nMain Cabin\n\n27,500\n\n+US$6\n\nPremium\n\nNot available\n\nUpper Class\n\nNot available\n\nOne way for 1 person, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "11:34",
+        "21:43"
+      ],
+      "fareButtons": [
+        {
+          "text": "Main Cabin\n\n27,500\n\n+US$6",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\nNot available",
+          "disabled": true
+        },
+        {
+          "text": "Upper Class\n\nNot available",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "text": "05 Oct\n\n9h 11m  |  1 change\n\n05 Oct\n\n06:00\n17:11\nFlying with \nDelta Air Lines\n | DL2689\nLAX\nAUS\n\nEconomy Classic\n\nNot available\n\nPremium\n\nNot available\n\nFirst Class\n\n101,000\n\n+US$12\n\nOne way for 1 person, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "06:00",
+        "17:11"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\nNot available",
+          "disabled": true
+        },
+        {
+          "text": "Premium\n\nNot available",
+          "disabled": true
+        },
+        {
+          "text": "First Class\n\n101,000\n\n+US$12",
+          "disabled": false
+        }
+      ]
+    }
+  ],
+  "countText": "Showing 4 of 4 flights"
+}

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["impit"],
+  distDir: process.env.POINTSNAP_NEXT_DIST_DIR || ".next",
 };
 
 export default nextConfig;

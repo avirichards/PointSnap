@@ -1,0 +1,108 @@
+# PointSnap completion plan
+
+## Latest scope and operating preferences — September 6
+
+The user set the final expansion targets to British Airways, Qatar Airways, Singapore Airlines and Turkish Airlines. Preserve the connection work already underway, then pause adding programs after this batch and solidify the connected sources before further expansion. This supersedes the earlier open-ended airline expansion order. Stabilization includes complete flight/fare capture, consistent search results, session reuse/recovery, speed and the actual user experience. No new hosting purchase is implied by this sequence change.
+
+Browser collectors must not bring their windows to the foreground or interrupt typing. Run investigations and searches in the background; foreground sign-in is only appropriate when the user explicitly needs to interact. The finished public app should run collectors on its infrastructure, with no customer browser windows or recurring customer airline sign-ins.
+
+After an airline accepts a verification code, archive that exact verification email. Do not archive unrelated mail or unused/pending codes. Gmail access and airline sign-in authorization already supplied remain valid; credentials and code values must not be recorded in project notes.
+
+
+Approved in conversation; updated September 6, 2026 UTC with the user's coverage-first sequencing decision. Implementation is authorized. This plan and the current priorities in user-requirements.md supersede older access recommendations; historical findings remain evidence, not instructions or completion claims.
+
+## Latest scope adjustment — September 7
+
+Singapore is deferred at the user’s request until the other connections work fully. Its sign-in succeeds, but redemption searches report insufficient miles. No points transfer or purchase is requested. Prioritize Qatar’s native integration and stabilizing the existing sources; British and Turkish retain their normal human-verification checkpoints.
+
+## Current execution priority — connect the airlines first
+
+**Complete the airline-connection pass before spending substantial time on production reliability, hosting optimization, load testing or long-running qualification.** The user explicitly approved this sequence after distinguishing a working connection from a production-ready service. This changes work order, not the final completion requirements.
+
+For each program, get real native award searches working through PointSnap itself, retain all supplied flights and fare choices, verify route/date/party/points/fees against the airline, and check the actual frontend. Fix faults that prevent normal searches or produce incorrect data during this pass. Then move to the next program in the approved order. Keep known inventory gaps explicit and queued for resolution; do not call partial coverage complete.
+
+Hosted deployment, multi-user load, prolonged idle/restart recovery, the 50-search/seven-day reliability qualification and operating-cost optimization remain required before public release. They are a later pass, not a gate that holds all subsequent airline connections behind American. Do not launch further hosted American qualification merely because another hosting experiment is available. Use hosting research now only if it is needed to establish an otherwise unavailable native connection.
+
+American's local native connector has passed the initial integration gate: actual API and frontend searches return its own AAdvantage prices, including nonstops. Preserve the newly discovered connection-city completeness work and the hosted evidence; continue the approved connection order while keeping working sources functional. Etihad has now passed the initial local integration gate; ANA’s current public award entries have been rechecked and reach member login; Southwest, SAS and Copa have now passed their initial local integration gates in PointSnap. United and Virgin Atlantic have also passed their initial native member integration gates. Flying Blue has now passed native runner, API and frontend checks. Qatar has now passed native runner, actual API and desktop/mobile checks, including two-adult nonstop and one-adult connecting searches. Its normal restart still requires fresh SMS verification. Aeroplan, BA and Turkish retain documented access boundaries; Singapore is explicitly deferred.
+
+Qantas's experimental native collector now passes initial domestic, international, API and frontend checks, but later repeat searches received HTTP 403 and an explicit Access Denied page. Keep this connection marked integrating. Preserve the successful samples and the current failure evidence; test a distinct access hypothesis before another unchanged request, while continuing the remaining airline connections.
+
+American's fresh DFW all-cabin and premium searches confirm 26 additional itineraries missing from its current baseline. The experimental expansion across observed connecting airports reached airline verification at SEA; it is not enabled in the app. Preserve the initial baseline success and current interruption separately. Continue the connection pass while investigating a distinct access or source-scope approach; do not claim post-challenge recovery or exhaustive American coverage.
+
+## Outcome and constraints
+
+Deliver a practical, polished public award-search website with reliable native program data, complete flight and fare choices for each supported query, and all remaining product requirements verified in the actual browser. Customers must not need airline account connections or a helper installation. Keep existing working sources available.
+
+**Anonymous connections come first for every airline.** First pursue complete, reproducible direct anonymous access. Use an app-operated anonymous browser when normal browser execution is necessary. Test persistent profiles or an operator-side collector when evidence supports them. Use an operator-held airline account only for demonstrated member-access needs or another verified need that anonymous access cannot meet; a failed anonymous request does not establish that login fixes it. Do not reduce inventory completeness just to describe a connector as free or working.
+
+No award-data subscription. Prefer existing infrastructure and free test allowances; optional paid browser hosting or compute must fit within a total $100/month infrastructure ceiling, supported by measured workload and reliability. Pilot target: 100 submitted searches/day and five simultaneous visitors, with visible queues for large searches. The release airline list remains subject to a later explicit scope decision.
+
+The working order is American, Aeroplan, United, British Airways, Qatar, Virgin Atlantic, Singapore, Turkish, Etihad, ANA, Alaska, Delta, JetBlue, Qantas, Avianca, Emirates and Aeromexico; then other programs. American-first replaces the earlier Aeroplan-first order. Existing source maintenance and necessary verification continue.
+
+## Connection pass — direct anonymous access first
+
+1. **American anonymous search:** reproduce ordinary-browser results for future dates, beginning with LAX–AUS, then representative connecting and international searches. Reconcile every itinerary, cabin, fare and results page for the exact passenger count. Historical result counts are not fixed expectations for new searches.
+2. Use an actual app-owned anonymous session where needed, with one active search per profile. Verify that another normal search works and correct session faults that stop it. Extended idle/restart qualification belongs to the later release pass. Temporary profiles do not establish persistence; record exactly what has been tested.
+3. If a dedicated ordinary browser receives inventory but the current worker does not, evaluate a restricted operator-side extension and local collector that submits the official search form and returns complete normalized results from that same browser. It must operate independently of the Codex conversation and require no customer installation. Do not transplant personal browser cookies into denied requests.
+4. Establish native access for each remaining program in order. Carry reusable lessons into the next program. Evaluate a different execution environment only when it addresses a specific connection obstacle; defer hardening a working local connection for hosting.
+5. For a program with demonstrated member-only access, evaluate the authorized operator-account fallback in an isolated session. Do not log credentials or codes. No mailbox access has occurred; any email-code integration requires explicit OAuth consent. Establish the basic native search before building long-term recovery, and record owner-action requirements without promising perpetual sessions.
+6. Record latency and resource use as available, but defer infrastructure selection and load/cost optimization until the connection pass has progressed across the programs. Do not purchase award-data subscriptions or exceed the approved infrastructure budget.
+
+For each airline, record hypothesis, changed variable, current official flow, outcome and next action. Distinguish implementation errors, access verification, login requirements, incomplete extraction and valid empty availability. Do not repeat an unchanged failed experiment as a new idea. Public access and member-specific eligibility must remain distinct.
+
+Read and update the [airline connection playbook](../docs/airline-connection-playbook.md) as discoveries accumulate. Carry tested session handling, transport diagnostics, completeness checks and pricing normalization into the next program. Keep airline-specific assumptions as hypotheses until independently verified.
+
+## Virgin and Flying Blue — member fallback progress
+
+Virgin native flight search is verified in PointSnap: JFK–LHR October 8, two adults, 6 itineraries / 17 fares; JFK–DEL connecting search also reconciles 6 / 17. Exact source fees, all available cabin choices, per-person and party totals, account eligibility and trip-prefilled links passed desktop/mobile checks. The full 333-test suite and optimized build pass. A worker restart required normal sign-in and a fresh Virgin email code; the authorized Gmail connector completed it. This is interactive operator recovery, not an unattended mailbox service or durable sign-in guarantee. United was restored and freshly reverified at 40 / 89 after the same restart.
+
+Flying Blue now returns native JFK–AMS inventory in PointSnap after normal PIN sign-in:14 itineraries/33 fares in the latest two-adult API/frontend check. Every displayed cabin price is reconciled; firstKL642 is29,000 miles +USD138 per person. Sign-in survived the short owned-browser restart without a new code. Connecting segment cabins remain explicitly unconfirmed pending per-fare detail binding. Aeroplan sign-in succeeded but its first inventory request returned429; perform one normal recovery check after cooldown. Keep remaining native connections first.
+
+## September6 session recovery after Flying Blue integration
+
+United’s same-profile remembered-device password sign-in succeeded without a new code. The latest actual API returned40 itineraries/89fares in118.4 seconds, with all120 foreground samples preserved. Virgin’s normal email verification also succeeded; its accepted exact email was archived and the API returned6/17 in12.6 seconds. Keep earlier access and reconciliation failures as historical evidence and consistent repeat reliability open. Aeroplan’s existing authorized member flow is undergoing a bounded normal recovery after cooldown.
+
+## United — native member connection verified locally
+
+The two bounded anonymous hypotheses are complete: the official award-first and cash-to-miles controls both require sign-in. The user supplied authorized credentials and completed the existing verification challenge. Native MileagePlus now works through PointSnap’s service and actual frontend: LAX–AUS October 7 returns 40 itineraries / 89 distinct fares for one adult, and EWR–LHR October 7 returns 69 / 175 for two adults. The earlier domestic sample preserves 38 / 100, including 24 distinct higher-priced unmixed alternatives.
+
+Merge all native response batches, expand Show all flights, reset airline filters, and reconcile both mixed-cabin display modes. Clear saved traveler selections before setting generic adults; verify the returned route, date and passenger count. Preserve per-segment cabins and airport changes, exclude unavailable zero-price variants, and label every account-observed fare. No public price is inferred from a crossed-out comparison. Source account identifiers, credentials, verification codes and session references are excluded from stored fixtures and app responses.
+
+Three short ordinary-Chrome restart tests required password sign-in but did not ask for another code after the device was remembered. Passwords were supplied transiently through normal forms; automated credential recovery and long-term verification retention are not established. When sign-in is needed, the service preserves the dedicated operator login tab and returns an explicit connection issue. Customers do not connect their airline accounts.
+
+The final desktop, mobile and light-theme checks passed. A normal United/TrueBlue search groups 42 itineraries / 110 fares; UA1496 appears once with 15,000 MileagePlus account miles or 18,000 TrueBlue points, each plus USD5.60. Connection lessons are saved; continue the approved airline order. United’s broader cabin/route coverage, upstream warning semantics, valid empty searches, technical-stop shapes, trip-prefilled handoff, public eligibility, hosted operation and unattended recovery remain open for subsequent passes. The full goal remains unchanged. See docs/evidence/united-member-pilot-2026-09-06.json and docs/evidence/united-anonymous-handoff-2026-09-06.json.
+
+## Search service after the access proofs
+
+- Retain the Next.js frontend and Node airline workers. Add durable jobs, events, observations and connection health in the existing Postgres/Supabase stack with appropriate access control. Query identity must include passenger count and eligibility; legacy keys that omit these are insufficient.
+- Introduce POST /api/search/jobs, streamed job events and cancellation while keeping compatibility with the existing search API. Split work by program, airport pair and date; coalesce identical concurrent queries. A visitor leaving must not cancel work still needed by other viewers.
+- Prefill matching observations up to 15 minutes old with explicit cached labels and an automatic live refresh. Replace each source snapshot atomically so withdrawn fares disappear. Partial responses must never be labeled complete or substituted for valid empty results.
+- Apply shared anonymous as well as authenticated limits, per-program queues and weighted limits for expanded searches. Explain capacity before submission instead of silently omitting airport pairs or dates.
+- Keep the owner progress dashboard accurate: current method/stage, last complete search, counts, latency, success rate, recovery state, current issue, next experiment and projected cost. Health checks should not generate airline searches. During qualification, use two bounded live canaries per program per day with bounded transient retries.
+
+## Product completion after airline work
+
+Preserve every request in user-requirements.md. Implement city-wide airport groups with explicit members and pair coverage; accessible departure/return calendars with independent flexibility beneath each; compact default results and a Roomy preference; one physical itinerary with all booking programs and fares; clear one-way versus actual round-trip pricing; fees in the user's display currency with original amounts retained; AM/PM preference; and value-per-point only from a comparable cash fare.
+
+Quick filters, specialist controls, sorting and date-window prices must use the same matching fares. Finish accounts, wallet, saved searches and correct airline handoffs. Additional useful features include a shortlist, shareable filter URLs, fare export and an in-app watchlist governed by the same freshness and cost limits. Verify actual desktop, mobile and keyboard interactions, including loading, error, empty and partial states. Preserve the requested globe animation, route glow, drag behavior and inertia.
+
+Hidden-city exploration remains explicitly opt-in. Discover actual observed tickets through the requested intermediate destination, preserve the full ticket cost and onward destination, and clearly show the unused segment and relevant booking limitations. Begin with up to eight verified onward endpoints with visible scope and expansion. Include the LAX–AUS via a ticket to JFK regression. Do not invent an independently available first-leg award or imply an exhaustive onward search.
+
+## Qualification and release
+
+This phase follows the airline-connection pass. Before selecting permanent infrastructure, compare the proven flow on the actual candidate host and measure workload cost within budget. For member-only access, prove session recovery separately using a dedicated operator arrangement; an initial account search is not proof of durable public service. A personal-inbox test must become a dedicated operator inbox before public operation, and any email-code integration still requires explicit OAuth consent. Historical hosted diagnostics remain useful evidence and need not be rerun now.
+
+Qualify each program with at least 50 real representative searches over at least seven days, including two daily canaries. Reconcile all displayed itineraries and fare choices, validate route/date/party/cabin/fees/pagination, distinguish valid empty searches, and target at least 98% completion on the defined sample. Test the actual host, normal restarts and idle periods; for member access, test deliberate sign-out and automatic recovery with no routine manual login during qualification. This is measured qualification, not a promise of permanent access. Continue implementing the next program while collecting reliability evidence for the prior one.
+
+Verify shared jobs, cancellation, crashes, streaming recovery, member isolation, cache withdrawals, Business-filter date prices, currency/value calculations, airport-local times and DST, city-pair partial coverage and hidden-city semantics. Use fixtures for load tests and bounded real searches for access checks. Review the real frontend after changes. Verify projected monthly cost against the workload.
+
+Deploy a preview, verify migrations and runtime, then promote a tested commit only when its declared release scope passes. Use feature flags and a rollback path. An enabled parser, partner inventory or ordinary-browser screenshot does not qualify as a complete native connection. For unresolved access, retain a decision record with the distinct options tested, observed failures, remaining capability needed and next available action; never label an unresolved program complete.
+
+
+## September 7 UTC recovery follow-up
+
+Virgin partner support now passes actual serialized app searches: Delta LAX–AUS October 5 one adult, 4 itineraries/4 fares; JFK–LHR October 7, 7/19 including Air France Economy Standard. Desktop/mobile fare selection and official booking URLs were verified; all 390 tests, TypeScript, focused lint and the optimized build passed. United's latest serialized request after remembered-device sign-in returned HTTP 428; its earlier 40/89 proof is retained, with no experimental fix adopted. Aeroplan still returns 429 after accepted verification and cooldown.
+
+The final four account details have now been supplied. Qatar signed in using the accepted SMS code and displays an award calendar; actual flight inventory is under qualification. BA needs its human check, Singapore is now signed in after user-confirmed recovery, and Turkish has a CAPTCHA overlay before credentials can be tested. User authorized Messages on this Mac for airline verification texts. Do not record credentials/codes in project notes.
+
+The Departure Lounge UI branch is integrated at 32f7976 and passes the combined checks. Actual live Virgin results work on desktop/mobile. No Supabase URL, anon key or migration connection is configured in the canonical app, so the private-trips migration and authenticated cloud persistence remain unapplied/unverified. Local RLS tests passed; this is not a deployed database claim. Continue airline work first.

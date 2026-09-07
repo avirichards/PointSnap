@@ -1,0 +1,593 @@
+{
+  "type": "virgin-member-awards",
+  "request": {
+    "flightSearchRequest": {
+      "searchOriginDestinations": [
+        {
+          "origin": "LAX",
+          "destination": "AUS",
+          "departureDate": "2026-10-05"
+        }
+      ],
+      "awardSearch": true,
+      "bundleOffer": false,
+      "calendarSearch": false,
+      "flexiDateSearch": false,
+      "nonStopOnly": false,
+      "refundableOnly": false,
+      "checkInBaggageAllowance": false,
+      "carryOnBaggageAllowance": false
+    },
+    "customerDetails": [
+      {
+        "ptc": "ADT"
+      }
+    ]
+  },
+  "result": {
+    "slices": {
+      "current": 0,
+      "total": 1
+    },
+    "criteria": {
+      "origin": {
+        "code": "LAX"
+      },
+      "destination": {
+        "code": "AUS"
+      },
+      "departing": "2026-10-05"
+    },
+    "slice": {
+      "flightsAndFares": [
+        {
+          "flight": {
+            "origin": {
+              "code": "LAX"
+            },
+            "destination": {
+              "code": "AUS"
+            },
+            "departure": "2026-10-05T18:32:00",
+            "arrival": "2026-10-05T23:25:00",
+            "duration": "PT2H53M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL692",
+                "operatingFlightNumber": "DL692",
+                "origin": {
+                  "code": "LAX"
+                },
+                "destination": {
+                  "code": "AUS"
+                },
+                "departure": "2026-10-05T18:32:00",
+                "arrival": "2026-10-05T23:25:00",
+                "duration": "PT2H53M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Boeing 737-800"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "LAX"
+                    },
+                    "destination": {
+                      "code": "AUS"
+                    },
+                    "departure": "2026-10-05T18:32:00",
+                    "arrival": "2026-10-05T23:25:00",
+                    "duration": "PT2H53M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "16500",
+                "amountIncludingTax": 5.6,
+                "tax": 5.6,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Main Cabin",
+                  "bookingClass": "N",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "LAX"
+            },
+            "destination": {
+              "code": "AUS"
+            },
+            "departure": "2026-10-05T13:10:00",
+            "arrival": "2026-10-05T21:43:00",
+            "duration": "PT6H33M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL1647",
+                "operatingFlightNumber": "DL1647",
+                "origin": {
+                  "code": "LAX"
+                },
+                "destination": {
+                  "code": "SLC"
+                },
+                "departure": "2026-10-05T13:10:00",
+                "arrival": "2026-10-05T16:02:00",
+                "duration": "PT1H52M",
+                "connection": "PT1H58M",
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A321neo"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "LAX"
+                    },
+                    "destination": {
+                      "code": "SLC"
+                    },
+                    "departure": "2026-10-05T13:10:00",
+                    "arrival": "2026-10-05T16:02:00",
+                    "duration": "PT1H52M",
+                    "isDominantLeg": false
+                  }
+                ]
+              },
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL2728",
+                "operatingFlightNumber": "DL2728",
+                "origin": {
+                  "code": "SLC"
+                },
+                "destination": {
+                  "code": "AUS"
+                },
+                "departure": "2026-10-05T18:00:00",
+                "arrival": "2026-10-05T21:43:00",
+                "duration": "PT2H43M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A320"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "SLC"
+                    },
+                    "destination": {
+                      "code": "AUS"
+                    },
+                    "departure": "2026-10-05T18:00:00",
+                    "arrival": "2026-10-05T21:43:00",
+                    "duration": "PT2H43M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "27500",
+                "amountIncludingTax": 5.6,
+                "tax": 5.6,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Main Cabin",
+                  "bookingClass": "N",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Main Cabin",
+                  "bookingClass": "N",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "LAX"
+            },
+            "destination": {
+              "code": "AUS"
+            },
+            "departure": "2026-10-05T11:34:00",
+            "arrival": "2026-10-05T21:43:00",
+            "duration": "PT8H9M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL1194",
+                "operatingFlightNumber": "DL1194",
+                "origin": {
+                  "code": "LAX"
+                },
+                "destination": {
+                  "code": "SLC"
+                },
+                "departure": "2026-10-05T11:34:00",
+                "arrival": "2026-10-05T14:26:00",
+                "duration": "PT1H52M",
+                "connection": "PT3H34M",
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A321neo"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "LAX"
+                    },
+                    "destination": {
+                      "code": "SLC"
+                    },
+                    "departure": "2026-10-05T11:34:00",
+                    "arrival": "2026-10-05T14:26:00",
+                    "duration": "PT1H52M",
+                    "isDominantLeg": false
+                  }
+                ]
+              },
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL2728",
+                "operatingFlightNumber": "DL2728",
+                "origin": {
+                  "code": "SLC"
+                },
+                "destination": {
+                  "code": "AUS"
+                },
+                "departure": "2026-10-05T18:00:00",
+                "arrival": "2026-10-05T21:43:00",
+                "duration": "PT2H43M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A320"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "SLC"
+                    },
+                    "destination": {
+                      "code": "AUS"
+                    },
+                    "departure": "2026-10-05T18:00:00",
+                    "arrival": "2026-10-05T21:43:00",
+                    "duration": "PT2H43M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "27500",
+                "amountIncludingTax": 5.6,
+                "tax": 5.6,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Main Cabin",
+                  "bookingClass": "N",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Main Cabin",
+                  "bookingClass": "N",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "LAX"
+            },
+            "destination": {
+              "code": "AUS"
+            },
+            "departure": "2026-10-05T06:00:00",
+            "arrival": "2026-10-05T17:11:00",
+            "duration": "PT9H11M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL2906",
+                "operatingFlightNumber": "DL2906",
+                "origin": {
+                  "code": "LAX"
+                },
+                "destination": {
+                  "code": "SLC"
+                },
+                "departure": "2026-10-05T06:00:00",
+                "arrival": "2026-10-05T08:54:00",
+                "duration": "PT1H54M",
+                "connection": "PT4H29M",
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Boeing 737-900ER"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "LAX"
+                    },
+                    "destination": {
+                      "code": "SLC"
+                    },
+                    "departure": "2026-10-05T06:00:00",
+                    "arrival": "2026-10-05T08:54:00",
+                    "duration": "PT1H54M",
+                    "isDominantLeg": false
+                  }
+                ]
+              },
+              {
+                "airline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "operatingAirline": {
+                  "code": "DL",
+                  "name": "Delta Air Lines"
+                },
+                "flightNumber": "DL2689",
+                "operatingFlightNumber": "DL2689",
+                "origin": {
+                  "code": "SLC"
+                },
+                "destination": {
+                  "code": "AUS"
+                },
+                "departure": "2026-10-05T13:23:00",
+                "arrival": "2026-10-05T17:11:00",
+                "duration": "PT2H48M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A320"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "SLC"
+                    },
+                    "destination": {
+                      "code": "AUS"
+                    },
+                    "departure": "2026-10-05T13:23:00",
+                    "arrival": "2026-10-05T17:11:00",
+                    "duration": "PT2H48M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "101000",
+                "amountIncludingTax": 11.2,
+                "tax": 11.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "First Class",
+                  "bookingClass": "O",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "First Class",
+                  "bookingClass": "O",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

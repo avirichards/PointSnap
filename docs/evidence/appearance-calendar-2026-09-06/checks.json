@@ -1,0 +1,20 @@
+{
+  "liveCollectorsRequested": false,
+  "screenshots": [
+    "light-globe",
+    "dark-globe",
+    "dark-calendar",
+    "dark-flight-details",
+    "mobile-dark-flight-details",
+    "mobile-dark-calendar",
+    "mobile-light-calendar"
+  ],
+  "browserChecks": [
+    "globe auto rotation, hold, moving routes, release inertia, no selected text, separated airport labels",
+    "14-day outbound: all 29 dates, 429 wait and retry, no requests during cooldown",
+    "independent 7-day return: all 15 dates, reversed airports, URL persistence",
+    "stop search immediately cancels cooldown without further requests",
+    "desktop and phone calendars, Exact, ±1, ±3, ±7 and ±14 tags, native arrow-key selection, phone calendar fully visible, Done focus return, remove return, dark flight sheet focus return"
+  ],
+  "browserErrors": []
+}

@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-06T12:58:01.883380+00:00",
+  "program": "LH_MILES_MORE",
+  "runtime": "App-owned ordinary installed Chrome, dedicated Lufthansa profile; no airline login, personal browser state or security modifications",
+  "hypothesis": "The ordinary Chrome runtime may reach the official award form where the earlier entry requests returned403.",
+  "entry": {
+    "url": "https://www.miles-and-more.com/row/en/spend/flights.html",
+    "browserStatus": 200,
+    "result": "Actual Award Flight booking form renders after initialization."
+  },
+  "query": {
+    "origin": "FRA",
+    "destination": "JFK",
+    "departureDate": "2026-10-05",
+    "oneWay": true,
+    "adults": 1,
+    "cabin": "Economy"
+  },
+  "normalInteractions": [
+    "Accepted necessary cookies via the real consent control.",
+    "Selected One-way, Frankfurt International Apt and New York J F Kennedy International Apt.",
+    "Selected Monday October5 in the actual calendar and confirmed Select.",
+    "Verified settled route/date/party and clicked Search flights."
+  ],
+  "implementationCorrections": [
+    "The site resolves exact airport input after the suggestion list settles; inspecting only the accessibility tree missed some rendered suggestion text.",
+    "Direct Travel dates fill did not commit; the actual calendar selection and settled form did."
+  ],
+  "outcome": {
+    "loginPage": "https://account.miles-and-more.com/web/row/en/login.html",
+    "visibleFields": [
+      "Travel ID (email address) / Servicecard number"
+    ],
+    "nativeFlightInventory": false,
+    "loginVerification": "Settled screenshot also shows a Verify you are human checkbox. It was not interacted with.",
+    "initialDomObservation": "The login DOM initially included password and stay-logged-in controls; the settled screenshot shows the initial identifier step."
+  },
+  "conclusion": "Ordinary browser resolves the old entry403, but the actual full award search redirects to member login. No native Miles & More feed enabled. Public mileage-bargain marketing prices are not live flight availability.",
+  "next": "Evaluate justified operator-account search or a distinct current published anonymous entry. Do not treat this successful form submission as a complete flight connection.",
+  "browserClosed": true
+}

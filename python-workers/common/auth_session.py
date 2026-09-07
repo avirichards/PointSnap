@@ -461,29 +461,27 @@ async def list_sessions(user_id: str) -> list[dict]:
 
 
 async def delete_session(user_id: str, program_id: str) -> bool:
-    """Forget a session (user clicked Disconnect in the cockpit).
+    """Delete a saved session; the existing DB trigger also removes Vault secrets.
 
-    Returns True on a row delete, False if nothing matched or on error.
+    False means already disconnected. Storage failures must propagate so the UI
+    never tells someone their saved credentials were deleted when they were not.
     """
     dsn = _database_url()
     if not dsn:
-        return False
+        raise RuntimeError("Session storage is unavailable")
     try:
         async with await psycopg.AsyncConnection.connect(dsn) as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
-                    """
-                    DELETE FROM public.program_auth_sessions
-                     WHERE user_id = %s AND program_id = %s
-                    """,
+                    "DELETE FROM public.program_auth_sessions WHERE user_id = %s AND program_id = %s",
                     (user_id, program_id),
                 )
                 deleted = cur.rowcount
                 await conn.commit()
                 return deleted > 0
-    except Exception as exc:  # noqa: BLE001
-        log.warning("auth_session.delete_session: DB error: %s", exc)
-        return False
+    except Exception as exc:
+        log.warning("auth_session.delete_session: storage operation failed")
+        raise RuntimeError("Could not delete saved session") from exc
 
 
 # ----------------------------------------------------------------------

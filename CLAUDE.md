@@ -213,37 +213,34 @@ Before writing any UI element — dropdown, popover, form input, table row, moda
 - Ask: "What is the worst-case DOM context this element could live in?" Design for that, not the happy path.
 - The zone dropdown took 3 broken attempts because none of these questions were asked before the first line of code. One attempt is the standard. Design it right the first time.
 
-### 8. Carrier Domain Knowledge Standard
+### 8. Airline Award-Program Domain Knowledge Standard
 
-This tool reverse-engineers UPS/FedEx contracts from invoice data. The engine must be correct by carrier standards, not just by what the user describes.
+PointSnap reverse-engineers *award availability + pricing* across airline loyalty programs. The engine and scrapers must be correct by real program rules, not just by what the user describes.
 
-**Always verify against real carrier behavior:**
-- Cross-check contract structures against UPS Rate and Service Guide, actual UPS offer PDFs, and known carrier practices
-- The user provides business context; Claude provides carrier technical accuracy — both are needed
-- When a user describes a contract feature, confirm it against known UPS/FedEx patterns before implementing
-- If a described behavior seems unusual, note it and verify (e.g., "additive" vs. "standalone" tier discounts)
+**Always verify against real program behavior:**
+- Cross-check award-chart structures against the program's published award chart / region map (BA distance bands; ANA & Cathay zone charts) and community references (AwardHacker, seats.aero data shape, FlyerTalk/r-awardtravel).
+- The user provides business context; Claude provides program technical accuracy — both are needed.
+- When a user describes a redemption feature, confirm it against known program patterns before implementing.
+- If a described behavior seems unusual, note it and verify (e.g. dynamic vs. fixed award pricing; whether a program passes fuel surcharges/YQ).
 
-**Known UPS contract structures to keep current on:**
-- Tier incentives based on weekly rolling average spend (additive on top of service incentives)
-- Weight + zone matrix discounts (common in Ground; discount varies by both lb band and zone group)
-- Per-service DIM divisors (e.g., Air=194, Ground=225, Export=166 in real contracts)
-- Ground Saver (SurePost) cubic inch threshold exemptions (e.g., packages ≤1,729 in³ billed actual weight)
-- Minimum charges defined as % off published 1-lb rate at a reference zone (not flat dollar amounts)
-- Electronic PLD bonus (often baked into published tier discounts, not separate)
-- Accessorial discounts negotiated per service category (Ground vs Air can have different rates for same surcharge)
-- Fuel surcharge discounts may apply to ground only, not air, depending on contract
+**Known award-program structures to keep current on:**
+- Fixed award charts (distance-based like BA Avios; zone-based like ANA / Cathay) vs. fully dynamic pricing (Delta SkyMiles, United, AA on own metal).
+- Fuel-surcharge (YQ) passthrough varies by program: BA/LH pass large YQ on partner awards; Aeroplan/Alaska generally don't — this drives the all-in "effective cost" column.
+- Transferable-currency ratios + transfer bonuses (Chase UR, Amex MR, Cap One, Citi TY, Bilt, Marriott, Wells Fargo) — wallet-aware pricing depends on the current ratio and any active bonus.
+- Partner vs. own-metal award access: a program can often *book* a partner it can't price on its own chart; `program_partnerships` encodes which program can ticket which operating carrier per cabin.
+- Booking windows differ per program (see `python-workers/common/program_windows.py`) — calendars must respect each program's max-days-out.
+- Bot-defense reality (read `tasks/scraper-log.md` before ANY scraper work): most programs sit behind Akamai/Imperva/Kasada/Cloudflare, and ~20 of 23 require a logged-in member session to see award space — the **T5' user-auth-capture** path, not anonymous scraping, is the mainline for those.
 
-### 9. Adding a New Page — One Manifest
+### 9. Adding a New Page — Next.js App Router (file-based routing)
 
-All permission-controlled pages are registered in a single file: `src/config/pages.tsx`. That file is read by `App.tsx` (to emit `<Route>`s), `src/components/layout/Sidebar.tsx` (for nav items), `src/hooks/usePermissions.tsx` (`ALL_PAGE_SLUGS`), and `src/components/admin/PermissionsTab.tsx` (slug → label).
+PointSnap is a **Next.js App Router** app. Routing is file-based — there is no page manifest, no `src/config/pages.tsx`, and no `App.tsx`/`Sidebar.tsx`/`usePermissions.tsx` (an earlier draft of this file described a Vite + React Router architecture this project never used).
 
 When you add a new user-facing page:
-1. **Add one entry to `PAGES` in `src/config/pages.tsx`** — slug, path, label, icon, element, and where it should appear in the sidebar (`"main"`, `"footer"`, or `"none"`).
-2. **Do not modify** `App.tsx`, `Sidebar.tsx`, `usePermissions.tsx`, or `PermissionsTab.tsx` to add the page — they already read from the manifest.
-3. If the page has an alias path (e.g. `/` → `/dashboard`), list it in `aliasPaths`.
-4. If the page bundle is large (>~500 KB — think Leaflet, heavy chart libs), use `lazy()` for its import inside `pages.tsx` and wrap the element in `<Suspense>`.
-
-If you find yourself touching two or more of those four files to register a page, you've missed the manifest — stop and add the entry instead.
+1. **Create `src/app/<route>/page.tsx`** — the folder name is the URL segment; the file's default export is the route. Add `layout.tsx` / `loading.tsx` alongside if needed.
+2. **Add it to the nav** in `src/components/layout/site-header.tsx` (`NAV_ITEMS`) if it should appear in the header.
+3. **Gate it** behind auth (Supabase Auth in `src/middleware.ts`) if it holds user or operator data; staff-only pages (e.g. `/admin`) check the `is_staff` flag.
+4. **API routes** live at `src/app/api/<name>/route.ts`. Anything that talks to the Python worker must keep `PYTHON_WORKER_URL` server-side (proxy through a route handler; never fetch the worker from the browser).
+5. Large client-only bundles use `next/dynamic` with `ssr: false` where appropriate.
 
 ### 10. Knowledge Base — Draft, Don't Auto-Publish
 
@@ -375,7 +372,7 @@ Earlier sessions spent literal hours rediscovering: ScraperAPI is broken, IPRoya
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 - **Push Back When Wrong**: If a user's idea won't actually improve things, say so directly. Explain the technical reasoning, propose what would actually help, and don't build something just because it was asked for. The user expects honest engineering judgment, not compliance.
-- **Explain Simply**: When discussing technical fixes or engine math, use concrete dollar examples (e.g., "$20 list price × 21% fuel rate = $4.20"), NOT source code references (no `calcFuelCost`, `frtPublished`, `ourTransportCost`). The user finds plain-English walkthroughs much easier to follow.
+- **Explain Simply**: When discussing pricing or engine math, use concrete examples (e.g. "60,000 Amex points × 30% transfer bonus = 78,000 miles; at 1.4¢/mile that's ~$1,092 of value, minus $340 YQ"), NOT source code references (no `effectiveCost`, `cppMicro`, `milesPerPax`). The user finds plain-English walkthroughs much easier to follow.
 - **Test Before Asking User**: After any code edit, run backend end-to-end tests on the edited logic BEFORE asking the user to re-test in the UI. If tests catch a problem, fix it first. This prevents wasting the user's time on broken changes.
 - **Self Audit Your Own Plans**: Before implementing any plan, audit it for correctness and completeness. Ask yourself: "Would a staff engineer approve this?" If not, revise the plan before presenting it.
 - **Pick the Right Layer Before Coding**: Before finalizing any non-trivial plan, steelman at least one lower-layer alternative. If the plan touches 3+ files with similar conditional logic, or you're patching the same symptom in multiple save/load paths, consider whether the invariant belongs in the DB (trigger, constraint, generated column) or a single RPC instead. Name the real data-model signal behind the behavior — if it has a clean DB expression, the fix probably belongs there. Caveats like "narrow race condition" or "remember to add this to every future path" in your first draft are redraft signals, not acceptable footnotes.

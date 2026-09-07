@@ -1,0 +1,520 @@
+[
+  {
+    "id": "0",
+    "text": "Sydney (Kingsford Smith)\n06:00\n07:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF401\n1h 35m\nClassic Plus\n18,000PTS+ $61\nSeats nearly gone\nClassic Plus\n33,100PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_0",
+        "text": "Classic Plus\n18,000PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_0",
+        "text": "Classic Plus\n33,100PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "1",
+    "text": "Sydney (Kingsford Smith)\n06:25\n08:00\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF405\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n33,100PTS+ $86",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_1",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_1",
+        "text": "Classic Plus\n33,100PTS+ $86"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "text": "Sydney (Kingsford Smith)\n07:00\n08:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF409\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n33,100PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_2",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_2",
+        "text": "Classic Plus\n33,100PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "text": "Sydney (Kingsford Smith)\n07:25\n09:00\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF413\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n33,100PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_3",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_3",
+        "text": "Classic Plus\n33,100PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "text": "Sydney (Kingsford Smith)\n07:40\n09:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF415\n1h 35m\nClassic Plus\n18,000PTS+ $61\nSeats nearly gone\nClassic Plus\n33,100PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_4",
+        "text": "Classic Plus\n18,000PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_4",
+        "text": "Classic Plus\n33,100PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "13",
+    "text": "Sydney (Kingsford Smith)\n08:25\n10:00\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF421\n1h 35m\nClassic Plus\n24,400PTS+ $61\nClassic Plus\n40,400PTS+ $86",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_13",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_13",
+        "text": "Classic Plus\n40,400PTS+ $86"
+      }
+    ]
+  },
+  {
+    "id": "14",
+    "text": "Sydney (Kingsford Smith)\n08:40\n10:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF423\n1h 35m\nClassic Plus\n24,400PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_14",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_14",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "15",
+    "text": "Sydney (Kingsford Smith)\n09:00\n10:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF425\n1h 35m\nClassic Plus\n24,400PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_15",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_15",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "21",
+    "text": "Sydney (Kingsford Smith)\n09:35\n11:10\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF429\n1h 35m\nClassic Plus\n37,300PTS+ $61\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_21",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_21",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "22",
+    "text": "Sydney (Kingsford Smith)\n10:30\n12:05\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF435\n1h 35m\nClassic Plus\n37,300PTS+ $61\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_22",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_22",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "23",
+    "text": "Sydney (Kingsford Smith)\n11:05\n12:40\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF437\n1h 35m\nClassic Plus\n37,300PTS+ $61\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_23",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_23",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "24",
+    "text": "Sydney (Kingsford Smith)\n12:00\n13:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF441\n1h 35m\nClassic Plus\n37,300PTS+ $61\nClassic Plus\n84,200PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_24",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_24",
+        "text": "Classic Plus\n84,200PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "25",
+    "text": "Sydney (Kingsford Smith)\n12:40\n14:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF443\n1h 35m\nClassic Plus\n37,300PTS+ $61\nClassic Plus\n84,200PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_25",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_25",
+        "text": "Classic Plus\n84,200PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "26",
+    "text": "Sydney (Kingsford Smith)\n13:00\n14:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF445\n1h 35m\nClassic Plus\n37,300PTS+ $61\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_26",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_26",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "27",
+    "text": "Sydney (Kingsford Smith)\n13:30\n15:05\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF447\n1h 35m\nClassic Plus\n37,300PTS+ $61\nClassic Plus\n84,200PTS+ $86",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_27",
+        "text": "Classic Plus\n37,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_27",
+        "text": "Classic Plus\n84,200PTS+ $86"
+      }
+    ]
+  },
+  {
+    "id": "28",
+    "text": "Sydney (Kingsford Smith)\n14:10\n15:45\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF449\n1h 35m\nClassic Plus\n37,300PTS+ $61\nSeats nearly gone\nClassic Plus\n56,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_28",
+        "text": "Classic Plus\n37,300PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_28",
+        "text": "Classic Plus\n56,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "29",
+    "text": "Sydney (Kingsford Smith)\n14:45\n16:20\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF451\n1h 35m\nClassic Plus\n37,300PTS+ $61\nSeats nearly gone\nClassic Plus\n84,200PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_29",
+        "text": "Classic Plus\n37,300PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_29",
+        "text": "Classic Plus\n84,200PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "30",
+    "text": "Sydney (Kingsford Smith)\n15:00\n16:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF453\n1h 35m\nClassic Plus\n46,300PTS+ $61\nClassic Plus\n84,200PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_30",
+        "text": "Classic Plus\n46,300PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_30",
+        "text": "Classic Plus\n84,200PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "16",
+    "text": "Sydney (Kingsford Smith)\n15:40\n17:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF459\n1h 35m\nClassic Plus\n24,400PTS+ $61\nClassic Plus\n84,200PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_16",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_16",
+        "text": "Classic Plus\n84,200PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "17",
+    "text": "Sydney (Kingsford Smith)\n16:10\n17:45\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF461\n1h 35m\nClassic Plus\n24,400PTS+ $61\nSeats nearly gone\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_17",
+        "text": "Classic Plus\n24,400PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_17",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "18",
+    "text": "Sydney (Kingsford Smith)\n16:30\n18:05\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF465\n1h 35m\nClassic Plus\n24,400PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_18",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_18",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "19",
+    "text": "Sydney (Kingsford Smith)\n17:20\n18:55\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF471\n1h 35m\nClassic Plus\n24,400PTS+ $61\nClassic Plus\n40,400PTS+ $86",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_19",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_19",
+        "text": "Classic Plus\n40,400PTS+ $86"
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "text": "Sydney (Kingsford Smith)\n17:35\n19:10\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF473\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_5",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_5",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "text": "Sydney (Kingsford Smith)\n17:55\n19:30\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF475\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_6",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_6",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "text": "Sydney (Kingsford Smith)\n18:05\n19:40\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF477\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_7",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_7",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "text": "Sydney (Kingsford Smith)\n18:15\n19:50\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF479\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_8",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_8",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "text": "Sydney (Kingsford Smith)\n18:30\n20:05\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF481\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n40,400PTS+ $86",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_9",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_9",
+        "text": "Classic Plus\n40,400PTS+ $86"
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "text": "Sydney (Kingsford Smith)\n18:45\n20:20\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF483\n1h 35m\nClassic Plus\n18,000PTS+ $61\nSeats nearly gone\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_10",
+        "text": "Classic Plus\n18,000PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_10",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "11",
+    "text": "Sydney (Kingsford Smith)\n19:00\n20:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF485\n1h 35m\nClassic Plus\n18,000PTS+ $61\nClassic Plus\n40,400PTS+ $86\nSeats nearly gone",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_11",
+        "text": "Classic Plus\n18,000PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_11",
+        "text": "Classic Plus\n40,400PTS+ $86\nSeats nearly gone"
+      }
+    ]
+  },
+  {
+    "id": "20",
+    "text": "Sydney (Kingsford Smith)\n20:00\n21:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1515\nOperated by Qantaslink - National Jet Systems\n1h 35m\nClassic Plus\n24,400PTS+ $61\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_20",
+        "text": "Classic Plus\n24,400PTS+ $61"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_20",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "12",
+    "text": "Sydney (Kingsford Smith)\n22:00\n23:35\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF499\n1h 35m\nClassic Plus\n18,000PTS+ $61\nSeats nearly gone\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_12",
+        "text": "Classic Plus\n18,000PTS+ $61\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_12",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "31",
+    "text": "Sydney (Kingsford Smith)\n16:00\n16:55\nCanberra\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1449\nOperated by Qantaslink - Sunstate Airlines\n0h 55m\nCanberra\n17:35\n18:50\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1527\nOperated by Qantaslink - National Jet Systems\n1h 15m\nFlight Duration\n2h 50m\nClassic Plus\n36,400PTS+ $167\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_31",
+        "text": "Classic Plus\n36,400PTS+ $167"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_31",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "35",
+    "text": "Sydney (Kingsford Smith)\n07:10\n08:05\nCanberra\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1427\nOperated by Qantaslink - Sunstate Airlines\n0h 55m\nCanberra\n08:55\n10:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1467\nOperated by Qantaslink - Sunstate Airlines\n1h 20m\nFlight Duration\n3h 05m\nClassic Plus\n50,900PTS+ $167\nSeats nearly gone\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_35",
+        "text": "Classic Plus\n50,900PTS+ $167\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_35",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "32",
+    "text": "Sydney (Kingsford Smith)\n15:45\n16:40\nCanberra\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1441\nOperated by Qantaslink - Sunstate Airlines\n0h 55m\nCanberra\n17:35\n18:50\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1527\nOperated by Qantaslink - National Jet Systems\n1h 15m\nFlight Duration\n3h 05m\nClassic Plus\n36,400PTS+ $167\nSeats nearly gone\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_32",
+        "text": "Classic Plus\n36,400PTS+ $167\nSeats nearly gone"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_32",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "36",
+    "text": "Sydney (Kingsford Smith)\n08:10\n09:05\nCanberra\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1429\nOperated by Qantaslink - Sunstate Airlines\n0h 55m\nCanberra\n10:05\n11:20\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1523\nOperated by Qantaslink - National Jet Systems\n1h 15m\nFlight Duration\n3h 10m\nClassic Plus\n62,800PTS+ $167\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_36",
+        "text": "Classic Plus\n62,800PTS+ $167"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_36",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "33",
+    "text": "Sydney (Kingsford Smith)\n16:00\n16:55\nCanberra\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1449\nOperated by Qantaslink - Sunstate Airlines\n0h 55m\nCanberra\n18:00\n19:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1529\nOperated by Qantaslink - National Jet Systems\n1h 15m\nFlight Duration\n3h 15m\nClassic Plus\n36,400PTS+ $167\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_33",
+        "text": "Classic Plus\n36,400PTS+ $167"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_33",
+        "text": "No reward seat"
+      }
+    ]
+  },
+  {
+    "id": "34",
+    "text": "Sydney (Kingsford Smith)\n15:45\n16:40\nCanberra\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1441\nOperated by Qantaslink - Sunstate Airlines\n0h 55m\nCanberra\n18:00\n19:15\nMelbourne (Tullamarine)\n!!!ALLP.text.Avail.FlifButtonA11Y!!!\nQF1529\nOperated by Qantaslink - National Jet Systems\n1h 15m\nFlight Duration\n3h 30m\nClassic Plus\n36,400PTS+ $167\nNo reward seat",
+    "fares": [
+      {
+        "id": "left_desktop_group_bnd_0_flt_34",
+        "text": "Classic Plus\n36,400PTS+ $167"
+      },
+      {
+        "id": "right_desktop_group_bnd_0_flt_34",
+        "text": "No reward seat"
+      }
+    ]
+  }
+]

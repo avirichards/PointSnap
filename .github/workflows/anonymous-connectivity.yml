@@ -1,0 +1,41 @@
+name: Anonymous airline connectivity (explicit diagnostic)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/anonymous-connectivity.yml
+      - scripts/check-anonymous-connectivity.ts
+      - scripts/diagnose-airline-transport.ts
+      - scripts/diagnostics/**
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check fresh anonymous requests from hosted Node
+        run: pnpm exec tsx scripts/check-anonymous-connectivity.ts 2026-10-05 --programs=AS_MILEAGEPLAN,B6_TRUEBLUE,VS_FLYING_CLUB,EK_SKYWARDS,F9_FRONTIER_MILES,AM_CLUB_PREMIER,ET_SHEBAMILES,QF_FF
+      - name: Compare unresolved transport paths without user sessions
+        run: pnpm exec tsx scripts/diagnose-airline-transport.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: anonymous-connectivity
+          path: |
+            work/anonymous-connectivity.json
+            work/airline-transport.json
+          retention-days: 7

@@ -1,6 +1,5 @@
 import {
   pgTable,
-  text,
   varchar,
   integer,
   smallint,
@@ -15,7 +14,7 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { airlines, airports, aircraftTypes } from "./reference";
+import { airlines, airports } from "./reference";
 import { programs, cabinEnum } from "./programs";
 import { users } from "./users";
 
@@ -130,9 +129,12 @@ export const resultSegments = pgTable(
       .references(() => airports.iata),
     departAt: timestamp("depart_at", { withTimezone: true }).notNull(),
     arriveAt: timestamp("arrive_at", { withTimezone: true }).notNull(),
-    aircraftIcao: varchar("aircraft_icao", { length: 4 }).references(
-      () => aircraftTypes.icao,
-    ),
+    // FK to aircraft_types.icao intentionally dropped in the live DB
+    // (migration 20260519212716) — carriers mint new aircraft codes faster
+    // than we seed them (e.g. Alaska's 737 MAX 9 = "7M9"), so a NULL display
+    // join is preferable to a scraper write failure. Kept as a plain column
+    // here so drizzle-kit does not try to re-add the constraint.
+    aircraftIcao: varchar("aircraft_icao", { length: 4 }),
     /** Fare class booked on the operating carrier. Required for shadow-confirm matching. */
     fareClass: varchar("fare_class", { length: 2 }),
     segmentCabin: cabinEnum("segment_cabin"),

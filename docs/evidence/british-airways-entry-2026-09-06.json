@@ -1,0 +1,93 @@
+{
+  "checkedAt": "2026-09-06T07:21:31.443Z",
+  "program": "BA_AVIOS",
+  "method": "Fresh direct HTTP and app-owned ordinary Chrome; no account login or imported personal state",
+  "publishedOptionsPage": "https://www.britishairways.com/content/en/the-british-airways-club/avios/spending-avios/reward-availability",
+  "publishedEntryResults": [
+    {
+      "url": "https://www.britishairways.com/travel/redeem/public?eId=106019",
+      "role": "Full prices, partners and connections",
+      "entryStatus": 302,
+      "finalPath": "/u/login",
+      "outcome": "British Airways member login form; no native inventory"
+    },
+    {
+      "url": "https://www.britishairways.com/travel/flightfinder/execclub",
+      "role": "Current finder link",
+      "entryStatus": 302,
+      "finalPath": "/u/login",
+      "outcome": "British Airways member login form; no native inventory"
+    }
+  ],
+  "legacyPublicFinder": {
+    "url": "https://www.britishairways.com/travel/flightfinderhome/public/en_gb",
+    "query": {
+      "originCity": "LON",
+      "destinationCity": "NYC",
+      "date": "2026-10-06",
+      "pax": 1,
+      "cabin": "Economy",
+      "oneWay": true
+    },
+    "entryStatus": 200,
+    "initialAdultSelectorMissing": true,
+    "routeSuggestions": "Keyboard input opened real London/New York suggestions; plain fill alone did not. Both actual suggestions selected.",
+    "cabinMetadata": {
+      "status": 200,
+      "options": [
+        "M",
+        "W",
+        "C",
+        "F"
+      ],
+      "meaning": "Metadata, not availability"
+    },
+    "initialSubmit": "HTTP200 returned finder form with a visible NumberOfAdults selector; no inventory.",
+    "correctedPartySubmit": "Selected one adult in returned form and submitted normally. HTTP200 British Airways - Error page: technical problem. No inventory.",
+    "frontendError": "Cannot set property once of [object Object] which has only a getter",
+    "ordinaryInteractionFixes": [
+      "Used keyboard input for legacy autocomplete.",
+      "Dismissed calendar before clicking one-way label.",
+      "Explicitly selected adult count when the returned form exposed it."
+    ]
+  },
+  "directCompleteForm": {
+    "at": "2026-09-06T07:21:31.443Z",
+    "method": "Fresh direct public HTTP form; own response cookies only; source-provided action and client contract",
+    "query": {
+      "originCity": "LON",
+      "destinationCity": "NYC",
+      "date": "2026-10-06",
+      "pax": 1,
+      "cabin": "M",
+      "oneWay": true
+    },
+    "stages": [
+      {
+        "stage": "fresh-public-form",
+        "status": 200,
+        "bytes": 57031
+      },
+      {
+        "stage": "complete-form-with-explicit-adult",
+        "status": 200,
+        "path": "/travel/flightfinder/public/en_gb",
+        "redirect": null,
+        "title": "British Airways - Information Page",
+        "bytes": 8999,
+        "technicalProblem": false,
+        "highDemand": true,
+        "login": false,
+        "formReturned": false
+      }
+    ]
+  },
+  "runtime": {
+    "programProfile": "british-airways",
+    "closed": true,
+    "personalBrowserStateImported": false,
+    "captchaInteraction": false
+  },
+  "conclusion": "Current advertised full-search and finder entries require login in this test. Legacy public finder remains a separate unsuccessful path: browser technical error, direct HTTP high-demand page. None proves valid empty availability or a native PointSnap connection.",
+  "next": "Preserve justified operator-account fallback and unresolved public finder service failure; continue approved connection order. Do not repeat unchanged failures or label all access options exhausted."
+}

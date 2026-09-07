@@ -572,3 +572,22 @@ git commit -m "chore(scraper): retire ScraperAPI; document Bright Data CDP trans
 - **Per-account login pools** (BA, AC, AA — see `creds_for()` in `browser.py:208-239`) untested with CDP session model. If login flows fail in Phase 5, may need a per-plugin workaround (login + token-extract → re-attach to subsequent goto).
 - **Parser repair (Phase 6) is the dominant cost** of this migration in human-hours. Don't underestimate.
 - **Eventual VS/AS migration to Bright Data** can happen later if IPRoyal breaks. Not needed now.
+
+
+## Current airline-first continuation (September5,2026; supersedes older paid-transport assumptions)
+
+- [x] Ethiopian fresh anonymous transport reproduced in Node.
+- [x] Preserve all observed offers/references, both cabins, passenger totals, unknown taxes and technical stops.
+- [x] Integrate source and verify real SSE + browser, including selected-cabin handoff.
+- [x] Add eight meaningful regression tests (140 total passed).
+- [x] Ethiopian production build/CI passed; fresh hosted Linux Node22 transport verified. Vercel runtime remains behind preview SSO.
+- [ ] Continue distinct American/United/remaining airline leads; do not equate partner coverage or browser-only success with native server connectivity.
+
+- [x] Qantas public cached flight inventory integrated; all pages, observed times, fees, mixed cabins and source limitations retained.
+- [x] Test compatible Qantas transport on hosted Linux: run33985079120 returned403, while Ethiopian passed. Qantas hosted access remains unresolved despite local optimized-server success.
+- [x] Follow the current Copa anonymous shopping flow through its actual browser and fresh server initialization. Both reach verification; no native feed enabled.
+- [x] Run all eight enabled sources on hosted Node22 and fix the measured Alaska/Aeromexico transport failures; exact integrated hosted results35/68 and11/100 verified.
+- [x] Finish United's same-origin token redirect investigation; token200, actual native award428. Hosted current Delta444 and Southwest403050700 also recorded.
+- [x] Preserve sanitized hosted evidence, actual frontend checks and all current limitations in the permanent access report.
+- [ ] Resolve native airline authorization/verification barriers and source reachability limits. No reproducible remaining anonymous path identified at this checkpoint; do not mark native coverage complete.
+- [ ] Verify actual Vercel runtime once its existing preview can be accessed. Build success and GitHub-network tests do not establish Vercel source connectivity.

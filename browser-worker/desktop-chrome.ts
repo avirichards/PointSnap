@@ -1,0 +1,273 @@
+import { execFile, spawn, type ChildProcess } from "node:child_process";
+import { access, chmod, mkdir, readlink } from "node:fs/promises";
+import { constants } from "node:fs";
+import { createServer } from "node:net";
+import { isAbsolute, resolve } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+import { promisify } from "node:util";
+import { chromium, type Browser, type BrowserContext } from "playwright";
+import { registerBackgroundDesktopContext } from "./background-page";
+import {
+  BrowserSessionLaunchError,
+  PersistentBrowserSession,
+} from "./persistent-session";
+
+const runFile = promisify(execFile);
+
+// On macOS Launch Services owns Chrome; our child process is only `open -W`.
+// Verify the profile AND this launch's unique debugging port before signalling
+// Chrome. A stale lock or another owner must never identify a process to kill.
+async function ownedChromePid(
+  profile: string,
+  executable: string,
+  port: number,
+) {
+  try {
+    const lock = await readlink(resolve(profile, "SingletonLock"));
+    const pid = Number(lock.match(/-(\d+)$/)?.[1]);
+    if (!Number.isSafeInteger(pid) || pid <= 1) return;
+    const { stdout } = await runFile(
+      "/bin/ps",
+      ["-p", String(pid), "-o", "command="],
+      { timeout: 1000 },
+    );
+    const command = `${stdout.trim()} `;
+    if (
+      command.startsWith(`${executable} `) &&
+      command.includes(` --user-data-dir=${profile} `) &&
+      command.includes(` --remote-debugging-port=${port} `)
+    )
+      return pid;
+  } catch {
+    /* An exited process or missing lock needs no cleanup. */
+  }
+}
+
+async function unusedLoopbackPort(): Promise<number> {
+  const server = createServer();
+  return new Promise((done, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (!address || typeof address === "string") {
+        server.close();
+        reject(new Error("A local browser port could not be allocated."));
+        return;
+      }
+      server.close((error) => (error ? reject(error) : done(address.port)));
+    });
+  });
+}
+
+type DesktopProgram =
+  | "american"
+  | "aeroplan"
+  | "united"
+  | "british-airways"
+  | "qatar"
+  | "virgin-atlantic"
+  | "flying-blue"
+  | "singapore"
+  | "turkish"
+  | "etihad"
+  | "ana"
+  | "lifemiles"
+  | "emirates"
+  | "southwest"
+  | "sas"
+  | "copa"
+  | "qantas";
+
+/** Owns only its dedicated Chrome process and profile, never a user's browser. */
+class DesktopChrome {
+  constructor(private readonly program: DesktopProgram) {}
+
+  private process?: ChildProcess;
+  private exited?: Promise<void>;
+  private browser?: Browser;
+  private launch?: { profile: string; executable: string; port: number };
+
+  async open(): Promise<BrowserContext> {
+    // An interrupted prior process must release the profile before relaunch.
+    await this.close();
+    const executable =
+      process.env.POINTSNAP_DESKTOP_CHROME_EXECUTABLE ||
+      (process.platform === "darwin"
+        ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        : process.platform === "linux"
+          ? "/usr/bin/google-chrome"
+          : "");
+    if (!isAbsolute(executable))
+      throw new Error(
+        "Configure the absolute path to an installed standard Chrome executable.",
+      );
+    await access(executable, constants.X_OK).catch(() => {
+      throw new BrowserSessionLaunchError("browser-not-installed");
+    });
+    if (process.platform === "linux" && !process.env.DISPLAY)
+      throw new BrowserSessionLaunchError("display-unavailable");
+    const startupTimeoutMs = Number(
+      process.env.POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS ?? "20000",
+    );
+    if (
+      !Number.isInteger(startupTimeoutMs) ||
+      startupTimeoutMs < 1000 ||
+      startupTimeoutMs > 60000
+    )
+      throw new Error(
+        "Choose a Chrome startup deadline from 1000 to 60000 ms.",
+      );
+    const profile = resolve(
+      `work/browser-profiles/${this.program}-desktop-collector`,
+    );
+    await mkdir(profile, { recursive: true, mode: 0o700 });
+    await chmod(profile, 0o700);
+    const port = await unusedLoopbackPort();
+    const endpoint = `http://127.0.0.1:${port}`;
+    const chromeArgs = [
+      `--user-data-dir=${profile}`,
+      "--remote-debugging-address=127.0.0.1",
+      `--remote-debugging-port=${port}`,
+      ...(process.env.POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN === "1"
+        ? ["--no-first-run"]
+        : []),
+      "about:blank",
+    ];
+    const appBundle = executable.match(
+      /^(.*\.app)\/Contents\/MacOS\/[^/]+$/,
+    )?.[1];
+    if (process.platform === "darwin" && !appBundle)
+      throw new Error(
+        "Background Chrome requires an installed macOS application bundle.",
+      );
+    this.launch = { profile, executable, port };
+    const child = spawn(
+      process.platform === "darwin" ? "/usr/bin/open" : executable,
+      process.platform === "darwin"
+        ? ["-g", "-n", "-W", "-a", appBundle!, "--args", ...chromeArgs]
+        : chromeArgs,
+      { stdio: ["ignore", "ignore", "pipe"] },
+    );
+    // Keep a bounded startup diagnostic in memory. Only an issue category is
+    // returned; raw stderr, debugging URLs and profile paths are never logged.
+    let startupDiagnostic = "";
+    child.stderr?.on("data", (chunk: Buffer) => {
+      if (startupDiagnostic.length < 8192)
+        startupDiagnostic += chunk
+          .toString()
+          .slice(0, 8192 - startupDiagnostic.length);
+    });
+    this.process = child;
+    let stopped = false;
+    this.exited = new Promise<void>((done) => {
+      const exit = () => {
+        stopped = true;
+        done();
+      };
+      child.once("exit", exit);
+      child.once("error", exit);
+    });
+    try {
+      let ready = false;
+      const deadline = Date.now() + startupTimeoutMs;
+      while (!stopped && Date.now() < deadline) {
+        ready = await fetch(`${endpoint}/json/version`, {
+          signal: AbortSignal.timeout(500),
+          redirect: "error",
+        })
+          .then((response) => response.ok)
+          .catch(() => false);
+        if (ready) break;
+        await delay(250);
+      }
+      if (!ready || stopped)
+        throw new BrowserSessionLaunchError(
+          /no usable sandbox|failed to move to new namespace|sandbox.*operation not permitted/i.test(
+            startupDiagnostic,
+          )
+            ? "sandbox-unavailable"
+            : /processsingleton|profile.*in use/i.test(startupDiagnostic)
+              ? "profile-in-use"
+              : /missing x server|failed to initialize.*platform|cannot open display/i.test(
+                    startupDiagnostic,
+                  )
+                ? "display-unavailable"
+                : stopped
+                  ? "process-exited"
+                  : "debugging-startup-timeout",
+        );
+      this.browser = await chromium.connectOverCDP(endpoint, {
+        noDefaults: true,
+        timeout: 10000,
+      });
+      const context = this.browser.contexts()[0];
+      if (!context)
+        throw new Error(
+          "Chrome did not provide its dedicated browser context.",
+        );
+      registerBackgroundDesktopContext(context);
+      return context;
+    } catch (error) {
+      await this.close();
+      if (error instanceof BrowserSessionLaunchError) throw error;
+      throw new BrowserSessionLaunchError("debugging-connection-failed");
+    }
+  }
+
+  async close() {
+    const child = this.process,
+      exited = this.exited,
+      browser = this.browser,
+      launch = this.launch;
+    this.process = undefined;
+    this.exited = undefined;
+    this.browser = undefined;
+    this.launch = undefined;
+    if (browser)
+      await Promise.race([
+        (async () => {
+          // Playwright's close() only disconnects a CDP attachment. Close the
+          // actual owned browser first so the profile is released cleanly.
+          const session = await browser.newBrowserCDPSession();
+          await session.send("Browser.close").catch(() => {});
+          await browser.close().catch(() => {});
+        })().catch(() => {}),
+        delay(3000, undefined, { ref: false }),
+      ]);
+    if (process.platform === "darwin" && launch) {
+      await Promise.race([exited, delay(1000, undefined, { ref: false })]);
+      for (const signal of ["SIGTERM", "SIGKILL"] as const) {
+        const pid = await ownedChromePid(
+          launch.profile,
+          launch.executable,
+          launch.port,
+        );
+        if (!pid) break;
+        try {
+          process.kill(pid, signal);
+        } catch {
+          /* Already exited. */
+        }
+        await Promise.race([exited, delay(1000, undefined, { ref: false })]);
+      }
+    }
+    if (child && child.exitCode === null && child.signalCode === null) {
+      child.kill("SIGTERM");
+      await Promise.race([exited, delay(3000, undefined, { ref: false })]);
+      if (child.exitCode === null && child.signalCode === null) {
+        child.kill("SIGKILL");
+        await exited;
+      }
+    }
+  }
+}
+
+export function createDesktopChromeSession(
+  program: DesktopProgram = "american",
+) {
+  const desktop = new DesktopChrome(program);
+  return new PersistentBrowserSession(
+    () => desktop.open(),
+    () => desktop.close(),
+  );
+}

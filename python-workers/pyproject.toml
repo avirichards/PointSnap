@@ -49,3 +49,10 @@ packages = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# Live tests hit real airline endpoints (non-hermetic, network + date
+# dependent). They are excluded by default so the suite is deterministic and
+# CI-safe; run them explicitly with `pytest -m live`.
+addopts = "-m 'not live'"
+markers = [
+    "live: test performs a real network call to a live airline endpoint (excluded by default)",
+]

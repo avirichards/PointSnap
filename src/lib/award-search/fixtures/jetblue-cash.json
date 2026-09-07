@@ -1,0 +1,5115 @@
+{
+  "status": {
+    "transactionStatus": "success"
+  },
+  "data": {
+    "searchResults": [
+      {
+        "productOffers": [
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "1",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T06:00:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T09:05:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 365,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "2",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T06:00:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T09:05:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 365,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 123,
+                      "operatingFlightNumber": 123,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": true
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 326.31,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "WI4AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 378.45,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 486.51,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 500.73,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 552.86,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 660.93,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2291.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "C",
+                    "fareBasis": "CI2GLEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2608.59,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "C",
+                    "fareBasis": "CI2GLEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/0/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "17",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T07:00:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T10:08:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 368,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "18",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T07:00:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T10:08:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 368,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 523,
+                      "operatingFlightNumber": 523,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 326.31,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "WI4AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 378.45,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 486.51,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 500.73,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 552.86,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 660.93,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2357.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2674.61,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/1/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "33",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T08:05:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T11:14:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 369,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "34",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T08:05:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T11:14:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 369,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 323,
+                      "operatingFlightNumber": 323,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 343.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "WI4AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 398.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 512.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 527.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 582.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 696.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1730.2,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "I",
+                    "fareBasis": "II2GHEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2046.99,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "I",
+                    "fareBasis": "II2GHEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/2/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "49",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T09:30:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T12:45:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 375,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "50",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T09:30:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T12:45:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 375,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 223,
+                      "operatingFlightNumber": 223,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 379.65,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VI7AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 431.29,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 547.7,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 552.39,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 604.03,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 720.44,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2357.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2674.61,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/3/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "65",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T10:59:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T14:18:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 379,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "66",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T10:59:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T14:18:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 379,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 423,
+                      "operatingFlightNumber": 423,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 507.81,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "Q",
+                    "fareBasis": "QI0JUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/4/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 639.31,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "Q",
+                    "fareBasis": "QI0JUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/4/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 679.42,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "QI0JUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/4/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 810.91,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "QI0JUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/4/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 3743.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "C",
+                    "fareBasis": "CI2GPEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/4/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 4060.59,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "C",
+                    "fareBasis": "CI2GPEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/4/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "77",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T15:15:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T18:25:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 370,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "78",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T15:15:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T18:25:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 370,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1523,
+                      "operatingFlightNumber": 1523,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 385.01,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VI7AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 437.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 555.52,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 3,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 560.29,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 3,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 612.68,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 3,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 730.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2357.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2674.61,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/5/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "93",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T16:29:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T19:41:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 372,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "94",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T16:29:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T19:41:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 372,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 623,
+                      "operatingFlightNumber": 623,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "3NS",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 372.28,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VI7AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 422.87,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 536.93,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 541.53,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 592.12,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 7,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 706.16,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2357.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2674.61,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/6/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "109",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T17:59:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T21:14:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 375,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "110",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T17:59:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T21:14:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 375,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1023,
+                      "operatingFlightNumber": 1023,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "3NS",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 365.96,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VI7AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 415.64,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 527.68,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VI7AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 532.2,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 581.9,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 693.93,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VI7AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2687.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "C",
+                    "fareBasis": "CI2GNEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 3004.6,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "C",
+                    "fareBasis": "CI2GNEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/7/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "125",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T20:40:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T23:59:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 379,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "126",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T20:40:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T23:59:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 379,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1223,
+                      "operatingFlightNumber": 1223,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 334.81,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "WI4AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 388.37,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 499.39,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "W",
+                    "fareBasis": "WI4AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 513.99,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 567.54,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 678.56,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "WI4AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1763.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GNEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2080.59,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GNEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/8/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "141",
+                "originDestinationType": "NONSTOP",
+                "departure": {
+                  "date": "2026-10-05T21:45:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-06T00:58:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 0,
+                "totalDuration": 373,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "142",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T21:45:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-06T00:58:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 373,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 923,
+                      "operatingFlightNumber": 923,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2475,
+                    "arrivalDateOffset": 1,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 1,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 303.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "MI4AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 358.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "M",
+                    "fareBasis": "MI4AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 464.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "M",
+                    "fareBasis": "MI4AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "DE"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 487.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MI4AUEN1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 542.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MI4AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 8,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 648.4,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MI4AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1499.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GLEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1816.59,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GLEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/9/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "157",
+                "originDestinationType": "CONNECTING",
+                "departure": {
+                  "date": "2026-10-05T06:40:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T14:15:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 1,
+                "totalDuration": 635,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "158",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T06:40:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T07:59:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "duration": 79,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 181,
+                    "flightInfo": {
+                      "marketingFlightNumber": 2718,
+                      "operatingFlightNumber": 2718,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "223",
+                    "aircraftCode": "223",
+                    "distance": 187,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  },
+                  {
+                    "type": "Segment",
+                    "@id": "159",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T11:00:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T14:15:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 375,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1487,
+                      "operatingFlightNumber": 1487,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2611,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 374.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "MC7AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "MC7AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 408.67,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "M",
+                    "fareBasis": "MC7AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "M",
+                    "fareBasis": "MC7AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 470.74,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MC7AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MC7AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 512.12,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "M",
+                    "fareBasis": "MC7AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "M",
+                    "fareBasis": "MC7AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 574.2,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MC7AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "MC7AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2305.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2755.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/10/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "185",
+                "originDestinationType": "CONNECTING",
+                "departure": {
+                  "date": "2026-10-05T10:30:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T19:05:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 1,
+                "totalDuration": 695,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "186",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T10:30:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T11:49:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "duration": 79,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 240,
+                    "flightInfo": {
+                      "marketingFlightNumber": 2918,
+                      "operatingFlightNumber": 2918,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "223",
+                    "aircraftCode": "223",
+                    "distance": 187,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  },
+                  {
+                    "type": "Segment",
+                    "@id": "187",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T15:49:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T19:05:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 376,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1187,
+                      "operatingFlightNumber": 1187,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "3NS",
+                    "distance": 2611,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 401.97,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VC0AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VC0AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 430.48,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 481.77,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 533.64,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 584.94,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2305.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2755.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/11/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "213",
+                "originDestinationType": "CONNECTING",
+                "departure": {
+                  "date": "2026-10-05T10:30:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T21:10:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 1,
+                "totalDuration": 820,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "214",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T10:30:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T11:49:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "duration": 79,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 363,
+                    "flightInfo": {
+                      "marketingFlightNumber": 2918,
+                      "operatingFlightNumber": 2918,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "223",
+                    "aircraftCode": "223",
+                    "distance": 187,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  },
+                  {
+                    "type": "Segment",
+                    "@id": "215",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T17:52:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T21:10:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 378,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 387,
+                      "operatingFlightNumber": 387,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "3NS",
+                    "distance": 2611,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 583.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "PI2ABEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "BI3AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 673.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "B",
+                    "fareBasis": "BI3AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 874.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "B",
+                    "fareBasis": "BI3AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 931.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "PI2ABEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "BI3AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1132.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "PI2ABEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "BI3AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1920.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2249.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DI2GHEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/12/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "239",
+                "originDestinationType": "CONNECTING",
+                "departure": {
+                  "date": "2026-10-05T13:00:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T19:05:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 1,
+                "totalDuration": 545,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "240",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T13:00:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T14:29:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "duration": 89,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 80,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1118,
+                      "operatingFlightNumber": 1118,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "223",
+                    "aircraftCode": "223",
+                    "distance": 187,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  },
+                  {
+                    "type": "Segment",
+                    "@id": "187",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T15:49:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T19:05:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 376,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1187,
+                      "operatingFlightNumber": 1187,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "3NS",
+                    "distance": 2611,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 424.77,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VC0AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "VC0AUEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 455.01,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 509.41,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 564.42,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "V",
+                    "fareBasis": "VC0AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 6,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 618.82,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "VC0AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2305.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2755.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/13/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "260",
+                "originDestinationType": "CONNECTING",
+                "departure": {
+                  "date": "2026-10-05T13:00:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-05T21:10:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 1,
+                "totalDuration": 670,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "261",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T13:00:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T14:29:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "duration": 89,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 203,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1118,
+                      "operatingFlightNumber": 1118,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "223",
+                    "aircraftCode": "223",
+                    "distance": 187,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  },
+                  {
+                    "type": "Segment",
+                    "@id": "262",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T17:52:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "arrival": {
+                      "date": "2026-10-05T21:10:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 378,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 387,
+                      "operatingFlightNumber": 387,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "3NS",
+                    "distance": 2611,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 0,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 471,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "B",
+                    "fareBasis": "BC0AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "B",
+                    "fareBasis": "BC0AUEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 519.87,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "BC0AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "BC0AUEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 581.23,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "B",
+                    "fareBasis": "BC0AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "B",
+                    "fareBasis": "BC0AUEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 5,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 630.1,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "BC0AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "BC0AUEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2305.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 2755.19,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "D",
+                    "fareBasis": "DC2GAEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/14/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "originAndDestination": [
+              {
+                "type": "ItineraryPart",
+                "@id": "282",
+                "originDestinationType": "CONNECTING",
+                "departure": {
+                  "date": "2026-10-05T22:35:00",
+                  "airport": "JFK",
+                  "terminal": "5"
+                },
+                "arrival": {
+                  "date": "2026-10-06T09:16:00",
+                  "airport": "LAX",
+                  "terminal": "1"
+                },
+                "stops": 1,
+                "totalDuration": 821,
+                "flightSegments": [
+                  {
+                    "type": "Segment",
+                    "@id": "283",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-05T22:35:00",
+                      "airport": "JFK",
+                      "terminal": "5"
+                    },
+                    "arrival": {
+                      "date": "2026-10-06T00:05:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "duration": 90,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 355,
+                    "flightInfo": {
+                      "marketingFlightNumber": 1318,
+                      "operatingFlightNumber": 1318,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "321",
+                    "aircraftCode": "321",
+                    "distance": 187,
+                    "arrivalDateOffset": 1,
+                    "awardFare": false
+                  },
+                  {
+                    "type": "Segment",
+                    "@id": "284",
+                    "segmentType": "JETBLUE",
+                    "departure": {
+                      "date": "2026-10-06T06:00:00",
+                      "airport": "BOS",
+                      "terminal": "C"
+                    },
+                    "arrival": {
+                      "date": "2026-10-06T09:16:00",
+                      "airport": "LAX",
+                      "terminal": "1"
+                    },
+                    "duration": 376,
+                    "cabinClass": "Economy",
+                    "layoverDuration": 0,
+                    "flightInfo": {
+                      "marketingFlightNumber": 287,
+                      "operatingFlightNumber": 287,
+                      "operatingAirlineCode": "B6",
+                      "marketingAirlineCode": "B6"
+                    },
+                    "stopAirport": [],
+                    "aircraft": "32S",
+                    "aircraftCode": "32S",
+                    "distance": 2611,
+                    "arrivalDateOffset": 0,
+                    "awardFare": false
+                  }
+                ],
+                "arrivalDateOffset": 1,
+                "awardBooking": false,
+                "isQuickest": false
+              }
+            ],
+            "offers": [
+              {
+                "brand": {
+                  "brandId": "DN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 313.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "PI2ABEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "L",
+                    "fareBasis": "UI4QBEY1",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "AN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 403.79,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "U",
+                    "fareBasis": "UI4QBEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "GR"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 555.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "U",
+                    "fareBasis": "UI4QBEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "EN"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 677.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "PI2ABEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "UI2ABEN5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "ER"
+                },
+                "cabinClass": "Economy",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 9,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 832.8,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "PI2ABEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "N",
+                    "fareBasis": "UI2ABEN9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MN"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1430.3,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "I",
+                    "fareBasis": "II2GNEJ5",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "brand": {
+                  "brandId": "MR"
+                },
+                "cabinClass": "Business",
+                "soldOut": false,
+                "seatsRemaining": {
+                  "count": 4,
+                  "lowAvailability": false
+                },
+                "price": [
+                  {
+                    "amount": 1785.71,
+                    "currency": "USD"
+                  }
+                ],
+                "offerSegmentInfo": [
+                  {
+                    "cabinClass": "Economy",
+                    "bookingClass": "P",
+                    "fareBasis": "PI2ABEY9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/0"
+                      }
+                    }
+                  },
+                  {
+                    "cabinClass": "Business",
+                    "bookingClass": "I",
+                    "fareBasis": "II2GNEJ9",
+                    "ref": {
+                      "flightSegment": {
+                        "$ref": "#/data/searchResults/0/productOffers/15/originAndDestination/0/flightSegments/1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "alternateDateOffers": [
+          {
+            "date": "2026-10-02",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 218.4,
+                "currency": "USD"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-03",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 218.4,
+                "currency": "USD"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-04",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 218.4,
+                "currency": "USD"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-05",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 303.4,
+                "currency": "USD"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-06",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 183.4,
+                "currency": "USD"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-07",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 183.4,
+                "currency": "USD"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-08",
+            "brand": {
+              "brandId": "DN"
+            },
+            "soldOut": false,
+            "price": [
+              {
+                "amount": 253.41,
+                "currency": "USD"
+              }
+            ]
+          }
+        ],
+        "brandsOffered": [
+          {
+            "brandId": "DN",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "AN",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "GR",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "DE",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "EN",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "ER",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "MN",
+            "programName": "FO2 BASIC MINT"
+          },
+          {
+            "brandId": "MR",
+            "programName": "FO2 BASIC MINT"
+          }
+        ],
+        "searchComponent": {
+          "from": "JFK",
+          "to": "LAX",
+          "date": "2026-10-05"
+        }
+      }
+    ]
+  },
+  "version": "v0.146.0"
+}

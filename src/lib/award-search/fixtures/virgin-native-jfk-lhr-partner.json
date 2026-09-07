@@ -1,0 +1,951 @@
+{
+  "type": "virgin-member-awards",
+  "request": {
+    "flightSearchRequest": {
+      "searchOriginDestinations": [
+        {
+          "origin": "JFK",
+          "destination": "LHR",
+          "departureDate": "2026-10-07"
+        }
+      ],
+      "awardSearch": true,
+      "bundleOffer": false,
+      "calendarSearch": false,
+      "flexiDateSearch": false,
+      "nonStopOnly": false,
+      "refundableOnly": false,
+      "checkInBaggageAllowance": false,
+      "carryOnBaggageAllowance": false
+    },
+    "customerDetails": [
+      {
+        "ptc": "ADT"
+      }
+    ]
+  },
+  "result": {
+    "slices": {
+      "current": 0,
+      "total": 1
+    },
+    "criteria": {
+      "origin": {
+        "code": "JFK"
+      },
+      "destination": {
+        "code": "LHR"
+      },
+      "departing": "2026-10-07"
+    },
+    "slice": {
+      "flightsAndFares": [
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T08:15:00",
+            "arrival": "2026-10-07T20:10:00",
+            "duration": "PT6H55M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "flightNumber": "VS26",
+                "operatingFlightNumber": "VS26",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T08:15:00",
+                "arrival": "2026-10-07T20:10:00",
+                "duration": "PT6H55M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T08:15:00",
+                    "arrival": "2026-10-07T20:10:00",
+                    "duration": "PT6H55M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "125000",
+                "amountIncludingTax": 164.1,
+                "tax": 164.1,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "145000",
+                "amountIncludingTax": 299.2,
+                "tax": 299.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "350000",
+                "amountIncludingTax": 704.5,
+                "tax": 704.5,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T18:30:00",
+            "arrival": "2026-10-08T06:45:00",
+            "duration": "PT7H15M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "flightNumber": "VS10",
+                "operatingFlightNumber": "VS10",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T18:30:00",
+                "arrival": "2026-10-08T06:45:00",
+                "duration": "PT7H15M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T18:30:00",
+                    "arrival": "2026-10-08T06:45:00",
+                    "duration": "PT7H15M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "40000",
+                "amountIncludingTax": 164.1,
+                "tax": 164.1,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "135000",
+                "amountIncludingTax": 299.2,
+                "tax": 299.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "350000",
+                "amountIncludingTax": 704.5,
+                "tax": 704.5,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T18:00:00",
+            "arrival": "2026-10-08T06:20:00",
+            "duration": "PT7H20M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "flightNumber": "VS4",
+                "operatingFlightNumber": "VS4",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T18:00:00",
+                "arrival": "2026-10-08T06:20:00",
+                "duration": "PT7H20M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T18:00:00",
+                    "arrival": "2026-10-08T06:20:00",
+                    "duration": "PT7H20M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "42000",
+                "amountIncludingTax": 164.1,
+                "tax": 164.1,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "140000",
+                "amountIncludingTax": 299.2,
+                "tax": 299.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "350000",
+                "amountIncludingTax": 704.5,
+                "tax": 704.5,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T19:00:00",
+            "arrival": "2026-10-08T07:15:00",
+            "duration": "PT7H15M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "flightNumber": "VS46",
+                "operatingFlightNumber": "VS46",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T19:00:00",
+                "arrival": "2026-10-08T07:15:00",
+                "duration": "PT7H15M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A350-1000"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T19:00:00",
+                    "arrival": "2026-10-08T07:15:00",
+                    "duration": "PT7H15M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "60000",
+                "amountIncludingTax": 164.1,
+                "tax": 164.1,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "135000",
+                "amountIncludingTax": 299.2,
+                "tax": 299.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "350000",
+                "amountIncludingTax": 704.5,
+                "tax": 704.5,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T20:35:00",
+            "arrival": "2026-10-08T08:50:00",
+            "duration": "PT7H15M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "flightNumber": "VS154",
+                "operatingFlightNumber": "VS154",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T20:35:00",
+                "arrival": "2026-10-08T08:50:00",
+                "duration": "PT7H15M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T20:35:00",
+                    "arrival": "2026-10-08T08:50:00",
+                    "duration": "PT7H15M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "76000",
+                "amountIncludingTax": 164.1,
+                "tax": 164.1,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "250000",
+                "amountIncludingTax": 299.2,
+                "tax": 299.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "350000",
+                "amountIncludingTax": 704.5,
+                "tax": 704.5,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T23:55:00",
+            "arrival": "2026-10-08T12:05:00",
+            "duration": "PT7H10M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "flightNumber": "VS138",
+                "operatingFlightNumber": "VS138",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T23:55:00",
+                "arrival": "2026-10-08T12:05:00",
+                "duration": "PT7H10M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T23:55:00",
+                    "arrival": "2026-10-08T12:05:00",
+                    "duration": "PT7H10M",
+                    "isDominantLeg": true
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "150000",
+                "amountIncludingTax": 164.1,
+                "tax": 164.1,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "145000",
+                "amountIncludingTax": 299.2,
+                "tax": 299.2,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "350000",
+                "amountIncludingTax": 704.5,
+                "tax": 704.5,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "origin": {
+              "code": "JFK"
+            },
+            "destination": {
+              "code": "LHR"
+            },
+            "departure": "2026-10-07T01:00:00",
+            "arrival": "2026-10-07T16:35:00",
+            "duration": "PT10H35M",
+            "segments": [
+              {
+                "airline": {
+                  "code": "AF",
+                  "name": "Air France"
+                },
+                "operatingAirline": {
+                  "code": "AF",
+                  "name": "Air France"
+                },
+                "flightNumber": "AF11",
+                "operatingFlightNumber": "AF11",
+                "origin": {
+                  "code": "JFK"
+                },
+                "destination": {
+                  "code": "CDG"
+                },
+                "departure": "2026-10-07T01:00:00",
+                "arrival": "2026-10-07T14:10:00",
+                "duration": "PT7H10M",
+                "connection": "PT1H55M",
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A350-900"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "JFK"
+                    },
+                    "destination": {
+                      "code": "CDG"
+                    },
+                    "departure": "2026-10-07T01:00:00",
+                    "arrival": "2026-10-07T14:10:00",
+                    "duration": "PT7H10M",
+                    "isDominantLeg": true
+                  }
+                ]
+              },
+              {
+                "airline": {
+                  "code": "AF",
+                  "name": "Air France"
+                },
+                "operatingAirline": {
+                  "code": "AF",
+                  "name": "Air France"
+                },
+                "flightNumber": "AF1280",
+                "operatingFlightNumber": "AF1280",
+                "origin": {
+                  "code": "CDG"
+                },
+                "destination": {
+                  "code": "LHR"
+                },
+                "departure": "2026-10-07T16:05:00",
+                "arrival": "2026-10-07T16:35:00",
+                "duration": "PT1H30M",
+                "connection": null,
+                "pendingGovtApproval": false,
+                "stopCount": 0,
+                "metal": [
+                  {
+                    "name": "Airbus A220-300"
+                  }
+                ],
+                "legs": [
+                  {
+                    "origin": {
+                      "code": "CDG"
+                    },
+                    "destination": {
+                      "code": "LHR"
+                    },
+                    "departure": "2026-10-07T16:05:00",
+                    "arrival": "2026-10-07T16:35:00",
+                    "duration": "PT1H30M",
+                    "isDominantLeg": false
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "12000",
+                "amountIncludingTax": 184,
+                "tax": 184,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Standard",
+                  "bookingClass": "X",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                },
+                {
+                  "cabinName": "Economy Standard",
+                  "bookingClass": "X",
+                  "isDominantLeg": false,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

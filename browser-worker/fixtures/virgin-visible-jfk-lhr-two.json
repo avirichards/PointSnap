@@ -1,0 +1,131 @@
+{
+  "cards": [
+    {
+      "text": "08 Oct\n\n6h 55m  |  Direct\n\n08 Oct\n\n08:15\n20:10\nFlying with \nVirgin Atlantic\n | VS26\nJFK\nLHR\n\nEconomy Classic\n\n140,000\n\n+US$329\n\nPremium\n\n420,000\n\n+US$599\n\nUpper Class\n\n700,000\n\n+US$1,409\n\nOne way for 2 people, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "08:15",
+        "20:10"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\n140,000\n\n+US$329",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\n420,000\n\n+US$599",
+          "disabled": false
+        },
+        {
+          "text": "Upper Class\n\n700,000\n\n+US$1,409",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "text": "08 Oct\n\n7h 20m  |  Direct\n\n09 Oct\n\n18:00\n06:20\nFlying with \nVirgin Atlantic\n | VS4\nJFK\nLHR\n\nEconomy Classic\n\n112,000\n\n+US$329\n\nPremium\n\n260,000\n\n+US$599\n\nUpper Class\n\n700,000\n\n+US$1,409\n\nOne way for 2 people, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "18:00",
+        "06:20"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\n112,000\n\n+US$329",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\n260,000\n\n+US$599",
+          "disabled": false
+        },
+        {
+          "text": "Upper Class\n\n700,000\n\n+US$1,409",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "text": "08 Oct\n\n7h 15m  |  Direct\n\n09 Oct\n\n18:30\n06:45\nFlying with \nVirgin Atlantic\n | VS10\nJFK\nLHR\n\nEconomy Classic\n\n120,000\n\n+US$329\n\nPremium\n\n260,000\n\n+US$599\n\nUpper Class\n\n700,000\n\n+US$1,409\n\nOne way for 2 people, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "18:30",
+        "06:45"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\n120,000\n\n+US$329",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\n260,000\n\n+US$599",
+          "disabled": false
+        },
+        {
+          "text": "Upper Class\n\n700,000\n\n+US$1,409",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "text": "08 Oct\n\n7h 15m  |  Direct\n\n09 Oct\n\n19:00\n07:15\nFlying with \nVirgin Atlantic\n | VS46\nJFK\nLHR\n\nEconomy Classic\n\n124,000\n\n+US$329\n\nPremium\n\n260,000\n\n+US$599\n\nUpper Class\n\n700,000\n\n+US$1,409\n\nOne way for 2 people, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "19:00",
+        "07:15"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\n124,000\n\n+US$329",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\n260,000\n\n+US$599",
+          "disabled": false
+        },
+        {
+          "text": "Upper Class\n\n700,000\n\n+US$1,409",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "text": "08 Oct\n\n7h 10m  |  Direct\n\n09 Oct\n\n23:55\n12:05\nFlying with \nVirgin Atlantic\n | VS138\nJFK\nLHR\n\nEconomy Classic\n\n140,000\n\n+US$329\n\nPremium\n\n290,000\n\n+US$599\n\nUpper Class\n\n700,000\n\n+US$1,409\n\nOne way for 2 people, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "23:55",
+        "12:05"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\n140,000\n\n+US$329",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\n290,000\n\n+US$599",
+          "disabled": false
+        },
+        {
+          "text": "Upper Class\n\n700,000\n\n+US$1,409",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "text": "08 Oct\n\n7h 15m  |  Direct\n\n09 Oct\n\n20:35\n08:50\nFlying with \nVirgin Atlantic\n | VS154\nJFK\nLHR\n\nEconomy Classic\n\n148,000\n\n+US$329\n\nPremium\n\n290,000\n\n+US$599\n\nUpper Class\n\nNot available\n\nOne way for 2 people, inc. taxes, fees and carrier charges\n\nFlight details",
+      "clocks": [
+        "20:35",
+        "08:50"
+      ],
+      "fareButtons": [
+        {
+          "text": "Economy Classic\n\n148,000\n\n+US$329",
+          "disabled": false
+        },
+        {
+          "text": "Premium\n\n290,000\n\n+US$599",
+          "disabled": false
+        },
+        {
+          "text": "Upper Class\n\nNot available",
+          "disabled": true
+        }
+      ]
+    }
+  ],
+  "countText": "Showing 6 of 6 flights"
+}

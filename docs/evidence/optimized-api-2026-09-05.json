@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-09-05T19:29:20.565Z",
+  "report": [
+    {
+      "program": "AS_MILEAGEPLAN",
+      "http": 200,
+      "state": "success",
+      "message": "Individual itineraries and all supplied award fares, bookable with Alaska Atmos points.",
+      "complete": true,
+      "itineraries": 35,
+      "fares": 68,
+      "elapsedMs": 2245
+    },
+    {
+      "program": "AM_CLUB_PREMIER",
+      "http": 200,
+      "state": "success",
+      "message": "Individual itineraries and all supplied Classic and Dynamic fares, quoted in points plus Mexican pesos.",
+      "complete": true,
+      "itineraries": 11,
+      "fares": 100,
+      "elapsedMs": 1949
+    }
+  ]
+}

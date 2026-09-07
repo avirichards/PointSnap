@@ -1,0 +1,378 @@
+{
+  "reviewDate": "2026-09-05 America/Los_Angeles",
+  "implementationCommit": "5a02f2ef63a4b1ca53eaba4e4e8551e79f5ad8fd",
+  "program": "DL_SKYMILES",
+  "method": "Fresh anonymous standard WebKit; official form submission and complete pagination; no imported personal session",
+  "localApiChecks": [
+    {
+      "runtime": "local Next pilot",
+      "origin": "LAX",
+      "dest": "JFK",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "itineraries": 46,
+      "fares": 167,
+      "complete": true,
+      "elapsedMs": 17615
+    },
+    {
+      "runtime": "local Next pilot",
+      "origin": "LAX",
+      "dest": "JFK",
+      "departDate": "2026-10-05",
+      "pax": 2,
+      "itineraries": 46,
+      "fares": 166,
+      "complete": true,
+      "elapsedMs": 15203
+    },
+    {
+      "runtime": "main optimized Next production API",
+      "origin": "JFK",
+      "dest": "LHR",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "itineraries": 17,
+      "fares": 41,
+      "complete": true,
+      "elapsedMs": 9971
+    }
+  ],
+  "internationalDiagnostic": {
+    "at": "2026-09-06T00:03:17.425Z",
+    "engine": "webkit",
+    "platform": "darwin",
+    "query": {
+      "origin": "JFK",
+      "dest": "LHR",
+      "departDate": "2026-10-05",
+      "pax": 1,
+      "minCabin": "Y"
+    },
+    "elapsedMs": 11068,
+    "result": "success",
+    "complete": true,
+    "itineraries": 17,
+    "fares": 41,
+    "nonstops": 2,
+    "stages": [
+      {
+        "stage": "open-booking",
+        "elapsedMs": 613
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 1010,
+        "path": "/flightsearch/book-a-flight",
+        "status": 200
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 2083,
+        "path": "/dest5.html",
+        "status": 200
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 2725,
+        "path": "/ct.html",
+        "status": 200
+      },
+      {
+        "stage": "fill-search",
+        "elapsedMs": 4425
+      },
+      {
+        "stage": "submit-miles-search",
+        "elapsedMs": 6099
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 6873,
+        "path": "/flightsearch/search-results",
+        "status": 200
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 7562,
+        "path": "/dest5.html",
+        "status": 200
+      },
+      {
+        "stage": "document",
+        "elapsedMs": 8003,
+        "path": "/ct.html",
+        "status": 200
+      },
+      {
+        "stage": "validate-complete-results",
+        "elapsedMs": 10430
+      }
+    ],
+    "observedAt": "2026-09-06T00:03:16.787Z",
+    "example": {
+      "flights": [
+        "DL1"
+      ],
+      "duration": 455,
+      "fares": [
+        {
+          "name": "Delta Main Basic",
+          "cabin": "Y",
+          "points": 19900,
+          "partyPoints": 19900,
+          "cash": 5.6,
+          "currency": "USD",
+          "seats": 9
+        },
+        {
+          "name": "Delta Main Classic",
+          "cabin": "Y",
+          "points": 27600,
+          "partyPoints": 27600,
+          "cash": 5.6,
+          "currency": "USD",
+          "seats": 9
+        },
+        {
+          "name": "Delta Comfort Classic",
+          "cabin": "Y",
+          "points": 59400,
+          "partyPoints": 59400,
+          "cash": 5.6,
+          "currency": "USD",
+          "seats": 9
+        },
+        {
+          "name": "Delta Premium Select Classic",
+          "cabin": "W",
+          "points": 267500,
+          "partyPoints": 267500,
+          "cash": 5.6,
+          "currency": "USD",
+          "seats": 4
+        },
+        {
+          "name": "Delta One Classic",
+          "cabin": "J",
+          "points": 367200,
+          "partyPoints": 367200,
+          "cash": 5.6,
+          "currency": "USD",
+          "seats": 1
+        }
+      ]
+    }
+  },
+  "mainBrowserQa": {
+    "url": "http://127.0.0.1:3000/search?origin=LAX&dest=JFK&departDate=2026-10-05&pax=2&minCabin=Y",
+    "allSources": {
+      "itineraries": 102,
+      "fares": 351,
+      "sourcesWithResults": 4
+    },
+    "deltaFilter": {
+      "itineraries": 46,
+      "fares": 166,
+      "reachableRows": 46,
+      "allRowsOnePage": true
+    },
+    "example": {
+      "flight": "DL960",
+      "departureLocal": "2026-10-05T21:00:00",
+      "arrivalLocal": "2026-10-06T05:21:00",
+      "durationMinutes": 321,
+      "mainBasicPointsPerPerson": 18800,
+      "mainClassicPointsPerPerson": 24000,
+      "comfortPointsPerPerson": 32300,
+      "cashPerPerson": 5.6,
+      "currency": "USD",
+      "partyPoints": 37600,
+      "partyCash": 11.2,
+      "pax": 2
+    },
+    "consoleErrors": 0,
+    "consoleWarnings": 0
+  },
+  "correctedImplementationIssues": [
+    "Observed passenger option is 2 Passengers, not 2",
+    "Observed pagination action is See More Results; wait for the button while next page loads",
+    "Resolve available partner cabin IDs through the current public brand catalog",
+    "Do not add arrival dayCnt to already elapsed hourCnt"
+  ],
+  "hosted": {
+    "linux": {
+      "workflowRun": "https://github.com/avirichards/PointSnap/actions/runs/34000875075",
+      "result": {
+        "at": "2026-09-06T00:18:28.886Z",
+        "engine": "webkit",
+        "platform": "linux",
+        "query": {
+          "origin": "LAX",
+          "dest": "JFK",
+          "departDate": "2026-10-06",
+          "pax": 1,
+          "minCabin": "Y"
+        },
+        "elapsedMs": 46472,
+        "result": "error",
+        "complete": false,
+        "message": "Delta requires browser verification before returning flights.",
+        "stage": "submit-miles-search"
+      }
+    },
+    "macos": {
+      "workflowRun": "https://github.com/avirichards/PointSnap/actions/runs/34001079372",
+      "implementationCommit": "452e459",
+      "result": {
+        "at": "2026-09-06T00:22:51.410Z",
+        "engine": "webkit",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "query": {
+          "origin": "LAX",
+          "dest": "JFK",
+          "departDate": "2026-10-06",
+          "pax": 1,
+          "minCabin": "Y"
+        },
+        "elapsedMs": 23952,
+        "result": "success",
+        "complete": true,
+        "itineraries": 49,
+        "fares": 173,
+        "nonstops": 9,
+        "stages": [
+          {
+            "stage": "open-booking",
+            "elapsedMs": 1675
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 2205,
+            "path": "/flightsearch/book-a-flight",
+            "status": 200
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 5765,
+            "path": "/dest5.html",
+            "status": 200
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 6566,
+            "path": "/ct.html",
+            "status": 200
+          },
+          {
+            "stage": "fill-search",
+            "elapsedMs": 7821
+          },
+          {
+            "stage": "submit-miles-search",
+            "elapsedMs": 10658
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 11742,
+            "path": "/flightsearch/search-results",
+            "status": 200
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 12943,
+            "path": "/ct.html",
+            "status": 200
+          },
+          {
+            "stage": "offers-page-2",
+            "elapsedMs": 16135
+          },
+          {
+            "stage": "document",
+            "elapsedMs": 17670,
+            "path": "/dest5.html",
+            "status": 200
+          },
+          {
+            "stage": "offers-page-3",
+            "elapsedMs": 19924
+          },
+          {
+            "stage": "validate-complete-results",
+            "elapsedMs": 23743
+          }
+        ],
+        "observedAt": "2026-09-06T00:22:51.201Z",
+        "example": {
+          "flights": [
+            "DL934"
+          ],
+          "duration": 320,
+          "fares": [
+            {
+              "name": "Delta Main Basic",
+              "cabin": "Y",
+              "points": 28100,
+              "partyPoints": 28100,
+              "cash": 5.6,
+              "currency": "USD",
+              "seats": 9
+            },
+            {
+              "name": "Delta Main Classic",
+              "cabin": "Y",
+              "points": 33300,
+              "partyPoints": 33300,
+              "cash": 5.6,
+              "currency": "USD",
+              "seats": 9
+            },
+            {
+              "name": "Delta Comfort Classic",
+              "cabin": "Y",
+              "points": 44400,
+              "partyPoints": 44400,
+              "cash": 5.6,
+              "currency": "USD",
+              "seats": 7
+            },
+            {
+              "name": "Delta Premium Select Classic",
+              "cabin": "W",
+              "points": 106700,
+              "partyPoints": 106700,
+              "cash": 5.6,
+              "currency": "USD",
+              "seats": 6
+            },
+            {
+              "name": "Delta One Classic",
+              "cabin": "J",
+              "points": 212300,
+              "partyPoints": 212300,
+              "cash": 5.6,
+              "currency": "USD",
+              "seats": 7
+            }
+          ]
+        }
+      }
+    }
+  },
+  "validation": {
+    "testsPassed": 169,
+    "typescript": "passed",
+    "focusedLint": "passed",
+    "optimizedBuild": "passed",
+    "githubCi": "https://github.com/avirichards/PointSnap/actions/runs/34000610500"
+  },
+  "limits": [
+    "Query-specific returned-source completeness, not guaranteed universal Delta coverage",
+    "No personal cardholder discount",
+    "No native Flying Blue feed implied by offered partner flights",
+    "Hosted macOS succeeded for one full query; hosted Linux reached verification; long-running deployment and load reliability remain unverified",
+    "American and United native connections remain unfinished"
+  ]
+}

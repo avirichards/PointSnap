@@ -1,3 +1,5 @@
+import { noUserResponse, resolveUserId } from "../_userId";
+import { workerHeaders, workerConfigured } from "@/lib/worker";
 /**
  * POST /api/auth/airline/finalize
  *
@@ -20,10 +22,12 @@ interface FinalizeBody {
 }
 
 export async function POST(req: NextRequest) {
+  const userId = await resolveUserId(req);
+  if (!userId) return noUserResponse();
   const base = process.env.PYTHON_WORKER_URL;
-  if (!base) {
+  if (!base || !workerConfigured()) {
     return Response.json(
-      { message: "PYTHON_WORKER_URL not configured" },
+      { message: "Airline services are not configured yet." },
       { status: 501 },
     );
   }
@@ -47,6 +51,7 @@ export async function POST(req: NextRequest) {
   try {
     res = await fetch(url, {
       method: "POST",
+      headers: workerHeaders(userId),
       signal: AbortSignal.timeout(20_000),
     });
   } catch (err) {

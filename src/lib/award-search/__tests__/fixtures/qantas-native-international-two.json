@@ -1,0 +1,1583 @@
+{
+  "modelInput": {
+    "tripType": "O",
+    "displayRewardsOnly": true,
+    "milesQuoteCallSuccess": true,
+    "aamPromoCodeApplied": false,
+    "isJustAfterLateLogin": false,
+    "listMessages": {
+      "hasErrors": false
+    },
+    "yourSearchBean": {
+      "searchDataBean": {
+        "itineraryList": [
+          {
+            "beginDate": 1791158400000,
+            "beginLocation": {
+              "locationCode": "SYD"
+            },
+            "endLocation": {
+              "locationCode": "LAX"
+            }
+          }
+        ]
+      }
+    },
+    "availability": {
+      "currency": {
+        "code": "AUD",
+        "nbDecimals": 2
+      },
+      "priceBox": {
+        "passengers": {
+          "number": {
+            "ADT": 2,
+            "C15": 0,
+            "CHD": 0,
+            "INF": 0,
+            "YTH": 0
+          },
+          "totalNbrOfPassengers": 2
+        }
+      },
+      "listFareFamily": {
+        "fareFamilies": {
+          "ACEPRM": {
+            "code": "ACEPRM",
+            "name": "Premium Economy Classic Reward",
+            "rewardPlusName": "Premium Economy Classic Plus",
+            "isMarginal": true,
+            "belongsToFirstDesktopColumn": false
+          },
+          "ACEECO": {
+            "code": "ACEECO",
+            "name": "Economy Classic Reward",
+            "rewardPlusName": "Economy Classic Plus",
+            "isMarginal": true,
+            "belongsToFirstDesktopColumn": false
+          },
+          "ACEBUS": {
+            "code": "ACEBUS",
+            "name": "Business Classic Reward",
+            "rewardPlusName": "Business Classic Plus",
+            "isMarginal": true,
+            "belongsToFirstDesktopColumn": false
+          },
+          "ACEFIR": {
+            "code": "ACEFIR",
+            "name": "First Classic Reward",
+            "rewardPlusName": "First Classic Plus",
+            "isMarginal": true,
+            "belongsToFirstDesktopColumn": false
+          }
+        }
+      },
+      "bounds": [
+        {
+          "boundId": 0,
+          "aamPromoCodeAppliedToBound": false,
+          "hasCorporateDiscount": false,
+          "ffCodeToAssociatedCabin": {
+            "ACEPRM": "P",
+            "ACEECO": "E",
+            "ACEBUS": "B",
+            "ACEFIR": "F"
+          },
+          "listItineraries": {
+            "itineraries": [
+              {
+                "itemId": "0",
+                "beginDate": 1791226200000,
+                "endDate": 1791210600000,
+                "beginLocationCode": "SYD1",
+                "endLocationCode": "LAXB",
+                "duration": 49200000,
+                "nbrOfStops": 0,
+                "segments": [
+                  {
+                    "id": 0,
+                    "beginDate": 1791226200000,
+                    "endDate": 1791210600000,
+                    "beginLocationCode": "SYD1",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "11",
+                    "duration": 49200000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "2",
+                "beginDate": 1791225900000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 58800000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 3,
+                    "beginDate": 1791225900000,
+                    "endDate": 1791228000000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "550",
+                    "duration": 5700000,
+                    "transitionTime": 4500000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 4,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "3",
+                "beginDate": 1791221400000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 63300000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 5,
+                    "beginDate": 1791221400000,
+                    "endDate": 1791223500000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "546",
+                    "duration": 5700000,
+                    "transitionTime": 9000000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 6,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "1",
+                "beginDate": 1791181500000,
+                "endDate": 1791180300000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 63600000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 1,
+                    "beginDate": 1791181500000,
+                    "endDate": 1791187200000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "MEL1",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "405",
+                    "duration": 5700000,
+                    "transitionTime": 6300000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 2,
+                    "beginDate": 1791193500000,
+                    "endDate": 1791180300000,
+                    "beginLocationCode": "MEL2",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "93",
+                    "duration": 51600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "4",
+                "beginDate": 1791220200000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 64500000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 7,
+                    "beginDate": 1791220200000,
+                    "endDate": 1791222300000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "544",
+                    "duration": 5700000,
+                    "transitionTime": 10200000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 8,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "11",
+                "beginDate": 1791198900000,
+                "endDate": 1791232800000,
+                "beginLocationCode": "SYD1",
+                "endLocationCode": "LAXB",
+                "duration": 98700000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 25,
+                    "beginDate": 1791198900000,
+                    "endDate": 1791218400000,
+                    "beginLocationCode": "SYD1",
+                    "endLocationCode": "MNL1",
+                    "airline": {
+                      "code": "PR",
+                      "capitalizedName": "Philippine Airlines"
+                    },
+                    "operatingCarrier": {
+                      "code": "PR",
+                      "capitalizedName": "Philippine Airlines"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "212",
+                    "duration": 30300000,
+                    "transitionTime": 20100000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 26,
+                    "beginDate": 1791238500000,
+                    "endDate": 1791232800000,
+                    "beginLocationCode": "MNL1",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "PR",
+                      "capitalizedName": "Philippine Airlines"
+                    },
+                    "operatingCarrier": {
+                      "code": "PR",
+                      "capitalizedName": "Philippine Airlines"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "102",
+                    "duration": 48300000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "7",
+                "beginDate": 1791212400000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 72300000,
+                "nbrOfStops": 2,
+                "segments": [
+                  {
+                    "id": 13,
+                    "beginDate": 1791212400000,
+                    "endDate": 1791218100000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "MEL1",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "453",
+                    "duration": 5700000,
+                    "transitionTime": 3600000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 14,
+                    "beginDate": 1791221700000,
+                    "endDate": 1791226500000,
+                    "beginLocationCode": "MEL1",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "628",
+                    "duration": 8400000,
+                    "transitionTime": 6000000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 15,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "8",
+                "beginDate": 1791211500000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 73200000,
+                "nbrOfStops": 2,
+                "segments": [
+                  {
+                    "id": 16,
+                    "beginDate": 1791211500000,
+                    "endDate": 1791217200000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "MEL1",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "451",
+                    "duration": 5700000,
+                    "transitionTime": 4500000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 17,
+                    "beginDate": 1791221700000,
+                    "endDate": 1791226500000,
+                    "beginLocationCode": "MEL1",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "628",
+                    "duration": 8400000,
+                    "transitionTime": 6000000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 18,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "9",
+                "beginDate": 1791209400000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 75300000,
+                "nbrOfStops": 2,
+                "segments": [
+                  {
+                    "id": 19,
+                    "beginDate": 1791209400000,
+                    "endDate": 1791215100000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "MEL1",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "449",
+                    "duration": 5700000,
+                    "transitionTime": 6600000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 20,
+                    "beginDate": 1791221700000,
+                    "endDate": 1791226500000,
+                    "beginLocationCode": "MEL1",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "628",
+                    "duration": 8400000,
+                    "transitionTime": 6000000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 21,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "10",
+                "beginDate": 1791209400000,
+                "endDate": 1791219900000,
+                "beginLocationCode": "SYD3",
+                "endLocationCode": "LAXB",
+                "duration": 75300000,
+                "nbrOfStops": 2,
+                "segments": [
+                  {
+                    "id": 22,
+                    "beginDate": 1791209400000,
+                    "endDate": 1791215100000,
+                    "beginLocationCode": "SYD3",
+                    "endLocationCode": "MEL1",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "449",
+                    "duration": 5700000,
+                    "transitionTime": 3000000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 23,
+                    "beginDate": 1791218100000,
+                    "endDate": 1791222900000,
+                    "beginLocationCode": "MEL1",
+                    "endLocationCode": "BNED",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "626",
+                    "duration": 8400000,
+                    "transitionTime": 9600000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 24,
+                    "beginDate": 1791232500000,
+                    "endDate": 1791219900000,
+                    "beginLocationCode": "BNEI",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas Airways"
+                    },
+                    "operatingCarrier": {
+                      "code": "QF",
+                      "capitalizedName": "Qantas"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "15",
+                    "duration": 48600000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "5",
+                "beginDate": 1791236700000,
+                "endDate": 1791296100000,
+                "beginLocationCode": "SYD1",
+                "endLocationCode": "LAXB",
+                "duration": 124200000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 9,
+                    "beginDate": 1791236700000,
+                    "endDate": 1791263700000,
+                    "beginLocationCode": "SYD1",
+                    "endLocationCode": "DXB3",
+                    "airline": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingCarrier": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "413",
+                    "duration": 52200000,
+                    "transitionTime": 13200000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 10,
+                    "beginDate": 1791276900000,
+                    "endDate": 1791296100000,
+                    "beginLocationCode": "DXB3",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingCarrier": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "215",
+                    "duration": 58800000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              },
+              {
+                "itemId": "6",
+                "beginDate": 1791234600000,
+                "endDate": 1791296100000,
+                "beginLocationCode": "SYD1",
+                "endLocationCode": "LAXB",
+                "duration": 126300000,
+                "nbrOfStops": 1,
+                "segments": [
+                  {
+                    "id": 11,
+                    "beginDate": 1791234600000,
+                    "endDate": 1791261000000,
+                    "beginLocationCode": "SYD1",
+                    "endLocationCode": "DXB3",
+                    "airline": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingCarrier": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "417",
+                    "duration": 51600000,
+                    "transitionTime": 15900000,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  },
+                  {
+                    "id": 12,
+                    "beginDate": 1791276900000,
+                    "endDate": 1791296100000,
+                    "beginLocationCode": "DXB3",
+                    "endLocationCode": "LAXB",
+                    "airline": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingCarrier": {
+                      "code": "EK",
+                      "capitalizedName": "Emirates"
+                    },
+                    "operatingAirlineFlightNumber": null,
+                    "flightNumber": "215",
+                    "duration": 58800000,
+                    "transitionTime": 0,
+                    "nbrOfStops": 0,
+                    "stopLocationList": null
+                  }
+                ]
+              }
+            ],
+            "locations": {
+              "SYD3": {
+                "locationCode": "SYD"
+              },
+              "MNL1": {
+                "locationCode": "MNL"
+              },
+              "SYD1": {
+                "locationCode": "SYD"
+              },
+              "BNED": {
+                "locationCode": "BNE"
+              },
+              "DXB3": {
+                "locationCode": "DXB"
+              },
+              "MEL1": {
+                "locationCode": "MEL"
+              },
+              "MEL2": {
+                "locationCode": "MEL"
+              },
+              "LAXB": {
+                "locationCode": "LAX"
+              },
+              "BNEI": {
+                "locationCode": "BNE"
+              }
+            }
+          },
+          "flights": {
+            "0": {
+              "flightId": "0",
+              "listRecommendation": {
+                "ACEPRM": {
+                  "ffCode": "ACEPRM",
+                  "priceForOne": {
+                    "convertedBaseFare": 323700,
+                    "tax": 351.99,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 647400,
+                    "tax": 703.98,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 351.99,
+                  "taxForAll": 703.98,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "P"
+                  },
+                  "rbds": [
+                    "T"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": 2,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 48200,
+                    "tax": 247.99,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 96400,
+                    "tax": 495.98,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 247.99,
+                  "taxForAll": 495.98,
+                  "isRewardPlus": false,
+                  "cabins": {
+                    "0": "E"
+                  },
+                  "rbds": [
+                    "X"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEBUS": {
+                  "ffCode": "ACEBUS",
+                  "priceForOne": {
+                    "convertedBaseFare": 744900,
+                    "tax": 774.99,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 1489800,
+                    "tax": 1549.98,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 774.99,
+                  "taxForAll": 1549.98,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "B"
+                  },
+                  "rbds": [
+                    "I"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEFIR": {
+                  "ffCode": "ACEFIR",
+                  "priceForOne": {
+                    "convertedBaseFare": 1522800,
+                    "tax": 774.99,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 3045600,
+                    "tax": 1549.98,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 774.99,
+                  "taxForAll": 1549.98,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "F"
+                  },
+                  "rbds": [
+                    "A"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "1": {
+              "flightId": "1",
+              "listRecommendation": {
+                "ACEPRM": {
+                  "ffCode": "ACEPRM",
+                  "priceForOne": {
+                    "convertedBaseFare": 323700,
+                    "tax": 390.7,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 647400,
+                    "tax": 781.4,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 390.7,
+                  "taxForAll": 781.4,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "P"
+                  },
+                  "rbds": [
+                    "H",
+                    "T"
+                  ],
+                  "mixedCabins": [
+                    {
+                      "segmentId": 1,
+                      "realCabinCode": "E"
+                    }
+                  ],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 126300,
+                    "tax": 286.7,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 252600,
+                    "tax": 573.4,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 286.7,
+                  "taxForAll": 573.4,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEBUS": {
+                  "ffCode": "ACEBUS",
+                  "priceForOne": {
+                    "convertedBaseFare": 744900,
+                    "tax": 836.7,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 1489800,
+                    "tax": 1673.4,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 836.7,
+                  "taxForAll": 1673.4,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "B",
+                    "1": "B"
+                  },
+                  "rbds": [
+                    "I",
+                    "I"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "2": {
+              "flightId": "2",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 126300,
+                    "tax": 295.94,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 252600,
+                    "tax": 591.88,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 295.94,
+                  "taxForAll": 591.88,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "3": {
+              "flightId": "3",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 126300,
+                    "tax": 295.94,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 252600,
+                    "tax": 591.88,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 295.94,
+                  "taxForAll": 591.88,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "4": {
+              "flightId": "4",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 126300,
+                    "tax": 295.94,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 252600,
+                    "tax": 591.88,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 295.94,
+                  "taxForAll": 591.88,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "5": {
+              "flightId": "5",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 106200,
+                    "tax": 656.33,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 212400,
+                    "tax": 1312.66,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 656.33,
+                  "taxForAll": 1312.66,
+                  "isRewardPlus": false,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "S",
+                    "S"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "6": {
+              "flightId": "6",
+              "listRecommendation": {
+                "ACEPRM": {
+                  "ffCode": "ACEPRM",
+                  "priceForOne": {
+                    "convertedBaseFare": 257400,
+                    "tax": 656.33,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 514800,
+                    "tax": 1312.66,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 656.33,
+                  "taxForAll": 1312.66,
+                  "isRewardPlus": false,
+                  "cabins": {
+                    "0": "P",
+                    "1": "P"
+                  },
+                  "rbds": [
+                    "N",
+                    "N"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": 2,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 106200,
+                    "tax": 656.33,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 212400,
+                    "tax": 1312.66,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 656.33,
+                  "taxForAll": 1312.66,
+                  "isRewardPlus": false,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "S",
+                    "S"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "7": {
+              "flightId": "7",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 159300,
+                    "tax": 334.9,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 318600,
+                    "tax": 669.8,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 334.9,
+                  "taxForAll": 669.8,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E",
+                    "2": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "8": {
+              "flightId": "8",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 159300,
+                    "tax": 334.9,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 318600,
+                    "tax": 669.8,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 334.9,
+                  "taxForAll": 669.8,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E",
+                    "2": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "9": {
+              "flightId": "9",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 159300,
+                    "tax": 334.9,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 318600,
+                    "tax": 669.8,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 334.9,
+                  "taxForAll": 669.8,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E",
+                    "2": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "10": {
+              "flightId": "10",
+              "listRecommendation": {
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 159300,
+                    "tax": 334.9,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 318600,
+                    "tax": 669.8,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 334.9,
+                  "taxForAll": 669.8,
+                  "isRewardPlus": true,
+                  "cabins": {
+                    "0": "E",
+                    "1": "E",
+                    "2": "E"
+                  },
+                  "rbds": [
+                    "Q",
+                    "Q",
+                    "Q"
+                  ],
+                  "mixedCabins": [],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            },
+            "11": {
+              "flightId": "11",
+              "listRecommendation": {
+                "ACEPRM": {
+                  "ffCode": "ACEPRM",
+                  "priceForOne": {
+                    "convertedBaseFare": 213800,
+                    "tax": 461.65,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 427600,
+                    "tax": 923.3,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 461.65,
+                  "taxForAll": 923.3,
+                  "isRewardPlus": false,
+                  "cabins": {
+                    "0": "P",
+                    "1": "B"
+                  },
+                  "rbds": [
+                    "N",
+                    "A"
+                  ],
+                  "mixedCabins": [
+                    {
+                      "segmentId": 26,
+                      "realCabinCode": "B"
+                    }
+                  ],
+                  "nbLastSeatsAvailable": 5,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                },
+                "ACEECO": {
+                  "ffCode": "ACEECO",
+                  "priceForOne": {
+                    "convertedBaseFare": 128600,
+                    "tax": 461.65,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "priceForAll": {
+                    "convertedBaseFare": 257200,
+                    "tax": 923.3,
+                    "currency": {
+                      "code": "AUD",
+                      "nbDecimals": 2
+                    }
+                  },
+                  "taxForOne": 461.65,
+                  "taxForAll": 923.3,
+                  "isRewardPlus": false,
+                  "cabins": {
+                    "0": "P",
+                    "1": "E"
+                  },
+                  "rbds": [
+                    "N",
+                    "F"
+                  ],
+                  "mixedCabins": [
+                    {
+                      "segmentId": 25,
+                      "realCabinCode": "P"
+                    }
+                  ],
+                  "nbLastSeatsAvailable": null,
+                  "isCorporateDiscount": false,
+                  "isFareBasisDiscount": false,
+                  "blockRestrictedFares": false,
+                  "restrictedFare": false
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

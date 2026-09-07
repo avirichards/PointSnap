@@ -1,0 +1,134 @@
+name: Airline browser connectivity (explicit diagnostic)
+
+on:
+  workflow_dispatch:
+    inputs:
+      program:
+        description: Airline to test with a fresh anonymous browser
+        type: choice
+        required: true
+        default: delta
+        options:
+          - delta
+          - smiles
+          - american
+          - american-desktop
+      runner:
+        description: Standard hosted runtime to verify
+        type: choice
+        required: true
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - macos-15
+      browser:
+        description: Standard browser engine for the Smiles diagnostic
+        type: choice
+        default: webkit
+        options:
+          - webkit
+          - chromium
+          - firefox
+      skip_first_run:
+        description: Explicit desktop Chrome startup-dialog diagnostic
+        type: boolean
+        default: false
+      expand_cabins:
+        description: American all-cabin plus Business/First searches
+        type: boolean
+        default: false
+      origin:
+        description: American desktop departure airport
+        type: string
+        default: LAX
+      destination:
+        description: American desktop destination airport
+        type: string
+        default: AUS
+      departure_date:
+        description: American desktop YYYY-MM-DD (blank means 30 days ahead)
+        type: string
+        default: ""
+      passengers:
+        description: American desktop adult count
+        type: string
+        default: "1"
+      startup_timeout_ms:
+        description: Ordinary Chrome startup deadline (1000 to 60000 ms)
+        type: string
+        default: "20000"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-search:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install standard browser engines
+        if: inputs.program == 'american' || inputs.program == 'smiles'
+        run: pnpm exec playwright install --with-deps --no-shell chromium webkit firefox
+      - name: Install standard WebKit
+        if: inputs.program == 'delta'
+        run: pnpm exec playwright install --with-deps webkit
+      - name: Fresh anonymous Smiles search and every payment choice
+        if: inputs.program == 'smiles'
+        env:
+          POINTSNAP_SMILES_ENGINE: ${{ inputs.browser }}
+        run: pnpm exec tsx browser-worker/probe-smiles.ts
+      - name: Fresh anonymous Delta search and complete pagination
+        if: inputs.program == 'delta'
+        run: pnpm exec tsx browser-worker/probe-delta.ts
+      - name: Installed Chrome anonymous search
+        if: inputs.program == 'american'
+        continue-on-error: true
+        env:
+          POINTSNAP_BROWSER_CHANNEL: chrome
+        run: pnpm exec tsx browser-worker/probe.ts chromium
+      - name: WebKit direct booking entry
+        if: inputs.program == 'american'
+        continue-on-error: true
+        env:
+          POINTSNAP_BROWSER_ENTRY: direct
+        run: pnpm exec tsx browser-worker/probe.ts webkit
+      - name: Ordinary Chrome with profile reuse and restart (macOS)
+        if: inputs.program == 'american-desktop' && runner.os == 'macOS'
+        env:
+          POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS: ${{ inputs.startup_timeout_ms }}
+          POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
+          POINTSNAP_AMERICAN_EXPAND_CABINS: ${{ inputs.expand_cabins && '1' || '0' }}
+          POINTSNAP_PROBE_ORIGIN: ${{ inputs.origin }}
+          POINTSNAP_PROBE_DESTINATION: ${{ inputs.destination }}
+          POINTSNAP_PROBE_DATE: ${{ inputs.departure_date }}
+          POINTSNAP_PROBE_PASSENGERS: ${{ inputs.passengers }}
+        run: pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome "$POINTSNAP_PROBE_DATE" "$POINTSNAP_PROBE_ORIGIN" "$POINTSNAP_PROBE_DESTINATION" "$POINTSNAP_PROBE_PASSENGERS"
+      - name: Ordinary Chrome with profile reuse and restart (Linux)
+        if: inputs.program == 'american-desktop' && runner.os == 'Linux'
+        env:
+          POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS: ${{ inputs.startup_timeout_ms }}
+          POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN: ${{ inputs.skip_first_run && '1' || '0' }}
+          POINTSNAP_AMERICAN_EXPAND_CABINS: ${{ inputs.expand_cabins && '1' || '0' }}
+          POINTSNAP_PROBE_ORIGIN: ${{ inputs.origin }}
+          POINTSNAP_PROBE_DESTINATION: ${{ inputs.destination }}
+          POINTSNAP_PROBE_DATE: ${{ inputs.departure_date }}
+          POINTSNAP_PROBE_PASSENGERS: ${{ inputs.passengers }}
+        run: xvfb-run -a pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome "$POINTSNAP_PROBE_DATE" "$POINTSNAP_PROBE_ORIGIN" "$POINTSNAP_PROBE_DESTINATION" "$POINTSNAP_PROBE_PASSENGERS"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ inputs.program }}-browser-connectivity
+          path: work/browser-probes/*.json
+          if-no-files-found: error
+          retention-days: 7

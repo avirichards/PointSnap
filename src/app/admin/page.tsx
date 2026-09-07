@@ -1,3 +1,5 @@
+import { currentStaff } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import { Shield } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +9,7 @@ import {
   type PoolRow,
 } from "@/components/admin/account-pool-panel";
 import { db, schema } from "@/db";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 
 export const metadata = {
   title: "Admin — PointSnap",
@@ -66,16 +68,18 @@ async function loadAccountPool(): Promise<PoolRow[]> {
     GROUP BY p.id, p.name
     ORDER BY p.name ASC
   `);
-  return (rows as unknown as Array<{
-    program_id: string;
-    program_name: string;
-    active: number;
-    banned: number;
-    exhausted: number;
-    disabled: number;
-    total: number;
-    recently_used: number;
-  }>).map((r) => ({
+  return (
+    rows as unknown as Array<{
+      program_id: string;
+      program_name: string;
+      active: number;
+      banned: number;
+      exhausted: number;
+      disabled: number;
+      total: number;
+      recently_used: number;
+    }>
+  ).map((r) => ({
     programId: r.program_id,
     programName: r.program_name,
     active: r.active,
@@ -88,6 +92,7 @@ async function loadAccountPool(): Promise<PoolRow[]> {
 }
 
 export default async function AdminPage() {
+  if (!(await currentStaff())) redirect("/sign-in?next=/admin");
   const [events, pool] = await Promise.all([loadAudit(), loadAccountPool()]);
 
   return (
@@ -102,12 +107,13 @@ export default async function AdminPage() {
           <div className="flex items-center gap-2">
             <Shield className="size-5 text-muted-foreground" aria-hidden />
             <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
-            <Badge variant="outline" className="text-xs">staff only</Badge>
+            <Badge variant="outline" className="text-xs">
+              staff only
+            </Badge>
           </div>
           <p className="text-sm text-muted-foreground max-w-prose">
-            Operator surface — scraper account pool health, audit log of
-            edits. Mutation UIs (add account, manual ban, override sweet
-            spot, kill-switch a scraper) land alongside the Clerk wiring.
+            Read-only operator view of the legacy scraper account pool and
+            recent audit events.
           </p>
         </header>
 

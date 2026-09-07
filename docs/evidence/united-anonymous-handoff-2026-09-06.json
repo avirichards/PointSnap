@@ -1,0 +1,85 @@
+{
+  "checkedAt": "2026-09-06T16:46:11.674Z",
+  "query": {
+    "origin": "LAX",
+    "destination": "AUS",
+    "departureDate": "2026-10-06",
+    "adults": 1,
+    "tripType": "one-way"
+  },
+  "method": "Dedicated app-owned ordinary Chrome on macOS, official public award form and normal Money/Miles controls; no login, imported browser state or direct inventory replay.",
+  "approvedDecisionRule": {
+    "anonymousBudgetMinutes": 60,
+    "startedAt": "2026-09-06T16:41:39Z",
+    "decision": "Switch early to an operator-account pilot because both tested award entry sequences explicitly require membership."
+  },
+  "observations": [
+    {
+      "phase": "award-first",
+      "at": "2026-09-06T16:43:33.457Z",
+      "result": "Official form accepted the route/date/party and opened the sign-in dialog before award inventory. No available native award fares observed."
+    },
+    {
+      "phase": "dismiss-award-sign-in",
+      "at": "2026-09-06T16:44:13.232Z",
+      "result": "Page displayed its non-dismissible Continue shopping dialog explaining that miles results require sign-in. Offered controls: cash results, sign-in, homepage. An attempted Update click was intercepted by this visible modal; it is not classified as an airline denial."
+    },
+    {
+      "phase": "normal-cash-continuation",
+      "at": "2026-09-06T16:44:43.272Z",
+      "action": "Click Show flights with money.",
+      "inventoryEndpoint": {
+        "path": "/api/flight/FetchSSENestedFlights",
+        "status": 200
+      },
+      "result": "Real cash flight rows loaded, including UA1625 and UA1496 nonstop LAX-AUS and connecting itineraries. Example UA1625 Economy from USD159; this is a cash observation, not an award value or full fare audit."
+    },
+    {
+      "phase": "cash-to-miles",
+      "at": "2026-09-06T16:45:18.674Z",
+      "action": "Select Miles in the actual Show price in dropdown and click Update.",
+      "result": "Sign-in opened again; no new award inventory request observed."
+    },
+    {
+      "phase": "dismiss-cash-to-miles-sign-in",
+      "at": "2026-09-06T16:46:11.674Z",
+      "result": "The same explicit miles-requires-sign-in dialog reappeared. Cash initialization did not unlock anonymous native awards."
+    }
+  ],
+  "publicCodeEvidence": {
+    "url": "https://www.united.com/83369.431388826696089dff91.chunk.js",
+    "sha256": "e78576ad3441c4369f7b05268a3fe6ecb5d0a99839a4fbaa7fc2f2e237249fc7",
+    "component": "unitedapp.components.Ciam.LoginAwardModal",
+    "findings": [
+      "The award continuation dialog is configured as non-dismissible and offers revenue continuation, sign-in and homepage actions.",
+      "Generic continue-as-guest copy exists elsewhere in delivered code, but no award guest continuation was visible in either actual tested flow."
+    ],
+    "limit": "Client-flow and visible-page evidence; not a proof that every possible backend or future anonymous path is unavailable."
+  },
+  "decision": {
+    "state": "auth_required",
+    "next": "Authorized operator-account pilot: user signs in directly in the dedicated United browser; first establish two genuine native award queries before attempting integration or extended recovery.",
+    "accountAvailable": false,
+    "ownerSignInRequested": true,
+    "nativeAwardSourceEnabled": false,
+    "customerAirlineConnectionRequired": false,
+    "accountEligibilityAndSessionRecovery": "Unverified."
+  },
+  "artifacts": {
+    "cashSnapshot": "work/united-current/cash-results-snapshot.txt",
+    "requiredLoginScreenshot": "work/access-current/united-cash-to-miles-requirement.png",
+    "cashScreenshot": "work/access-current/united-cash-results.png"
+  },
+  "validation": {
+    "airlineScreenshotsInspected": true,
+    "progressFrontend": {
+      "actualProgressPageVerified": true,
+      "unitedState": "auth_required",
+      "explicitMemberRequirementDisclosed": true,
+      "accountPilotPendingDisclosed": true,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "privacy": "No credentials, codes, cookies or authorization headers are included in this evidence. Public source code is identified by URL and digest rather than redistributed."
+}

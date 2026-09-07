@@ -1,0 +1,216 @@
+{
+  "flights": [
+    {
+      "id": 3474517238,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "DXB",
+        "name": "Dubai",
+        "city": "Dubai"
+      },
+      "departsAt": "2026-10-05T21:10:00",
+      "arrivesAt": "2026-10-06T04:30:00",
+      "arrivalDayOffset": 1,
+      "duration": "14 hours 20 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 53100,
+          "seats": 6,
+          "tax": 339,
+          "currency": "AU$",
+          "rbd": "S",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 4662229100,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": {
+          "isSelfTransfer": false,
+          "cabinClass": "PremiumEconomy",
+          "points": 128700,
+          "seats": 2,
+          "tax": 339,
+          "currency": "AU$",
+          "rbd": "N",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5179437964,
+          "mixedCabinClasses": null
+        },
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T21:10:00",
+          "arrivesAt": "2026-10-06T04:30:00",
+          "duration": "14h 20m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "EK417",
+          "operatedBy": "Emirates",
+          "airlineCode": "EK",
+          "iconAirlineCode": "EK",
+          "equipment": "777",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "DXB",
+            "name": "Dubai",
+            "city": "Dubai"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 18:25:03.239006+00"
+    },
+    {
+      "id": 3474517217,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "DXB",
+        "name": "Dubai",
+        "city": "Dubai"
+      },
+      "departsAt": "2026-10-05T06:00:00",
+      "arrivesAt": "2026-10-05T13:20:00",
+      "arrivalDayOffset": 0,
+      "duration": "14 hours 20 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 53100,
+          "seats": 6,
+          "tax": 339,
+          "currency": "AU$",
+          "rbd": "S",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 4662229078,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T06:00:00",
+          "arrivesAt": "2026-10-05T13:20:00",
+          "duration": "14h 20m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "EK415",
+          "operatedBy": "Emirates",
+          "airlineCode": "EK",
+          "iconAirlineCode": "EK",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "DXB",
+            "name": "Dubai",
+            "city": "Dubai"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 18:25:03.239006+00"
+    },
+    {
+      "id": 3628752329,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "DXB",
+        "name": "Dubai",
+        "city": "Dubai"
+      },
+      "departsAt": "2026-10-05T21:45:00",
+      "arrivesAt": "2026-10-06T05:15:00",
+      "arrivalDayOffset": 1,
+      "duration": "14 hours 30 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 53100,
+          "seats": 6,
+          "tax": 339,
+          "currency": "AU$",
+          "rbd": "S",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 4873858894,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T21:45:00",
+          "arrivesAt": "2026-10-06T05:15:00",
+          "duration": "14h 30m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "EK413",
+          "operatedBy": "Emirates",
+          "airlineCode": "EK",
+          "iconAirlineCode": "EK",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "DXB",
+            "name": "Dubai",
+            "city": "Dubai"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 18:25:03.239006+00"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "maxKnownPage": 1
+  },
+  "routeDecision": {
+    "blocked": false
+  }
+}

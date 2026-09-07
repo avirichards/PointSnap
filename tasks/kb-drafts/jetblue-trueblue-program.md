@@ -1,30 +1,9 @@
-# JetBlue TrueBlue is now searchable
+# JetBlue TrueBlue in PointSnap
 
-PointSnap can now pull live award pricing for **JetBlue TrueBlue**, JetBlue's
-loyalty program. Search any JetBlue route the same way you search the other
-programs — pick JetBlue TrueBlue, enter your city pair and date, and PointSnap
-fetches the current TrueBlue points price.
+Search JetBlue flights without linking an airline account. The current connector returns individual departures, connecting itineraries, all supplied Main/EvenMore/Mint fare variants, points, exact quoted taxes and available seats. Expand a flight to compare its Base, regular and Flex choices. EvenMore is extra-legroom Economy; connecting Mint fares show which segments are Economy or Business.
 
-## What you'll see
+Cash comparisons use the same flight times, fare family, booking class, fare basis and cabin. Cents per point subtract the award taxes from that matching cash price. A missing cash quote does not hide an award.
 
-For each date, PointSnap shows the **lowest economy award price** in TrueBlue
-points, the number of award seats available at that price, and the taxes/fees
-(JetBlue award tickets carry only a small fixed fee — no fuel surcharges).
+Prices are per adult. Booking opens a fresh JetBlue search for the requested route, date and party size. Availability can change before purchase. A failed or incomplete airline response appears as a source error, not zero seats. PointSnap does not guarantee every possible itinerary beyond the inventory supplied by the airline's tested search contract.
 
-## Things to know about JetBlue results
-
-- **Economy only.** JetBlue's public pricing feed returns the lowest economy
-  ("Blue") points price. It does not separately price **Mint** (JetBlue's
-  business cabin), so Mint awards won't appear as their own row.
-- **JetBlue-operated flights only.** Partner-airline awards booked through
-  TrueBlue are not included.
-- **Lowest price for the day.** The figure shown is the cheapest TrueBlue
-  award on that date, not a specific flight — so there's no flight number or
-  departure time on a JetBlue row, just the day's best points price and seat
-  count. This is the same calendar-style result you already see for Virgin
-  Atlantic Flying Club.
-- **Revenue-based pricing.** TrueBlue points prices track JetBlue's cash
-  fares, so the points number moves up and down with demand. There is no fixed
-  award chart.
-- **Points don't expire** and there are never fuel surcharges on TrueBlue
-  awards.
+Verified September 5, 2026: JFK–LAX October5 returned 16 itineraries and119 eligible award fares for one/two adults, including six connections; JFK–LHR returned four itineraries and28 fares. Previous daily-minimum-only behavior has been replaced.

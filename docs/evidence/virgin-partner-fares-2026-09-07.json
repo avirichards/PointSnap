@@ -1,0 +1,101 @@
+{
+  "checkedAt": "2026-09-07T01:10:00Z",
+  "source": "Virgin Atlantic Flying Club native member browser",
+  "methods": [
+    "Actual native airline inventory and visible-card reconciliation",
+    "Serialized canonical PointSnap API",
+    "Actual PointSnap desktop and 390px mobile frontend"
+  ],
+  "samples": [
+    {
+      "origin": "LAX",
+      "destination": "AUS",
+      "date": "2026-10-05",
+      "adults": 1,
+      "itineraries": 4,
+      "fares": 4,
+      "soldOutCabinCellsExcluded": 8,
+      "actualFrontendDurationMs": 14100,
+      "examples": [
+        {
+          "flights": [
+            "DL692"
+          ],
+          "cabin": "Y",
+          "fareName": "Main Cabin",
+          "pointsPerPerson": 16500,
+          "cashPerPerson": 5.6,
+          "currency": "USD",
+          "nonstop": true
+        },
+        {
+          "flights": [
+            "DL2906",
+            "DL2689"
+          ],
+          "cabin": "F",
+          "fareName": "First Class",
+          "pointsPerPerson": 101000,
+          "cashPerPerson": 11.2,
+          "currency": "USD",
+          "segmentCabins": [
+            "F",
+            "F"
+          ]
+        }
+      ]
+    },
+    {
+      "origin": "JFK",
+      "destination": "LHR",
+      "date": "2026-10-07",
+      "adults": 1,
+      "itineraries": 7,
+      "fares": 19,
+      "actualApiDurationMs": 16388,
+      "example": {
+        "flights": [
+          "AF11",
+          "AF1280"
+        ],
+        "cabin": "Y",
+        "fareName": "Economy Standard",
+        "pointsPerPerson": 12000,
+        "cashPerPerson": 184,
+        "currency": "USD"
+      }
+    }
+  ],
+  "ui": {
+    "desktopFlightAndFareSelection": true,
+    "mobileViewportWidth": 390,
+    "mobileScrollWidth": 390,
+    "selectedFare": "DL692 Main Cabin",
+    "partyTotalsVerified": true,
+    "AMPMVerified": true,
+    "officialDatedBookingLinkVerified": true,
+    "pageErrors": []
+  },
+  "changes": [
+    "Explicit native Air France and Delta cabin-label mappings",
+    "Domestic First retained as F despite a shared Business/First product-family group",
+    "Native partner fare names retained in visible-card reconciliation",
+    "An existing member sign-in or verification page is preserved before search navigation"
+  ],
+  "validation": {
+    "testsPassed": 390,
+    "testFiles": 47,
+    "typescript": "passed",
+    "focusedESLint": "passed",
+    "optimizedNextBuild": "passed"
+  },
+  "limits": [
+    "Member eligibility remains conditional",
+    "Normal Virgin browser restart required fresh email verification",
+    "No claim of all-route or all-partner exhaustiveness",
+    "No hosted or sustained reliability qualification"
+  ],
+  "credentialsIncluded": false,
+  "codesIncluded": false,
+  "customerDataIncluded": false
+}

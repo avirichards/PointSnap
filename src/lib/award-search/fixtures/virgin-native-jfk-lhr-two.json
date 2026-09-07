@@ -1,0 +1,1046 @@
+{
+  "type": "virgin-member-awards",
+  "request": {
+    "flightSearchRequest": {
+      "searchOriginDestinations": [
+        {
+          "origin": "JFK",
+          "destination": "LHR",
+          "departureDate": "2026-10-08"
+        }
+      ],
+      "awardSearch": true,
+      "bundleOffer": false,
+      "calendarSearch": false,
+      "flexiDateSearch": false,
+      "nonStopOnly": false,
+      "refundableOnly": false,
+      "checkInBaggageAllowance": false,
+      "carryOnBaggageAllowance": false
+    },
+    "customerDetails": [
+      {
+        "ptc": "ADT"
+      },
+      {
+        "ptc": "ADT"
+      }
+    ]
+  },
+  "result": {
+    "slices": {
+      "current": 0,
+      "total": 1
+    },
+    "criteria": {
+      "departing": "2026-10-08",
+      "origin": {
+        "code": "JFK",
+        "cityName": "New York",
+        "countryName": "NY",
+        "airportName": "John F Kennedy International"
+      },
+      "destination": {
+        "code": "LHR",
+        "cityName": "London Heathrow",
+        "countryName": "United Kingdom",
+        "airportName": "Heathrow Airport"
+      }
+    },
+    "slice": {
+      "flightsAndFares": [
+        {
+          "flight": {
+            "duration": "PT6H55M",
+            "departure": "2026-10-08T08:15:00",
+            "arrival": "2026-10-08T20:10:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "LHR",
+              "cityName": "London Heathrow",
+              "countryName": "United Kingdom",
+              "airportName": "Heathrow Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS26",
+                "operatingFlightNumber": "VS26",
+                "pendingGovtApproval": false,
+                "duration": "PT6H55M",
+                "departure": "2026-10-08T08:15:00",
+                "arrival": "2026-10-08T20:10:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Boeing 787-9"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT6H55M",
+                    "departure": "2026-10-08T08:15:00",
+                    "arrival": "2026-10-08T20:10:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "140000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 328.2,
+                "amountIncludingTax": 328.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "420000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 598.4,
+                "amountIncludingTax": 598.4,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1409,
+                "amountIncludingTax": 1409,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT7H20M",
+            "departure": "2026-10-08T18:00:00",
+            "arrival": "2026-10-09T06:20:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "LHR",
+              "cityName": "London Heathrow",
+              "countryName": "United Kingdom",
+              "airportName": "Heathrow Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS4",
+                "operatingFlightNumber": "VS4",
+                "pendingGovtApproval": false,
+                "duration": "PT7H20M",
+                "departure": "2026-10-08T18:00:00",
+                "arrival": "2026-10-09T06:20:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT7H20M",
+                    "departure": "2026-10-08T18:00:00",
+                    "arrival": "2026-10-09T06:20:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "112000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 328.2,
+                "amountIncludingTax": 328.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "260000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 598.4,
+                "amountIncludingTax": 598.4,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1409,
+                "amountIncludingTax": 1409,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT7H15M",
+            "departure": "2026-10-08T18:30:00",
+            "arrival": "2026-10-09T06:45:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "LHR",
+              "cityName": "London Heathrow",
+              "countryName": "United Kingdom",
+              "airportName": "Heathrow Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS10",
+                "operatingFlightNumber": "VS10",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-08T18:30:00",
+                "arrival": "2026-10-09T06:45:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A350-1000"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-08T18:30:00",
+                    "arrival": "2026-10-09T06:45:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "120000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 328.2,
+                "amountIncludingTax": 328.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "260000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 598.4,
+                "amountIncludingTax": 598.4,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1409,
+                "amountIncludingTax": 1409,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT7H15M",
+            "departure": "2026-10-08T19:00:00",
+            "arrival": "2026-10-09T07:15:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "LHR",
+              "cityName": "London Heathrow",
+              "countryName": "United Kingdom",
+              "airportName": "Heathrow Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS46",
+                "operatingFlightNumber": "VS46",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-08T19:00:00",
+                "arrival": "2026-10-09T07:15:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A350-1000"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-08T19:00:00",
+                    "arrival": "2026-10-09T07:15:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "124000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 328.2,
+                "amountIncludingTax": 328.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "260000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 598.4,
+                "amountIncludingTax": 598.4,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1409,
+                "amountIncludingTax": 1409,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT7H10M",
+            "departure": "2026-10-08T23:55:00",
+            "arrival": "2026-10-09T12:05:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "LHR",
+              "cityName": "London Heathrow",
+              "countryName": "United Kingdom",
+              "airportName": "Heathrow Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS138",
+                "operatingFlightNumber": "VS138",
+                "pendingGovtApproval": false,
+                "duration": "PT7H10M",
+                "departure": "2026-10-08T23:55:00",
+                "arrival": "2026-10-09T12:05:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT7H10M",
+                    "departure": "2026-10-08T23:55:00",
+                    "arrival": "2026-10-09T12:05:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "140000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 328.2,
+                "amountIncludingTax": 328.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "290000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 598.4,
+                "amountIncludingTax": 598.4,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "700000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 1409,
+                "amountIncludingTax": 1409,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Upper Class",
+                  "bookingClass": "G",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flight": {
+            "duration": "PT7H15M",
+            "departure": "2026-10-08T20:35:00",
+            "arrival": "2026-10-09T08:50:00",
+            "origin": {
+              "code": "JFK",
+              "cityName": "New York",
+              "countryName": "NY",
+              "airportName": "John F Kennedy International"
+            },
+            "destination": {
+              "code": "LHR",
+              "cityName": "London Heathrow",
+              "countryName": "United Kingdom",
+              "airportName": "Heathrow Airport"
+            },
+            "segments": [
+              {
+                "flightNumber": "VS154",
+                "operatingFlightNumber": "VS154",
+                "pendingGovtApproval": false,
+                "duration": "PT7H15M",
+                "departure": "2026-10-08T20:35:00",
+                "arrival": "2026-10-09T08:50:00",
+                "stopCount": 0,
+                "bookingClass": null,
+                "fareBasisCode": null,
+                "dominantFareProduct": null,
+                "metal": [
+                  {
+                    "family": "787",
+                    "name": "Airbus A330-900neo"
+                  }
+                ],
+                "airline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "operatingAirline": {
+                  "code": "VS",
+                  "name": "Virgin Atlantic"
+                },
+                "origin": {
+                  "code": "JFK",
+                  "cityName": "New York",
+                  "countryName": "NY",
+                  "airportName": "John F Kennedy International"
+                },
+                "destination": {
+                  "code": "LHR",
+                  "cityName": "London Heathrow",
+                  "countryName": "United Kingdom",
+                  "airportName": "Heathrow Airport"
+                },
+                "connection": null,
+                "legs": [
+                  {
+                    "duration": "PT7H15M",
+                    "departure": "2026-10-08T20:35:00",
+                    "arrival": "2026-10-09T08:50:00",
+                    "isDominantLeg": true,
+                    "origin": {
+                      "code": "JFK",
+                      "cityName": "New York",
+                      "countryName": "NY",
+                      "airportName": "John F Kennedy International"
+                    },
+                    "destination": {
+                      "code": "LHR",
+                      "cityName": "London Heathrow",
+                      "countryName": "United Kingdom",
+                      "airportName": "Heathrow Airport"
+                    },
+                    "operatingAirline": {
+                      "code": "VS",
+                      "name": "Virgin Atlantic"
+                    },
+                    "stopOver": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "fares": [
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "148000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 328.2,
+                "amountIncludingTax": 328.2,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Economy Classic",
+                  "bookingClass": "A",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": null,
+              "available": null,
+              "fareFamilyType": "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": {
+                "awardPoints": "290000",
+                "awardPointsDifference": null,
+                "awardPointsDifferenceSign": null,
+                "tax": 598.4,
+                "amountIncludingTax": 598.4,
+                "priceDifference": "0.00",
+                "priceDifferenceSign": null,
+                "amount": 0,
+                "currency": "USD"
+              },
+              "fareSegments": [
+                {
+                  "cabinName": "Premium",
+                  "bookingClass": "P",
+                  "isDominantLeg": true,
+                  "isSaverFare": false
+                }
+              ]
+            },
+            {
+              "availability": "SOLD_OUT",
+              "available": null,
+              "fareFamilyType": "AWARD-BUSINESS-FIRST",
+              "cabinSelected": false,
+              "isSaverFare": false,
+              "promoCodeApplied": null,
+              "price": null,
+              "fareSegments": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,522 @@
+{
+  "flights": [
+    {
+      "id": 3935927703,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T17:06:00",
+      "arrivesAt": "2026-10-06T09:25:00",
+      "arrivalDayOffset": 1,
+      "duration": "11 hours 19 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 31900,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T, T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543618,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T17:06:00",
+          "arrivesAt": "2026-10-05T19:11:00",
+          "duration": "02h 05m",
+          "layoverDuration": "01h 09m",
+          "flightNumber": "AA3120",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "A319",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "CLT",
+            "name": "Charlotte",
+            "city": "Charlotte"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T20:20:00",
+          "arrivesAt": "2026-10-06T09:25:00",
+          "duration": "08h 05m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA732",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "777",
+          "origin": {
+            "code": "CLT",
+            "name": "Charlotte",
+            "city": "Charlotte"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927687,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T15:00:00",
+      "arrivesAt": "2026-10-06T08:05:00",
+      "arrivalDayOffset": 1,
+      "duration": "12 hours 5 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 33400,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T, T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543591,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T15:00:00",
+          "arrivesAt": "2026-10-05T16:50:00",
+          "duration": "02h 50m",
+          "layoverDuration": "01h 15m",
+          "flightNumber": "AA3321",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "737 MAX",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "ORD",
+            "name": "Chicago",
+            "city": "Chicago"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T18:05:00",
+          "arrivesAt": "2026-10-06T08:05:00",
+          "duration": "08h 00m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA86",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "787",
+          "origin": {
+            "code": "ORD",
+            "name": "Chicago",
+            "city": "Chicago"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927681,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T14:50:00",
+      "arrivesAt": "2026-10-06T08:00:00",
+      "arrivalDayOffset": 1,
+      "duration": "12 hours 10 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 23300,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T, T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543584,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T14:50:00",
+          "arrivesAt": "2026-10-05T16:18:00",
+          "duration": "01h 28m",
+          "layoverDuration": "03h 47m",
+          "flightNumber": "AA4397",
+          "operatedBy": "Republic Airways As American Eagle",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "E175",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "BOS",
+            "name": "Boston",
+            "city": "Boston"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T20:05:00",
+          "arrivesAt": "2026-10-06T08:00:00",
+          "duration": "06h 55m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA108",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "777",
+          "origin": {
+            "code": "BOS",
+            "name": "Boston",
+            "city": "Boston"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927725,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T19:02:00",
+      "arrivesAt": "2026-10-06T12:15:00",
+      "arrivalDayOffset": 1,
+      "duration": "12 hours 13 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 33400,
+          "seats": 6,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T, T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543649,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T19:02:00",
+          "arrivesAt": "2026-10-05T21:05:00",
+          "duration": "03h 03m",
+          "layoverDuration": "01h 25m",
+          "flightNumber": "AA4454",
+          "operatedBy": "Republic Airways As American Eagle",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "E175",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "ORD",
+            "name": "Chicago",
+            "city": "Chicago"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T22:30:00",
+          "arrivesAt": "2026-10-06T12:15:00",
+          "duration": "07h 45m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA98",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "787",
+          "origin": {
+            "code": "ORD",
+            "name": "Chicago",
+            "city": "Chicago"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3935927749,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T23:45:00",
+      "arrivesAt": "2026-10-06T17:15:00",
+      "arrivalDayOffset": 1,
+      "duration": "12 hours 30 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 34700,
+          "seats": 1,
+          "tax": 108,
+          "currency": "US$",
+          "rbd": "X, X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5286543685,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T23:45:00",
+          "arrivesAt": "2026-10-06T13:20:00",
+          "duration": "07h 35m",
+          "layoverDuration": "02h 25m",
+          "flightNumber": "IB324",
+          "operatedBy": "Iberia",
+          "airlineCode": "IB",
+          "iconAirlineCode": "IB",
+          "equipment": "A321neo",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "MAD",
+            "name": "Madrid",
+            "city": "Madrid"
+          }
+        },
+        {
+          "departsAt": "2026-10-06T15:45:00",
+          "arrivesAt": "2026-10-06T17:15:00",
+          "duration": "02h 30m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "IB721",
+          "operatedBy": "Iberia",
+          "airlineCode": "IB",
+          "iconAirlineCode": "IB",
+          "equipment": "A330",
+          "origin": {
+            "code": "MAD",
+            "name": "Madrid",
+            "city": "Madrid"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    },
+    {
+      "id": 3941651335,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "JFK",
+        "name": "New York (JFK)",
+        "city": "New York"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T16:30:00",
+      "arrivesAt": "2026-10-06T10:05:00",
+      "arrivalDayOffset": 1,
+      "duration": "12 hours 35 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 43900,
+          "seats": 4,
+          "tax": 349,
+          "currency": "US$",
+          "rbd": "T, X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5294963985,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T16:30:00",
+          "arrivesAt": "2026-10-05T18:21:00",
+          "duration": "01h 51m",
+          "layoverDuration": "03h 24m",
+          "flightNumber": "AA4734",
+          "operatedBy": "Republic Airways As American Eagle",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "E175",
+          "origin": {
+            "code": "JFK",
+            "name": "New York (JFK)",
+            "city": "New York"
+          },
+          "destination": {
+            "code": "PIT",
+            "name": "Pittsburgh",
+            "city": "Pittsburgh"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T21:45:00",
+          "arrivesAt": "2026-10-06T10:05:00",
+          "duration": "07h 20m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA170",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "787",
+          "origin": {
+            "code": "PIT",
+            "name": "Pittsburgh",
+            "city": "Pittsburgh"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:17:36.052423+00"
+    }
+  ],
+  "pagination": {
+    "page": 2,
+    "pageSize": 10,
+    "maxKnownPage": 2
+  },
+  "routeDecision": {
+    "blocked": false
+  }
+}

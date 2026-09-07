@@ -1,0 +1,397 @@
+{
+  "observedAt": "2026-09-06T11:14:51.537Z",
+  "program": "CM_CONNECTMILES",
+  "status": "native_anonymous_local_api_and_frontend_verified",
+  "method": {
+    "runtime": "App-owned ordinary Chrome; normal public homepage form",
+    "homepage": "https://www.copaair.com/",
+    "inventory": "https://api.copaair.com/ibe/booking/plan-redemptions",
+    "login": false,
+    "personalCookiesImported": false,
+    "subscription": false,
+    "securityChallengeBypassed": false
+  },
+  "experiments": [
+    {
+      "entry": "Derived public shopping link in ordinary Chrome",
+      "initializationStatus": 200,
+      "inventoryStatus": 403,
+      "result": "The visible failure text did not constitute a valid empty award result."
+    },
+    {
+      "entry": "Actual public homepage form",
+      "inventoryStatus": 200,
+      "requestVerified": true,
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 1
+      },
+      "sourceItineraries": 50,
+      "sourceFares": 68,
+      "exactItineraries": 47,
+      "exactFares": 65,
+      "nearbyDepartures": [
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA2226",
+            "CM229"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA5396",
+            "CM383"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA1263",
+            "CM477"
+          ]
+        }
+      ],
+      "displayedItineraries": 50,
+      "viewMoreExhausted": true,
+      "firstNonstop": {
+        "flight": "CM306",
+        "departure": "2026-10-05T02:22",
+        "arrival": "2026-10-05T10:55",
+        "durationMinutes": 393,
+        "family": "Economy Standard",
+        "perPerson": {
+          "miles": 40000,
+          "taxes": 33.6
+        },
+        "party": {
+          "miles": 40000,
+          "taxes": 33.6
+        },
+        "currency": "USD"
+      }
+    },
+    {
+      "entry": "Second actual public homepage form search",
+      "inventoryStatus": 200,
+      "requestVerified": true,
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 2
+      },
+      "sourceItineraries": 49,
+      "sourceFares": 63,
+      "exactItineraries": 46,
+      "exactFares": 60,
+      "nearbyDepartures": [
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA2226",
+            "CM229"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA5396",
+            "CM383"
+          ]
+        },
+        {
+          "origin": "ONT",
+          "flights": [
+            "UA1263",
+            "CM477"
+          ]
+        }
+      ],
+      "displayedItineraries": 49,
+      "viewMoreExhausted": true,
+      "firstNonstop": {
+        "flight": "CM306",
+        "departure": "2026-10-05T02:22",
+        "arrival": "2026-10-05T10:55",
+        "durationMinutes": 393,
+        "family": "Economy Standard",
+        "perPerson": {
+          "miles": 40000,
+          "taxes": 33.6
+        },
+        "party": {
+          "miles": 80000,
+          "taxes": 67.2
+        },
+        "currency": "USD"
+      }
+    },
+    {
+      "entry": "Reusable public-form collector in a fresh app-owned Chrome process",
+      "query": {
+        "origin": "JFK",
+        "destination": "PTY",
+        "departureDate": "2026-10-06",
+        "adults": 2
+      },
+      "inventoryStatus": 200,
+      "requestVerified": true,
+      "sourceItineraries": 45,
+      "sourceFares": 60,
+      "exactItineraries": 8,
+      "exactFares": 17,
+      "nearbyAirportItineraries": 37,
+      "nearbyOrigins": [
+        "EWR",
+        "LGA"
+      ],
+      "displayedItineraries": 45,
+      "viewMoreExhausted": true,
+      "elapsedMs": 9967,
+      "loginRequired": false
+    }
+  ],
+  "reconciliation": {
+    "oneAdultCart": {
+      "flight": "CM306",
+      "family": "Economy Standard",
+      "points": 40000,
+      "cash": 33.6,
+      "currency": "USD"
+    },
+    "twoAdultCart": {
+      "flight": "CM306",
+      "family": "Economy Standard",
+      "points": 80000,
+      "cash": 67.2,
+      "currency": "USD"
+    },
+    "cartVerified": true,
+    "families": [
+      "Economy Saver",
+      "Economy Standard",
+      "Business Saver",
+      "Business Standard"
+    ],
+    "allExpandedFareCardsReconciled": true,
+    "resetFilters": {
+      "testedOnOneAdult": true,
+      "displayedRowsAfterReset": 50
+    },
+    "technicalStopExample": {
+      "flight": "CM392",
+      "airport": "SJO",
+      "arrival": "2026-10-06T08:07",
+      "departure": "2026-10-06T08:45"
+    },
+    "normalFormLesson": "The date confirmation can open passenger controls. An already selected fare uses Keep this fare. Earlier missing Select Economy Standard control was an interaction mistake, not an airline denial.",
+    "scope": "All available cards in the three earlier successful integration searches and the final45-row/60-fare JFK query.",
+    "filterResetRegression": {
+      "query": {
+        "origin": "JFK",
+        "destination": "PTY",
+        "departureDate": "2026-10-06",
+        "adults": 2
+      },
+      "sourceItineraries": 45,
+      "filteredDisplayCount": 44,
+      "missingPhysicalItinerary": "UA1021|EWR|PTY|15:17|19:31|314",
+      "displayAfterResetAll": 45,
+      "newNativeSearchRequiredForReset": false
+    }
+  },
+  "boundaries": [
+    "Initial local API and desktop/mobile frontend integration verified. Broader routes, valid-empty semantics and public deployment are not qualified.",
+    "Three Ontario departures must not count as LAX results.",
+    "Anonymous prices and availability can differ after member login; the cart states the final cost may change.",
+    "Fare family determines the marketed cabin; connecting segment cabins remain unverified. Dreams aircraft branding is not a cabin assignment.",
+    "No award seat count or comparable cash fare has been established.",
+    "All returned rows are accounted for; broader inventory completeness and any backend cap remain unqualified.",
+    "Valid empty searches have not been verified."
+  ],
+  "next": "Continue remaining native airline connections. Copa broader inventory variation, valid-empty semantics, trip-prefilled handoff and later hosting qualification remain open.",
+  "implementation": {
+    "parser": "src/lib/award-search/copa.ts",
+    "fixtures": "Three allowlisted real responses, with session and offer references removed",
+    "tests": "11 new regression tests passed",
+    "workerEnabled": true,
+    "frontendVerified": true,
+    "validation": {
+      "tests": 261,
+      "testFiles": 33,
+      "typecheck": "passed",
+      "lint": "passed",
+      "optimizedNode22Build": "passed",
+      "progressFrontend": "Passed refreshed 1440×1000 build-progress view: current Copa state and focus, no horizontal overflow or page errors",
+      "integrationTests": 261,
+      "integrationTestFiles": 33,
+      "jfkFrontend": "Passed all 8 itineraries / 17 fares, fare switching, two-person totals, desktop/mobile layout and booking conditions"
+    },
+    "worker": "browser-worker/copa.ts",
+    "frontend": {
+      "query": "JFK–PTY October6, two adults",
+      "desktop": {
+        "width": 1440,
+        "height": 1100,
+        "itineraryRows": 8,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      "mobile": {
+        "width": 390,
+        "height": 844,
+        "itineraryCards": 8,
+        "horizontalOverflow": false,
+        "pageErrors": []
+      },
+      "businessNonstop": {
+        "flight": "CM807",
+        "perPersonPoints": 80000,
+        "perPersonTaxes": 33.6,
+        "partyPoints": 160000,
+        "partyTaxes": 67.2,
+        "currency": "USD"
+      },
+      "partnerChoices": {
+        "flights": [
+          "AV245",
+          "CM412"
+        ],
+        "saverPoints": 85000,
+        "standardPoints": 95000,
+        "partySaver": 170000,
+        "partyStandard": 190000,
+        "partyTaxes": 67.2,
+        "segmentCabins": "Explicitly unconfirmed"
+      },
+      "anonymousPriceQualificationVisible": true,
+      "bookingHandoff": "https://www.copaair.com/",
+      "tripPrefilledHandoff": false
+    },
+    "multiSource": {
+      "totalGroupedItineraries": 112,
+      "totalFareChoices": 392,
+      "sourcesWithResults": 6,
+      "elapsedMs": 195500,
+      "copaItineraries": 40,
+      "copaFares": 52,
+      "copaFilterVerified": true,
+      "copaPagination": [
+        25,
+        15
+      ],
+      "horizontalOverflow": false,
+      "pageErrors": [],
+      "scope": "Live normal query; no program override or fixture replay. Other source errors remain explicit."
+    }
+  },
+  "integrationUpdatedAt": "2026-09-06T12:35:04.719Z",
+  "integrationExperiments": [
+    {
+      "entry": "Full live airline-page fare reconciliation, actual public form",
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 1
+      },
+      "sourceItineraries": 50,
+      "sourceFares": 68,
+      "exactItineraries": 47,
+      "exactFares": 65,
+      "displayedFaresMatched": 68,
+      "elapsedMs": 55289
+    },
+    {
+      "entry": "Assembled worker, later calendar month and two adults",
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-12-01",
+        "adults": 2
+      },
+      "sourceItineraries": 34,
+      "sourceFares": 39,
+      "exactItineraries": 30,
+      "exactFares": 35,
+      "displayedFaresMatched": 39,
+      "elapsedMs": 43849
+    },
+    {
+      "entry": "Actual local PointSnap API, Copa selected",
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 2
+      },
+      "sourceItineraries": 49,
+      "sourceFares": 63,
+      "exactItineraries": 46,
+      "exactFares": 60,
+      "displayedFaresMatched": 63,
+      "elapsedMs": 68754
+    },
+    {
+      "entry": "Actual PointSnap frontend, live Copa-only request, final collector",
+      "query": {
+        "origin": "JFK",
+        "destination": "PTY",
+        "departureDate": "2026-10-06",
+        "adults": 2
+      },
+      "sourceItineraries": 45,
+      "sourceFares": 60,
+      "exactItineraries": 8,
+      "exactFares": 17,
+      "displayedFaresMatched": 60,
+      "elapsedMs": 90900
+    },
+    {
+      "entry": "Normal unrestricted multi-source PointSnap query after the final worker change",
+      "query": {
+        "origin": "LAX",
+        "destination": "PTY",
+        "departureDate": "2026-10-05",
+        "adults": 2
+      },
+      "sourceItineraries": 43,
+      "sourceFares": 55,
+      "exactItineraries": 40,
+      "exactFares": 52,
+      "displayedFaresMatched": 55,
+      "elapsedMs": 85767
+    }
+  ],
+  "integrationFindings": [
+    {
+      "issue": "The accessible trip-mode name matched both a wrapper and the native button.",
+      "change": "Select the visible native public form button. A December/two-adult query then passed."
+    },
+    {
+      "issue": "The first PointSnap LAX API attempt rejected a fare-card mismatch. Expected/actual amounts were not captured on that first failure.",
+      "change": "Added bounded card-settle checks and structured mismatch diagnostics; the repeat matched all 63 source fares. The original cause is not established."
+    },
+    {
+      "issue": "JFK frontend reconciliation exposed differences between response and displayed ordering.",
+      "change": "Match flight sequence, actual endpoints, local clocks and total duration instead of response position."
+    },
+    {
+      "issue": "Connecting rows include layover duration before total journey duration.",
+      "change": "Read the journey duration between its endpoint clocks; the UA651/CM266 regression checks 464 minutes, not its 91-minute layover."
+    },
+    {
+      "issue": "The collector initially found 45 rows, then could not find ordinal44. The first diagnosis of nonconsecutive identifiers was superseded by direct inspection.",
+      "change": "The actual page reported a filter showing44 of45 results, with UA1021 EWR–PTY absent. Reset all restored45, including UA1021. Clear filters through the official controls before collection, match physical identity, enumerate actual rows and recheck the final count."
+    },
+    {
+      "issue": "One later search could not locate an expanded Business fare card.",
+      "change": "Live panel transitions remain unresolved. Pointer switching, keyboard-only activation, direct normal click-handler activation, explicit panel closing, atomic quote snapshots and bounded timer polling have been tested in distinct revisions. Current state diagnostics are being captured. None of the latest JFK attempts passed the frontend gate; no complete Copa claim is made.",
+      "resolution": "The verified implementation uses the real pointer control after scrolling and allowing the page to settle, a bounded repeat only if the requested panel is not open, and one atomic snapshot that must match the complete native fare set. All45 source rows and60 fares passed. Failed keyboard, direct-click, close-first and overly strict transition checks remain historical experiments."
+    }
+  ]
+}

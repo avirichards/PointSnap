@@ -1,0 +1,14 @@
+{
+  "airportOriginDestination": "MEXCUN",
+  "regionDescription": "Domestic",
+  "regionShortDescription": "DOM",
+  "subRegionDestination": "PLA",
+  "subRegionFinal": "PLA",
+  "subRegionOrigin": "LOC",
+  "departureAirportLoyaltyZone": "Z01",
+  "arrivalAirportLoyaltyZone": "Z02",
+  "departureAirportCountry": "MX",
+  "arrivalAirportCountry": "MX",
+  "departureAirportTimeZoneId": "America/Mexico_City",
+  "arrivalAirportTimeZoneId": "America/Cancun"
+}

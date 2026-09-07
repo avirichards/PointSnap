@@ -1,36 +1,122 @@
-# PointSnap — the points cockpit
+# PointSnap
 
-Accuracy-first award flight search across every major program. Spreadsheet UX, confidence scoring, wallet-aware pricing.
+An award-search workspace for airline and points enthusiasts. Search routes, compare available cabins, inspect points and cash fees, and continue on the airline’s site. Travelers do **not** connect personal airline accounts to search.
 
-See [`docs/planning/HANDOFF.md`](docs/planning/HANDOFF.md) for the full product spec, competitive teardown, scraper architecture, data model, and per-program research.
+The interface opens with compact search controls and an optional geographic route explorer. Save searches on your device and move between nearby dates. Results use a cabin comparison table on desktop and cards on mobile. Data freshness, missing fees, mixed cabins, source failures, and daily calendars are explicit.
 
-## Stack
+## Run locally
 
-- Next.js 15 + TS + Tailwind v4 + shadcn-style components (App Router)
-- Drizzle ORM + Postgres 16 (Neon serverless, partition-friendly)
-- Upstash Redis for hot cache
-- Clerk auth (wired but optional in dev)
-- Stripe (wired but disabled at launch; paywall flips via `NEXT_PUBLIC_ENABLE_PAYWALL`)
-- Vitest for unit tests
+Requires Node.js 22+ and pnpm 10.33.0.
 
-## Scripts
-
-```bash
-pnpm dev          # start dev server (port 3000)
-pnpm build        # production build
-pnpm typecheck    # tsc --noEmit
-pnpm test         # vitest run
-pnpm db:generate  # generate Drizzle migration from schema
-pnpm db:migrate   # apply migrations to DATABASE_URL
-pnpm db:seed      # load 13 launch programs + reference data
-pnpm db:studio    # open Drizzle Studio
+```sh
+pnpm install --frozen-lockfile
+cp .env.local.example .env.local
+pnpm dev
 ```
 
-## Getting Started
+Open http://localhost:3000. All environment values may stay blank to use the eight direct sources: six live flight feeds, Qantas cached flight inventory and Virgin Atlantic's daily calendar. Airport autocomplete includes a local airport catalog and accepts any three-letter IATA code.
 
-1. Copy `.env.local.example` to `.env.local` and fill in Neon / Upstash / Clerk / Stripe keys.
-2. `pnpm install`
-3. `pnpm db:migrate && pnpm db:seed`
-4. `pnpm dev` → open http://localhost:3000/search
+An optional [browser service](browser-worker/README.md) now adds native Delta SkyMiles searches without a traveler login or data subscription. Local verification returned all 46 LAX–JFK itineraries across 3 pages, 167 available fares for one adult and 166 for two. JFK–LHR returned 17 itineraries/41 fares, including offered Air France/KLM flights booked with SkyMiles. The service requires separate browser binaries and runtime configuration; it is not bundled into a serverless deployment. It also supports native Smiles and the new ordinary-Chrome American connection. American LAX–AUS: 40 itineraries / 78 two-adult fares, all matching the independent website; normal restart verified. International source sets and hosted reliability still need qualification.
 
-The spreadsheet view is backed by `src/lib/mockSearch.ts` until the Python scraper workers ship. Real scrapers will write to `search_results` / `result_cabin_prices` via the schema in `src/db/schema/`.
+## Live coverage
+
+| Source | Returned data | Access |
+| --- | --- | --- |
+| Alaska Airlines / Atmos Rewards | Individual itineraries including available partners, per-person points, USD taxes, seats and matching cash fares | Direct public search |
+| JetBlue / TrueBlue | Supplied JetBlue/partner itineraries and fare families; per-segment cabins, points, taxes and exact-fare cash comparisons when matched | Direct public flight search |
+| Ethiopian ShebaMiles | Economy and Business itineraries, all supplied fares, exact passenger totals and same-flight stops; cash fees unreported. | Direct anonymous airline search |
+| Qantas Frequent Flyer | Cached Classic Reward itineraries and offered partners, all result pages and original timestamps; Australian domestic routes excluded; same-flight stops may be omitted | Public finder; browser recheck before booking |
+| Emirates Skywards partners | Individual easyJet and Jet2 flights, exact party miles; taxes included. Emirates-operated flights are not connected. | Direct public partner portal |
+| Virgin Atlantic / Flying Club | Daily economy, premium economy and business prices and seats; exact fees are not supplied | Direct public calendar |
+| Frontier Miles | US domestic itineraries and all supplied bundle/payment choices; premium seat type unconfirmed | Direct public search |
+| Aeromexico Rewards | Individual itineraries and supplied Classic/Dynamic fares; per-person points and MXN cash fees | Direct public search |
+| American AAdvantage | Native award itineraries and all supplied cabin fares; exact party taxes, partners and mixed cabins | Dedicated anonymous ordinary-Chrome service; local proof, wider qualification pending |
+| Delta SkyMiles | All supplied pages and eligible fare families, native and offered partner awards | Anonymous WebKit service; local and hosted Mac proof |
+| GOL Smiles | Native and offered partner itineraries, regular payment choices and baggage offers | Anonymous WebKit service; local proof |
+| Southwest Rapid Rewards | Native points fares across all four Economy families, connections, same-flight stops and exact-fare cash comparisons | Dedicated anonymous ordinary-Chrome service; verified domestic and Mexico routes, wider qualification pending |
+| Seats.aero | Individual award itineraries for its supported programs | App-owned commercial Live Search key |
+| AwardTool | Individual award itineraries for contract-enabled programs | App-owned API key |
+
+**Universal airline coverage is not complete.** The configured local app has ten scoped live feeds, plus cached Qantas and the Virgin daily calendar; requesting cached Qantas inventory does not turn it into live availability. The commercial adapters were implemented against official documentation and tested with fixtures; they have not been tested with an actual subscription. The selected product direction is subscription-free direct search. Optional commercial adapters remain inactive; they are not the completion plan.
+
+The search never generates estimate rows from award charts and never describes a blocked provider as “no availability.” Virgin calendar summaries appear separately from flight results and do not count as complete flight integrations. JetBlue now returns complete itinerary and fare records for the audited searches. Airline endpoints can change; provider failures appear in Source coverage. See [live-data.md](docs/live-data.md) for exact contracts, evidence, and limitations.
+
+## Search and comparison
+
+One physical itinerary groups matching booking programs and every supplied fare. Cabin, stops, points/fees, airlines, programs and times are available directly; All filters includes connections, aircraft, fare names/classes, refundable/mixed-cabin controls, seat counts, source age, wallet affordability and exact cash value. Click table column headings to sort in either direction; mobile uses flight cards. Compact is the default layout, with Roomy and a remembered AM/PM or 24-hour clock in Display preferences.
+
+Choose an exact date or ±1–7 days. Two date requests run at a time, beginning with the chosen date; results stream into day-price tiles and a combined list. Stop cancels remaining work while preserving received results. Failed dates and programs remain explicit, and range searches remain subject to the server quota. Each direction of a return journey is still priced separately.
+
+Fees automatically display in the visitor's country currency where hosting geolocation is available, then fall back to browser region/USD. A manual choice is remembered. Estimated FX amounts retain the airline's original charge and rate date in details; fees are filtered/sorted in the display currency. Value per point is explicitly USD cents and requires a matching USD cash fare. See [reference-data notes](docs/third-party-data.md).
+
+## Accounts and wallet
+
+1. Configure a Supabase project with email/password and email-link authentication.
+2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public anon/publishable credential, never a service role key).
+3. Apply the committed additive migration `supabase/migrations/20260905010000_personal_wallet.sql` to your preview database. The repository has conflicting historical claims about automatic migration deployment; verify actual application in Supabase rather than assuming a push applied it.
+4. Add your local/preview/production `/auth/callback` URLs to Supabase’s permitted redirect URLs and configure the Site URL/email delivery.
+
+The wallet stores manually entered program/currency balances, expiry dates and card nicknames. Row-level security isolates accounts. Search details compare the selected program’s balance with party cost. Transfer ratios, transfer bonuses, credit-card ingestion, and automatic balance sync are not implemented in the new flow; unverified seed ratios are not used.
+
+Account routes verify Supabase users server-side. User IDs supplied by request parameters are ignored. Staff access requires administrator-controlled `app_metadata.role = "staff"`. No development identity bypass remains.
+
+## Optional commercial adapters (inactive)
+
+Set `SEATS_AERO_API_KEY` and/or `AWARDTOOL_API_KEY` server-side. Seats.aero Pro does **not** grant Live Search access; a commercial agreement is required. AwardTool program codes must match your contract; use `AWARDTOOL_PROGRAMS` to configure them.
+
+When commercial access is enabled, searches require a verified PointSnap account. Production also requires Upstash REST Redis for a shared search quota. This prevents anonymous use of paid quota. Configure both Redis values before enabling the provider keys. Local/direct-only development uses a bounded in-memory limiter.
+
+No airline credentials are required or forwarded by the new search pipeline. The old worker login code remains isolated for compatibility; the product does not offer new airline connections. Existing sessions can be removed at `/airlines/accounts` if the worker is configured.
+
+## Verification
+
+```sh
+pnpm typecheck
+pnpm test
+pnpm lint
+pnpm build
+cd python-workers
+PYTHONWORKERS_SKIP_DB=1 pytest
+```
+
+Tests cover provider contracts, date and passenger validation, SSE parsing and cancellation, partial failures, authentication boundaries, actual PostgreSQL wallet migration/RLS behavior using PGlite, and worker cross-account isolation. Default Python tests exclude live network/browser tests. CI runs both suites.
+
+For a live smoke check, use a date in the future:
+
+```sh
+curl -N 'http://localhost:3000/api/search?origin=SEA&dest=SFO&departDate=2026-10-05&pax=1&minCabin=Y&programs=AS_MILEAGEPLAN'
+```
+
+## Deployment
+
+Keep the existing Next.js/Vercel deployment architecture. This application uses Node APIs and optional TCP Postgres; it is not a static-site export. Feature branches are the review/preview surface. Production deployment and database application must be verified separately; do not merge to `main` as part of ordinary development.
+
+The search route declares a 120-second maximum with a 110-second application deadline, per-provider timeouts, cancellation, heartbeat and private no-store responses. Check your hosting plan’s effective function timeout and outbound airline reachability in preview. A direct source working locally does not establish that an airline accepts a hosting provider’s IP addresses.
+
+Optional Python worker security: set a strong `POINTSNAP_WORKER_TOKEN` shared with Next.js and a separate `POINTSNAP_WORKER_ADMIN_TOKEN`. Only `/health` and `/programs/meta` are public. Auth endpoints also require the server-verified `X-PointSnap-User`; session IDs cannot cross accounts. The historical Vault delete trigger removes stored secrets on disconnect; storage failures are surfaced, not reported as success.
+
+## Product and data notes
+
+- [User direction](tasks/product-brief.md) is the source of truth for the current product brief.
+- The route globe uses D3 geographical projection and Natural Earth land data from the ISC-licensed `world-atlas` package. It shows geography, not verified flight paths or award coverage.
+- Current results are one-way. A return date searches each direction separately; round-trip award pricing can differ.
+- Displayed times retain airport-local source timestamps. Cash stays in its original currency. No foreign exchange rate is guessed.
+- Explore suggestions contain routes, not static claims of award availability or bargain prices.
+
+## Cash versus points
+
+Alaska cash search runs alongside award search. Awards stream immediately; matching cash fares enrich them when available. Match every flight number, route segment, departure/arrival timestamp and cabin. Mixed-cabin comparisons are omitted. A cash failure never hides valid awards.
+
+Value in USD cents per point = `(lowest matching cash fare − award taxes/fees) / award points × 100`. Cash fare names and refundability are shown because the cheapest fare (including Saver) may have different rules or benefits. This does not include the value of miles earned on a paid ticket. No cash comparison is invented for calendar-only results or unknown taxes.
+
+Saved searches contain criteria only and stay on the current device. Opening one requests new results; they are not price alerts or reserved seats.
+
+Skywards partner quotes preserve the exact party total. Per-person values for multiple adults are averages and can be fractional because the source rounds the party price. Search currently supports adults; no child quote is synthesized. The partner portal supplies all pricing after an incremental search; the adapter accumulates every response, including its terminal response, and prices every matching result in batches.
+
+Frontier preserves cash-versus-miles bundle alternatives. A bundle named Business does not establish a business-class cabin; ambiguous seat types are explicitly unconfirmed. International Frontier currency is not verified. Aeromexico retains all supplied fare families, with AM Plus correctly treated as extra-legroom Economy. Source cash charges already include supplied taxes and fees and are not added twice.
+
+The development-only `/build-progress` page shows the local work log, updated via `node scripts/report-progress.mjs work/progress-update.json`. Its API reads only the fixed ignored `work/live-progress.json` file; both routes return 404 outside development. It is a follow-along work log, not automated global airline monitoring.
+
+### Etihad native search
+
+Etihad Guest now returns native anonymous awards through the optional browser service. Verified local searches include JFK–AUH 6 itineraries/38 fares and LHR–AUH 7/76 for two adults, including First Class, exact fees and labeled rail connections. Both cabin searches and all available supplied fare families are retained. Search caps, wider route coverage and hosting remain explicit limits. See [browser setup](browser-worker/README.md) and [evidence](docs/evidence/etihad-anonymous-2026-09-06.json).

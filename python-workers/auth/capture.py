@@ -1692,6 +1692,9 @@ async def auth_start(
             status_code=400,
         )
 
+    running = [s for s in ACTIVE_SESSIONS.values() if s.state in {STATE_WORKING, STATE_MFA_REQUIRED} and not _expired(s)]
+    if len(running) >= 8 or any(s.user_id == user_id for s in running):
+        raise HTTPException(status_code=429, detail="A connection is already running. Finish it before starting another.")
     session_id = _gen_session_id()
     now = _now()
     state = AuthSessionState(
@@ -1726,6 +1729,7 @@ async def auth_start(
 
 @router.get("/status")
 async def auth_status(
+    request: Request,
     session_id: str = Query(..., description="Returned by /auth/start"),
 ) -> JSONResponse:
     """Poll endpoint — the cockpit calls this every ~2s.
@@ -1735,6 +1739,8 @@ async def auth_status(
     capture — the stored program_auth_sessions row id.
     """
     state = ACTIVE_SESSIONS.get(session_id)
+    if state and state.user_id != request.headers.get("x-pointsnap-user"):
+        raise HTTPException(status_code=404, detail="Session not found")
     if not state:
         return JSONResponse(
             {"error": "unknown session_id", "session_id": session_id},
@@ -1778,6 +1784,8 @@ async def auth_mfa(
     409 if the session is not currently `mfa_required`.
     """
     state = ACTIVE_SESSIONS.get(session_id)
+    if state and state.user_id != request.headers.get("x-pointsnap-user"):
+        raise HTTPException(status_code=404, detail="Session not found")
     if not state:
         return JSONResponse(
             {"error": "unknown session_id", "session_id": session_id},
@@ -1811,12 +1819,15 @@ async def auth_mfa(
 
 @router.post("/finalize")
 async def auth_finalize(
+    request: Request,
     session_id: str = Query(..., description="Returned by /auth/start"),
 ) -> JSONResponse:
     """Tear down the BD browser for this session. Idempotent — safe to
     call after a terminal outcome, on cockpit modal close, or on cancel.
     """
     state = ACTIVE_SESSIONS.get(session_id)
+    if state and state.user_id != request.headers.get("x-pointsnap-user"):
+        raise HTTPException(status_code=404, detail="Session not found")
     if not state:
         # Idempotent: an unknown / already-cleaned session is still "ok".
         return JSONResponse({"ok": True})
@@ -1852,3 +1863,23 @@ async def auth_connected(
 
     rows = await list_sessions(user_id)
     return JSONResponse({"rows": rows})
+
+
+@router.post("/disconnect")
+async def auth_disconnect(user_id: str = Query(...), program: str = Query(...)) -> JSONResponse:
+    from common.auth_session import delete_session
+    for state in list(ACTIVE_SESSIONS.values()):
+        if state.user_id == user_id and state.program_id == program:
+            if state.login_task and not state.login_task.done():
+                state.login_task.cancel()
+                try:
+                    await state.login_task
+                except asyncio.CancelledError:
+                    pass
+            await _close_bd_browser(state)
+            ACTIVE_SESSIONS.pop(state.session_id, None)
+    try:
+        await delete_session(user_id, program)
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Could not delete saved session. Try again.")
+    return JSONResponse({"ok": True})

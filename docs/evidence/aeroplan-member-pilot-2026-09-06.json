@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-09-06T21:03:08.629805+00:00",
+  "program": "AC_AEROPLAN",
+  "runtime": "Dedicated app-owned ordinary Chrome on local macOS",
+  "authorizedMemberFallback": true,
+  "steps": [
+    {
+      "stage": "password",
+      "result": "Normal official form accepted authorized credentials and advanced to verification."
+    },
+    {
+      "stage": "email-verification",
+      "result": "Selected the official email method; retrieved the fresh message from the authorized signed-in Gmail browser, checked sender, and submitted it through the official form. First challenge had expired while mailbox access was being established; a fresh normal sign-in and new email code succeeded."
+    },
+    {
+      "stage": "signed-in-search-form",
+      "result": "Account menu present, points sign-in prompt absent, and Book with Aeroplan points remains selected."
+    },
+    {
+      "stage": "query-submitted",
+      "query": {
+        "origin": "LAX",
+        "destination": "YVR",
+        "date": "2026-10-07",
+        "adults": 1,
+        "trip": "one-way"
+      },
+      "result": "Exact route/date/party confirmed in the visible homepage form; submitted its real Search action."
+    },
+    {
+      "stage": "native-inventory",
+      "result": "The actual search/air-bounds request returned HTTP429. The signed-in airline page shows the correct LAX\u2013YVR, October7, one-adult summary and an error429 notice. No native award fares were obtained."
+    }
+  ],
+  "gmailMethod": "Initial pilot used authorized Gmail browser fallback. Latest follow-up used the connected Gmail tools, checked the sender and fresh request timestamp, and archived only the accepted message. This remains an operator pilot, not a hosted mailbox integration.",
+  "credentialsOrCodesStored": false,
+  "nativeInventoryVerified": false,
+  "appIntegrationVerified": false,
+  "next": "Preserve authenticated profile. Allow a bounded cooldown while testing other authorized airlines, inspect any server-provided retry guidance, then attempt a distinct normal recovery path without bypassing access controls.",
+  "followUp": {
+    "checkedAt": "2026-09-07T00:11:36.574201+00:00",
+    "cooldownHours": 3,
+    "ordinaryEmailVerificationAccepted": true,
+    "acceptedEmailArchived": true,
+    "signedInPointsFormConfirmed": true,
+    "query": {
+      "origin": "LAX",
+      "destination": "YVR",
+      "date": "2026-10-07",
+      "adults": 1,
+      "trip": "one-way"
+    },
+    "nativeInventoryStatus": 429,
+    "visiblePage": "/aeroplan/redeem/error",
+    "visibleError": "An error occurred and we were not able to complete the process. Please try again.(Error code: [429])",
+    "nativeInventoryVerified": false,
+    "appIntegrationVerified": false,
+    "next": "Keep the authorized profile. No further unchanged requests after repeated429; refresh of member login alone did not restore native inventory."
+  }
+}

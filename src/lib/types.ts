@@ -84,4 +84,7 @@ export interface SearchQuery {
   returnDate?: string;
   pax: number;
   minCabin: Cabin;
+  flexDays?: number;
+  /** Omitted legacy URLs inherit outbound flexibility. */
+  returnFlexDays?: number;
 }

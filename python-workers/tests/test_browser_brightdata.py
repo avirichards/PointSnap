@@ -12,7 +12,12 @@ import os
 
 import pytest
 
-from common.browser import browser_page
+# Browser-transport smoke tests require the Patchright browser package. Skip
+# cleanly where it isn't installed (the hermetic CI subset); they run in
+# deploy/live environments that carry the full browser stack.
+pytest.importorskip("patchright")
+
+from common.browser import browser_page  # noqa: E402
 
 
 @pytest.mark.asyncio

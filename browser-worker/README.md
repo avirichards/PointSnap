@@ -1,0 +1,237 @@
+# PointSnap airline browser service
+
+PointSnap sends a route, date and passenger count to a separate authenticated browser service using each airline's ordinary booking form. Delta and Smiles use fresh anonymous contexts. American, Etihad and Southwest reuse separate dedicated app-owned anonymous Chrome profiles. Customers do not connect their airline accounts. United’s optional native source uses a separately authorized operator account in its own app-owned profile; the other described sources remain anonymous. No personal browser profile, imported cookies or data subscription is used.
+
+**Delta has verified local live responses.** LAX–JFK October 5: all 46 itineraries on 3 pages, 167 bookable fares for one adult and 166 for two. JFK–LHR:17 itineraries/41 fares, including offered Air France and KLM awards priced in SkyMiles. Delta's public brand catalog supplies partner cabin definitions. These observations establish the tested scope, not every route, runtime or future search.
+
+**Smiles has verified local native and partner responses.** GRU–GIG October 5, two adults: five flights / 42 regular award, cash-plus-miles and baggage choices. GRU–CDG: 40 itineraries / 280 choices. The actual app preserves every option and original BRL travel fees, with display conversion. Club/elite discounts are excluded. HTTP 452/code 113 means the airline withdrew a listed offer after its seat recheck; the app reports that count and retains verified offers. Other failures remain explicit. Hosted verification is separate from local success.
+
+**American now has verified local native responses through ordinary Chrome.** The baseline domestic two-adult search matches all 40 airline itineraries / 78 fares, including three nonstops. Enabling the additional premium search produces 52 LAX–AUS itineraries / 90 fares after a normal restart and 51 JFK–LHR itineraries / 130 fares in the actual UI. All 40 independently observed premium international itineraries and 52 fares match. The source can expose different itinerary sets, so broad completeness and seven-day reliability remain unqualified. Hosted Mac reaches verification. Hosted Linux now returns 40 itineraries / 80 fares in initial, idle and restart checks after the normal first-run startup option; expanded hosted collection and sustained qualification remain open. [Detailed evidence](../docs/evidence/american-persistent-session-2026-09-05.json).
+
+## Setup
+
+Use Node 22 and the pinned pnpm/Playwright versions. Install the browser separately from Next.js:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm exec playwright install webkit
+```
+
+On a supported Linux host, use `pnpm exec playwright install --with-deps webkit` to install system dependencies too.
+
+Create an ignored `.env.browser.local` containing a newly generated random token of at least 32 characters:
+
+```dotenv
+POINTSNAP_BROWSER_WORKER_TOKEN="your-random-secret-at-least-32-characters"
+POINTSNAP_BROWSER_DELTA="1"
+POINTSNAP_BROWSER_SMILES="1"
+POINTSNAP_BROWSER_HOST="127.0.0.1"
+POINTSNAP_BROWSER_PORT="3002"
+POINTSNAP_BROWSER_EVIDENCE_DIR="work/browser-worker/evidence"
+```
+
+Run the worker:
+
+```sh
+node --env-file=.env.browser.local --import tsx browser-worker/start.ts
+```
+
+Configure Next.js in `.env.local` and restart it:
+
+```dotenv
+POINTSNAP_BROWSER_DELTA="1"
+POINTSNAP_BROWSER_SMILES="1"
+POINTSNAP_BROWSER_AMERICAN="0"
+POINTSNAP_BROWSER_WORKER_URL="http://127.0.0.1:3002"
+POINTSNAP_BROWSER_WORKER_TOKEN="the-same-random-secret"
+```
+
+Never expose the token through `NEXT_PUBLIC_*`. Outside loopback, the worker URL must use HTTPS and the service should be private. Setting these variables alone does not install the runtime or establish hosted connectivity. Delta and Smiles use WebKit. Smiles quotes each itinerary sequentially; the 40-flight partner search takes about two minutes. The app host must permit the search route's 210-second maximum. The worker cancels Smiles after 180 seconds; other runners retain their 95-second budget.
+
+### Etihad’s ordinary Chrome runtime
+
+Install standard Google Chrome, then add `POINTSNAP_BROWSER_ETIHAD="1"` to both the worker and Next.js private environment files. Restart the worker after enabling it and verify `/health` reports `EY_GUEST`. The source uses `work/browser-profiles/etihad-desktop-collector`, independently of American and personal browser state. The ordinary desktop Chrome executable/display requirements below apply; no login or subscription is required in the verified local flow.
+
+The runner opens the official AWARD entry twice, for Economy/Business and Business/First. It validates the site’s own route/date/adult request, reconciles each available fare and exact taxes, expands the rendered list, and requires both responses. It preserves GuestSeat and Pay with miles families, partner flights and explicitly labeled rail transfers. Priced fares without enough seats are excluded. Reaching the site’s 25-combination request cap is an explicit incomplete-search error; expansion and validated empty-result semantics remain open.
+
+```sh
+POINTSNAP_TEST_PROGRAM=EY_GUEST pnpm test:browser-live JFK AUH 2026-10-05 2
+# Direct diagnostic only while the normal worker is stopped:
+pnpm exec tsx browser-worker/probe-etihad.ts LHR AUH 2026-10-05 2
+```
+
+Actual local API/UI checks return JFK–AUH 6/38 and LHR–AUH 7/76 for two adults, generally 10–13 seconds for the native source. Another London observation had73 fares, reflecting changed availability. First Class, USD/GBP fees, per-person and party totals, mobile cards and the premium handoff are verified. Hosted access, broad route completeness and prolonged reliability remain unqualified. See [Etihad evidence](../docs/evidence/etihad-anonymous-2026-09-06.json).
+
+Run one worker or direct probe per profile. Etihad serializes its own searches, closes canceled pages and closes its owned browser on worker shutdown. It shares the authenticated worker queue and overall concurrency limit. Never run a standalone diagnostic against an actively owned worker profile.
+
+### American's ordinary Chrome runtime
+
+Install standard Google Chrome. Add these settings to the worker's ignored environment file:
+
+```dotenv
+POINTSNAP_BROWSER_AMERICAN="1"
+POINTSNAP_AMERICAN_BROWSER_MODE="desktop-chrome"
+POINTSNAP_BROWSER_ENTRY="homepage-form"
+POINTSNAP_AMERICAN_EXPAND_CABINS="1"
+```
+
+Enable `POINTSNAP_BROWSER_AMERICAN="1"` in Next.js only after verifying that worker runtime. Desktop mode launches a separate ordinary Chrome process and attaches through its documented loopback debugging interface. It uses only `work/browser-profiles/american-desktop-collector`, with owner-only permissions. No customer helper is needed. The browser persists its own anonymous state; no state is imported from a user's Chrome.
+
+The default executable is standard Chrome's application path on macOS or `/usr/bin/google-chrome` on Linux. An operator may supply an absolute installed executable path with `POINTSNAP_DESKTOP_CHROME_EXECUTABLE`. Linux requires a display such as Xvfb. `POINTSNAP_DESKTOP_CHROME_SKIP_FIRST_RUN=1` skips ordinary first-run setup dialogs; this explicit option resolved startup and enabled the three successful Linux diagnostic searches. It does not change browser sandboxing, TLS or airline verification handling. A browser's successful launch is not proof of airline access.
+
+`POINTSNAP_AMERICAN_EXPAND_CABINS=1` submits both all-cabin and Business/First searches through the official advanced form, explicitly resetting cabin, carrier and nearby-airport settings. Each response is validated independently. Shared itineraries appear once; the later premium quote replaces earlier premium prices, while Economy/Premium Economy are retained. If either required search fails, the combined source reports failure instead of claiming completeness. The scope notice remains visible because two searches do not prove exhaustive airline inventory.
+
+Run only one worker or direct probe against this profile. American searches are serialized within the process; Delta and Smiles retain the shared worker concurrency limit. Cancellation closes only the active American page. Normal shutdown closes the owned browser process; a later worker can reopen the same profile. Profile disconnection or launch failure is reported, and recovery is attempted on a subsequent request rather than repeatedly retrying a denial.
+
+## Live verification
+
+The ordinary Chrome launcher also accepts fixed `aeroplan` and `united` identities, each with its own app-owned profile; the default remains American. `pnpm exec tsx browser-worker/probe-aeroplan-entry.ts` checks the two published public entries. `pnpm exec tsx browser-worker/probe-united-entry.ts` submits the official LAX–AUS October 6 one-adult award form and checks whether dismissing sign-in allows results. Both are bounded access diagnostics, not enabled fare sources. Current runs reach member gates before inventory. They never import a personal profile or record credentials/cookies. [Entry evidence](../docs/evidence/aeroplan-united-entry-2026-09-06.json).
+
+Separate `british-airways` and `qatar` profiles were also exercised through their current official flows. BA's advertised entry links require member login; its legacy public finder still fails after correcting the route and adult controls. Qatar's finder now renders, but the submitted calendar request returns HTTP 401. These are access diagnostics, not enabled native fare sources. The dated evidence files retain the distinct browser, form and HTTP outcomes.
+
+The fixed `virgin-atlantic`, `singapore` and `turkish` profiles were also exercised. Virgin public-deal and Singapore standard/new booking submissions reach member login. Turkish completes form entry but its submitted validation returns 403. These profiles support isolated access investigation; adding an identity does not enable a fare source. See their September 6 evidence in `docs/evidence`.
+
+These commands perform new airline searches. They do not use recorded fixtures:
+
+```sh
+POINTSNAP_TEST_PROGRAM=DL_SKYMILES pnpm test:browser-live LAX JFK 2026-10-05 2
+pnpm exec tsx browser-worker/probe-delta.ts 2026-10-05 JFK LHR 1
+POINTSNAP_TEST_PROGRAM=G3_GOL_SMILES pnpm test:browser-live GRU GIG 2026-10-05 2
+pnpm exec tsx browser-worker/probe-smiles.ts 2026-10-05 GRU CDG 1
+POINTSNAP_TEST_PROGRAM=AA_AADVANTAGE pnpm test:browser-live LAX AUS 2026-10-05 2
+```
+
+The first exercises PointSnap's streaming API. A completed stream with a failed airline source still exits unsuccessfully. The second exercises the same Delta runner directly and writes counts, stages and an example fare to `work/browser-probes/`. The manual Delta GitHub workflow tests a fresh hosted Linux runtime; inspect the diagnostic result before claiming deployment success.
+
+`POINTSNAP_SAVE_PUBLIC_FIXTURE=1` is an optional local diagnostic setting that also saves the sanitized guest flight payload for parser investigation. This is off in the application and hosted workflow. It excludes session/selection IDs and never substitutes its saved output for a new search.
+
+## Correctness and lifecycle
+
+- The worker accepts only supported airline route/date/party queries, never arbitrary URLs or browser commands. Authentication, request-size limits, a bounded queue and a shared two-search concurrency limit apply.
+- Fresh request contexts close on success, failure, cancellation or deadline. American's dedicated profile persists between serialized searches; an aborted page is closed. Worker shutdown also reaps a disconnected owned Chrome process. Login or verification interrupts a search and remains a source error.
+- Delta requests miles, all available cabins, Basic fares included, no nonstop restriction and no nearby-airport expansion. The app applies the user's filters to the complete response afterward.
+- Every reported results page is required. Page numbers, total itineraries, duplicate flights, route, date and passenger count are validated. A temporarily hidden pagination button never counts as a finished search.
+- Exact formatted taxes are preserved; rounded UI taxes are not substituted. Local airport clocks remain local. Delta's arrival-day marker is not added to elapsed trip duration.
+- Available primary and secondary fare families, segment cabins, mixed cabins and operating flight numbers are retained. Unknown cabin definitions, promotional eligibility or malformed available fares fail explicitly instead of disappearing.
+- The app independently revalidates the returned query, observation time, program, complete payload and counts. Fixtures are used only for regression tests.
+- American validates the entire returned response, all available cabin products, segment details, airport-local timestamps, route, date and passenger totals. A complete response extraction does not prove the airline exposed every possible itinerary. The separate cabin-search union improves coverage; connection-city variants and wider result-set completeness still need investigation.
+- Smiles requires the rendered end marker, all source itineraries, all regular cash/miles offers, offered baggage checks and either a matching tax quote or the airline’s explicit no-seat response for every flight. Fees are per traveler even when the source tax response is a party total. Cash-only prices from a different fare family are not used for redemption value. Zero-result semantics have not yet been validated and therefore fail explicitly.
+
+## Remaining diagnostics
+
+American's default `POINTSNAP_AMERICAN_BROWSER_MODE=managed` retains the earlier diagnostic runner. Its engine can be `chromium`, `webkit` or `firefox`; `POINTSNAP_BROWSER_CHANNEL=chrome` selects installed standard Chrome for Chromium. `POINTSNAP_BROWSER_HEADLESS=0` opens that browser visibly. Entry modes are `homepage`, `direct` and `homepage-form`. These choices are explicit experiments, not an automatic retry loop after denial. Managed persistent profiles alone did not reproduce the ordinary-Chrome success.
+
+With the normal worker stopped, `pnpm exec tsx browser-worker/probe-american-session.ts desktop-chrome 2026-10-05 LAX AUS 2` checks an initial search, 30 seconds of idle time and a normal browser restart. The same probe accepts managed engines for controlled comparisons. It writes sanitized counts and stages, never cookies or account state. Do not run it concurrently against the worker's profile.
+
+`probe-southwest.ts` records earlier managed-browser shopping HTTP 403 attempts. These are superseded by the ordinary-Chrome Southwest runtime below; the historical failures remain evidence for those runtimes.
+
+`POINTSNAP_BROWSER_TEMPORARY_PROFILE=1 pnpm exec tsx browser-worker/probe.ts webkit` tests an empty regular profile instead of a nonpersistent context. It creates and removes its own directory under `work/browser-profiles/`; it never accepts a personal-profile path. Local WebKit still reaches verification after form submission; standard Chrome still receives homepage 403. This diagnostic does not enable American in the app.
+
+## Hosted runtime evidence
+
+The same Delta runner succeeds on a fresh GitHub macOS 15 / arm64 WebKit runtime: LAX–JFK October 6, one adult, all 49 itineraries / 173 fares / 9 nonstops in 24.0 seconds. The standard hosted Linux WebKit test reaches verification. These diagnostics use fresh anonymous contexts and are manual-only. They do not deploy a permanent browser service or establish load reliability.
+
+Earlier managed American attempts failed in the hosted Mac runtime: Chrome received homepage Access Denied; WebKit submitted the form and reached Challenge Validation. These are different from the locally verified ordinary-Chrome launch. The manual workflow's `american-desktop` choice tests that new launch with profile reuse and restart on macOS or Linux. Inspect its actual results before enabling a hosted source. No permanent browser service is deployed by these diagnostic jobs.
+
+Smiles may include nearby airports despite an exact-airport search. The worker validates every candidate and quote, then returns only the requested route; the app discloses other-airport exclusions and seat withdrawals. Diagnostics with `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` save sanitized rejected observations separately as `*-rejected-flights.json`. These are diagnostic evidence only and never live fallback data. Airport entry can fall back to a city name but always selects the exact IATA airport.
+
+Smiles diagnostics can explicitly select a standard engine with `POINTSNAP_SMILES_ENGINE=webkit|chromium|firefox`. The application continues to use WebKit. Reports include the engine in their filenames; failure diagnostics retain only public paths, response status, visible text and form labels, never input values, session cookies or request headers. The manual hosted workflow exposes the same engine choice. An experiment failure does not automatically trigger other engines.
+
+The first ordinary-Chrome hosted diagnostics are now recorded: macOS run 34014790643 reaches airline verification after each valid submission; Linux run 34014791646 cannot establish browser readiness. Linux has not yet tested airline access in this mode. Startup diagnostics now emit only a bounded issue category, never raw browser logs, and skip idle/restart phases if no browser opened.
+
+### Hosted Linux milestone — September 6 UTC
+
+Run 34016368911 at 5ec36be returns native anonymous American awards on Linux with standard Chrome, Xvfb and the explicit no-first-run option. Initial, 30-second idle and restart searches each return 40 itineraries / 80 fares. These are baseline homepage searches. The manual diagnostic now accepts `expand_cabins`, origin, destination, departure date and passengers to qualify the actual expanded collector. No permanent browser service is deployed by this workflow. See the evidence report for exact timings.
+
+### Coverage-first checkpoint
+
+The user approved native connection breadth before substantial hosted qualification. A subsequent expanded hosted Linux diagnostic timed out at startup, so the successful baseline diagnostic does not establish consistent launch reliability. `POINTSNAP_DESKTOP_CHROME_STARTUP_TIMEOUT_MS` accepts1000–60000ms and defaults20000; a60-second follow-up is prepared but deferred. The worker now activates its own reused page before UI interaction and clears a remembered connecting-city restriction for unrestricted searches. This recovered local API52/90 for two adults and actual UI52/91 for one adult. Continue the next native programs while preserving the remaining American scope and hosting work.
+
+## Southwest ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_SOUTHWEST="1"` in both private environment files, restart the worker and verify authenticated health reports `WN_RAPID_REWARDS`. Install standard Google Chrome using the desktop-runtime instructions above. The dedicated `southwest-desktop-collector` profile is independent of other airlines and personal browser state.
+
+A new page performs the official points search for each request, followed by the same route/date/adult cash search. The runner validates the site's own POST request, reconciles every rendered flight and fare-family button with the response, and removes selection/account metadata. Cash matches require identical flights and fare families; comparison failure retains valid award fares. Basic, Choice, Choice Preferred and Choice Extra are Economy. Same-flight intermediate stops remain distinct from nonstops. Exact seat quantities and refund conditions are unknown.
+
+```sh
+POINTSNAP_TEST_PROGRAM=WN_RAPID_REWARDS pnpm test:browser-live DEN LAS 2026-10-05 2
+# Direct diagnostic only while the normal worker is stopped:
+pnpm exec tsx browser-worker/probe-southwest-live.ts BWI CUN 2026-10-05 2
+```
+
+The actual local API returned DEN–LAS 26 itineraries / 104 available fares in 8.7 seconds and BWI–CUN 16 / 62 in 5.7 seconds, each for two adults. Corresponding standalone normal-browser searches also passed. These are scoped observations, not a promise of all-route coverage or sustained hosted reliability. Empty-list semantics still need verification and remain explicit errors. Use one runner per owned profile.
+
+## SAS ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_SAS="1"` in both private environment files, restart the worker and verify authenticated health reports `SK_EUROBONUS`. The dedicated `sas-desktop-collector` profile uses the standard Chrome setup above; no customer connection, account or award subscription is needed to search. Booking on SAS requires a member login.
+
+Each query opens the official points page in a new owned tab and validates its own GET inventory request. All itinerary rows and expanded fare-card names/prices must match the complete response. Both Bonus and regular points products are retained. Adult and party prices are checked separately; the regular offer's monetary reference total is not added to the award taxes. Ambiguous connecting segment cabins stay unconfirmed. The raw response is reduced to a flight/price allowlist before leaving the collector.
+
+```sh
+POINTSNAP_TEST_PROGRAM=SK_EUROBONUS pnpm test:browser-live CPH ARN 2026-10-05 2
+# Standalone diagnostic only while no worker owns the SAS profile:
+pnpm exec tsx browser-worker/probe-sas-live.ts CPH JFK 2026-10-05 2
+```
+
+Actual local PointSnap searches verified CPH–ARN 20 itineraries / 74 fares and CPH–JFK 7 / 14 for two adults. Empty-response semantics, broader route/party coverage, technical stops, exact cash comparisons, refund rules and hosted qualification remain open. An unverified empty or incomplete response is an explicit source error.
+
+## Copa ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_COPA="1"` in both private environment files, restart the idle worker, and verify authenticated health includes `CM_CONNECTMILES`. Copa uses its dedicated `copa-desktop-collector` profile. The collector submits the actual public homepage form anonymously; a derived direct shopping link previously returned verification and is not used as the collector entry. Customers do not connect an airline account or install a helper.
+
+The actual native request must match origin, destination, departure date, adults, one-way miles mode and absence of promotional/member pricing. The collector navigates the visible calendar month controls, checks the form state, expands the full flight list and reconciles every available Saver and Standard fare card. It preserves party totals and cash taxes, counts nearby-airport alternatives separately, and retains technical stops and named partner operators. Prices are anonymous quotes that can change after member login. Connecting segment cabins, exact award seats, comparable cash fares and refundability remain unknown unless independently verified.
+
+```sh
+# Standalone only while no running worker owns the Copa profile:
+POINTSNAP_SAVE_PUBLIC_FIXTURE=1 node --import tsx browser-worker/probe-copa-live.ts LAX PTY 2026-12-01 2
+# Actual PointSnap API with the configured worker:
+POINTSNAP_TEST_PROGRAM=CM_CONNECTMILES node scripts/check-browser-search.mjs LAX PTY 2026-10-05 2
+```
+
+No returned list is labeled airline-wide exhaustive. Valid empty searches, broader inventory limits, hosted operation and sustained reliability remain open. Missing, inconsistent or unfinished responses fail explicitly. Debug output contains allowlisted public flight data; never persist booking references, authentication headers or personal browser state.
+
+Copa local verification: LAX–PTY October 5 / two adults returned 46 exact itineraries and 60 fares; JFK–PTY October 6 returned 8 / 17 after accounting for all 45 source rows and 60 fares. The JFK source also returned 37 nearby-airport alternatives. A December 1 query returned 30 / 35. The actual desktop/mobile UI verified fare switching, party totals and booking conditions. The 90.9-second JFK full-page check justified a bounded 180-second Copa worker timeout and 185-second bridge timeout. No source flights or fares are dropped to fit that deadline.
+
+
+## Qantas ordinary Chrome runtime
+
+Set `POINTSNAP_BROWSER_QANTAS="1"` in both private environment files, restart the idle worker, and verify authenticated health includes `QF_FF`. The runner owns its `qantas-desktop-collector` profile and submits the normal public Rewards / One way form without an account. Do not run a standalone probe while the worker owns that profile.
+
+```sh
+# Standalone only when the service is stopped:
+POINTSNAP_SAVE_PUBLIC_FIXTURE=1 node --import tsx browser-worker/probe-qantas-live.ts SYD MEL 2027-01-04 1
+# Actual API with the running service:
+POINTSNAP_TEST_PROGRAM=QF_FF node scripts/check-browser-search.mjs SYD LAX 2026-10-05 2
+```
+
+The collector verifies the selected airports, date and adult count, captures only `flexPricerAvailabilityActionFromLoad`, selects All cabins and expands every available flight row. Domestic grouped buttons and international fare radios are reconciled against each source itinerary, flight number, local clock, duration, point price, rounded list fee and Classic/Classic Plus family. Exact source fees and party totals are retained. Nearby-airport alternatives are excluded from exact-airport results and counted explicitly; mixed cabins stay visible.
+
+Local verification: independent SYD–MEL October 5 / two adults returned 37 itineraries / 62 fares; January 4 / one adult returned 45 / 57 after loading additional calendar months and changing the party. Actual PointSnap SYD–LAX October 5 / two adults returned 12 / 19 in 12.3 seconds, including all four cabins and PR/EK partners. A Business-minimum API query retained 2 itineraries / 3 Business/First fares and passed the same full source reconciliation. Desktop and mobile showed exact original AUD charges, converted USD, party totals and segment-level mixed cabins.
+
+When enabled, native Qantas takes precedence over the cached public finder; native failures remain explicit errors and never silently fall back to cached data. Disabling the flag preserves the independently labeled cached finder. Booking uses Qantas's public booking form; member eligibility, final booking totals, trip-prefilled handoffs, valid empty responses, technical-stop shapes, broader source-set completeness and later hosted qualification remain open. No all-Qantas or all-airline completeness claim is made.
+
+
+## September 6 — Qantas repeat-search access limitation
+
+The initial native integration passes remain valid observations. A normal SYD–MEL January 4 search returned 49 grouped itineraries and 77 fares from Qantas, American and Alaska in 89.1 seconds. Qantas contributed all 45 itineraries and 57 fares, displayed across pages of 25 and 20 rows. Desktop checks found no page errors or horizontal overflow.
+
+A later three-program repeat omitted Qantas because its source search failed. The optional country-notice wait was corrected so an absent notice cannot prematurely end the inventory wait. The next repeat returned native HTTP 403. A Qantas-only search on the same owned runtime then reached an explicit Access Denied page at the ordinary public booking redirect. Isolating the query therefore did not resolve access. The collector now detects denied booking navigation directly. No bypass, cookie transplant, profile rotation or account was used. Further unchanged requests were stopped.
+
+Qantas remains an enabled experimental native adapter with documented successful samples and a current access issue; the cached finder stays implemented behind native opt-out. Do not describe it as reliably connected or count its earlier samples as proof of all routes. The progress dashboard shows integrating. Continue the approved native-airline connection pass while retaining this issue, broader inventory completeness, valid empty/technical-stop formats and later hosted qualification as open work.
+
+
+## American connection expansion — experimental, not app-enabled
+
+`AmericanBrowserRunner` can run with `includePremium: true` and `includeConnections: true` to collect both cabin searches for every connecting airport discovered in its returned results. It validates closure over those observed airports and merges updated quotes without duplicate physical itineraries. This does not prove all possible routing combinations. The normal service does not enable this option.
+
+The fresh LAX–AUS two-adult baseline returned 52 / 90; DFW all/premium searches exposed 26 additional physical itineraries with every displayed fare price reconciled. The full expansion later reached Challenge Validation at SEA, so it has not passed the PointSnap API/frontend gate. Do not repeat that unchanged experiment or infer that a login or different pacing resolves it.
+
+After a distinct access hypothesis is established, the explicit diagnostic is `node --import tsx browser-worker/probe-american-connections.ts LAX AUS 2026-10-05 2`. Stop the idle service and confirm its browser has closed before running against the same fixed profile. The diagnostic saves per-scope counts before any later failure; optional `POINTSNAP_SAVE_PUBLIC_FIXTURE=1` retains compact public fare responses. Its 300-second deadline is a bounded experiment, not the ordinary API timeout. Do not run it while the worker owns the American profile.
+
+## United MileagePlus member pilot
+
+Set `POINTSNAP_BROWSER_UNITED=1` in both the worker and Next.js environments to enable the native route `/v1/search/united`. The first query opens the dedicated ordinary Chrome profile. If United requires login, the source returns HTTP 503 with an operator-session message and leaves that normal sign-in tab open for setup. Sign in only through the official page; never put credentials or verification codes into source, fixtures or request parameters. The worker serializes searches and reuses its own tab. It does not automatically store or recover passwords.
+
+The collector clears saved traveler selections, sets the requested generic party, merges every native inventory batch, expands all flights and reconciles both cabin views. Account IDs and shopping/session references are removed by an allowlist before leaving the collector. All quotes retain explicit account-eligibility labels. Neither a crossed-out promotional comparison nor a seat-inventory bucket is treated as a public fare or exact award-seat count.
+
+Verified local samples: 40 LAX–AUS itineraries / 89 fares for one adult on October 7; 69 EWR–LHR / 175 fares for two. Three short browser restarts required password sign-in but not another code on the remembered device. This is initial connection evidence, not unattended recovery, permanent verification retention or hosted qualification. Broader routes, new cabin/technical-stop shapes and verified empty searches remain open. Unverified or mismatched responses fail explicitly.

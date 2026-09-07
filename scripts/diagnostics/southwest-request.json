@@ -1,0 +1,17 @@
+{
+  "adultPassengersCount": "1",
+  "adultsCount": "1",
+  "departureDate": "2026-10-05",
+  "destinationAirportCode": "LAS",
+  "fareType": "POINTS",
+  "lapInfantPassengersCount": "0",
+  "olderChildCount": "0",
+  "originationAirportCode": "DEN",
+  "passengerType": "ADULT",
+  "promoCode": "",
+  "returnAirportCode": "",
+  "returnDate": "",
+  "teensCount": "0",
+  "tripType": "oneway",
+  "youngerChildCount": "0"
+}

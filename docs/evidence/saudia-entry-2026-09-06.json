@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-09-06T10:55:24.397Z",
+  "programId": "SV_ALFURSAN",
+  "method": "App-owned ordinary Chrome; actual public homepage Book with Miles action",
+  "entry": "https://www.saudia.com/",
+  "entryStatus": 200,
+  "loginGateObserved": true,
+  "closedLoginTurnsMilesOff": true,
+  "anonymousInitializationStatus": 200,
+  "observedFields": [
+    "Email/AlFursan ID",
+    "Password"
+  ],
+  "memberRestriction": "The login dialog says miles may be redeemed for the member and AlFursan family members.",
+  "querySubmitted": false,
+  "inventoryReceived": false,
+  "accountUsed": false,
+  "result": "The entry-page interruption is superseded by a working ordinary-browser homepage. The observed Book with Miles flow requires login before search; no native connector enabled.",
+  "next": "Evaluate a justified authorized operator-account fallback or another explicitly published anonymous award entry. Do not treat a public cash response or a redemption chart as award availability."
+}

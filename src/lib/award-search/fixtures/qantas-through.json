@@ -1,0 +1,692 @@
+{
+  "flights": [
+    {
+      "id": 3937603128,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T15:45:00",
+      "arrivesAt": "2026-10-06T06:35:00",
+      "arrivalDayOffset": 1,
+      "duration": "24 hours 50 mins",
+      "stopovers": 0,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 63500,
+          "seats": 6,
+          "tax": 311,
+          "currency": "AU$",
+          "rbd": "X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767820,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T15:45:00",
+          "arrivesAt": "2026-10-06T06:35:00",
+          "duration": "24h 50m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "QF1",
+          "operatedBy": "Qantas",
+          "airlineCode": "QF",
+          "iconAirlineCode": "QF",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603077,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T06:00:00",
+      "arrivesAt": "2026-10-05T20:15:00",
+      "arrivalDayOffset": 0,
+      "duration": "24 hours 15 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 69900,
+          "seats": 6,
+          "tax": 465,
+          "currency": "AU$",
+          "rbd": "S, S",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767754,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T06:00:00",
+          "arrivesAt": "2026-10-05T13:20:00",
+          "duration": "14h 20m",
+          "layoverDuration": "02h 25m",
+          "flightNumber": "EK415",
+          "operatedBy": "Emirates",
+          "airlineCode": "EK",
+          "iconAirlineCode": "EK",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "DXB",
+            "name": "Dubai",
+            "city": "Dubai"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T15:45:00",
+          "arrivesAt": "2026-10-05T20:15:00",
+          "duration": "07h 30m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "EK5",
+          "operatedBy": "Emirates",
+          "airlineCode": "EK",
+          "iconAirlineCode": "EK",
+          "equipment": "A380",
+          "origin": {
+            "code": "DXB",
+            "name": "Dubai",
+            "city": "Dubai"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603132,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T15:45:00",
+      "arrivesAt": "2026-10-06T06:35:00",
+      "arrivalDayOffset": 1,
+      "duration": "24 hours 50 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 80800,
+          "seats": 6,
+          "tax": 409,
+          "currency": "AU$",
+          "rbd": "X, X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767824,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T15:45:00",
+          "arrivesAt": "2026-10-05T21:15:00",
+          "duration": "08h 30m",
+          "layoverDuration": "02h 10m",
+          "flightNumber": "QF1",
+          "operatedBy": "Qantas",
+          "airlineCode": "QF",
+          "iconAirlineCode": "QF",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "SIN",
+            "name": "Singapore",
+            "city": "Singapore"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T23:25:00",
+          "arrivesAt": "2026-10-06T06:35:00",
+          "duration": "14h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA12",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "A380",
+          "origin": {
+            "code": "SIN",
+            "name": "Singapore",
+            "city": "Singapore"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603124,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T15:35:00",
+      "arrivesAt": "2026-10-06T06:35:00",
+      "arrivalDayOffset": 1,
+      "duration": "25 hours",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 76100,
+          "seats": 6,
+          "tax": 571,
+          "currency": "AU$",
+          "rbd": "X, X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767817,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T15:35:00",
+          "arrivesAt": "2026-10-05T21:00:00",
+          "duration": "08h 25m",
+          "layoverDuration": "02h 25m",
+          "flightNumber": "BA16",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "787",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "SIN",
+            "name": "Singapore",
+            "city": "Singapore"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T23:25:00",
+          "arrivesAt": "2026-10-06T06:35:00",
+          "duration": "14h 10m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA12",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "A380",
+          "origin": {
+            "code": "SIN",
+            "name": "Singapore",
+            "city": "Singapore"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603134,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T18:50:00",
+      "arrivesAt": "2026-10-06T11:05:00",
+      "arrivalDayOffset": 1,
+      "duration": "26 hours 15 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 63500,
+          "seats": 6,
+          "tax": 224,
+          "currency": "AU$",
+          "rbd": "X, T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767829,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T18:50:00",
+          "arrivesAt": "2026-10-05T14:30:00",
+          "duration": "13h 40m",
+          "layoverDuration": "02h 00m",
+          "flightNumber": "QF11",
+          "operatedBy": "Qantas",
+          "airlineCode": "QF",
+          "iconAirlineCode": "QF",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "LAX",
+            "name": "Los Angeles",
+            "city": "Los Angeles"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T16:30:00",
+          "arrivesAt": "2026-10-06T11:05:00",
+          "duration": "10h 35m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA134",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "787",
+          "origin": {
+            "code": "LAX",
+            "name": "Los Angeles",
+            "city": "Los Angeles"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603138,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T18:50:00",
+      "arrivesAt": "2026-10-06T11:35:00",
+      "arrivalDayOffset": 1,
+      "duration": "26 hours 45 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 91700,
+          "seats": 6,
+          "tax": 503,
+          "currency": "AU$",
+          "rbd": "X, X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767832,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T18:50:00",
+          "arrivesAt": "2026-10-05T14:30:00",
+          "duration": "13h 40m",
+          "layoverDuration": "02h 35m",
+          "flightNumber": "QF11",
+          "operatedBy": "Qantas",
+          "airlineCode": "QF",
+          "iconAirlineCode": "QF",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "LAX",
+            "name": "Los Angeles",
+            "city": "Los Angeles"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T17:05:00",
+          "arrivesAt": "2026-10-06T11:35:00",
+          "duration": "10h 30m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "BA280",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "777",
+          "origin": {
+            "code": "LAX",
+            "name": "Los Angeles",
+            "city": "Los Angeles"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603139,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T18:50:00",
+      "arrivesAt": "2026-10-06T12:45:00",
+      "arrivalDayOffset": 1,
+      "duration": "27 hours 55 mins",
+      "stopovers": 1,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 63500,
+          "seats": 6,
+          "tax": 224,
+          "currency": "AU$",
+          "rbd": "X, T",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767835,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T18:50:00",
+          "arrivesAt": "2026-10-05T14:30:00",
+          "duration": "13h 40m",
+          "layoverDuration": "03h 40m",
+          "flightNumber": "QF11",
+          "operatedBy": "Qantas",
+          "airlineCode": "QF",
+          "iconAirlineCode": "QF",
+          "equipment": "A380",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "LAX",
+            "name": "Los Angeles",
+            "city": "Los Angeles"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T18:10:00",
+          "arrivesAt": "2026-10-06T12:45:00",
+          "duration": "10h 35m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AA136",
+          "operatedBy": "American Airlines",
+          "airlineCode": "AA",
+          "iconAirlineCode": "AA",
+          "equipment": "777",
+          "origin": {
+            "code": "LAX",
+            "name": "Los Angeles",
+            "city": "Los Angeles"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    },
+    {
+      "id": 3937603120,
+      "isSelfTransfer": false,
+      "selfTransferId": null,
+      "layoverMinutes": null,
+      "program": "QF",
+      "origin": {
+        "code": "SYD",
+        "name": "Sydney",
+        "city": "Sydney"
+      },
+      "destination": {
+        "code": "LHR",
+        "name": "London (Heathrow)",
+        "city": "London"
+      },
+      "departsAt": "2026-10-05T15:35:00",
+      "arrivesAt": "2026-10-06T07:55:00",
+      "arrivalDayOffset": 1,
+      "duration": "26 hours 20 mins",
+      "stopovers": 2,
+      "cabins": {
+        "Economy": {
+          "isSelfTransfer": false,
+          "cabinClass": "Economy",
+          "points": 86500,
+          "seats": 6,
+          "tax": 699,
+          "currency": "AU$",
+          "rbd": "X, X, X",
+          "isDynamicPricing": false,
+          "dynamicPoints": null,
+          "classDetailId": 5288767811,
+          "mixedCabinClasses": null
+        },
+        "PremiumEconomy": null,
+        "Business": null,
+        "First": null
+      },
+      "legs": [
+        {
+          "departsAt": "2026-10-05T15:35:00",
+          "arrivesAt": "2026-10-05T21:00:00",
+          "duration": "08h 25m",
+          "layoverDuration": "01h 20m",
+          "flightNumber": "BA16",
+          "operatedBy": "British Airways",
+          "airlineCode": "BA",
+          "iconAirlineCode": "BA",
+          "equipment": "787",
+          "origin": {
+            "code": "SYD",
+            "name": "Sydney",
+            "city": "Sydney"
+          },
+          "destination": {
+            "code": "SIN",
+            "name": "Singapore",
+            "city": "Singapore"
+          }
+        },
+        {
+          "departsAt": "2026-10-05T22:20:00",
+          "arrivesAt": "2026-10-06T05:55:00",
+          "duration": "13h 35m",
+          "layoverDuration": "01h 35m",
+          "flightNumber": "AF257",
+          "operatedBy": "Air France",
+          "airlineCode": "AF",
+          "iconAirlineCode": "AF",
+          "equipment": "777",
+          "origin": {
+            "code": "SIN",
+            "name": "Singapore",
+            "city": "Singapore"
+          },
+          "destination": {
+            "code": "CDG",
+            "name": "Paris (Charles de Gaulle)",
+            "city": "Paris"
+          }
+        },
+        {
+          "departsAt": "2026-10-06T07:30:00",
+          "arrivesAt": "2026-10-06T07:55:00",
+          "duration": "01h 25m",
+          "layoverDuration": "00h 00m",
+          "flightNumber": "AF1680",
+          "operatedBy": "Air France",
+          "airlineCode": "AF",
+          "iconAirlineCode": "AF",
+          "equipment": "A220",
+          "origin": {
+            "code": "CDG",
+            "name": "Paris (Charles de Gaulle)",
+            "city": "Paris"
+          },
+          "destination": {
+            "code": "LHR",
+            "name": "London (Heathrow)",
+            "city": "London"
+          }
+        }
+      ],
+      "lastSeenAt": "2026-09-05 17:15:42.744581+00"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "maxKnownPage": 1
+  },
+  "routeDecision": {
+    "blocked": false
+  }
+}

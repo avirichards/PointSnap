@@ -1,0 +1,83 @@
+{
+  "checkedAt": "2026-09-06T21:57:08.719296+00:00",
+  "program": "VS_FLYING_CLUB",
+  "currentState": "local_native_integration_verified",
+  "method": "Authorized operator account in the ordinary app-owned Virgin Chrome profile. Official reward form and its public dated query navigation; normal email verification. Only inventory request/response fields retained. No auth headers, cookies, tokens, account identifiers, credentials or codes in evidence.",
+  "queries": [
+    {
+      "origin": "JFK",
+      "destination": "LHR",
+      "date": "2026-10-07",
+      "adults": 1,
+      "itineraries": 6,
+      "availableFares": 18,
+      "nativeCardsReconciled": true
+    },
+    {
+      "origin": "JFK",
+      "destination": "LHR",
+      "date": "2026-10-08",
+      "adults": 2,
+      "itineraries": 6,
+      "availableFares": 17,
+      "sourceCabinSlots": 18,
+      "soldOutCabins": 1,
+      "nativeCardsReconciled": true,
+      "actualAppApiVerified": true,
+      "actualAppFrontendVerified": true
+    },
+    {
+      "origin": "JFK",
+      "destination": "DEL",
+      "date": "2026-10-07",
+      "adults": 1,
+      "itineraries": 6,
+      "availableFares": 17,
+      "nativeCardsReconciled": true,
+      "realCollectorVerified": true,
+      "connectingSegments": 2
+    }
+  ],
+  "validation": {
+    "desktopWidth": 1440,
+    "mobileWidth": 390,
+    "pageErrors": [],
+    "horizontalOverflow": false,
+    "actualScreenshotsInspected": true,
+    "allSixRowsAndSeventeenFaresPresent": true,
+    "partyTotals": {
+      "flight": "VS4",
+      "economyPerPersonPoints": 56000,
+      "economyPerPersonFeesUSD": 164.1,
+      "twoAdultPoints": 112000,
+      "twoAdultFeesUSD": 328.2
+    },
+    "airlineDisplayRoundsPartyFeesUp": true,
+    "exactResponseFeesPreserved": true,
+    "memberQuoteLabelVisible": true,
+    "tripPrefilledAirlineLinkVerified": true,
+    "unitTests": 333,
+    "testFiles": 40,
+    "typecheck": "passed",
+    "focusedLint": "passed",
+    "optimizedNode22Build": "passed",
+    "progressApiStatus": 200,
+    "progressFrontendChecked": true
+  },
+  "sessionRecovery": {
+    "normalWorkerRestartLostSignIn": true,
+    "freshEmailVerificationRequired": true,
+    "authorizedGmailConnectorReadSucceeded": true,
+    "normalChallengeCompleted": true,
+    "freshAppSearchAfterRecovery": "6 itineraries / 17 fares",
+    "unattendedAppMailboxIntegration": false,
+    "longTermRetentionVerified": false
+  },
+  "limits": [
+    "Completeness reconciled against every displayed flight and available cabin in these samples, not every route or airline partner.",
+    "Unknown new cabins, technical stops, empty-result semantics and non-USD page-price reconciliation require separate verification.",
+    "Account eligibility remains explicit; no universal public-price claim.",
+    "No invented cash comparison, refundable rules or seat count.",
+    "Hosted reliability and automated operator recovery remain later work."
+  ]
+}

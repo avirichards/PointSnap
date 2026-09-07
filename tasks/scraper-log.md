@@ -2,6 +2,8 @@
 
 > **Read this BEFORE attempting any scraper work.** Every session should append findings here. Past dead-ends are expensive to rediscover.
 
+> **Current September 2026 implementation:** start with [airline access status](../docs/airline-access-status.md), [live-data evidence](../docs/live-data.md) and [user requirements](user-requirements.md). The May architecture, paid-transport proposals and login assumptions below are historical and are superseded by the current anonymous Node pipeline and the user's no-new-subscription direction.
+
 ---
 
 ## Project anatomy + entry points (READ FIRST IF NEW TO PROJECT)
@@ -78,7 +80,7 @@ PointSnap/
 | Secret | What it's for | Source |
 |---|---|---|
 | `BRIGHTDATA_WSS_URL` | BD Browser API CDP WSS endpoint | User created `pointsnap` zone |
-| `BRIGHTDATA_API_KEY` | BD account API key for WU REST calls | `8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` |
+| `BRIGHTDATA_API_KEY` | BD account API key for WU REST calls | `REDACTED_BD_API_KEY` |
 | `CAPSOLVER_API_KEY` | CapSolver REST auth | User set in earlier session — CapSolver no longer useful (dropped Akamai) |
 | `DATABASE_URL` | Supabase Postgres connection string | User pasted from .env.local |
 | `IPROYAL_PROXY_HOST/PORT/USER/PASS` | IPRoyal residential proxies (VS/AS) | Earlier session |
@@ -543,7 +545,7 @@ python3 -c "import json; d=json.load(open('/tmp/d.json')); print(f'verdicts: {d.
 ```bash
 curl -s --max-time 90 -X POST https://api.brightdata.com/request \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920" \
+  -H "Authorization: Bearer REDACTED_BD_API_KEY" \
   -d '{
     "zone": "pointsnap_webunlock",
     "url": "https://www.aa.com/booking/api/search/itinerary",
@@ -592,7 +594,7 @@ curl -s https://pointsnap-workers.fly.dev/openapi.json | python3 -c "import json
 
 ### Browser API zone (the CDP one we've been using)
 - Name: `pointsnap`
-- WSS URL: `wss://brd-customer-hl_6f5ad35c-zone-pointsnap:n7h9hjvh70lp@brd.superproxy.io:9222`
+- WSS URL: `wss://brd-customer-hl_6f5ad35c-zone-pointsnap:REDACTED_BD_BROWSER_ZONE_PWD@brd.superproxy.io:9222`
 - Stored as Fly secret `BRIGHTDATA_WSS_URL`
 - CAPTCHA Solver: ON (no extra cost)
 - Premium domains: OFF (aa.com not on BD's premium list; toggling on for AA didn't change behavior)
@@ -603,14 +605,14 @@ curl -s https://pointsnap-workers.fly.dev/openapi.json | python3 -c "import json
 ### Web Unlocker zone (the HTTP-API one for raw POST)
 - Name: `pointsnap_webunlock`
 - API: `POST https://api.brightdata.com/request`
-- Auth: `Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` (account-level API key)
+- Auth: `Authorization: Bearer REDACTED_BD_API_KEY` (account-level API key)
 - Body format: `{"zone": "<zone>", "url": "<target>", "format": "raw"|"json", "method": "GET"|"POST", "body": "<string>", "headers": {...}}`
 - **Field-name gotcha:** POST body field is `body` (NOT `data` — `data` rejected with validation error)
 - HTML pages: WU hits `expect_element` selector wait for `#weeklyCarousel` (BD's stale AA detection). Times out at ~90s with `x-brd-error: captcha or protection page found`.
 - API endpoints: works directly. AA returns app error 309.
 
 ### Account API key (separate from zone passwords)
-- Value: `8fe43b6b-48c4-4c83-a1c6-b7cdf761c920` (visible in BD popups during setup)
+- Value: `REDACTED_BD_API_KEY` (visible in BD popups during setup)
 - Used for: WU Bearer auth, BD's REST APIs
 - **Security:** in our chat transcript. User should rotate when done with this work.
 
@@ -836,7 +838,7 @@ WU_PAYLOAD=$(python3 -c 'import json; print(json.dumps({
   "headers": {"Content-Type":"application/json"}
 }))')
 curl -s -X POST https://api.brightdata.com/request \
-  -H "Authorization: Bearer 8fe43b6b-48c4-4c83-a1c6-b7cdf761c920" \
+  -H "Authorization: Bearer REDACTED_BD_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$WU_PAYLOAD"
 ```
@@ -925,7 +927,7 @@ User approved the multi-phase recovery plan (`/root/.claude/plans/knowing-everyt
 ### Bright Data Residential zone created
 User created zone `pointsnap_residential` in BD dashboard. Connection URL:
 ```
-http://brd-customer-hl_6f5ad35c-zone-pointsnap_residential:p96hs5z78sku@brd.superproxy.io:33335
+http://brd-customer-hl_6f5ad35c-zone-pointsnap_residential:REDACTED_BD_RESIDENTIAL_ZONE_PWD@brd.superproxy.io:33335
 ```
 (Credentials stored as Fly secret `BRIGHTDATA_RESIDENTIAL_URL` — NEVER committed.)
 
@@ -2172,3 +2174,93 @@ dependent process is absent ⇒ the process started before the secret did.
 |---|---|
 | `6081c03` | diag(tailscale): add /diag/tailscale endpoint to inspect the worker tunnel |
 | _(this entry)_ | docs(scraper): Session 19 — Tailscale was a stale-image problem, now verified working |
+
+## 2026-09-05 — New app-owned search pipeline
+
+The new `/api/search` uses TypeScript direct adapters and optional app-owned Seats.aero/AwardTool integrations, independent of the historical Python plugin status tables above. Travelers do not connect their own airline accounts. Alaska, JetBlue and Virgin Atlantic returned live data through the local Next.js endpoint; exact observations, response-shape fixes, official commercial contracts and outstanding external verification are recorded in `docs/live-data.md`. Reproduce with `pnpm test:live 2026-10-05` while the local server runs; use a future date when revisiting. The commercial providers have fixture coverage but no actual API subscription was available, so broader live coverage is not verified. The redesign preserves per-source failures and calendar-vs-flight distinctions.
+
+## 2026-09-05 — Completeness audit and subscription-free access expansion
+
+Current source of truth is `docs/live-data.md`, not the historical worker status above. User requires every matching itinerary, connection, cabin and fare; no subscriptions or end-user airline accounts. Calendar summaries cannot count as complete flight integrations.
+
+Alaska: fresh SEA–SFO Oct5, 1 adult: HTTP200, 3,235,407 bytes,35 unique itineraries,68 award solutions. Audit exposed dropped mixed REFUNDABLE_FIRST [COACH,FIRST] AS1390/AA2673 (20,000+USD25.60). Fixed first-segment classification and preserve all source families/per-segment cabins. Official current results JS uses local10-row slicing and Show more to rows.length, with no extra flight pagination on this query. Committed sanitized regression fixture includes all35 rows/68 fares; scratch evidence `work/agent-us/alaska-completeness/`.
+
+JetBlue: current official client GET `/bff-service-v2/bestFares/` with adult,child,infant,origin,destination,month,fareType=POINTS,tripType=ONE_WAY returns Oct5 JFK–LAX22,400+USD5.60,seats8. Legacy POST concurrently28,800. No cabin/schedule/family in schema. Removed invented economy label; v2 now selected and explicitly a lowest recent fare summary. Current official booker GET with isMultiCity=false,noOfRoute=1,roundTripFaresFlag=false,sharedMarket=false,usePoints=true returned HTTP200 3,036-byte Client Challenge, not flights. Flight count UNKNOWN.
+
+United: transient anonymous token200, official current `/api/flight/FetchFlights` POST428 AccessDenied. Correct request beyond that gate remains unverified (current frontend NGRP follows AwardTravel). AA: /homePage.do200 with XSRF cookie; ordinary booking POST403; itinerary API200,error309,empty slices. No UA/AA inventory. BA: fresh metadata uses M/W/C/F; canonical LON→NYC Oct5 EconomyM with new session returned200 high-demand block8999bytes. SAS public award-finder403 Denied boarding. These failures are not empty availability.
+
+Qantas: normal public browser finder returned dated cached Emirates records; direct /api/search and /api/destinations403 Cloudflare5502bytes. Verified fresh prefilled browser handoff only. AirNZ current app uses UserIsAuthenticated and partner reward OAuth scope; Velocity Quick Compare and ANA official award availability require sign-in. No anonymous production source enabled for these.
+
+New independent lead: official `https://partnerrewards.emirates.com/` easyJet/Jet2 partner portal accepts an anonymous search.php POST. Ordinary app-owned results/checkStatus returns incremental deltas and completion status2; final results may be empty even after earlier rows. Need accumulate deltas, filter requested date (search includes nearby dates), then POST renderResults with every matching own-session result id. Rendered HTML gives actual Skywards Miles; raw poll cost.c is not award cash fees. LGW–AMS Oct5 rendered six easyJet flights, minimum5,759 miles. Integration validation of passenger/fee semantics continues; not yet counted as enabled coverage.
+
+### Skywards integration verified (04:28 UTC)
+
+The new `src/lib/award-search/skywards.ts` now implements the official easyJet/Jet2 portal. LGW–AMS adults1/2 and MAN–ALC adult1 passed real direct calls, followed by MAN–ALC through Next.js `/api/search`:4 rows, actual easyJet/Jet2 flight schedules and miles. The source probe also verified BER–PMI U2 prefix. All schedules and points come from renderResults HTML, parsed with Cheerio without script execution. Exact party totals are retained (11,517 for two vs single5,759); averaged per-person values can be fractional, with UI label. Official partner pages establish included taxes. No invented USD exchange rate or cash price. Source cookies/results IDs stay request-local; same-origin/path validation and no automatic redirects prevent forwarding cookies elsewhere.
+
+Polling semantics refined against current official client:0/1 pending;2/10 SearchComplete;4 is SelectComplete and not accepted as a search completion state. Missing `results` is permitted while pending. Every returned delta, including terminal, accumulates before date-filtered batches≤20 are rendered. Empty terminal[] after earlier deltas does not erase flights. A genuinely empty LGW–LTN search stops before render. Regression fixtures sanitize source IDs, exclude cookies and strip scripts.
+
+Full European follow-up: Turkish real anonymous flag and validation succeed, full inventory200 HTML denial3858characters. Iberia anonymous app token200, full award availability403425characters. Finnair current full-offer API403. LH/M&M entry403;QR finder401. Evidence and exact requests in work/agent-europe/remaining/REPORT.md; persistent distilled account in docs/live-data.md. Do not repeat blanket login-required claims for Turkish/Iberia or old speculative Lufthansa balance rules.
+
+
+## 2026-09-05 — Frontier, Aeromexico, and Pro research milestone
+
+Frontier enabled after actual PointSnap SSE returned25 itineraries/175 fares for DEN–LAS October5, two adults. Aeromexico enabled after actual SSE returned11/98 for MEX–CUN, two adults; independent connector verified GDL–CUN25/237. All eligible source families retained, fees and party semantics verified. Sources use fresh anonymous requests without personal airline sessions. Ninety automated frontend/contract tests passed. See docs/live-data.md for scope and exact evidence.
+
+Authorized Seats.aero Pro browser inspection confirmed successful JetBlue refresh and mixed cached/live search display. Public client code delegates airline queries to Seats.aero backend services; airline connector implementation remains private in the inspected surface. No personal key installed as shared application data. Current LifeMiles configuration confirms required login in its active redemption flow. Live work dashboard updated with these findings.
+
+
+## 2026-09-05 — final two unverified flow checks
+
+Ethiopian active metadata200; current anonymous GraphQL getSession403 security interruption. Earlier config404 was an inactive path. AF/KLM dated REWARD landings200 and anonymous session checks false; current shared client explicitly invokes login for reward search. Neither provides verified flight inventory. Exact local sanitized reports: work/agent-qantas/ethiopian-focused/REPORT.md and work/agent-us/flying-blue/REPORT.md. These findings describe tested paths only. No new adapter claimed.
+
+Code milestone0a72b75 passed GitHub frontend/Python checks and Vercel preview build; hosted runtime/data configuration still requires verification. Local work feed now records33 investigated flows, four scoped flight feeds and two calendar feeds.
+
+## 2026-09-05 — JetBlue full search connected
+
+The prior HTTP-only Client Challenge was not a hard access boundary. The current browser renders all16 JFK–LAX itineraries; the first10 are only a UI slice. Fresh `/booking/` HTML (without the `/flights` suffix) returns public config directly. Its application marker supports the current `cb-api.jetblue.com/cb-flight-search/v1/search/NGB` contract anonymously. Full response:119 award fares; all119 exact cash fares matched. PointSnap SSE, two adults:16/119/119 in2.6seconds. No member token, session cookie reuse, embedded static application key or paid service. New sanitized fixtures and15 tests; all101 frontend/contract tests pass. See docs/live-data.md.
+
+## 2026-09-05 — Resumed current Delta flow
+
+User reiterated that an access failure/status update is not permission to stop the whole project. Native American has a verified 40-itinerary/69-fare parser candidate but server entry403/challenge/API309 remain unresolved; native United requires sign-in in its normal UI, while TrueBlue supplies offered United awards. Updated detailed evidence is in docs/live-data.md. Current application checkpoint15d9044 passed132 tests, GitHub CI and Vercel build. Five scoped full-flight sources and one calendar source remain enabled.
+
+Delta now uses MACH homepage26.8.8 and flightsearch8.0.31. Ordinary anonymous homepage submission for LAX–JFK October5, one adult, one way, Shop with Miles and non-flexible dates initially reached the full booking form with error `#SFAF001`. The public current route guard identifies missing `postData` for the query's cache-key suffix as this handoff failure. Submitting the recognized query from that full booking form succeeded: the native results page shows20 initial itineraries plus See More Results. DL960 at21:00 arrives05:21 the next day with19,800 SkyMiles plus a rounded displayedUSD6; exact fees and all fare alternatives still need source verification. No login was used.
+
+Current source configuration publishes `SFAF.OFFERS_URL=https://offer-api-prd.delta.com/prd/rm-offer-gql`; the rendered results page's observed resources confirm this endpoint is used. The old `/shop/ow/search` denial therefore does not establish whether the current live contract is accessible. A plain curl fetch of the current homepage JS returned444, while a fresh Node fetch chain (home then current public static files) returned200 for the homepage main2230307 characters, flightsearch main84065 characters and common config18270 characters. Public-client inspection continues in work/delta-current; no browser cookies or session identifiers are being moved into the application.
+
+Delta follow-up: loaded all three native result pages20/20/6,46 itineraries total; See More Results disappears at46. Current `gqlSearchOffers` contract uses an explicit anonymous GUEST authorization branch, numbered pagination, full offer arrays and exact currency amounts. Fresh standalone/context/bootstrap HTTP probes all returned444; homepage and booking GETs returned200 in the bootstrap probe. No member/browser session reuse. The Main label opens product information (DL979 Main Basic NE), so it should not be mistaken for all fare-family pricing. No Delta adapter enabled. Detailed record in docs/live-data.md; continuing with Southwest’s current native flow.
+
+Southwest’s normal homepage points search now verified26 DEN–LAS Oct5 itineraries/104 fare buttons without login; current native version112.0.3 differs from earlier13.0.1 v2. Fresh server bootstrap/current public app configuration still returned403050700 at the same current shopping API. Returning to American: testing browser-compatible HTTP/TLS client negotiation as a distinct remaining hypothesis, using fresh anonymous sessions and public request data. No changes to browser security or personal sessions are involved.
+
+Browser-compatible transport did not resolve American Challenge Validation, Delta current GUEST challenge429, or Southwest403050700. American’s distinct weekly fallback and official Redemption Deals handoff were tested; weekly309 and handoff403 persist, while the native browser still returns40 itineraries. Current source semantics/changed prices and exact evidence are in docs/live-data.md. Continue independent remaining public airline contracts rather than repeating the same AA requests.
+
+
+### Ethiopian native anonymous breakthrough and implementation — September5
+
+- Fresh Node GET/init/bookingAirSearch with browser User-Agent returned real ShebaMiles inventory. Default Node User-Agent had failed init403. No member session or paid transport used.
+- Verified both native cabins, one/two adults, international connections and all supplied itinerary/brand variants. Resolved Sabre shared `@ref` segments; retained technical stops separately. Miles are party totals; cash taxes absent, not zero.
+- Actual PointSnap SSE ADD–NBO October7 two adults: four itineraries/five fares,4.2seconds. Ordinary airline browser one-adult Economy: four results; parser retains all four. PointSnap browser verified party totals, BLZ same-flight stop detail and selected-cabin booking handoff. ET enabled in direct program registry and local live feed.
+- AA same new header experiment still309/Challenge Validation; DL fresh homepage+booking200/offer444; UA anonymous token200/search428. Continue remaining distinct leads; no all-airline completion claim.
+
+
+### Qantas compatible transport and hosted AA test — September5
+
+- Default Node/curl Qantas403 was a transport issue, not proof that public data was inaccessible. Fresh impit0.14.4 client returns cached flight inventory with no member credentials. Enabled QF_FF after actual SSE16/21 across two pages and real-browser fee/freshness/eligibility verification.
+- Native Qantas immediate Check availability is Turnstile-backed. Do not reuse browser challenge proofs in the server, refresh cached timestamps, or claim every Qantas route is covered.
+- AA impit matching client/correlation309/Challenge Validation; United fresh token200/search428; Delta current guest offer444. Hosted Linux AA run33984381515 produced the same309/challenge. Further identical retries are not new hypotheses.
+- Ethiopian live adapter also succeeds in hosted Node22. All147 tests, type/lint, optimized Node22 build and GitHub CI passed. Local optimized-server Qantas16/21 also passed. Hosted compatible Qantas run33985079120 returned403; no hosted connectivity claim.
+
+### Continued public entry checks — September5
+
+- Virgin Australia current native homepage's Use Velocity Points action opens a dialog and requests the official Velocity OAuth authorization entry. The dialog remained blank after saving necessary-only cookie choices. This tests the actual native entry in addition to prior Quick Compare documentation; no anonymous full award inventory obtained.
+- Fresh compatible transport: GOL's current anonymous search406, Turkish successful airport metadata/validation followed by denial HTML at full availability, Iberia anonymous app token200 followed by award403, Finnair full offer403. BA finder entry timed out. These do not imply universal login requirements.
+- SAS challenge403; Saudia and Etihad interruption pages despite200; Azul200 contains an explicit security challenge container, not its booking app. Copa200 now contains its actual current booking client and a public shopping handoff with isMiles=true. Following that distinct lead next.
+
+### Hosted integration, remaining native boundaries and wider review — September5
+
+- Copa follow-up completed: current public booker exposes anonymous miles mode, but the normal browser reaches verification and fresh server `/ibe/booking/get-id` initialization403. No inventory response and no native source enabled. This replaces the previous “following next” status.
+- All-eight hosted audit identified real Alaska/Aeromexico deployment regressions. Integrated Alaska impit transport and Aeromexico ordinary browser User-Agent. Hosted exact commit382f3cb now returnsAS35/68,AM11/100; B6,EK partner,F9,ET andVS calendar also succeed. QF still403. Full reports preserved under docs/evidence/ rather than only expiring Actions artifacts.
+- United same-origin token redirect301→200 followed; inventory428 persists. Delta current hosted GUEST444; Southwest current hosted shopping403050700. These resolve the remaining redirect/config/host hypotheses without converting errors to empty results.
+- Ethiopian fresh local entry now intermittently returns an interruption page before session creation, while hosted tests repeatedly succeed2/3. Keep that environmental limitation visible.
+- Actual application browser recheckedAS all35/68 across both pages andAM all11/100 with three Business fare choices, original MXN fees and USD conversion. No browser-console errors.147 tests, type/lint, optimized build, GitHub CI and Vercel preview build passed.
+- Broader gap review: LATAM's actual public miles-deal handoff redirects to login before flight inventory. Korean Air's public page is a daily cached calendar; real-time Mileage Booking opens login. Added separate documentation evidence for TAP,Air India,JAL,EVA,Thai andRoyal Jordanian without claiming these documents prove every API unavailable.
+- No further reproducible anonymous native transport was identified for the remaining denied/login-gated sources. Do not rerun identical denial probes as if they are progress. A new official public contract, authorized service access, changed ordinary site behavior or actual hosting access would justify a fresh experiment. All-airline coverage and remaining product work stay open.

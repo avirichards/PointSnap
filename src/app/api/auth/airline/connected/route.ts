@@ -1,21 +1,7 @@
-/**
- * Phase 2.5 — GET /api/auth/airline/connected
- *
- * Lists the current user's saved auth sessions (one row per program). The
- * worker is the source of truth (it owns the encrypted cookie blob); this
- * route proxies through with the resolved user identity.
- *
- * The worker's `/auth/connected` takes the user UUID as a `user_id` query
- * param. User identity isn't wired to a real auth layer yet — `resolveUserId`
- * centralizes that gap (see `_userId.ts`): it reads an explicit `userId`
- * (future auth path) or the `POINTSNAP_AUTH_DEV_USER_ID` dev fallback.
- *
- * When no user can be resolved we return an empty list (not a 401) so the
- * `/airlines` page renders every program in "not connected" state cleanly
- * — the page is informational even when signed out.
- */
+import { workerHeaders, workerConfigured } from "@/lib/worker";
+/** List legacy saved sessions using only the verified Supabase identity. */
 import type { NextRequest } from "next/server";
-import { resolveUserId } from "../_userId";
+import { noUserResponse, resolveUserId } from "../_userId";
 
 export const runtime = "nodejs";
 
@@ -29,18 +15,14 @@ interface WorkerConnectedResponse {
 }
 
 export async function GET(req: NextRequest) {
+  const userId = await resolveUserId(req);
+  if (!userId) return noUserResponse();
   const base = process.env.PYTHON_WORKER_URL;
-  if (!base) {
+  if (!base || !workerConfigured()) {
     return Response.json(
-      { message: "PYTHON_WORKER_URL not configured" },
+      { message: "Airline services are not configured yet." },
       { status: 501 },
     );
-  }
-
-  const userId = resolveUserId(req);
-  if (!userId) {
-    // No identity yet — render the catalog as all-unconnected.
-    return Response.json([]);
   }
 
   const url =
@@ -51,6 +33,8 @@ export async function GET(req: NextRequest) {
   try {
     res = await fetch(url, {
       method: "GET",
+      headers: workerHeaders(userId),
+      cache: "no-store",
       signal: AbortSignal.timeout(10_000),
     });
   } catch (err) {
@@ -82,5 +66,6 @@ export async function GET(req: NextRequest) {
       lastUsedAt: r.last_used_at,
       lastSearchOk: r.last_search_ok,
     })),
+    { headers: { "Cache-Control": "private, no-store" } },
   );
 }

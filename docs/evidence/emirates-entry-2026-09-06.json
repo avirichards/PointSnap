@@ -1,0 +1,28 @@
+{
+  "program": "Emirates native Classic Rewards",
+  "observedDate": "2026-09-06",
+  "entry": "https://www.emirates.com/us/english/book/",
+  "runtime": "Dedicated app-owned ordinary Chrome, anonymous",
+  "status": "Native Classic Rewards handoff reaches member login",
+  "actions": [
+    "Load the ordinary homepage and accept its cookie notice",
+    "Open the current booking page",
+    "Activate Log in to book Classic Rewards"
+  ],
+  "finalHost": "accounts.emirates.com",
+  "finalPath": "/us/english/sso/v2/login",
+  "finalStatus": 200,
+  "visibleFields": [
+    "Email or Emirates Skywards number",
+    "Password"
+  ],
+  "observation": "2026-09-06T09:06:05Z",
+  "additionalResponse": {
+    "path": "/api/v1/users/me",
+    "status": 403
+  },
+  "credentialsUsed": false,
+  "nativeInventoryObserved": false,
+  "workingPartnerBoundary": "The enabled easyJet/Jet2 Skywards portal is separate and remains working within its tested scope. Qantas-offered Emirates rewards are not native Skywards inventory.",
+  "next": "Operator-account native search remains unverified. Do not count partner coverage as a native Classic Rewards connection."
+}

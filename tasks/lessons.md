@@ -1,5 +1,31 @@
 # PointSnap — Lessons Learned
 
+## Current connection lessons — September 2026
+
+United’s justified member fallback unlocks real native inventory. A successful password/code submission is only the beginning: collect the actual airline responses, verify the exact party, reconcile the displayed list and preserve account eligibility. The login alone is not a public-price feed.
+
+United sends separate non-overlapping FetchFlights batches: EWR–LHR arrives as 6 nonstops then 63 connections. Merge batches and expand Show all flights; the default 35 visible rows are not the full inventory. Mixed-allowed and unmixed views can produce distinct fares for the same flight, while identical columns must be deduplicated. Local domestic First feeding long-haul Business is not an economy downgrade. Airport changes are valid offered itineraries and require an explicit ground-transfer notice.
+
+A signed-in United passenger picker preselects saved people in addition to the generic counters. Clear saved selections through the actual checkboxes, then set generic adults and verify the final summary and response TravellerCount. Some apparent buttons are input elements: their visible/accessibility value exists while innerText is empty. Filter labels also change after activation (Mixed Cabin becomes Mixed Cabin: Hide), and radio selection closes the popover automatically. Wait for the updated grid rather than clicking a stale Close control.
+
+Remembered-device behavior is separate from remaining signed in. United required password sign-in after ordinary Chrome restarts but skipped a new code on three bounded checks. Preserve operator setup tabs on auth-required responses, never share account/session identifiers in source fixtures, and do not claim automatic recovery or three-month persistence from these samples.
+
+Use the approved bounded handoff rule: one focused hour for remaining distinct anonymous hypotheses, earlier transition on clear member evidence, and extension only for a concrete new result or demonstrated fix. United now supplies a controlled example: cash inventory loads in the same ordinary browser, while award-first and cash-to-miles both display an explicit member requirement. Generic guest strings in a shared bundle do not establish an award guest path. Inspect the post-dismissal dialog, not only a loading indicator. Cash inventory currently uses FetchSSENestedFlights; diagnostics must track actual inventory requests rather than assume the older FetchFlights name. Prepare an operator-account pilot without claiming login, eligibility or recovery has already been verified.
+
+Copa demonstrates why the actual public form is a distinct access test from a derived shopping link: the latter failed, while the form succeeded repeatedly in app-owned ordinary Chrome. Date confirmation can already open passenger controls, and a retained fare changes its button to Keep this fare. Inspect current UI state before retrying. Nearby-airport results require explicit accounting; all source rows are not all exact-airport rows. Selected anonymous cart totals can still change after membership login, which needs a visible price qualification.
+
+Azul's public points-offer handoff yielded real anonymous inventory where its homepage failed, but fresh queries did not reproduce it. Keep browser access evidence separate from an enabled native connection. Public airport pickers can change a selection asynchronously: verify final fields and the actual request, not just a successful option click. Exclude nearby-airport alternatives from exact-route counts, retain account-holder pricing conditions and never confuse remaining aircraft capacity with award-fare seats.
+
+SAS reuses the app-owned ordinary Chrome lifecycle successfully after earlier HTTP/managed-browser failures. Its regular points response contains a cash reference total distinct from the actual tax copayment; verify selected-cart prices. Some international visible fare titles are blank while accessible fare-rule labels are correct. Internal cabin codes are airline-specific: SAS Y can be European Business or long-haul Premium. Record unknown segment cabins instead of guessing.
+
+The user explicitly approved a coverage-first pass: establish and verify native airline connections through PointSnap, then move to the next airline. Fix incorrect data and failures that prevent normal searches now; defer substantial hosting, load optimization and long-running reliability qualification until after the connection pass. Do not keep American in extended deployment experiments while other native connectors are still missing. Final completeness and public-release requirements remain unchanged.
+
+The maintained [airline connection playbook](../docs/airline-connection-playbook.md) consolidates transferable findings, their evidence, reusable implementation and the procedure for each next airline. Read it together with the current completion plan before testing another program. Record the cause and first failing stage rather than labeling every unsuccessful request a blocked airline.
+
+Anonymous access comes first. American's new app-owned ordinary Chrome connection supersedes the old assumption that a paid proxy or login is necessary for that program. A single search can still omit itineraries: separate all-cabin and Business/First searches now reveal additional flights. Carry those completeness checks, isolated sessions, normal form-state resets and staged diagnostics into the next connector.
+
+The May notes below are historical observations and recommendations, not current instructions. In particular, the user now makes Apple HIG optional where useful, prioritizes real airline data and excludes award-data subscriptions. Follow the current user requirements rather than stale recommendations.
+
 Per CLAUDE.md §3: after any correction from the user, write the pattern here so the same mistake doesn't repeat.
 
 ## Session 2 (2026-05-17)
@@ -50,3 +76,71 @@ ScraperAPI's proxy port terminates TLS at their server and re-presents their own
 ### Two layers to fix per stuck plugin
 1. **Network access** — ScraperAPI proxy + premium for hard sites. Done.
 2. **Parse layer** — each plugin's XHR endpoint / form selector / response shape was written speculatively against historical AwardWiz references and never tested against live responses. Even with the page loading, scrapers return `rows: []` because the parsers don't match current API shapes. This is real iteration work per plugin (~30-60 min each), not infrastructure.
+
+- 2026-09-05: PointSnap searches must use app-owned data access. Never require travelers to connect personal airline accounts to search. Distinguish provider coverage from user account connections in every UI label.
+- 2026-09-05: Design for airline/points enthusiasts from a clean slate. The supplied dark globe reference is a direction; any map interaction must help route selection and preserve fast comparison.
+
+- 2026-09-05: Draggable SVG maps must disable native text selection and prevent pointer-down focus/selection defaults. Preserve a visible keyboard-only focus state; avoid a mouse-triggered rectangular outline around the globe.
+
+- User's core requirement is complete flight-level inventory, not just an endpoint that returns a daily award price. Mark calendar integrations as partial, separate them from flight lists, and explicitly verify completeness/pagination/cabins before describing an airline as connected and complete.
+
+
+## Status questions during ongoing airline work
+
+The user explicitly prioritizes airline access and asked not to stop until connections work or all remaining practical ideas are exhausted. Answer status questions briefly, then resume concrete work in the same turn. One denied endpoint, a browser-only proof, or a passing parser fixture is not overall completion. Record distinct attempts, response evidence and open leads, and keep the live feed aligned with actual activity.
+
+- Airline response graphs can reuse flight segments by reference and count same-flight technical stops. Completeness checks must resolve references and compare every native itinerary before enabling a source. Passenger-total quotes and missing tax amounts require explicit normalization; verify the selected cabin survives booking handoff in the real browser.
+
+
+- Qantas: public cached search can work through a compatible Node HTTP client while default fetch returns403. Test transport separately from login and data-contract hypotheses. Keep original observation times; a successful fetch is not a live availability check.
+- Never equate a source’s “direct” count with nonstop: QF1 SYD–LHR is a single represented flight with an omitted intermediate stop. Preserve data and disclose uncertainty rather than inventing segments or offering a false nonstop match.
+- An isolated tsx diagnostic in this CommonJS package must wrap await calls in async main; a typecheck alone does not verify its runtime entry.
+
+## September 6 — Virgin, Singapore and Turkish connection pass
+
+Current evidence is stored in the three dated entry reports. Virgin’s public deal handoff reaches login; its calendar final dialog uses the already-tested full-reward form. Singapore’s advertised new booking mode was confirmed before checking redemption and still requests login. Turkish’s normal keyboard controls completed the actual query before validation returned 403. Treat a form-interaction failure separately from an access denial, and never count metadata or calendar minima as full flight inventory. Etihad and ANA are next in the approved order; earlier native gaps remain open.
+
+## September 6 — Etihad native awards and reusable collection lessons
+
+- A normal dedicated Chrome session can succeed after an interrupted direct request. Reuse the browser lifecycle, then independently verify each airline’s actual public entry and response contract.
+- Etihad’s Economy URL requests Economy/Business; its Business URL requests Business/First. One successful response misses cabins. Both source requests and query details must validate.
+- `showSoldOut:true` supplies prices for zero-seat fares. Count actual available party-sized offers, not every priced object: the JFK sample is 38 available fares, not 45.
+- The published client pairs `convertedMiles.base` with exact cash taxes. Alternative converted-total/remaining-cash fields represent another payment choice. Reconcile adult totals and currency decimal places before normalization; do not infer cents per point from an unrelated cash fare.
+- Airline-marketed segments can be trains with a station-to-airport transfer. Preserve operating names, technical stops, local clocks and explicit transfers. Use word-boundary transport detection so AIRBUS is not mislabeled BUS.
+- Later cabin searches can withdraw or change fare classes. Replace the covered cabin’s earlier fare set on shared itineraries; never retain a stale cheap price merely because its booking class changed.
+- A returned 25-combination limit is not proof of completeness. Report a capped response explicitly and keep expansion open. Valid empty searches and full route scope require their own evidence.
+- Check the actual booking handoff from the selected fare. First now opens Etihad’s premium search instead of the default Economy search.
+- Wait for dialogs and their transitions before visual screenshots. Desktop and 390px mobile views, source grouping, original fees and rail details were inspected; no horizontal overflow or page errors in the final check.
+- Preserve only flight/fare evidence. Selection tokens, office/corporate metadata and account fields never belong in normalized payloads or permanent fixtures.
+
+## September 6 — transferable Southwest and member-entry lessons
+
+- Reusing the proven app-owned ordinary Chrome lifecycle unlocked Southwest after direct HTTP and managed WebKit/Firefox failures. Reuse the runtime, then independently validate each airline's request and data contract; it does not remove ANA, LifeMiles or Emirates member gates.
+- Create a new page for each Southwest request. Validate both adult-count fields in the site's own POST. A reused page or visible old result does not establish the new passenger query.
+- Reconcile available and unavailable fare buttons separately. Southwest's internal BUSRED is Choice Extra in Economy, not Business. The aggregate containsAvailability flag was false despite actual available fares and cannot be trusted as inventory status.
+- Same-flight stopsDetails includes the final arrival. Exclude that arrival from intermediate stops and validate physical-leg duration, layover and plane-change data. Never promote a service with an intermediate stop to nonstop.
+- Preserve per-person points and fees, exact party totals, unknown seats/refund terms and optional same-flight/family cash matches. Do not infer a booking guarantee from a positive source price.
+- Check the normal multi-source page, not just a provider-only diagnostic. Start short queries early; expensive collectors can consume another source's deadline in a shared queue. The regression test proves Southwest can finish while four other browser sources remain pending, with all five eventually attempted.
+- Browser checks should operate the visible label of styled inputs and use the mobile drawer's Show flights action or Escape; desktop Done and direct clicks on clipped inputs are not interchangeable. Close each owned QA browser before launching another so duplicate diagnostics do not compete for airline sessions.
+
+## Copa reconciliation follow-up — September 6
+
+Do not diagnose a missing numbered row as nonconsecutive identifiers without inspecting the actual current result count and filters. Copa initially exposed 45 rows, then showed 44 under an applied filter; Reset all restored United-operated UA1021. Reset the public filters before collecting and recheck the final physical-flight set. Total journey time is between the departure and arrival clocks, whereas an earlier duration can be a layover.
+
+Keep native-source validity, successful API samples and actual frontend verification as separate statuses. Copa’s LAX API and December calendar/party checks passed, but JFK exposed unstable fare-panel transitions. Preserve failed pointer, keyboard, panel-close and snapshot experiments. Capture actual current selected controls and card values before another adaptive change; a passing unit suite alone does not validate the live interaction.
+
+Copa follow-up resolution: wait for the real page to finish scrolling before clicking a fare, then allow its panel transition to finish. Repeat the same normal click only within a bounded attempt count when the requested panel did not open. Capture the entire matched quote set in one browser evaluation instead of reading it again on another animation frame. This final path passed all 45 JFK source rows and 60 fares through the real app; keyboard-only and direct-click alternatives did not. The measured 90.9-second sample justified a longer bounded Copa timeout; no rows or fares were discarded for speed.
+
+## September 6 — Qantas native extraction lessons
+
+The normal public Rewards flow succeeds anonymously for both domestic and international Qantas queries, independently of its cached finder. The connection playbook and dated native evidence preserve the exact successful steps, schema and remaining integration work. Capture the flight endpoint specifically so a later calendar response cannot replace it. Clear the actual cabin filter, reconcile both domestic button and international radio layouts, and never infer availability from the radio disabled flag. Preserve source exact taxes, party totals, terminal-to-airport mapping, nearby alternatives and mixed cabins. Public account-free search is distinct from selecting a fare or completing a member booking.
+
+Validate each live-progress update with progressSchema before publishing it. The event kind is update/finding/verified/fix/blocked; investigating is an airline state, not an event kind. An invalid historical event made the whole feed return503; the corrected feed passed real browser checks.
+
+
+Qantas integration follow-up: airport suggestion labels can concatenate the city and IATA chip, so match the actual option by its exact IATA child. Calendar scrolling lazy-loads future months; wait for the selected-date state. ArrowDown did not reduce the retained adult count, and waiting did not help; filling the editable numeric control and blurring it did. Verify both the final form and native response. Domestic and international collectors both reconcile physical flights, local times, durations and all available fare cards. A minimum-cabin result must report filtered envelope counts even though reconciliation checks the complete underlying list.
+
+
+Qantas repeat-search lesson: a successful native integration and three-program flight row do not prove repeatable access. Preserve later negative evidence. After an optional-notice timeout was fixed, the native flight endpoint returned403; the isolated Qantas query reached a public Access Denied page. Distinguish that source failure from a comparison-UI bug, sold-out inventory or an authentication requirement. Detect denied official document navigation instead of waiting for a flight response that cannot arrive, and do not loop unchanged denied searches. The UI automation also needs the current filter label (Programs changes to 1 program); click the actual label for visually hidden checkbox inputs. Those selector mistakes were test-tool errors, not airline-access evidence.
+
+- September6 American: combining public connection-city and premium scopes reveals 26 itineraries missing from the fresh baseline. Validate physical-flight identity and every fare; do not equate the source’s 40-row selection with exhaustiveness. Preserve latest quote semantics when merging. The full run reached airline verification at SEA, so keep expansion experimental and save successful scopes incrementally before later failures. Volume/pacing as the cause is unproven; do not repeat the unchanged denied sequence.

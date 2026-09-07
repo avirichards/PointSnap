@@ -1,0 +1,200 @@
+[
+  {
+    "departureStation": "SEA",
+    "arrivalStation": "SFO",
+    "rows": [
+      {
+        "segments": [
+          {
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 725,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "departureStation": "SEA",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T06:39:00-07:00",
+            "arrivalTime": "2026-10-05T08:49:00-07:00"
+          }
+        ],
+        "solutions": {
+          "FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "grandTotal": 673.4,
+            "atmosPoints": null,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": false
+          },
+          "MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "grandTotal": 188.42,
+            "atmosPoints": null,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": false
+          },
+          "PREMIUM": {
+            "cabins": [
+              "COACH"
+            ],
+            "grandTotal": 223.42,
+            "atmosPoints": null,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": false
+          },
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST"
+            ],
+            "grandTotal": 933.4,
+            "atmosPoints": null,
+            "seatsRemaining": 7,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH"
+            ],
+            "grandTotal": 268.42,
+            "atmosPoints": null,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_PREMIUM": {
+            "cabins": [
+              "COACH"
+            ],
+            "grandTotal": 303.42,
+            "atmosPoints": null,
+            "seatsRemaining": 1,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "SAVER": {
+            "cabins": [
+              "COACH"
+            ],
+            "grandTotal": 148.42,
+            "atmosPoints": null,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": false
+          }
+        }
+      },
+      {
+        "segments": [
+          {
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 1401,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "departureStation": "SEA",
+            "arrivalStation": "SAN",
+            "departureTime": "2026-10-05T07:04:00-07:00",
+            "arrivalTime": "2026-10-05T10:06:00-07:00"
+          },
+          {
+            "publishingCarrier": {
+              "carrierCode": "AS",
+              "flightNumber": 770,
+              "carrierFullName": "Alaska Airlines"
+            },
+            "departureStation": "SAN",
+            "arrivalStation": "SFO",
+            "departureTime": "2026-10-05T10:55:00-07:00",
+            "arrivalTime": "2026-10-05T12:41:00-07:00"
+          }
+        ],
+        "solutions": {
+          "FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "grandTotal": 503.2,
+            "atmosPoints": null,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": false
+          },
+          "MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "grandTotal": 228.2,
+            "atmosPoints": null,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": false
+          },
+          "PREMIUM": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "grandTotal": 301.2,
+            "atmosPoints": null,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": false
+          },
+          "REFUNDABLE_FIRST": {
+            "cabins": [
+              "FIRST",
+              "FIRST"
+            ],
+            "grandTotal": 1013.2,
+            "atmosPoints": null,
+            "seatsRemaining": 3,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_MAIN": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "grandTotal": 313.2,
+            "atmosPoints": null,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "REFUNDABLE_PREMIUM": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "grandTotal": 386.2,
+            "atmosPoints": null,
+            "seatsRemaining": 8,
+            "mixedCabin": false,
+            "refundable": true
+          },
+          "SAVER": {
+            "cabins": [
+              "COACH",
+              "COACH"
+            ],
+            "grandTotal": 188.2,
+            "atmosPoints": null,
+            "seatsRemaining": 9,
+            "mixedCabin": false,
+            "refundable": false
+          }
+        }
+      }
+    ]
+  }
+]
