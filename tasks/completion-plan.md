@@ -54,6 +54,10 @@ Virgin native flight search is verified in PointSnap: JFK–LHR October 8, two a
 
 Flying Blue now returns native JFK–AMS inventory in PointSnap after normal PIN sign-in:14 itineraries/33 fares in the latest two-adult API/frontend check. Every displayed cabin price is reconciled; firstKL642 is29,000 miles +USD138 per person. Sign-in survived the short owned-browser restart without a new code. Connecting segment cabins remain explicitly unconfirmed pending per-fare detail binding. Aeroplan sign-in succeeded but its first inventory request returned429; perform one normal recovery check after cooldown. Keep remaining native connections first.
 
+## September6 session recovery after Flying Blue integration
+
+United’s same-profile remembered-device password sign-in succeeded without a new code. The latest actual API returned40 itineraries/89fares in118.4 seconds, with all120 foreground samples preserved. Virgin’s normal email verification also succeeded; its accepted exact email was archived and the API returned6/17 in12.6 seconds. Keep earlier access and reconciliation failures as historical evidence and consistent repeat reliability open. Aeroplan’s existing authorized member flow is undergoing a bounded normal recovery after cooldown.
+
 ## United — native member connection verified locally
 
 The two bounded anonymous hypotheses are complete: the official award-first and cash-to-miles controls both require sign-in. The user supplied authorized credentials and completed the existing verification challenge. Native MileagePlus now works through PointSnap’s service and actual frontend: LAX–AUS October 7 returns 40 itineraries / 89 distinct fares for one adult, and EWR–LHR October 7 returns 69 / 175 for two adults. The earlier domestic sample preserves 38 / 100, including 24 distinct higher-priced unmixed alternatives.
@@ -89,3 +93,12 @@ Qualify each program with at least 50 real representative searches over at least
 Verify shared jobs, cancellation, crashes, streaming recovery, member isolation, cache withdrawals, Business-filter date prices, currency/value calculations, airport-local times and DST, city-pair partial coverage and hidden-city semantics. Use fixtures for load tests and bounded real searches for access checks. Review the real frontend after changes. Verify projected monthly cost against the workload.
 
 Deploy a preview, verify migrations and runtime, then promote a tested commit only when its declared release scope passes. Use feature flags and a rollback path. An enabled parser, partner inventory or ordinary-browser screenshot does not qualify as a complete native connection. For unresolved access, retain a decision record with the distinct options tested, observed failures, remaining capability needed and next available action; never label an unresolved program complete.
+
+
+## September 7 UTC recovery follow-up
+
+Virgin partner support now passes actual serialized app searches: Delta LAX–AUS October 5 one adult, 4 itineraries/4 fares; JFK–LHR October 7, 7/19 including Air France Economy Standard. Desktop/mobile fare selection and official booking URLs were verified; all 390 tests, TypeScript, focused lint and the optimized build passed. United's latest serialized request after remembered-device sign-in returned HTTP 428; its earlier 40/89 proof is retained, with no experimental fix adopted. Aeroplan still returns 429 after accepted verification and cooldown.
+
+The final four account details have now been supplied. Qatar signed in using the accepted SMS code and displays an award calendar; actual flight inventory is under qualification. BA needs its human check, Singapore is now signed in after user-confirmed recovery, and Turkish has a CAPTCHA overlay before credentials can be tested. User authorized Messages on this Mac for airline verification texts. Do not record credentials/codes in project notes.
+
+The Departure Lounge UI branch is integrated at 32f7976 and passes the combined checks. Actual live Virgin results work on desktop/mobile. No Supabase URL, anon key or migration connection is configured in the canonical app, so the private-trips migration and authenticated cloud persistence remain unapplied/unverified. Local RLS tests passed; this is not a deployed database claim. Continue airline work first.

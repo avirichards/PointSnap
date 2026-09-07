@@ -46,3 +46,10 @@ The canonical requirement log remains `tasks/user-requirements.md`; this note do
 Merged `codex/finish-pointsnap` through `02f7a34` into the UI branch without conflicts. **386 tests in 47 files passed**, ESLint passed with zero warnings, and the optimized Next.js production build (including TypeScript and all 27 generated pages) passed. The native source changes, background browser protections and 200-second AF/UA/CM/QF/G3 streams remain present. The UI implementation commit is `90197bc`; its merge with current airline work is `3269ea7`.
 
 A separate production-mode runtime returned 200 for `/search`, `/wallet`, `/trips` and `/sweet-spots`, 401 for unauthenticated `/api/trips`, and 404 for `/design-preview` without the preview flag. With the flag enabled, the final 1440×1100 desktop and 390×844 phone screenshots were captured from the production build. Theme radio keyboard navigation and phone inspector focus restoration passed again. Temporary production runtime stopped after verification. The user's original dark preference and normal browser viewport were restored; the isolated development preview remains on port 3001.
+
+
+## Canonical integration verification — September 7 UTC
+
+Integrated the UI branch at 32f7976 into the canonical airline branch. The combined 390-test suite, TypeScript, focused native-source lint and optimized Next build pass. Live Virgin/Delta LAX–AUS returned all four itineraries/four fares in the actual 1440px desktop and 390px mobile app. Fare selection, full party amounts, correct First versus Business, AM/PM clocks and the dated official airline link were checked. The mobile inspector has no horizontal overflow and no page errors. This is a real backend search, not preview fixture data.
+
+No Supabase URL, anonymous key or migration connection is configured in the canonical app. The private-trips migration has not been applied to a remote database, and authenticated cloud persistence remains unverified. Anonymous trips API correctly returns 401, coverage/search return 200, and design-preview remains 404 without its explicit flag.

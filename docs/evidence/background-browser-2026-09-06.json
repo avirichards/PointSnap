@@ -53,5 +53,80 @@
     "Local background behavior does not provision hosted collectors"
   ],
   "credentialsIncluded": false,
-  "codesIncluded": false
+  "codesIncluded": false,
+  "followUp": {
+    "checkedAt": "2026-09-06T23:46:22.546414+00:00",
+    "united": {
+      "ordinaryRememberedDevicePasswordSignIn": true,
+      "additionalCodeNeeded": false,
+      "actualPointSnapApi": true,
+      "query": {
+        "origin": "LAX",
+        "dest": "AUS",
+        "date": "2026-10-07",
+        "adults": 1
+      },
+      "itineraries": 40,
+      "fares": 89,
+      "durationMs": 118415,
+      "foregroundSamples": 120,
+      "foregroundPreserved": true,
+      "prior428PreservedAsHistoricalEvidence": true,
+      "repeatReliabilityEstablished": false,
+      "subsequentFrontendRepeat": {
+        "at": "2026-09-06T23:46:30.814Z",
+        "nativeInventoryStatus": 200,
+        "durationMs": 100525,
+        "result": "collector_error",
+        "actualFrontendShowsSourceFailure": true
+      },
+      "experiments": [
+        {
+          "method": "Activate existing visible result controls through their own DOM handlers",
+          "result": "Timed out; no successful integration or source change adopted."
+        },
+        {
+          "method": "Wait for DOMContentLoaded rather than all resources",
+          "result": "Native form One-way control still stalled during background click; no inventory request."
+        },
+        {
+          "method": "Normal keyboard form controls after DOMContentLoaded",
+          "result": "First tab action timed out; no fix established."
+        },
+        {
+          "method": "Use an already fully loaded native award form",
+          "result": "A native inventory request returned 200, but the initial-view candidate did not establish repeat reliability and was reverted."
+        }
+      ],
+      "experimentQualification": "Direct attached mutations can race normal app requests on the same owned page. All candidates were reverted; future qualification uses the serialized canonical worker.",
+      "latestSerializedRepeat": {
+        "at": "2026-09-07T00:51:12.327Z",
+        "nativeInventoryStatus": 428,
+        "durationMs": 67187,
+        "itineraries": 0,
+        "fares": 0,
+        "ordinaryRememberedDeviceSignInCompleted": true,
+        "state": "integrating",
+        "foregroundSamples": 69,
+        "foregroundPreserved": false,
+        "foregroundInterpretation": "The foreground changed during the observation; this alone does not attribute the change to the collector."
+      }
+    },
+    "virgin": {
+      "normalEmailVerificationAccepted": true,
+      "exactAcceptedEmailArchived": true,
+      "actualPointSnapApi": true,
+      "itineraries": 6,
+      "fares": 17,
+      "durationMs": 12625
+    },
+    "flyingBlue": {
+      "actualPointSnapApi": true,
+      "itineraries": 14,
+      "fares": 33,
+      "durationMs": 52487,
+      "foregroundSamples": 54,
+      "foregroundPreserved": true
+    }
+  }
 }

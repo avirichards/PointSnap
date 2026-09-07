@@ -393,3 +393,10 @@ All368 tests across42 files, TypeScript, focused lint and the optimized Node22 b
 ## September 6 — approved Option D UI execution
 
 The user returned to Option D after exploring alternatives and explicitly approved implementation. The separate UI task implemented the Departure Lounge design, adaptive booking inspector, calendar and physical-city search expansion, independent return flexibility, named filter presets, optional points guidance, private/session trips and four-way comparison, and session-observation Explore. Existing AM/PM, compact result preference, fee conversion, grouping and globe behavior are preserved. See `docs/product-ui-handoff.md` for tested behavior and screenshots. After integrating airline commit `02f7a34`, 386 tests and the production build passed. Hosted trips migration and signed-in validation remain explicit integration steps. Broad city/date searches still respect the shared 20-request limit. Hidden-city research, scheduled alerts, global discovery and remaining airline connections are still open; this update does not mark those complete.
+
+
+### September 7 UTC — final-program access and operator verification
+
+- User supplied account access for British Airways, Qatar, Singapore and Turkish; secrets are not recorded in this document. Test the normal member flows, then stabilize the agreed program batch.
+- User authorized reading airline verification SMS messages in Messages on this Mac. Confirmed the current Qatar SMS appears there; use only the matching recent sender/code for an active sign-in. Continue archiving accepted email codes only, not SMS messages.
+- Consider a dedicated PointSnap number and operator email inbox after airline acceptance is tested. This separates personal communications from service operation; it does not guarantee permanent sessions or remove human checks.

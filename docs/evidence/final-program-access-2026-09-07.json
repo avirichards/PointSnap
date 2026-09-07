@@ -1,0 +1,62 @@
+{
+  "checkedAt": "2026-09-07T01:22:00Z",
+  "credentialsIncluded": false,
+  "codesIncluded": false,
+  "scope": "British Airways, Qatar, Singapore and Turkish final connection batch",
+  "programs": {
+    "BA_AVIOS": {
+      "stage": "human verification before completed sign-in",
+      "credentialRejectionConfirmed": false,
+      "normalAccountFormSubmitted": true,
+      "sourcePath": "/u/login",
+      "sourceStatus": 400,
+      "flightInventoryConfirmed": false
+    },
+    "QR_PRIVILEGE": {
+      "normalPasswordAndSMSAccepted": true,
+      "memberDashboardConfirmed": true,
+      "calendar": {
+        "route": "JFK-DOH",
+        "month": "2026-10",
+        "adults": 1,
+        "october7Avios": 35000,
+        "nativeStatus": 200
+      },
+      "flightSamples": [
+        {
+          "date": "2026-10-07",
+          "itineraries": 2,
+          "pricedCabins": 2
+        },
+        {
+          "date": "2026-10-08",
+          "itineraries": 3,
+          "pricedCabins": 3
+        }
+      ],
+      "flightEndpoint": "/dapi/public/bff/web/flight-search/award-flight-offers",
+      "nativeStatus": 200,
+      "taxesIncludedInDisplayedPointsPrice": false,
+      "fareSelectionBoundary": "Native award-flight-air-offers returned 200, but the UI said more Avios were required before continuing. No complete tax quote established.",
+      "appIntegrated": false
+    },
+    "SQ_KRISFLYER": {
+      "initialLoginRejected": true,
+      "userThenReportedAccessWorking": true,
+      "normalRetrySignedIn": true,
+      "next": "Qualify native LAX-SIN 2026-10-07 one adult search",
+      "appIntegrated": false
+    },
+    "TK_MILES_SMILES": {
+      "nativeLoginStatus": 403,
+      "humanVerificationOverlay": "px-captcha-modal intercepts sign-in click",
+      "credentialsSubmitted": false,
+      "flightInventoryConfirmed": false
+    }
+  },
+  "operatorChannels": {
+    "emailCodes": "Use authorized Gmail and archive the exact message only after accepted",
+    "smsCodes": "User authorized airline-only verification texts in Messages; current Qatar SMS confirmed synced",
+    "futureDedicatedNumber": "Evaluate airline acceptance and dedicated service ownership after connections are proven"
+  }
+}
