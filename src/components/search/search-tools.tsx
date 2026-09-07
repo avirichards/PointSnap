@@ -35,7 +35,13 @@ function decode(raw: string): SearchQuery[] {
     return [];
   }
 }
-export function SavedSearches({ query }: { query: SearchQuery | null }) {
+export function SavedSearches({
+  query,
+  compact = false,
+}: {
+  query: SearchQuery | null;
+  compact?: boolean;
+}) {
   const raw = useSyncExternalStore(subscribe, snapshot, () => "[]");
   const saved = decode(raw);
   const [error, setError] = useState("");
@@ -55,7 +61,11 @@ export function SavedSearches({ query }: { query: SearchQuery | null }) {
   if (!query && !saved.length) return null;
   return (
     <section
-      className="mt-4 flex flex-wrap items-center gap-2"
+      className={
+        compact
+          ? "saved-search-action"
+          : "mt-4 flex flex-wrap items-center gap-2"
+      }
       aria-label="Saved searches"
     >
       {query && (
@@ -79,7 +89,7 @@ export function SavedSearches({ query }: { query: SearchQuery | null }) {
           {exists ? "Search saved" : "Save search"}
         </Button>
       )}
-      {saved.length > 0 && (
+      {!compact && saved.length > 0 && (
         <>
           <span className="text-xs text-muted-foreground">
             Saved on this device
@@ -148,7 +158,7 @@ export function NearbyDates({
   return (
     <nav
       aria-label="Search nearby dates"
-      className="grid grid-cols-7 gap-1 rounded-xl border bg-card p-2"
+      className="nearby-dates grid grid-cols-7 gap-1 rounded-xl border bg-card p-2"
     >
       {[-3, -2, -1, 0, 1, 2, 3].map((offset) => {
         const day = new Date(`${date}T12:00:00Z`);

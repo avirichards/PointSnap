@@ -5,9 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   ArrowRight,
-  ArrowLeftRight,
   ChevronDown,
-  RefreshCw,
   Radio,
   Globe2,
   CornerDownRight,
@@ -16,16 +14,11 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SearchForm } from "./search-form";
-import { Button } from "@/components/ui/button";
+import { ResultsSearchHeader } from "./results-search-header";
 import { AwardResults, programName } from "./award-results";
 import { useAwardSearch } from "@/hooks/use-award-search";
 import { parseQuery, queryParams } from "@/lib/award-search/query";
-import {
-  cityGroup,
-  physicalAirport,
-  placeName,
-  airportPairs,
-} from "@/lib/search-places";
+import { physicalAirport, placeName } from "@/lib/search-places";
 import type { SearchQuery } from "@/lib/types";
 import { SavedSearches, NearbyDates } from "./search-tools";
 import { bookingUrl } from "@/lib/bookingHandoff";
@@ -131,7 +124,12 @@ function Workspace() {
         )
       ) {
         e.preventDefault();
-        document.getElementById("origin")?.focus();
+        const origin = document.getElementById("origin");
+        if (origin) origin.focus();
+        else
+          document
+            .querySelector<HTMLButtonElement>("[data-edit-search]")
+            ?.click();
       }
     };
     window.addEventListener("keydown", handle);
@@ -163,34 +161,40 @@ function Workspace() {
         tabIndex={-1}
         className={`search-workspace award-workspace ${query ? "has-results" : ""}`}
       >
-        <div className="workspace-topline">
-          <p className="mono-label flex items-center gap-2">
-            <ScanLine className="size-3.5 text-primary" />
-            AWARD SEARCH{" "}
-            <span className="hidden sm:inline text-muted-foreground/50">/</span>
-            <span className="hidden sm:inline">
-              {query ? "FLIGHT COMPARISON" : "ROUTE EXPLORER"}
-            </span>
-          </p>
-          <Link
-            href="/airlines"
-            className="flex items-center gap-2 text-xs text-muted-foreground"
-          >
-            <span className="status-dot" />
-            {enabled.length || "—"} data sources enabled
-            <ArrowRight className="size-3" />
-          </Link>
-        </div>
-        <section className="search-panel" aria-label="Find award flights">
-          <SearchForm
-            key={`${raw}-${formRevision}`}
-            initialQuery={query ?? draft}
-            onDraftChange={setDraft}
-            onSubmit={search}
-            isStreaming={stream.loading}
-          />
-        </section>
-        <SavedSearches query={query} />
+        {!query && (
+          <>
+            <div className="workspace-topline">
+              <p className="mono-label flex items-center gap-2">
+                <ScanLine className="size-3.5 text-primary" />
+                AWARD SEARCH{" "}
+                <span className="hidden sm:inline text-muted-foreground/50">
+                  /
+                </span>
+                <span className="hidden sm:inline">
+                  {query ? "FLIGHT COMPARISON" : "ROUTE EXPLORER"}
+                </span>
+              </p>
+              <Link
+                href="/airlines"
+                className="flex items-center gap-2 text-xs text-muted-foreground"
+              >
+                <span className="status-dot" />
+                {enabled.length || "—"} data sources enabled
+                <ArrowRight className="size-3" />
+              </Link>
+            </div>
+            <section className="search-panel" aria-label="Find award flights">
+              <SearchForm
+                key={`${raw}-${formRevision}`}
+                initialQuery={query ?? draft}
+                onDraftChange={setDraft}
+                onSubmit={search}
+                isStreaming={stream.loading}
+              />
+            </section>
+            <SavedSearches query={query} />
+          </>
+        )}
         {parsed === "invalid" && (
           <p
             role="alert"
@@ -299,69 +303,19 @@ function Workspace() {
           </>
         )}
         {query && (
-          <div className="mt-7 space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="route-heading-block">
-                <h1 className="route-heading">
-                  {placeName(active!.origin)} <span>to</span>{" "}
-                  {placeName(active!.dest)}
-                </h1>
-                <span className="route-pill">
-                  {active!.origin}
-                  <ArrowRight className="size-3.5 text-primary" />
-                  {active!.dest}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {active!.departDate}
-                </span>
-                {query.returnDate && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setReturnLeg(!returnLeg)}
-                  >
-                    <ArrowLeftRight className="size-4" />
-                    {isReturnLeg ? "Show outbound" : "Show return"}
-                  </Button>
-                )}
-              </div>
-              <div className="flex gap-1">
-                {stream.loading && (
-                  <Button variant="outline" onClick={stream.stop}>
-                    Stop search
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  onClick={stream.retry}
-                  disabled={stream.loading}
-                >
-                  <RefreshCw
-                    className={`size-4 ${stream.loading ? "animate-spin motion-reduce:animate-none" : ""}`}
-                  />
-                  {stream.rateLimitUntil
-                    ? "Waiting to resume…"
-                    : stream.loading
-                      ? "Searching…"
-                      : "Refresh"}
-                </Button>
-              </div>
-            </div>
-            {(cityGroup(active!.origin) || cityGroup(active!.dest)) && (
-              <p className="text-sm text-muted-foreground">
-                {airportPairs(active!.origin, active!.dest).length} airport
-                pairs ·{" "}
-                {cityGroup(active!.origin)?.airports.join(", ") ??
-                  active!.origin}{" "}
-                → {cityGroup(active!.dest)?.airports.join(", ") ?? active!.dest}
-                . Each pair is checked separately.
-              </p>
-            )}
-            {query.returnDate && (
-              <p className="text-sm text-muted-foreground">
-                Each direction is searched as a one-way award. Round-trip awards
-                may price differently.
-              </p>
-            )}
+          <div className="results-workspace-body">
+            <ResultsSearchHeader
+              key={`search-header-${raw}`}
+              query={query}
+              onSearch={search}
+              isReturn={isReturnLeg}
+              onToggleReturn={() => setReturnLeg(!returnLeg)}
+              enabledSources={enabled.length}
+              loading={stream.loading}
+              paused={!!stream.rateLimitUntil}
+              onRefresh={stream.retry}
+              onStop={stream.stop}
+            />
             {!active?.flexDays && (
               <NearbyDates
                 date={active!.departDate}

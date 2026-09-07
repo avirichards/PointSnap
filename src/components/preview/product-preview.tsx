@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { rememberSearch } from "@/lib/search-history";
 import { SiteHeader } from "@/components/layout/site-header";
-import { SearchForm } from "@/components/search/search-form";
+import { ResultsSearchHeader } from "@/components/search/results-search-header";
 import { AwardResults } from "@/components/search/award-results";
 import type { AwardPrice, AwardResult } from "@/lib/award-search/types";
 import type { SearchQuery } from "@/lib/types";
@@ -175,20 +175,11 @@ export function ProductPreview() {
             Try examples in Explore
           </Link>
         </div>
-        <section className="search-panel">
-          <SearchForm
-            initialQuery={query}
-            onDraftChange={setQuery}
-            onSubmit={setQuery}
-          />
-        </section>
-        <header className="route-heading-block">
-          <p className="eyebrow">YOUR NEXT DEPARTURE</p>
-          <h1 className="route-heading">
-            New York <span aria-hidden="true">→</span> London
-          </h1>
-          <p>Compare the journey. Choose how to book it.</p>
-        </header>
+        <ResultsSearchHeader
+          key={JSON.stringify(query)}
+          query={query}
+          onSearch={setQuery}
+        />
         {state === "error" && (
           <p role="status" className="rounded-xl border p-4">
             Some sources could not finish. The returned flights below remain

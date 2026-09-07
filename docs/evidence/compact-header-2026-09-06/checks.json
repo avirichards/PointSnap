@@ -1,0 +1,28 @@
+{
+  "liveCollectorsRequested": false,
+  "checks": [
+    "Collapsed summary preserves all one-way criteria; measured results and filter positions",
+    "Edit focus, Cancel discards changes without search, saved searches retained, slash opens editor, nested Escape works",
+    "Nearby-date navigation, form submission, independent date windows, party and cabin settings, outbound/return routes preserved",
+    "Search failures and retry remain visible",
+    "Phone summary has no overflow; full mobile calendar and cancelled changes work; populated preview shares the same header"
+  ],
+  "screenshots": [
+    "desktop-search-summary",
+    "desktop-round-trip",
+    "mobile-search-summary",
+    "mobile-results",
+    "desktop-results"
+  ],
+  "before": {
+    "resultsTop": 571.59375,
+    "filtersTop": 651.59375,
+    "tableTop": 763.59375
+  },
+  "after": {
+    "resultsTop": 289.6875,
+    "filtersTop": 364.34375,
+    "tableTop": 476.34375
+  },
+  "browserErrors": []
+}
