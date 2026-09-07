@@ -735,6 +735,46 @@ input[type="radio"] {
   background: var(--primary);
   color: var(--primary-foreground);
 }
+.filter-display-preferences {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 12px;
+}
+/* Keep focus scrolling inside the body, with the sheet heading and actions fixed. */
+.filter-sheet {
+  overflow: clip;
+}
+.filter-display-preferences summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 4px;
+  border-radius: 8px;
+  list-style: none;
+  cursor: pointer;
+}
+.filter-display-preferences summary::-webkit-details-marker {
+  display: none;
+}
+.filter-display-preferences summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.filter-display-preferences strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 550;
+}
+.filter-display-preferences small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.filter-display-preferences[open] .disclosure-chevron {
+  transform: rotate(180deg);
+}
 .preview-banner {
   display: flex;
   align-items: center;

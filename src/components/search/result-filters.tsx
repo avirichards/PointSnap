@@ -1,5 +1,6 @@
 "use client";
 import { FilterPresets } from "./filter-presets";
+import { DisplayPreferences } from "./display-currency";
 import { stopAirports } from "@/lib/award-search/stops";
 
 import { useState, useSyncExternalStore, type ReactNode } from "react";
@@ -912,6 +913,7 @@ export function ResultFilterBar({
                   ))}
                 </div>
                 <FilterPresets filters={f} onApply={onChange} />
+                <DisplayPreferences />
               </>
             ) : (
               sheet && content(sheet)

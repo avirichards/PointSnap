@@ -11,7 +11,6 @@ import {
   Radio,
   Globe2,
   CornerDownRight,
-  Map,
   Check,
   ScanLine,
 } from "lucide-react";
@@ -72,7 +71,6 @@ function Workspace() {
   const [expanded, setExpanded] = useState(false);
   const [enabled, setEnabled] = useState<string[]>([]);
   const [returnLeg, setReturnLeg] = useState(false);
-  const [showMap, setShowMap] = useState(false);
   const [formRevision, setFormRevision] = useState(0);
   const [draft, setDraft] = useState<SearchQuery>(() => ({
     origin: "JFK",
@@ -327,14 +325,6 @@ function Workspace() {
                 )}
               </div>
               <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowMap(!showMap)}
-                  aria-pressed={showMap}
-                >
-                  <Map className="size-4" />
-                  Route map
-                </Button>
                 {stream.loading && (
                   <Button variant="outline" onClick={stream.stop}>
                     Stop search
@@ -365,19 +355,6 @@ function Workspace() {
                 → {cityGroup(active!.dest)?.airports.join(", ") ?? active!.dest}
                 . Each pair is checked separately.
               </p>
-            )}
-            {showMap && (
-              <div className="result-map">
-                <RouteGlobe
-                  key={`${active!.origin}-${active!.dest}`}
-                  origin={physicalAirport(active!.origin)}
-                  destination={physicalAirport(active!.dest)}
-                />
-                <p className="text-xs text-muted-foreground text-center pb-4">
-                  Map uses a representative airport for city searches. Each
-                  result shows the actual airports and connections.
-                </p>
-              </div>
             )}
             {query.returnDate && (
               <p className="text-sm text-muted-foreground">

@@ -44,3 +44,10 @@ The approved first product pass is implemented and has been exercised in the bro
 - Search parsing and date expansion support ±14 (up to 29 dates). HTTP 429 now pauses and resumes remaining browser checks with a shared cooldown; Stop search cancels it. No server limit increase or collector changes.
 - The two chats work independently; the user clarified that necessary cross-chat context/handoff messages are fine. Avoid routine cross-chat progress chatter.
 - Verification and evidence: `docs/appearance-calendar-refinement.md`. Airline connection and hosted account-storage tasks remain with their existing owner.
+
+## September 6 — results-page simplification
+
+- User requested removal of the results route map unless it provided real decision-making value. Removed its toggle, duplicate globe panel, state and unused styles. It showed a representative route rather than the returned itineraries. The original homepage globe remains.
+- User requested moving the separate display-preferences menu above the filters to the bottom of the filter menu. Currency, time format and layout now live in an expandable Display preferences section at the bottom of All filters, after presets. No extra preferences button remains above the toolbar.
+- Display settings still update results immediately and persist on the device. They do not contribute to active-filter counts or reset with Reset all. Browser checks passed on desktop and phone, including currency conversion, 12/24-hour rendering, density changes, persistence and keyboard disclosure. Filter-sheet heading and actions remain fixed while its body scrolls.
+- TypeScript, changed-file ESLint and diff checks passed. Screenshot and reproducible isolated-browser evidence: `docs/evidence/results-cleanup-2026-09-06/`. Search requests were intercepted; no live collectors or canonical runtimes were touched.

@@ -426,15 +426,6 @@ select:focus-visible {
   border-radius: 3px;
   font-family: var(--font-jetbrains-mono);
 }
-.result-map {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--card);
-}
-.result-map .route-globe {
-  max-width: 430px;
-  margin: auto;
-}
 .dark .award-price {
   background: #172729;
 }
