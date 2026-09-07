@@ -40,3 +40,9 @@ The original airline task owns `work/PointSnap`, ports 3000/3002, browser profil
 - Native connection completeness and reliability remain owned by the airline task. This UI release is not evidence that all airlines are connected.
 
 The canonical requirement log remains `tasks/user-requirements.md`; this note does not replace or close its airline/data items.
+
+## Combined validation after airline integration
+
+Merged `codex/finish-pointsnap` through `02f7a34` into the UI branch without conflicts. **386 tests in 47 files passed**, ESLint passed with zero warnings, and the optimized Next.js production build (including TypeScript and all 27 generated pages) passed. The native source changes, background browser protections and 200-second AF/UA/CM/QF/G3 streams remain present. The UI implementation commit is `90197bc`; its merge with current airline work is `3269ea7`.
+
+A separate production-mode runtime returned 200 for `/search`, `/wallet`, `/trips` and `/sweet-spots`, 401 for unauthenticated `/api/trips`, and 404 for `/design-preview` without the preview flag. With the flag enabled, the final 1440×1100 desktop and 390×844 phone screenshots were captured from the production build. Theme radio keyboard navigation and phone inspector focus restoration passed again. Temporary production runtime stopped after verification. The user's original dark preference and normal browser viewport were restored; the isolated development preview remains on port 3001.
