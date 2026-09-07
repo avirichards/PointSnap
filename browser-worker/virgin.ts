@@ -95,8 +95,11 @@ export function reconcileVirginCards(
     if (card.fareButtons.length !== f.fares.length)
       fail("Virgin’s displayed cabin count is incomplete.");
     for (const fare of f.fares) {
+      const fareName =
+        fare.fareSegments?.find((s) => s.isDominantLeg)?.cabinName ??
+        fareNames[fare.fareFamilyType];
       const buttons = card.fareButtons.filter((b) =>
-        compact(b.text).startsWith(fareNames[fare.fareFamilyType]),
+        compact(b.text).startsWith(fareName),
       );
       if (buttons.length !== 1)
         fail("Virgin’s cabin fare could not be matched.");
@@ -113,7 +116,7 @@ export function reconcileVirginCards(
           fail(
             "Virgin’s display currency needs an additional validated reconciliation rule.",
           );
-        const expected = `${fareNames[fare.fareFamilyType]} ${Number(p.awardPoints).toLocaleString("en-US")} +US$${Math.ceil(p.amountIncludingTax).toLocaleString("en-US")}`;
+        const expected = `${fareName} ${Number(p.awardPoints).toLocaleString("en-US")} +US$${Math.ceil(p.amountIncludingTax).toLocaleString("en-US")}`;
         if (b.disabled || label.replace(/\+\s+/g, "+") !== expected)
           fail(
             "Virgin’s displayed points or fees do not match its returned fare.",
@@ -136,7 +139,9 @@ export async function virginVisibleCards(
         ),
         fareButtons: [...e.querySelectorAll("button")]
           .filter((b) =>
-            /^(Economy Classic|Premium|Upper Class)/.test(b.innerText.trim()),
+            /^(Economy Classic|Economy Standard|Main Cabin|Premium|Upper Class|First Class)/.test(
+              b.innerText.trim(),
+            ),
           )
           .map((b) => ({ text: b.innerText, disabled: b.disabled })),
       })),
@@ -241,6 +246,16 @@ export class VirginBrowserRunner {
         // This is the actual public search URL produced by Virgin's booking form.
         // The browser keeps its own member session and follows all normal redirects.
         await prepareCollectorPage(page);
+        // Preserve an operator's in-progress verification. A customer search
+        // must not navigate away from it and cause another login/code challenge.
+        if (
+          new URL(page.url()).hostname === "identity.virginatlantic.com" ||
+          (await page.locator("input[type=password]:visible").count())
+        )
+          fail(
+            "Virgin’s operator session needs sign-in or verification. Customers do not need to connect an airline account to search.",
+            "auth_required",
+          );
         const document = await page.goto(virginBookingUrl(q), {
           waitUntil: "domcontentloaded",
           timeout: 45000,

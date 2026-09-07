@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import one from "../fixtures/virgin-native-jfk-lhr-one.json";
 import two from "../fixtures/virgin-native-jfk-lhr-two.json";
 import connecting from "../fixtures/virgin-native-jfk-del-one.json";
+import partner from "../fixtures/virgin-native-jfk-lhr-partner.json";
+import deltaPartner from "../fixtures/virgin-native-lax-aus-partner.json";
 import {
   parseVirginNative,
   virginPayloadSchema,
@@ -16,6 +18,53 @@ const q = {
   minCabin: "Y" as const,
 };
 describe("native Flying Club flight awards", () => {
+  it("keeps Delta's nonstop Main Cabin award and identifies domestic First separately from Business", () => {
+    const query = {
+      ...q,
+      origin: "LAX",
+      dest: "AUS",
+      departDate: "2026-10-05",
+    };
+    const rows = parseVirginNative(deltaPartner, query, observedAt);
+    expect(rows).toHaveLength(4);
+    const nonstop = rows.find((r) => r.segments.length === 1)!;
+    expect(nonstop.segments[0].flightNumber).toBe("DL692");
+    expect(nonstop.prices.Y).toMatchObject({
+      fareName: "Main Cabin",
+      points: 16500,
+      cash: 5.6,
+    });
+    const first = parseVirginNative(
+      deltaPartner,
+      { ...query, minCabin: "F" },
+      observedAt,
+    );
+    expect(first).toHaveLength(1);
+    expect(first[0].prices.F).toMatchObject({
+      fareName: "First Class",
+      cabin: "F",
+      points: 101000,
+      cash: 11.2,
+      segmentCabins: ["F", "F"],
+    });
+    expect(first[0].prices.J).toBeUndefined();
+  });
+  it("retains the Air France partner connection and its actual Economy Standard fare", () => {
+    const rows = parseVirginNative(partner, q, observedAt);
+    expect(rows).toHaveLength(7);
+    expect(rows.flatMap((r) => r.fares!)).toHaveLength(19);
+    const af = rows.find((r) => r.segments[0].flightNumber === "AF11")!;
+    expect(af.segments.map((s) => s.flightNumber)).toEqual(["AF11", "AF1280"]);
+    expect(af.prices.Y).toMatchObject({
+      fareName: "Economy Standard",
+      cabin: "Y",
+      points: 12000,
+      cash: 184,
+      currency: "USD",
+      segmentCabins: ["Y", "Y"],
+      bookingClasses: ["X", "X"],
+    });
+  });
   it("preserves all six flights and all 18 priced cabins with exact source fees", () => {
     const rows = parseVirginNative(one, q, observedAt);
     expect(rows).toHaveLength(6);

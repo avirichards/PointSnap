@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { BrowserContext, Page } from "playwright";
 import visible from "./fixtures/virgin-visible-jfk-lhr-two.json";
 import raw from "../src/lib/award-search/fixtures/virgin-native-jfk-lhr-two.json";
+import partnerVisible from "./fixtures/virgin-visible-lax-aus-partner.json";
+import partnerRaw from "../src/lib/award-search/fixtures/virgin-native-lax-aus-partner.json";
 import { virginPayloadSchema } from "../src/lib/award-search/virgin-native";
-import { reconcileVirginCards } from "./virgin";
+import { reconcileVirginCards, VirginBrowserRunner } from "./virgin";
 const q = {
   origin: "JFK",
   dest: "LHR",
@@ -12,6 +15,42 @@ const q = {
 };
 const payload = virginPayloadSchema.parse(raw);
 describe("Virgin visible flight reconciliation", () => {
+  it("preserves an operator's verification page when another customer starts a search", async () => {
+    const goto = vi.fn();
+    const context = { pages: () => [page] } as unknown as BrowserContext;
+    const page = {
+      url: () => "https://identity.virginatlantic.com/verification",
+      context: () => context,
+      setDefaultTimeout: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+      goto,
+    } as unknown as Page;
+    const runner = new VirginBrowserRunner({
+      run: async (_signal, visit) => visit(context),
+      close: async () => {},
+    });
+    await expect(
+      runner.search(q, new AbortController().signal),
+    ).rejects.toMatchObject({ stage: "auth_required" });
+    expect(goto).not.toHaveBeenCalled();
+  });
+  it("reconciles Delta Main Cabin and First Class alongside the airline's sold-out placeholders", () => {
+    expect(() =>
+      reconcileVirginCards(
+        partnerVisible.cards,
+        virginPayloadSchema.parse(partnerRaw),
+        {
+          origin: "LAX",
+          dest: "AUS",
+          departDate: "2026-10-05",
+          pax: 1,
+          minCabin: "Y",
+        },
+        partnerVisible.countText,
+      ),
+    ).not.toThrow();
+  });
   it("reconciles the actual six-flight page, all available fares, party rounding and the sold-out cabin", () => {
     expect(() =>
       reconcileVirginCards(visible.cards, payload, q, visible.countText),

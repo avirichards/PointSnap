@@ -44,7 +44,14 @@ const fareFamily = z.enum([
   "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY",
   "AWARD-BUSINESS-FIRST",
 ]);
-const cabinNames = z.enum(["Economy Classic", "Premium", "Upper Class"]);
+const cabinNames = z.enum([
+  "Economy Classic",
+  "Economy Standard",
+  "Main Cabin",
+  "Premium",
+  "Upper Class",
+  "First Class",
+]);
 const fare = z.object({
   availability: z.enum(["SOLD_OUT"]).nullable(),
   available: z.boolean().nullable(),
@@ -126,20 +133,18 @@ export type VirginPayload = z.infer<typeof virginPayloadSchema>;
 export type VirginFlight = z.infer<typeof flightAndFares>;
 const hash = (v: unknown) =>
   createHash("sha256").update(JSON.stringify(v)).digest("hex").slice(0, 24);
-const familyCabin: Record<z.infer<typeof fareFamily>, Cabin> = {
-  "AWARD-ECONOMY": "Y",
-  "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY": "W",
-  "AWARD-BUSINESS-FIRST": "J",
+const familyCabins: Record<z.infer<typeof fareFamily>, Cabin[]> = {
+  "AWARD-ECONOMY": ["Y"],
+  "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY": ["W"],
+  "AWARD-BUSINESS-FIRST": ["J", "F"],
 };
 const namedCabin: Record<z.infer<typeof cabinNames>, Cabin> = {
   "Economy Classic": "Y",
+  "Economy Standard": "Y",
+  "Main Cabin": "Y",
   Premium: "W",
   "Upper Class": "J",
-};
-const familyName: Record<z.infer<typeof fareFamily>, string> = {
-  "AWARD-ECONOMY": "Economy Classic",
-  "AWARD-COMFORT-PLUS-PREMIUM-ECONOMY": "Premium",
-  "AWARD-BUSINESS-FIRST": "Upper Class",
+  "First Class": "F",
 };
 function fail(detail: string): never {
   throw new ProviderError(
@@ -258,7 +263,9 @@ export function virginFlights(input: unknown, q: SearchQuery): VirginPayload {
       )
         fail("returned incomplete or contradictory fare details");
       const dominant = a.fareSegments.find((s) => s.isDominantLeg)!;
-      if (namedCabin[dominant.cabinName] !== familyCabin[a.fareFamilyType])
+      if (
+        !familyCabins[a.fareFamilyType].includes(namedCabin[dominant.cabinName])
+      )
         fail("returned an ambiguous main-flight cabin");
     }
   }
@@ -277,12 +284,12 @@ export function parseVirginNative(
         if (a.availability === "SOLD_OUT") return [];
         const price = a.price!,
           fs = a.fareSegments!,
-          cabin = familyCabin[a.fareFamilyType];
+          cabin = namedCabin[fs.find((s) => s.isDominantLeg)!.cabinName];
         const segmentCabins = fs.map((s) => namedCabin[s.cabinName]);
         return [
           {
             fareId: hash([virginFlightKey(f), a.fareFamilyType, price]),
-            fareName: `${familyName[a.fareFamilyType]}${a.isSaverFare ? " · Saver" : ""}`,
+            fareName: `${fs.find((s) => s.isDominantLeg)!.cabinName}${a.isSaverFare ? " · Saver" : ""}`,
             cabin,
             segmentCabins,
             bookingClasses: fs.map((s) => s.bookingClass),
