@@ -21,6 +21,14 @@ export interface AirportSeed {
 const m = (deg: number) => Math.round(deg * 1_000_000);
 
 export const AIRPORTS: AirportSeed[] = [
+  // Metro search members: OurAirports public-domain airport data, reviewed 2026-09-06.
+  { iata: "LTN", icao: "EGGW", name: "London Luton Airport", city: "London", countryIso2: "GB", region: "EU", latMicro: 51874699, lonMicro: -368333, tzOlson: "Europe/London" },
+  { iata: "STN", icao: "EGSS", name: "London Stansted Airport", city: "London", countryIso2: "GB", region: "EU", latMicro: 51884998, lonMicro: 235000, tzOlson: "Europe/London" },
+  { iata: "SEN", icao: "EGMC", name: "London Southend Airport", city: "London", countryIso2: "GB", region: "EU", latMicro: 51570562, lonMicro: 693627, tzOlson: "Europe/London" },
+  { iata: "BWI", icao: "KBWI", name: "Baltimore/Washington International Thurgood Marshall Airport", city: "Washington", countryIso2: "US", region: "NA", latMicro: 39175400, lonMicro: -76668297, tzOlson: "America/New_York" },
+  { iata: "YTZ", icao: "CYTZ", name: "Billy Bishop Toronto City Airport", city: "Toronto", countryIso2: "CA", region: "NA", latMicro: 43627852, lonMicro: -79395530, tzOlson: "America/Toronto" },
+  { iata: "ITM", icao: "RJOO", name: "Osaka Itami International Airport", city: "Osaka", countryIso2: "JP", region: "AS-NE", latMicro: 34780853, lonMicro: 135440829, tzOlson: "Asia/Tokyo" },
+  { iata: "AEP", icao: "SABE", name: "Aeroparque Jorge Newbery", city: "Buenos Aires", countryIso2: "AR", region: "SA", latMicro: -34559419, lonMicro: -58415536, tzOlson: "America/Argentina/Buenos_Aires" },
   // North America — US
   { iata: "JFK", icao: "KJFK", name: "John F. Kennedy International", city: "New York", countryIso2: "US", region: "NA", latMicro: m(40.6413), lonMicro: m(-73.7781), tzOlson: "America/New_York" },
   { iata: "EWR", icao: "KEWR", name: "Newark Liberty International", city: "Newark", countryIso2: "US", region: "NA", latMicro: m(40.6895), lonMicro: m(-74.1745), tzOlson: "America/New_York" },

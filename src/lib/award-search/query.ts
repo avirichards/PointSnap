@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
+import { cityGroup } from "@/lib/search-places";
 import { PROGRAM_IDS } from "@/lib/programs";
 export const querySchema = z
   .object({
@@ -16,6 +17,7 @@ export const querySchema = z
     departDate: z.iso.date(),
     returnDate: z.iso.date().optional(),
     flexDays: z.coerce.number().int().min(0).max(7).optional(),
+    returnFlexDays: z.coerce.number().int().min(0).max(7).optional(),
     pax: z.coerce.number().int().min(1).max(9).default(1),
     minCabin: z.enum(["Y", "W", "J", "F"]).default("Y"),
   })
@@ -63,5 +65,14 @@ export function queryParams(q: SearchQuery) {
     minCabin: q.minCabin,
     ...(q.flexDays ? { flexDays: String(q.flexDays) } : {}),
     ...(q.returnDate ? { returnDate: q.returnDate } : {}),
+    ...(q.returnDate && q.returnFlexDays !== undefined
+      ? { returnFlexDays: String(q.returnFlexDays) }
+      : {}),
   });
+}
+
+/** A native request always contains physical airport codes, never a metro token. */
+export function assertPhysicalQuery(query: SearchQuery) {
+  if (cityGroup(query.origin) || cityGroup(query.dest))
+    throw new Error("Choose physical airports for each native search.");
 }

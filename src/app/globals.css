@@ -50,88 +50,6 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-:root {
-  --radius: 0.5rem;
-
-  /* Light theme — slate-based */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-
-  /* Cabin tints — Y neutral, W light blue, J stronger purple, F gold */
-  --cabin-y: oklch(0.985 0.004 247);
-  --cabin-y-fg: oklch(0.3 0.02 247);
-  --cabin-w: oklch(0.93 0.05 195);
-  --cabin-w-fg: oklch(0.3 0.12 195);
-  --cabin-j: oklch(0.78 0.12 285);
-  --cabin-j-fg: oklch(0.22 0.12 285);
-  --cabin-f: oklch(0.85 0.13 85);
-  --cabin-f-fg: oklch(0.3 0.16 60);
-
-  /* Freshness — light mode: darker fg tones so text passes WCAG AA against the card bg */
-  --fresh: oklch(0.7 0.18 145);
-  --fresh-fg: oklch(0.4 0.16 145);
-  --stale: oklch(0.78 0.18 75);
-  --stale-fg: oklch(0.45 0.16 75);
-  --stale-critical: oklch(0.65 0.21 25);
-  --stale-critical-fg: oklch(0.45 0.21 25);
-}
-
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.16 0.04 264);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.16 0.04 264);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.551 0.027 264.364);
-
-  /* Cabin tints — dark mode: more vivid (per teardown "make bolder than Seats.aero") */
-  --cabin-y: oklch(0.22 0.02 264);
-  --cabin-y-fg: oklch(0.85 0.02 247);
-  --cabin-w: oklch(0.32 0.1 195);
-  --cabin-w-fg: oklch(0.92 0.1 195);
-  --cabin-j: oklch(0.38 0.18 285);
-  --cabin-j-fg: oklch(0.95 0.08 285);
-  --cabin-f: oklch(0.5 0.18 85);
-  --cabin-f-fg: oklch(0.98 0.12 90);
-
-  --fresh: oklch(0.7 0.2 145);
-  --fresh-fg: oklch(0.85 0.2 145);
-  --stale: oklch(0.78 0.2 80);
-  --stale-fg: oklch(0.88 0.2 80);
-  --stale-critical: oklch(0.62 0.23 25);
-  --stale-critical-fg: oklch(0.78 0.23 25);
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -167,40 +85,6 @@
 }
 
 /* PointSnap: a crisp travel workspace with navy ink and evergreen actions. */
-:root {
-  --background: #f5f7fa;
-  --foreground: #172a3a;
-  --card: #fff;
-  --card-foreground: #172a3a;
-  --primary: #087867;
-  --primary-foreground: #fff;
-  --muted: #edf2f5;
-  --muted-foreground: #617080;
-  --border: #dce4e9;
-  --input: #d5dfe6;
-  --ring: #168b7a;
-  --accent: #e8f3ef;
-  --accent-foreground: #075c4f;
-  --secondary: #e7eeed;
-  --secondary-foreground: #164d43;
-}
-.dark {
-  --background: #101a23;
-  --foreground: #ecf2f6;
-  --card: #162430;
-  --card-foreground: #ecf2f6;
-  --primary: #66dac0;
-  --primary-foreground: #102a24;
-  --muted: #1b2c38;
-  --muted-foreground: #a0b1bf;
-  --border: #2b3c49;
-  --input: #344a5b;
-  --ring: #66dac0;
-  --accent: #203e38;
-  --accent-foreground: #a4eddb;
-  --secondary: #26433b;
-  --secondary-foreground: #b1f0e0;
-}
 .search-workspace {
   max-width: 1440px;
   margin: auto;
@@ -355,31 +239,6 @@ select:focus-visible {
 }
 
 /* Award intelligence: quiet dark surfaces, instrument-like type, clear data. */
-.dark {
-  color-scheme: dark;
-  --background: #091112;
-  --foreground: #e4ece8;
-  --card: #101b1d;
-  --card-foreground: #e4ece8;
-  --popover: #142123;
-  --popover-foreground: #e4ece8;
-  --primary: #b5e6cd;
-  --primary-foreground: #10251c;
-  --muted: #172527;
-  --muted-foreground: #93a6a2;
-  --border: #263436;
-  --input: #344547;
-  --ring: #b5e6cd;
-  --accent: #203730;
-  --accent-foreground: #d4f0df;
-  --secondary: #23362f;
-  --secondary-foreground: #c5e6d4;
-}
-:root:not(.dark) {
-  color-scheme: light;
-  --popover: #fff;
-  --popover-foreground: #172a3a;
-}
 .mono-label {
   font-family: var(--font-jetbrains-mono), monospace;
   font-size: 10px;

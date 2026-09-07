@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { localCalendarDay } from "./calendar";
 import { PROGRAMS } from "./programs";
 export const CURRENCIES = [
   { id: "AMEX_MR", name: "American Express Membership Rewards" },
@@ -41,4 +42,15 @@ export interface WalletCard {
 export interface WalletData {
   entries: WalletEntry[];
   cards: WalletCard[];
+}
+
+/** Expired entries cannot satisfy a booking or transfer shortfall. */
+export function availableWalletBalance(
+  wallet: WalletData | null,
+  asset: string,
+  today = localCalendarDay(),
+): number | undefined {
+  const entry = wallet?.entries.find((e) => e.asset_id === asset);
+  if (!entry) return undefined;
+  return entry.expires_on && entry.expires_on < today ? 0 : entry.balance;
 }

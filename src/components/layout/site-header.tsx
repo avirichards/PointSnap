@@ -1,138 +1,91 @@
 "use client";
-
 import Link from "next/link";
-import { browserSupabase } from "@/lib/supabase/client";
 import { usePathname } from "next/navigation";
-import {
-  Moon,
-  Sun,
-  Wallet,
-  Search,
-  Shield,
-  LogIn,
-  Star,
-  KeyRound,
-  Radar,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
 import { useEffect, useState } from "react";
-
+import {
+  Bookmark,
+  Compass,
+  LogIn,
+  Radar,
+  Search,
+  WalletCards,
+} from "lucide-react";
+import { browserSupabase } from "@/lib/supabase/client";
+import { AppearancePicker } from "./appearance-picker";
 const NAV_ITEMS = [
   { href: "/search", label: "Search", icon: Search },
-  { href: "/sweet-spots", label: "Explore", icon: Star },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/airlines", label: "Programs", icon: KeyRound },
-  { href: "/admin", label: "Admin", icon: Shield },
-] as const;
-
+  { href: "/sweet-spots", label: "Explore", icon: Compass },
+  { href: "/trips", label: "My trips", icon: Bookmark },
+  { href: "/wallet", label: "My points", icon: WalletCards },
+];
 export function SiteHeader() {
   const pathname = usePathname();
-  const [isDark, setIsDark] = useState(true);
   const [account, setAccount] = useState<{
     email: string;
     isStaff: boolean;
   } | null>(null);
   useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/account", { signal: controller.signal, cache: "no-store" })
+    const c = new AbortController();
+    fetch("/api/account", { signal: c.signal, cache: "no-store" })
       .then((r) => r.json())
       .then(setAccount)
       .catch(() => {});
-    return () => controller.abort();
+    return () => c.abort();
   }, []);
-
-  useEffect(() => {
-    // One-time sync of the toggle to the theme class the server already
-    // applied from the `theme` cookie. This is the canonical SSR-safe theme
-    // pattern; the react-hooks rule's suggested alternatives don't apply to a
-    // mount-time DOM read, so the synchronous set is intentional here.
-    const initial = document.documentElement.classList.contains("dark");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsDark(initial);
-  }, []);
-
-  const toggle = () => {
-    const next = !isDark;
-    setIsDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    document.cookie = `theme=${next ? "dark" : "light"}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-  };
-
-  const isActive = (href: string) =>
-    href === "/search"
-      ? pathname === "/" || pathname.startsWith("/search")
-      : pathname.startsWith(href);
-
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex min-h-14 flex-wrap py-2 max-w-screen-2xl items-center gap-4 px-3 md:px-6">
-        <Link
-          href="/search"
-          className="flex items-center gap-2 font-semibold tracking-tight"
-        >
-          <span className="inline-flex size-7 items-center justify-center rounded-md text-primary">
-            <Radar className="size-7 stroke-[1.25]" aria-hidden />
-          </span>
-          <span className="tracking-[.1em] text-sm uppercase">PointSnap</span>
-          <span className="hidden lg:inline text-xs font-normal text-muted-foreground">
-            Award intelligence
-          </span>
+    <header className="site-header">
+      <div className="site-header-inner">
+        <Link href="/search" className="brand" aria-label="PointSnap home">
+          <Radar aria-hidden />
+          <span>PointSnap</span>
         </Link>
-        <nav className="ml-auto flex items-center gap-1" aria-label="Primary">
-          {NAV_ITEMS.filter(
-            (item) => item.href !== "/admin" || account?.isStaff,
-          ).map(({ href, label, icon: Icon }) => (
-            <Button
-              key={href}
-              variant={isActive(href) ? "secondary" : "ghost"}
-              size="default"
-              className="px-3 sm:px-4"
-              asChild
-            >
+        <nav aria-label="Primary" className="primary-nav">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            const active =
+              href === "/search"
+                ? pathname === "/" ||
+                  pathname.startsWith("/search") ||
+                  pathname === "/design-preview"
+                : pathname.startsWith(href);
+            return (
               <Link
+                key={href}
                 href={href}
-                aria-current={isActive(href) ? "page" : undefined}
-                aria-label={label}
+                aria-current={active ? "page" : undefined}
               >
-                <Icon className="size-4" aria-hidden />
-                <span className="hidden sm:inline">{label}</span>
+                <Icon aria-hidden className="size-4" />
+                <span>{label}</span>
               </Link>
-            </Button>
-          ))}
+            );
+          })}
+        </nav>
+        <div className="header-actions">
+          {account?.isStaff && (
+            <Link className="header-coverage" href="/admin">
+              Admin
+            </Link>
+          )}
+          <Link className="header-coverage" href="/airlines">
+            Programs
+          </Link>
+          <AppearancePicker />
           {account ? (
-            <Button
-              variant="outline"
-              aria-label="Sign out"
+            <button
+              className="header-account"
               onClick={async () => {
                 const result = await browserSupabase()?.auth.signOut();
                 if (!result?.error) window.location.assign("/");
               }}
             >
               Sign out
-            </Button>
+            </button>
           ) : (
-            <Button
-              variant="outline"
-              size="default"
-              className="px-3 sm:px-4"
-              asChild
-            >
-              <Link href="/sign-in" aria-label="Sign in">
-                <LogIn className="size-4" aria-hidden />
-                <span className="hidden sm:inline">Sign in</span>
-              </Link>
-            </Button>
+            <Link href="/sign-in" className="header-account">
+              <LogIn aria-hidden className="size-4" />
+              <span>Sign in</span>
+            </Link>
           )}
-          <Toggle
-            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            pressed={isDark}
-            onPressedChange={toggle}
-            size="default"
-          >
-            {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
-          </Toggle>
-        </nav>
+        </div>
       </div>
     </header>
   );

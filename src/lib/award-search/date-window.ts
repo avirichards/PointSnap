@@ -1,3 +1,4 @@
+import { airportPairs } from "@/lib/search-places";
 import type { Coverage } from "./types";
 export interface DaySearch {
   date: string;
@@ -48,13 +49,16 @@ export function summarizeCoverage(days: DaySearch[]): Coverage[] {
     const waiting = days.some(
       (d) => d.state === "queued" || d.state === "searching",
     );
-    const failed =
-      entries.filter((c) => c.state === "error").length +
-      days.filter(
-        (d) =>
-          (d.state === "error" || d.state === "cancelled") &&
-          !d.coverage.some((c) => c.programId === programId),
-      ).length;
+    const failed = days.filter(
+      (d) =>
+        d.state !== "queued" &&
+        d.state !== "searching" &&
+        !d.coverage.some(
+          (c) =>
+            c.programId === programId &&
+            (c.state === "success" || c.state === "empty"),
+        ),
+    ).length;
     const exemplar = known[0] ?? entries[0];
     if (days.length === 1)
       return {
@@ -77,7 +81,58 @@ export function summarizeCoverage(days: DaySearch[]): Coverage[] {
       ...exemplar,
       programId,
       state,
-      message: `${known.length} of ${days.length} dates checked${failed ? `; ${failed} incomplete` : ""}.${exemplar?.message ? " " + exemplar.message : ""}`,
+      message: `${known.length} of ${days.length} ${days.some((d) => "origin" in d) ? "airport/date checks" : "dates"} checked${failed ? `; ${failed} incomplete` : ""}.${exemplar?.message ? " " + exemplar.message : ""}`,
+    };
+  });
+}
+
+export interface SearchTask extends DaySearch {
+  id: string;
+  origin: string;
+  destination: string;
+}
+export function buildSearchTasks(
+  origin: string,
+  destination: string,
+  central: string,
+  flex: number,
+  now = new Date(),
+  min?: string,
+  max?: string,
+): SearchTask[] {
+  const pairs = airportPairs(origin, destination);
+  if (!pairs.length) throw new Error("Choose different airports.");
+  return searchDates(central, flex, now, min, max).flatMap((date) =>
+    pairs.map((pair) => ({
+      id: `${date}:${pair.origin}:${pair.destination}`,
+      date,
+      ...pair,
+      state: "queued" as const,
+      coverage: [],
+    })),
+  );
+}
+export function aggregateSearchDays(tasks: SearchTask[]): DaySearch[] {
+  return [...new Set(tasks.map((t) => t.date))].sort().map((date) => {
+    const matches = tasks.filter((t) => t.date === date);
+    const waiting = matches.some(
+      (t) => t.state === "queued" || t.state === "searching",
+    );
+    const coverage = summarizeCoverage(matches);
+    const incomplete = matches.some(
+      (t) =>
+        t.state === "error" ||
+        t.state === "cancelled" ||
+        t.coverage.some((c) => c.state !== "success" && c.state !== "empty"),
+    );
+    const checked = matches.filter(
+      (t) => t.state === "complete" || t.state === "error",
+    ).length;
+    return {
+      date,
+      state: waiting ? "searching" : incomplete ? "error" : "complete",
+      coverage,
+      message: `${checked} of ${matches.length} airport pairs finished${incomplete ? "; some sources incomplete" : ""}.`,
     };
   });
 }

@@ -1,4 +1,5 @@
 "use client";
+import { FilterPresets } from "./filter-presets";
 import { stopAirports } from "@/lib/award-search/stops";
 
 import { useState, useSyncExternalStore, type ReactNode } from "react";
@@ -254,14 +255,11 @@ export function ResultFilterBar({
   const compact = useSyncExternalStore(watchCompact, isCompact, wideOnServer);
   const [sheet, setSheet] = useState<FilterSection | "all" | null>(null);
   const [popover, setPopover] = useState<FilterSection | null>(null);
-  const [notice, setNotice] = useState("");
   const change = (patch: Patch) => {
     onChange({ ...f, ...patch });
-    setNotice("");
   };
   const reset = () => {
     onChange({ ...defaultFilters(), feeCurrency: f.feeCurrency });
-    setNotice("");
   };
   const toggle = (
     key: "programs" | "airlines" | "cabins" | "days",
@@ -781,42 +779,6 @@ export function ResultFilterBar({
         });
     }
   }
-  function save() {
-    try {
-      localStorage.setItem("pointsnap:result-filters:v1", JSON.stringify(f));
-      setNotice("Filters saved on this device.");
-    } catch {
-      setNotice("This browser couldn’t save your filters.");
-    }
-  }
-  function load() {
-    try {
-      const value = JSON.parse(
-        localStorage.getItem("pointsnap:result-filters:v1") ?? "null",
-      );
-      if (!value || typeof value !== "object") {
-        setNotice("No saved filters yet.");
-        return;
-      }
-      const base = defaultFilters();
-      for (const key of Object.keys(base) as (keyof ResultFilters)[]) {
-        if (
-          Array.isArray(base[key])
-            ? Array.isArray(value[key]) &&
-              value[key].every((v: unknown) => typeof v === "string")
-            : typeof value[key] === typeof base[key]
-        )
-          Object.assign(base, { [key]: value[key] });
-      }
-      base.cabins = base.cabins.filter((c) => CABIN_ORDER.includes(c));
-      base.days = base.days.filter((d) => /^[0-6]$/.test(d));
-      base.feeCurrency = f.feeCurrency;
-      onChange(base);
-      setNotice("Saved filters loaded.");
-    } catch {
-      setNotice("Saved filters couldn’t be read. Save them again.");
-    }
-  }
   return (
     <div className="result-filters">
       <div className="filter-toolbar" aria-label="Filter flights">
@@ -949,22 +911,7 @@ export function ResultFilterBar({
                     </button>
                   ))}
                 </div>
-                <div className="filter-saved">
-                  <Button variant="ghost" onClick={save}>
-                    Save filters
-                  </Button>
-                  <Button variant="ghost" onClick={load}>
-                    Load saved
-                  </Button>
-                </div>
-                {notice && (
-                  <p
-                    role="status"
-                    className="text-sm text-muted-foreground px-2"
-                  >
-                    {notice}
-                  </p>
-                )}
+                <FilterPresets filters={f} onApply={onChange} />
               </>
             ) : (
               sheet && content(sheet)

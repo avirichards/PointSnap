@@ -2,7 +2,7 @@
 
 /**
  * Airport autocomplete combobox. Wraps shadcn's `command` + `popover` to give
- * the search form a typeahead over the seeded ~5,400 airports.
+ * the search form a typeahead over the available airport directory.
  *
  * UX:
  *   - Trigger button styled like an Input (h-11, same border + radius).
@@ -26,8 +26,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { CITY_AIRPORTS, cityGroup } from "@/lib/search-places";
+import { Building2, Plane } from "lucide-react";
 
 export interface AirportOption {
   iata: string;
@@ -67,6 +73,7 @@ export function AirportCombobox({
 
   // Debounced fetch on query change.
   useEffect(() => {
+    abortRef.current?.abort();
     if (!open) return;
     const q = query.trim();
     // Synchronous resets/cache-hits below are intentional derived-state syncs
@@ -86,10 +93,9 @@ export function AirportCombobox({
     }
     setLoading(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+    const ac = new AbortController();
+    abortRef.current = ac;
     const t = setTimeout(async () => {
-      if (abortRef.current) abortRef.current.abort();
-      const ac = new AbortController();
-      abortRef.current = ac;
       try {
         const r = await fetch(
           `/api/airports?q=${encodeURIComponent(q)}&limit=10`,
@@ -98,19 +104,32 @@ export function AirportCombobox({
         if (!r.ok) throw new Error(`fetch ${r.status}`);
         const data = (await r.json()) as AirportOption[];
         cacheRef.current.set(q.toLowerCase(), data);
-        setOptions(data);
+        if (!ac.signal.aborted) setOptions(data);
       } catch (err) {
         if ((err as { name?: string }).name !== "AbortError") {
           setOptions([]);
         }
       } finally {
-        setLoading(false);
+        if (!ac.signal.aborted) setLoading(false);
       }
     }, 150);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      ac.abort();
+    };
   }, [query, open]);
 
+  const cities = CITY_AIRPORTS.filter(
+    (group) =>
+      query.trim().length >= 2 &&
+      `${group.city} ${group.code}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
+  );
+  const selectedCity = cityGroup(value);
   const display = useMemo(() => {
+    const group = cityGroup(value);
+    if (group) return `${value} · ${group.city}`;
     if (!value) return null;
     const opt = labelByIata[value];
     if (opt) return `${value} · ${opt.city}`;
@@ -135,19 +154,28 @@ export function AirportCombobox({
           aria-expanded={open}
           aria-controls={`${id}-listbox`}
           className={cn(
-            "flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-base font-mono uppercase tabular-nums",
+            "airport-trigger",
             "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             !value && "text-muted-foreground",
             className,
           )}
         >
           <span className="truncate text-left normal-case">
-            {display ?? placeholder ?? "Search airports…"}
+            <span className="airport-city">
+              {display?.includes(" · ")
+                ? display.split(" · ").slice(1).join(" · ")
+                : (display ?? placeholder ?? "Search airports…")}
+            </span>
+            <span className="airport-code">
+              {selectedCity
+                ? `${selectedCity.airports.length} airports · ${selectedCity.airports.join(", ")}`
+                : value || "Choose a place"}
+            </span>
           </span>
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="p-0 w-[--radix-popover-trigger-width] min-w-[320px]"
+        className="airport-popover p-0 w-[min(390px,calc(100vw-32px))]"
         align="start"
       >
         <Command
@@ -156,7 +184,7 @@ export function AirportCombobox({
           aria-label="Airport search results"
         >
           <CommandInput
-            placeholder="IATA, city, or name…"
+            placeholder="Search a city or airport…"
             value={query}
             onValueChange={setQuery}
             onKeyDown={(e) => {
@@ -164,6 +192,8 @@ export function AirportCombobox({
               if (
                 e.key === "Enter" &&
                 options.length === 0 &&
+                cities.length === 0 &&
+                !loading &&
                 /^[A-Za-z]{3}$/.test(query.trim())
               ) {
                 e.preventDefault();
@@ -177,21 +207,52 @@ export function AirportCombobox({
                 Searching…
               </div>
             )}
-            {!loading && options.length === 0 && query.trim().length >= 2 && (
-              <CommandEmpty>
-                {/^[A-Za-z]{3}$/.test(query.trim())
-                  ? `No match — press Enter to use "${query.trim().toUpperCase()}" anyway`
-                  : "No airports match — try a different query"}
-              </CommandEmpty>
+            {!loading &&
+              cities.length === 0 &&
+              options.length === 0 &&
+              query.trim().length >= 2 && (
+                <CommandEmpty>
+                  {/^[A-Za-z]{3}$/.test(query.trim())
+                    ? `No match — press Enter to use "${query.trim().toUpperCase()}" anyway`
+                    : "No airports match — try a different query"}
+                </CommandEmpty>
+              )}
+            {cities.length > 0 && (
+              <CommandGroup heading="Cities · search these airports">
+                {cities.map((group) => (
+                  <CommandItem
+                    key={group.code}
+                    value={`city-${group.code}`}
+                    onSelect={() => commit(group.code, null)}
+                  >
+                    <Building2 className="size-4 mr-2 shrink-0" />
+                    <span>
+                      <span className="block font-medium">
+                        {group.city} · {group.airports.length} airports
+                      </span>
+                      <span className="block text-xs text-muted-foreground mt-1">
+                        {group.airports.join(" · ")}
+                      </span>
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {query.trim().length < 2 && (
+              <div className="p-4 text-sm text-muted-foreground">
+                Search by city, airport name or three-letter code. Choose a city
+                to include its listed airports.
+              </div>
             )}
             {options.length > 0 && (
-              <CommandGroup>
+              <CommandGroup heading="Individual airports">
                 {options.map((o) => (
                   <CommandItem
                     key={o.iata}
                     value={o.iata}
                     onSelect={() => commit(o.iata, o)}
                   >
+                    <Plane className="size-3.5 shrink-0 mr-1" />
                     <span className="font-mono tabular-nums w-12 shrink-0">
                       {o.iata}
                     </span>

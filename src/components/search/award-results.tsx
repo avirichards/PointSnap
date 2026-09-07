@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect, Fragment } from "react";
-import { ArrowUpRight, ArrowRight, Plane, Clock3 } from "lucide-react";
+import { ArrowUpRight, Plane, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DisplayCurrencyProvider,
@@ -8,6 +8,12 @@ import {
   Money,
   DisplayPreferences,
 } from "./display-currency";
+import { PointsGuide } from "@/components/points/points-guide";
+import { useSessionPoints } from "@/hooks/use-session-points";
+import { SaveFlight } from "@/components/trips/save-flight";
+import { flexibilityInsight } from "@/lib/award-search/flexibility";
+import { BookingInspector } from "./booking-inspector";
+import { placeName } from "@/lib/search-places";
 import { useCompactResults } from "./result-density";
 import { useTimeFormat } from "./time-preference";
 import { ResultFilterBar } from "./result-filters";
@@ -22,26 +28,20 @@ import {
   type FlightGroup,
   type SortOrder,
 } from "@/lib/award-search/comparison";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AIRLINES } from "@/db/seed/airlines";
-import { PROGRAMS } from "@/lib/programs";
+import { programName } from "@/lib/programs";
 import { CABIN_ORDER, CABIN_LABEL, type Cabin } from "@/lib/types";
 import type {
   AwardResult,
   AwardPrice,
   Coverage,
 } from "@/lib/award-search/types";
-import type { WalletData } from "@/lib/wallet";
+import { availableWalletBalance, type WalletData } from "@/lib/wallet";
 import { centsPerPoint, pointsForParty } from "@/lib/award-search/value";
 import { stopSummary } from "@/lib/award-search/stops";
 import { bookingUrl } from "@/lib/bookingHandoff";
-export const programName = (id: string) =>
-  PROGRAMS.find((p) => p.id === id)?.name ?? id;
+export { programName } from "@/lib/programs";
 const airlines = (row: AwardResult) =>
   [
     ...new Set(
@@ -89,6 +89,8 @@ function Results({
   loading,
   dates = [],
   dayStatus = [],
+  requestedDate,
+  minCabin,
 }: {
   rows: AwardResult[];
   pax: number;
@@ -96,9 +98,11 @@ function Results({
   loading: boolean;
   minCabin: Cabin;
   dates?: string[];
+  requestedDate?: string;
   dayStatus?: { date: string; state: string; message?: string }[];
 }) {
   const fx = useDisplayCurrency();
+  const sessionPoints = useSessionPoints();
   const { time } = useTimeFormat();
   const [compact] = useCompactResults();
   const groups = useMemo(() => groupFlights(allRows), [allRows]);
@@ -106,7 +110,11 @@ function Results({
     () => allRows.filter((r) => r.kind === "calendar"),
     [allRows],
   );
-  const [filters, setFilters] = useState(defaultFilters);
+  const [filters, setFilters] = useState(() => ({
+    ...defaultFilters(),
+    cabins:
+      minCabin === "Y" ? [] : CABIN_ORDER.slice(CABIN_ORDER.indexOf(minCabin)),
+  }));
   const [sort, setSort] = useState<SortOrder>("points"),
     [descending, setDescending] = useState(false),
     [requestedSortCabin, setSortCabin] = useState<Cabin | null>(null);
@@ -129,11 +137,16 @@ function Results({
     return () => c.abort();
   }, []);
   const balances = useMemo(
-    () =>
-      Object.fromEntries(
-        wallet?.entries.map((e) => [e.asset_id, e.balance]) ?? [],
+    () => ({
+      ...Object.fromEntries(
+        wallet?.entries.map((e) => [
+          e.asset_id,
+          availableWalletBalance(wallet, e.asset_id) ?? 0,
+        ]) ?? [],
       ),
-    [wallet],
+      ...sessionPoints.balances,
+    }),
+    [wallet, sessionPoints.balances],
   );
   const matching = useMemo(
     () =>
@@ -159,6 +172,12 @@ function Results({
       ),
     [matching, day, sort, fx.currency, fx.rates, descending, sortCabin],
   );
+  const shownCabins = filters.cabins.length
+    ? CABIN_ORDER.filter((c) => filters.cabins.includes(c))
+    : CABIN_ORDER;
+  const flexibility = requestedDate
+    ? flexibilityInsight(matching, requestedDate, pax, party)
+    : null;
   const currentPage = Math.min(
       page,
       Math.max(0, Math.ceil(visible.length / pageSize) - 1),
@@ -168,7 +187,10 @@ function Results({
     selectedOffers =
       selectedGroup?.offers.filter((o) => o.price.cabin === selected?.cabin) ??
       [];
-  const detailedRow = selectedOffers.find((o) => o.row.id === detail)?.row;
+  const detailedRow = (
+    selectedOffers.find((o) => `${o.row.programId}:${o.row.id}` === detail) ??
+    [...selectedOffers].sort((a, b) => compareOffers(a, b, "points"))[0]
+  )?.row;
   const checked = new Set(groups.flatMap((g) => g.programs)).size;
   function changeSort(next: SortOrder, cabin: Cabin | null = null) {
     if (sort === next && sortCabin === cabin) setDescending(!descending);
@@ -325,7 +347,7 @@ function Results({
         matchingCount={visible.length}
       />
       {dates.length > 1 && (
-        <div className="rounded-xl border bg-card p-3">
+        <div className="date-window rounded-xl border bg-card p-3">
           <div className="flex items-center justify-between gap-3 mb-3">
             <span className="text-sm font-medium">Your date window</span>
             <button
@@ -338,7 +360,7 @@ function Results({
               All {dates.length} days
             </button>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="date-window-days flex gap-2 overflow-x-auto pb-1">
             {dates.map((date) => {
               const lowest = lowestFareForDate(matching, date, pax, party);
               const status = dayStatus.find((d) => d.date === date);
@@ -444,31 +466,114 @@ function Results({
           </button>
         </div>
       </div>
-      <div className="rounded-xl border bg-card overflow-hidden hidden md:block">
-        <div className="overflow-x-auto">
-          <table className="award-table w-full text-sm min-w-[1000px]">
-            <caption className="sr-only">
-              Award itineraries with booking programs grouped together. Click a
-              column heading to sort, or a cabin price to compare booking
-              options.
-            </caption>
-            <thead className="text-xs text-muted-foreground border-b bg-muted/20">
-              <tr>
-                {header("Flight / programs", "programs")}
-                {header("Departs", "depart")}
-                {header("Arrives", "arrive")}
-                {header("Duration", "duration")}
-                {CABIN_ORDER.map((c) => (
-                  <Fragment key={c}>
-                    {header(CABIN_LABEL[c], "points", c)}
-                  </Fragment>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {shown.map((g) => (
-                <tr key={g.id} className="hover:bg-muted/10">
-                  <td className="px-4 py-5 min-w-44">
+      {flexibility && (
+        <p className="flexibility-insight">
+          <span>Flexibility found</span> {points(flexibility.saved)} fewer
+          points {party ? "for your party" : "per person"} on{" "}
+          {flexibility.alternative.row.date}, with{" "}
+          {programName(flexibility.alternative.row.programId)} in{" "}
+          {CABIN_LABEL[flexibility.alternative.price.cabin].toLowerCase()}.
+          Compared with your requested date among matching fares; fees and
+          conditions may differ.
+        </p>
+      )}
+      <div
+        className={`results-layout ${selectedGroup ? "inspector-open" : ""}`}
+        data-cabin-count={shownCabins.length}
+      >
+        <div className="results-list space-y-4 min-w-0">
+          <div className="results-table rounded-xl border bg-card overflow-hidden hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="award-table w-full text-sm min-w-[1000px]">
+                <caption className="sr-only">
+                  Award itineraries with booking programs grouped together.
+                  Click a column heading to sort, or a cabin price to compare
+                  booking options.
+                </caption>
+                <thead className="text-xs text-muted-foreground border-b bg-muted/20">
+                  <tr>
+                    {header("Flight / programs", "programs")}
+                    {header("Departs", "depart")}
+                    {header("Arrives", "arrive")}
+                    {header("Duration", "duration")}
+                    {shownCabins.map((c) => (
+                      <Fragment key={c}>
+                        {header(CABIN_LABEL[c], "points", c)}
+                      </Fragment>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {shown.map((g) => (
+                    <tr
+                      key={g.id}
+                      className={`hover:bg-muted/10 ${selected?.id === g.id ? "selected-flight" : ""}`}
+                    >
+                      <td className="px-4 py-5 min-w-44">
+                        <p className="font-medium">
+                          {airlines(g.row) ||
+                            g.row.segments.map((s) => s.airline).join(" + ")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {g.row.segments
+                            .map((s) => s.flightNumber)
+                            .join(" · ")}
+                        </p>
+                        {surfaceTravel(g.row) && (
+                          <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+                            {surfaceTravel(g.row)}
+                          </p>
+                        )}
+                        <p className="booking-count text-xs text-primary mt-2">
+                          {g.programs.length} booking program
+                          {g.programs.length > 1 ? "s" : ""} · {g.offers.length}{" "}
+                          fare{g.offers.length > 1 ? "s" : ""}
+                        </p>
+                      </td>
+                      <td className="px-3 py-4">
+                        <p className="font-medium tabular-nums">
+                          {time(g.row.segments[0]?.departure)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {g.row.origin} · {g.row.date.slice(5)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-4">
+                        <p className="font-medium tabular-nums">
+                          {time(g.row.segments.at(-1)?.arrival ?? null)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {g.row.destination} ·{" "}
+                          {g.row.segments.at(-1)?.arrival?.slice(5, 10) ?? "—"}
+                        </p>
+                      </td>
+                      <td className="px-3 py-4">
+                        <p className="whitespace-nowrap">
+                          {duration(g.row.duration)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {stopSummary(g.row)}
+                        </p>
+                      </td>
+                      {shownCabins.map((c) => (
+                        <td key={c} className="px-2 py-3">
+                          {cell(g, c)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="flight-card-list grid gap-3 md:hidden">
+            {shown.map((g) => (
+              <article
+                key={g.id}
+                className={`flight-card rounded-xl border bg-card p-4 ${selected?.id === g.id ? "selected-flight" : ""}`}
+              >
+                <div className="flex justify-between gap-2">
+                  <div>
                     <p className="font-medium">
                       {airlines(g.row) ||
                         g.row.segments.map((s) => s.airline).join(" + ")}
@@ -476,311 +581,254 @@ function Results({
                     <p className="text-xs text-muted-foreground mt-1">
                       {g.row.segments.map((s) => s.flightNumber).join(" · ")}
                     </p>
-                    {surfaceTravel(g.row) && (
-                      <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
-                        {surfaceTravel(g.row)}
-                      </p>
-                    )}
-                    <p className="booking-count text-xs text-primary mt-2">
-                      {g.programs.length} booking program
-                      {g.programs.length > 1 ? "s" : ""} · {g.offers.length}{" "}
-                      fare{g.offers.length > 1 ? "s" : ""}
-                    </p>
-                  </td>
-                  <td className="px-3 py-4">
-                    <p className="font-medium tabular-nums">
-                      {time(g.row.segments[0]?.departure)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {g.row.origin} · {g.row.date.slice(5)}
-                    </p>
-                  </td>
-                  <td className="px-3 py-4">
-                    <p className="font-medium tabular-nums">
-                      {time(g.row.segments.at(-1)?.arrival ?? null)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {g.row.destination} ·{" "}
-                      {g.row.segments.at(-1)?.arrival?.slice(5, 10) ?? "—"}
-                    </p>
-                  </td>
-                  <td className="px-3 py-4">
-                    <p className="whitespace-nowrap">
-                      {duration(g.row.duration)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {stopSummary(g.row)}
-                    </p>
-                  </td>
-                  {CABIN_ORDER.map((c) => (
-                    <td key={c} className="px-2 py-3">
-                      {cell(g, c)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div className="grid gap-3 md:hidden">
-        {shown.map((g) => (
-          <article key={g.id} className="rounded-xl border bg-card p-4">
-            <div className="flex justify-between gap-2">
-              <div>
-                <p className="font-medium">
-                  {airlines(g.row) ||
-                    g.row.segments.map((s) => s.airline).join(" + ")}
+                  </div>
+                  <span className="text-xs text-primary">
+                    {g.programs.length} program
+                    {g.programs.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+                {surfaceTravel(g.row) && (
+                  <p className="text-xs text-amber-600 dark:text-amber-300 mt-2">
+                    {surfaceTravel(g.row)}
+                  </p>
+                )}
+                <p className="mt-4 text-lg tabular-nums">
+                  {time(g.row.segments[0]?.departure)} →{" "}
+                  {time(g.row.segments.at(-1)?.arrival ?? null)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {g.row.segments.map((s) => s.flightNumber).join(" · ")}
+                  {g.row.date} · {duration(g.row.duration)} ·{" "}
+                  {stopSummary(g.row)}
                 </p>
-              </div>
-              <span className="text-xs text-primary">
-                {g.programs.length} program{g.programs.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            {surfaceTravel(g.row) && (
-              <p className="text-xs text-amber-600 dark:text-amber-300 mt-2">
-                {surfaceTravel(g.row)}
-              </p>
-            )}
-            <p className="mt-4 text-lg tabular-nums">
-              {time(g.row.segments[0]?.departure)} →{" "}
-              {time(g.row.segments.at(-1)?.arrival ?? null)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {g.row.date} · {duration(g.row.duration)} · {stopSummary(g.row)}
-            </p>
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              {CABIN_ORDER.filter((c) => best(g, c)).map((c) => (
-                <div key={c}>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {CABIN_LABEL[c]}
-                  </p>
-                  {cell(g, c)}
+                <div className="flight-card-prices grid grid-cols-2 gap-2 mt-4">
+                  {CABIN_ORDER.filter((c) => best(g, c)).map((c) => (
+                    <div key={c}>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {CABIN_LABEL[c]}
+                      </p>
+                      {cell(g, c)}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </article>
+            ))}
+          </div>
+          {loading && !groups.length && (
+            <div className="rounded-xl border p-8 space-y-4" role="status">
+              <div className="h-20 rounded-lg bg-muted animate-pulse motion-reduce:animate-none" />
+              <p className="text-sm text-muted-foreground">
+                Checking connected award sources. Flights appear as each source
+                responds.
+              </p>
             </div>
-          </article>
-        ))}
-      </div>
-      {loading && !groups.length && (
-        <div className="rounded-xl border p-8 space-y-4" role="status">
-          <div className="h-20 rounded-lg bg-muted animate-pulse motion-reduce:animate-none" />
-          <p className="text-sm text-muted-foreground">
-            Checking connected award sources. Flights appear as each source
-            responds.
-          </p>
-        </div>
-      )}
-      {!loading && !visible.length && (
-        <div className="rounded-xl border p-10 text-center space-y-3">
-          <Plane className="size-7 mx-auto text-muted-foreground" />
-          <p className="font-medium">
-            {groups.length
-              ? "No fares match these filters."
-              : "No individual flights returned."}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {groups.length
-              ? "Clear a filter or choose another date."
-              : "Check source coverage below. Unavailable programs have not confirmed an absence of seats."}
-          </p>
-          {groups.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setFilters(defaultFilters());
-                setDay("all");
-              }}
-            >
-              Reset filters & dates
-            </Button>
+          )}
+          {!loading && !visible.length && (
+            <div className="rounded-xl border p-10 text-center space-y-3">
+              <Plane className="size-7 mx-auto text-muted-foreground" />
+              <p className="font-medium">
+                {groups.length
+                  ? "No fares match these filters."
+                  : "No individual flights returned."}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {groups.length
+                  ? "Clear a filter or choose another date."
+                  : "Check source coverage below. Unavailable programs have not confirmed an absence of seats."}
+              </p>
+              {groups.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilters(defaultFilters());
+                    setDay("all");
+                  }}
+                >
+                  Reset filters & dates
+                </Button>
+              )}
+            </div>
+          )}
+          {visible.length > 0 && (
+            <div className="flex flex-wrap justify-between items-center gap-3 text-sm">
+              <span className="text-muted-foreground">
+                {currentPage * pageSize + 1}–
+                {Math.min((currentPage + 1) * pageSize, visible.length)} of{" "}
+                {visible.length} itineraries. Every matching fare remains
+                available.
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  aria-label="Itineraries per page"
+                  className="rounded-md border bg-background p-2"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(0);
+                  }}
+                >
+                  {[25, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {n} / page
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 0}
+                  onClick={() => setPage(currentPage - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={(currentPage + 1) * pageSize >= visible.length}
+                  onClick={() => setPage(currentPage + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {calendars.length > 0 && (
+            <CalendarSummaries
+              rows={calendars.filter((r) => day === "all" || r.date === day)}
+              pax={pax}
+            />
           )}
         </div>
-      )}
-      {visible.length > 0 && (
-        <div className="flex flex-wrap justify-between items-center gap-3 text-sm">
-          <span className="text-muted-foreground">
-            {currentPage * pageSize + 1}–
-            {Math.min((currentPage + 1) * pageSize, visible.length)} of{" "}
-            {visible.length} itineraries. Every matching fare remains available.
-          </span>
-          <div className="flex items-center gap-2">
-            <select
-              aria-label="Itineraries per page"
-              className="rounded-md border bg-background p-2"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(0);
-              }}
-            >
-              {[25, 50, 100].map((n) => (
-                <option key={n} value={n}>
-                  {n} / page
-                </option>
-              ))}
-            </select>
-            <Button
-              variant="outline"
-              disabled={currentPage === 0}
-              onClick={() => setPage(currentPage - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              disabled={(currentPage + 1) * pageSize >= visible.length}
-              onClick={() => setPage(currentPage + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
-      {calendars.length > 0 && (
-        <CalendarSummaries
-          rows={calendars.filter((r) => day === "all" || r.date === day)}
-          pax={pax}
-        />
-      )}
-      <Dialog
-        open={!!selectedGroup}
-        onOpenChange={(o) => {
-          if (!o) {
+        <BookingInspector
+          open={!!selectedGroup}
+          onClose={() => {
             setSelected(null);
             setDetail(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-          {selectedGroup &&
-            selected &&
-            (detailedRow ? (
-              <>
-                <Button
-                  variant="ghost"
-                  className="justify-start mr-8"
-                  onClick={() => setDetail(null)}
-                >
-                  ← Compare booking programs
-                </Button>
-                <Details
-                  key={`${detail}:${selected.cabin}`}
-                  row={{
-                    ...detailedRow,
-                    fares: selectedOffers
-                      .filter((o) => o.row.id === detail)
-                      .map((o) => o.price),
-                    prices: {
-                      [selected.cabin]: selectedOffers
-                        .filter((o) => o.row.id === detail)
-                        .sort((a, b) => a.price.points - b.price.points)[0]
-                        ?.price,
-                    },
-                  }}
-                  cabin={selected.cabin}
-                  pax={pax}
-                  wallet={wallet}
-                />
-              </>
-            ) : (
-              <div className="space-y-5">
-                <div>
-                  <p className="eyebrow">COMPARE WAYS TO BOOK</p>
-                  <DialogTitle className="text-2xl mt-2">
-                    {selectedGroup.row.origin} → {selectedGroup.row.destination}
-                  </DialogTitle>
-                  <DialogDescription className="mt-2">
-                    {selectedGroup.row.date} · {CABIN_LABEL[selected.cabin]} ·{" "}
-                    {selectedGroup.row.segments
-                      .map((s) => s.flightNumber)
-                      .join(" + ")}
-                    . Same flights; each program sets its own price and
-                    conditions.
-                  </DialogDescription>
+          }}
+        >
+          {selectedGroup && selected && detailedRow && (
+            <div className="space-y-5">
+              <div className="flight-ticket">
+                <p className="eyebrow">YOUR SELECTED FLIGHT</p>
+                <DialogTitle className="ticket-airline">
+                  {airlines(selectedGroup.row)}
+                </DialogTitle>
+                <DialogDescription className="mt-2">
+                  {CABIN_LABEL[selected.cabin]} ·{" "}
+                  {stopSummary(selectedGroup.row)} ·{" "}
+                  {selectedGroup.row.segments
+                    .map((s) => s.flightNumber)
+                    .join(" + ")}
+                </DialogDescription>
+                <div className="ticket-route">
+                  <div>
+                    <strong>{selectedGroup.row.origin}</strong>
+                    <span>{placeName(selectedGroup.row.origin)}</span>
+                  </div>
+                  <div className="ticket-route-line">
+                    <Plane className="size-5" />
+                  </div>
+                  <div>
+                    <strong>{selectedGroup.row.destination}</strong>
+                    <span>{placeName(selectedGroup.row.destination)}</span>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {[...new Set(selectedOffers.map((o) => o.row.id))].map(
-                    (id) => {
-                      const offers = selectedOffers
-                          .filter((o) => o.row.id === id)
-                          .sort((a, b) => compareOffers(a, b, "points")),
-                        first = offers[0],
-                        p = first.price,
-                        value = centsPerPoint(p);
-                      return (
-                        <article key={id} className="rounded-xl border p-4">
-                          <div className="flex flex-wrap gap-4 justify-between">
-                            <div>
-                              <h3 className="font-medium">
-                                {programName(first.row.programId)}
-                              </h3>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {offers.length} matching fare
-                                {offers.length > 1 ? "s" : ""} ·{" "}
-                                {first.row.freshness === "live"
-                                  ? "Checked live"
-                                  : "Cached observation"}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {first.row.source} ·{" "}
-                                {new Date(
-                                  first.row.observedAt,
-                                ).toLocaleString()}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <strong className="text-xl tabular-nums">
-                                {points(
-                                  party ? pointsForParty(p, pax) : p.points,
-                                )}
-                              </strong>
-                              <span className="text-xs text-muted-foreground ml-1">
-                                points{offers.length > 1 ? " from" : ""}
-                              </span>
-                              <p className="text-sm mt-1">
-                                <Money price={p} multiplier={party ? pax : 1} />
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {party ? `For ${pax} adults` : "Per person"}
-                                {value !== null
-                                  ? ` · ${value.toFixed(2)}¢ USD / point`
-                                  : ""}
-                              </p>
-                            </div>
-                          </div>
-                          {p.eligibility && (
-                            <p className="text-xs text-amber-700 dark:text-amber-300 mt-3">
-                              {p.eligibility.label} · confirm your eligibility
-                              with United
-                            </p>
-                          )}
-                          <Button
-                            className="mt-4 w-full"
-                            variant="outline"
-                            onClick={() => setDetail(id)}
-                          >
-                            Compare {offers.length} fare
-                            {offers.length > 1 ? "s" : ""} & booking details{" "}
-                            <ArrowRight className="size-4" />
-                          </Button>
-                        </article>
-                      );
-                    },
-                  )}
+                <div className="ticket-schedule">
+                  <div>
+                    <strong>
+                      {time(selectedGroup.row.segments[0]?.departure)}
+                    </strong>
+                    <span>{selectedGroup.row.date}</span>
+                  </div>
+                  <div>
+                    <strong>
+                      {time(selectedGroup.row.segments.at(-1)?.arrival ?? null)}
+                    </strong>
+                    <span>
+                      {selectedGroup.row.segments
+                        .at(-1)
+                        ?.arrival?.slice(0, 10) ?? "Arrival date not reported"}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Only programs and fares returned by this search are shown.
-                  Availability can change before ticketing; confirm before
-                  transferring points.
-                </p>
               </div>
-            ))}
-        </DialogContent>
-      </Dialog>
+              <fieldset className="booking-programs">
+                <legend className="text-lg font-semibold">
+                  Choose how to book
+                </legend>
+                <p className="text-sm text-muted-foreground mb-3 mt-1">
+                  Same flight. Different points programs.
+                </p>
+                {[
+                  ...new Set(
+                    selectedOffers.map((o) => `${o.row.programId}:${o.row.id}`),
+                  ),
+                ].map((id) => {
+                  const offers = selectedOffers
+                    .filter((o) => `${o.row.programId}:${o.row.id}` === id)
+                    .sort((a, b) => compareOffers(a, b, "points"));
+                  const first = offers[0];
+                  const checked =
+                    `${detailedRow.programId}:${detailedRow.id}` === id;
+                  return (
+                    <label
+                      key={id}
+                      className={`program-choice ${checked ? "is-selected" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="booking-program"
+                        checked={checked}
+                        onChange={() => setDetail(id)}
+                      />
+                      <span>
+                        <strong>{programName(first.row.programId)}</strong>
+                        <small>
+                          {offers.length} fare{offers.length > 1 ? "s" : ""}
+                          {first.price.eligibility
+                            ? ` · ${first.price.eligibility.label}`
+                            : ""}
+                        </small>
+                      </span>
+                      <span className="program-quote">
+                        {offers.length > 1 && <small>From</small>}
+                        <strong>
+                          {points(
+                            party
+                              ? pointsForParty(first.price, pax)
+                              : first.price.points,
+                          )}
+                        </strong>
+                        <small>
+                          +{" "}
+                          <Money
+                            price={first.price}
+                            multiplier={party ? pax : 1}
+                          />
+                        </small>
+                      </span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+              <Details
+                key={`${detailedRow.programId}:${detailedRow.id}:${selected.cabin}`}
+                row={{
+                  ...detailedRow,
+                  fares: selectedOffers
+                    .filter((o) => o.row === detailedRow)
+                    .map((o) => o.price),
+                  prices: {
+                    [selected.cabin]: selectedOffers
+                      .filter((o) => o.row === detailedRow)
+                      .sort((a, b) => compareOffers(a, b, "points"))[0]?.price,
+                  },
+                }}
+                cabin={selected.cabin}
+                pax={pax}
+                wallet={wallet}
+              />
+            </div>
+          )}
+        </BookingInspector>
+      </div>
     </section>
   );
 }
@@ -887,9 +935,11 @@ function Details({
 }) {
   const { time, format: timeFormat } = useTimeFormat();
   const [copied, setCopied] = useState(false);
-  const [fareId, setFareId] = useState(row.prices[cabin]?.fareId);
   const options = row.fares?.filter((p) => p.cabin === cabin) ?? [];
-  const price = options.find((p) => p.fareId === fareId) ?? row.prices[cabin]!;
+  const [fareIndex, setFareIndex] = useState(() =>
+    Math.max(0, options.indexOf(row.prices[cabin]!)),
+  );
+  const price = options[fareIndex] ?? row.prices[cabin]!;
   const continueUrl = ["ET_SHEBAMILES", "EY_GUEST"].includes(row.programId)
     ? bookingUrl(row.programId, {
         origin: row.origin,
@@ -900,42 +950,25 @@ function Details({
       })
     : row.bookingUrl;
   const value = centsPerPoint(price);
-  const balance = wallet?.entries.find(
-    (e) => e.asset_id === row.programId,
-  )?.balance;
+  const balance = availableWalletBalance(wallet, row.programId);
   return (
     <div className="space-y-6">
-      <div>
-        <p className="eyebrow">{programName(row.programId)}</p>
-        <DialogTitle className="text-2xl mt-2">
-          {row.origin} <ArrowRight className="inline size-5 mx-2" />
-          {row.destination}
-        </DialogTitle>
-        <DialogDescription className="mt-2">
-          {row.date} ·{" "}
-          {price.cabinUnconfirmed
-            ? "Seat type not confirmed"
-            : CABIN_LABEL[cabin]}{" "}
-          · {pax} passenger
-          {pax > 1 ? "s" : ""} · one way
-        </DialogDescription>
-      </div>
       {options.length > 0 && (
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium mb-2">
             {options.length === 1 ? "Award fare" : "Choose an award fare"}
           </legend>
-          {options.map((option) => (
+          {options.map((option, index) => (
             <label
-              key={option.fareId}
-              className={`flex items-center gap-3 rounded-lg border p-3 min-h-11 cursor-pointer ${price.fareId === option.fareId ? "border-primary/50 bg-primary/5" : ""}`}
+              key={`${option.fareId ?? "fare"}:${index}`}
+              className={`flex items-center gap-3 rounded-lg border p-3 min-h-11 cursor-pointer ${price === option ? "border-primary/50 bg-primary/5" : ""}`}
             >
               <input
                 type="radio"
                 name="award-fare"
-                checked={price.fareId === option.fareId}
+                checked={price === option}
                 onChange={() => {
-                  setFareId(option.fareId);
+                  setFareIndex(index);
                   setCopied(false);
                 }}
                 className="accent-primary"
@@ -959,7 +992,7 @@ function Details({
           ))}
         </fieldset>
       )}
-      <div className="rounded-xl bg-muted/50 p-5 grid gap-4 grid-cols-2">
+      <div className="ticket-price rounded-xl bg-muted/50 p-5 grid gap-4 grid-cols-2">
         <div>
           <p className="text-sm text-muted-foreground">Points for your party</p>
           <p className="text-2xl font-semibold mt-1 tabular-nums">
@@ -973,6 +1006,19 @@ function Details({
           </p>
         </div>
       </div>
+      <div className="booking-primary space-y-3">
+        <Button asChild className="h-12 w-full">
+          <a href={continueUrl} target="_blank" rel="noopener noreferrer">
+            Continue with airline <ArrowUpRight className="size-4" />
+          </a>
+        </Button>
+        <PointsGuide row={row} price={price} pax={pax} wallet={wallet} />
+        <SaveFlight row={row} price={price} pax={pax} />
+        <p className="text-xs text-muted-foreground">
+          The airline will confirm availability and the final price. No points
+          are moved here.
+        </p>
+      </div>
       {price.eligibility && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           <p className="font-medium">{price.eligibility.label}</p>
@@ -985,14 +1031,25 @@ function Details({
           before booking.
         </p>
       )}
-      {price.bookingNotes?.map((note) => (
-        <p
-          key={note}
-          className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
-        >
-          {note}
-        </p>
-      ))}
+      {(!!price.bookingNotes?.length || price.refundable !== undefined) && (
+        <section className="fare-conditions">
+          <h3>Fare conditions</h3>
+          <ul>
+            {price.refundable !== undefined && (
+              <li>
+                {price.refundable === null
+                  ? "Refundability not reported"
+                  : price.refundable
+                    ? "Refundable according to the source; check applicable fees."
+                    : "Nonrefundable according to the source."}
+              </li>
+            )}
+            {price.bookingNotes?.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </section>
+      )}
       {row.stopDetailsUnconfirmed && (
         <p className="rounded-lg border p-3 text-sm text-muted-foreground">
           This source reports connections but may omit intermediate stops on the
@@ -1154,11 +1211,6 @@ function Details({
         </p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button asChild className="h-11 flex-1">
-          <a href={continueUrl} target="_blank" rel="noopener noreferrer">
-            Continue with airline <ArrowUpRight className="size-4" />
-          </a>
-        </Button>
         <Button
           variant="outline"
           className="h-11"

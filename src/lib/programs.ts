@@ -305,3 +305,7 @@ export function iconColorForProgram(id: ProgramId): string {
   }
   return PALETTE[Math.abs(hash) % PALETTE.length] ?? PALETTE[0]!;
 }
+
+/** Display label shared by product surfaces. */
+export const programName = (id: string) =>
+  PROGRAMS.find((program) => program.id === id)?.name ?? id;

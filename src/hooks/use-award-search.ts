@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { rememberSearch } from "@/lib/search-history";
 import type { AwardResult } from "@/lib/award-search/types";
 import { readEvents } from "@/lib/award-search/sse";
 import {
-  searchDates,
+  aggregateSearchDays,
+  buildSearchTasks,
   summarizeCoverage,
-  type DaySearch,
+  type SearchTask,
 } from "@/lib/award-search/date-window";
 export function useAwardSearch(params: string | null) {
   const [rows, setRows] = useState<AwardResult[]>([]),
-    [days, setDays] = useState<DaySearch[]>([]),
+    [tasks, setTasks] = useState<SearchTask[]>([]),
     [loading, setLoading] = useState(!!params),
     [error, setError] = useState(""),
     [duration, setDuration] = useState<number | null>(null),
@@ -21,43 +23,49 @@ export function useAwardSearch(params: string | null) {
     active.current = controller;
     const started = Date.now();
     const update = () => !controller.signal.aborted;
-    const patch = (date: string, fn: (d: DaySearch) => DaySearch) => {
+    const patch = (id: string, fn: (d: SearchTask) => SearchTask) => {
       if (update())
-        setDays((previous) =>
-          previous.map((d) => (d.date === date ? fn(d) : d)),
-        );
+        setTasks((previous) => previous.map((d) => (d.id === id ? fn(d) : d)));
     };
     async function run() {
+      const observed = new Map<string, AwardResult>();
       setRows([]);
-      setDays([]);
+      setTasks([]);
       setError("");
       setDuration(null);
       setLoading(true);
       const base = new URLSearchParams(params!);
       const central = base.get("departDate")!,
         flex = Number(base.get("flexDays") ?? 0);
-      const dates = searchDates(
+      const initial = buildSearchTasks(
+        base.get("origin")!,
+        base.get("dest")!,
         central,
         flex,
         new Date(),
         base.get("windowMin") ?? undefined,
         base.get("windowMax") ?? undefined,
       );
-      setDays(dates.map((date) => ({ date, state: "queued", coverage: [] })));
-      // Start the requested day first, then fill neighboring days. Two date searches maximum.
-      const queue = [...dates].sort(
+      setTasks(initial);
+      // One shared queue bounds city x date expansion to two physical searches.
+      const queue = [...initial].sort(
         (a, b) =>
-          Math.abs(Date.parse(a) - Date.parse(central)) -
-            Math.abs(Date.parse(b) - Date.parse(central)) || a.localeCompare(b),
+          Math.abs(Date.parse(a.date) - Date.parse(central)) -
+            Math.abs(Date.parse(b.date) - Date.parse(central)) ||
+          a.date.localeCompare(b.date),
       );
       let index = 0;
       async function worker() {
         while (index < queue.length && update()) {
-          const date = queue[index++];
+          const { id, date, origin, destination } = queue[index++];
           let complete = false;
-          patch(date, (d) => ({ ...d, state: "searching" }));
+          patch(id, (d) => ({ ...d, state: "searching" }));
           const query = new URLSearchParams(base);
           query.set("departDate", date);
+          query.set("origin", origin);
+          query.set("dest", destination);
+          query.delete("returnDate");
+          query.delete("returnFlexDays");
           query.delete("flexDays");
           query.delete("windowMin");
           query.delete("windowMax");
@@ -74,23 +82,38 @@ export function useAwardSearch(params: string | null) {
             await readEvents(res.body, (event) => {
               if (!update()) return;
               if (event.type === "meta")
-                patch(date, (d) => ({
+                patch(id, (d) => ({
                   ...d,
                   coverage: event.programs.map((programId) => ({
                     programId,
                     state: "pending",
                   })),
                 }));
-              if (event.type === "results")
+              if (event.type === "results") {
+                event.rows.forEach((r) =>
+                  observed.set(
+                    `${r.programId}:${r.origin}:${r.destination}:${r.date}:${r.id}`,
+                    r,
+                  ),
+                );
                 setRows((previous) => {
                   const map = new Map(
-                    previous.map((r) => [`${r.date}:${r.id}`, r]),
+                    previous.map((r) => [
+                      `${r.programId}:${r.origin}:${r.destination}:${r.date}:${r.id}`,
+                      r,
+                    ]),
                   );
-                  event.rows.forEach((r) => map.set(`${r.date}:${r.id}`, r));
+                  event.rows.forEach((r) =>
+                    map.set(
+                      `${r.programId}:${r.origin}:${r.destination}:${r.date}:${r.id}`,
+                      r,
+                    ),
+                  );
                   return [...map.values()];
                 });
+              }
               if (event.type === "coverage")
-                patch(date, (d) => ({
+                patch(id, (d) => ({
                   ...d,
                   coverage: [
                     ...d.coverage.filter(
@@ -103,7 +126,7 @@ export function useAwardSearch(params: string | null) {
               if (event.type === "complete") complete = true;
             });
             if (!complete) throw new Error("Search connection ended early.");
-            patch(date, (d) => ({
+            patch(id, (d) => ({
               ...d,
               state: d.coverage.some((c) => c.state === "error")
                 ? "error"
@@ -118,7 +141,7 @@ export function useAwardSearch(params: string | null) {
             if (update()) {
               const message =
                 e instanceof Error ? e.message : "Search interrupted.";
-              patch(date, (d) => ({
+              patch(id, (d) => ({
                 ...d,
                 state: "error",
                 message,
@@ -127,7 +150,7 @@ export function useAwardSearch(params: string | null) {
                 ),
               }));
               setError(
-                `${date}: ${message} Other returned results remain available.`,
+                `${origin}–${destination}, ${date}: ${message} Other returned results remain available.`,
               );
             }
           }
@@ -136,6 +159,7 @@ export function useAwardSearch(params: string | null) {
       await Promise.all(
         Array.from({ length: Math.min(2, queue.length) }, worker),
       );
+      rememberSearch(params!, [...observed.values()]);
       if (update()) {
         setLoading(false);
         setDuration(Date.now() - started);
@@ -153,7 +177,7 @@ export function useAwardSearch(params: string | null) {
   const stop = useCallback(() => {
     active.current?.abort();
     setLoading(false);
-    setDays((previous) =>
+    setTasks((previous) =>
       previous.map((d) =>
         d.state === "queued" || d.state === "searching"
           ? {
@@ -170,7 +194,8 @@ export function useAwardSearch(params: string | null) {
     );
     setError("Search stopped. Results already received remain available.");
   }, []);
-  const coverage = useMemo(() => summarizeCoverage(days), [days]);
+  const coverage = useMemo(() => summarizeCoverage(tasks), [tasks]);
+  const days = useMemo(() => aggregateSearchDays(tasks), [tasks]);
   return {
     rows,
     coverage,
@@ -180,6 +205,7 @@ export function useAwardSearch(params: string | null) {
     retry,
     stop,
     days,
+    tasks,
     dates: days.map((d) => d.date),
   };
 }

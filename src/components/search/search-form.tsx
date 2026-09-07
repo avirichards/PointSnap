@@ -1,11 +1,30 @@
 "use client";
 import { useMemo, useState, type FormEvent } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  ArrowLeftRight,
+  ArrowRight,
+  Armchair,
+  ChevronDown,
+  Minus,
+  Plus,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftRight, ArrowRight, Loader2 } from "lucide-react";
-import type { Cabin, SearchQuery } from "@/lib/types";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  CABIN_LABEL,
+  CABIN_ORDER,
+  type Cabin,
+  type SearchQuery,
+} from "@/lib/types";
+import { airportPairs } from "@/lib/search-places";
+import { AIRPORTS } from "@/db/seed/airports";
 import { AirportCombobox } from "./airport-combobox";
+import { DatePicker } from "./date-picker";
 interface Props {
   initialQuery: SearchQuery;
   onSubmit: (q: SearchQuery) => void;
@@ -18,15 +37,14 @@ export function SearchForm({
   onDraftChange,
   isStreaming,
 }: Props) {
-  const [draft, setDraft] = useState(initialQuery);
-  const [message, setMessage] = useState("");
+  const [draft, setDraft] = useState(initialQuery),
+    [message, setMessage] = useState("");
   const dates = useMemo(() => {
     const today = new Date();
-    const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 10);
     return {
-      min: local,
+      min: new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10),
       max: new Date(today.getTime() + 366 * 86400000)
         .toISOString()
         .slice(0, 10),
@@ -34,37 +52,53 @@ export function SearchForm({
   }, []);
   function change(patch: Partial<SearchQuery>) {
     const next = { ...draft, ...patch };
+    if (
+      patch.departDate &&
+      next.returnDate &&
+      patch.departDate > next.returnDate
+    )
+      next.returnDate = patch.departDate;
     setDraft(next);
     onDraftChange?.(next);
+    setMessage("");
   }
-  function submit(e: FormEvent) {
-    e.preventDefault();
+  function submit(event: FormEvent) {
+    event.preventDefault();
     if (
       !/^[A-Z]{3}$/.test(draft.origin) ||
       !/^[A-Z]{3}$/.test(draft.dest) ||
       draft.origin === draft.dest
     ) {
-      setMessage("Choose two different airports.");
+      setMessage("Choose different departure and destination airports.");
       return;
     }
-    if (draft.returnDate && draft.returnDate < draft.departDate) {
-      setMessage("Return date must follow departure.");
+    if (
+      draft.departDate < dates.min ||
+      draft.departDate > dates.max ||
+      (draft.returnDate &&
+        (draft.returnDate < draft.departDate || draft.returnDate > dates.max))
+    ) {
+      setMessage("Choose valid travel dates within the next year.");
       return;
     }
     setMessage("");
     onSubmit(draft);
   }
+  const airportChecks =
+    airportPairs(draft.origin, draft.dest).length *
+    (2 * (draft.flexDays ?? 0) + 1);
   return (
     <form onSubmit={submit} className="award-search-form">
-      <div className="grid gap-2">
-        <Label htmlFor="origin" className="mono-label">
-          Departure
-        </Label>
+      <div className="search-place-field">
+        <label htmlFor="origin" className="search-field-label">
+          From
+        </label>
         <AirportCombobox
           id="origin"
           value={draft.origin}
+          initialLabel={AIRPORTS.find((a) => a.iata === draft.origin)?.city}
           onChange={(origin) => change({ origin })}
-          placeholder="Airport or city"
+          placeholder="City or airport"
         />
       </div>
       <button
@@ -73,114 +107,129 @@ export function SearchForm({
         aria-label="Swap departure and destination"
         onClick={() => change({ origin: draft.dest, dest: draft.origin })}
       >
-        <ArrowLeftRight className="size-3.5" />
+        <ArrowLeftRight className="size-4" />
       </button>
-      <div className="grid gap-2">
-        <Label htmlFor="dest" className="mono-label">
-          Destination
-        </Label>
+      <div className="search-place-field">
+        <label htmlFor="dest" className="search-field-label">
+          To
+        </label>
         <AirportCombobox
           id="dest"
           value={draft.dest}
+          initialLabel={AIRPORTS.find((a) => a.iata === draft.dest)?.city}
           onChange={(dest) => change({ dest })}
-          placeholder="Airport or city"
+          placeholder="City or airport"
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="depart" className="mono-label">
-          Departure date
-        </Label>
-        <Input
-          id="depart"
-          type="date"
-          value={draft.departDate}
-          onChange={(e) => change({ departDate: e.target.value })}
-          min={dates.min}
-          max={dates.max}
-          required
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="return-date" className="mono-label">
-          Return{" "}
-          <span className="normal-case tracking-normal opacity-65">
-            optional
-          </span>
-        </Label>
-        <Input
-          id="return-date"
-          type="date"
-          value={draft.returnDate ?? ""}
-          onChange={(e) => change({ returnDate: e.target.value || undefined })}
-          min={draft.departDate}
-          max={dates.max}
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="pax" className="mono-label">
-          Travelers
-        </Label>
-        <select
-          id="pax"
-          className="search-native-select"
-          value={draft.pax}
-          onChange={(e) => change({ pax: Number(e.target.value) })}
-        >
-          {Array.from({ length: 9 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {i + 1} adult{i ? "s" : ""}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="cabin" className="mono-label">
-          Minimum cabin
-        </Label>
-        <select
-          id="cabin"
-          className="search-native-select"
-          value={draft.minCabin}
-          onChange={(e) => change({ minCabin: e.target.value as Cabin })}
-        >
-          <option value="Y">Economy</option>
-          <option value="W">Premium</option>
-          <option value="J">Business</option>
-          <option value="F">First</option>
-        </select>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="flex-days" className="mono-label">
-          Date flexibility
-        </Label>
-        <select
-          id="flex-days"
-          className="search-native-select"
-          value={draft.flexDays ?? 0}
-          onChange={(e) => change({ flexDays: Number(e.target.value) })}
-        >
-          <option value="0">Exact date</option>
-          {[1, 2, 3, 5, 7].map((n) => (
-            <option key={n} value={n}>
-              ± {n} day{n > 1 ? "s" : ""} ({n * 2 + 1} total)
-            </option>
-          ))}
-        </select>
+      <DatePicker
+        id="depart"
+        label="Departure"
+        value={draft.departDate}
+        min={dates.min}
+        max={dates.max}
+        onChange={(departDate) => departDate && change({ departDate })}
+        flexibility={draft.flexDays ?? 0}
+        onFlexibilityChange={(flexDays) => change({ flexDays })}
+      />
+      <DatePicker
+        id="return-date"
+        label="Return"
+        value={draft.returnDate}
+        min={draft.departDate}
+        max={dates.max}
+        optional
+        onChange={(returnDate) => change({ returnDate })}
+        flexibility={draft.returnFlexDays ?? draft.flexDays ?? 0}
+        onFlexibilityChange={(returnFlexDays) => change({ returnFlexDays })}
+      />
+      <div className="search-travelers-field">
+        <label id="travelers-label" className="search-field-label">
+          Travelers & cabin
+        </label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="travelers-trigger"
+              aria-labelledby="travelers-label travelers-value"
+            >
+              <span id="travelers-value">
+                {draft.pax} adult{draft.pax > 1 ? "s" : ""}
+                <span className="travelers-cabin">
+                  {CABIN_LABEL[draft.minCabin]}
+                  {draft.minCabin !== "F" ? " or higher" : ""}
+                </span>
+              </span>
+              <ChevronDown className="size-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="travelers-popover">
+            <div className="traveler-counter">
+              <div>
+                <strong>
+                  <Users className="size-4" /> Adults
+                </strong>
+                <span>Adult travelers</span>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  aria-label="Remove one adult"
+                  disabled={draft.pax === 1}
+                  onClick={() => change({ pax: draft.pax - 1 })}
+                >
+                  <Minus className="size-4" />
+                </button>
+                <output aria-live="polite">{draft.pax}</output>
+                <button
+                  type="button"
+                  aria-label="Add one adult"
+                  disabled={draft.pax === 9}
+                  onClick={() => change({ pax: draft.pax + 1 })}
+                >
+                  <Plus className="size-4" />
+                </button>
+              </div>
+            </div>
+            <fieldset className="cabin-picker">
+              <legend>
+                <Armchair className="size-4" /> Minimum cabin
+              </legend>
+              <p>Include this cabin and higher cabins.</p>
+              {CABIN_ORDER.map((cabin) => (
+                <label key={cabin}>
+                  <input
+                    type="radio"
+                    name="search-cabin"
+                    checked={draft.minCabin === cabin}
+                    onChange={() => change({ minCabin: cabin as Cabin })}
+                  />
+                  <span>{CABIN_LABEL[cabin]}</span>
+                </label>
+              ))}
+            </fieldset>
+          </PopoverContent>
+        </Popover>
       </div>
       <Button
         type="submit"
-        className="search-submit h-11"
-        disabled={isStreaming}
-        aria-busy={isStreaming || undefined}
+        className="search-submit"
+        aria-label={
+          isStreaming ? "Search with updated criteria" : "Find award flights"
+        }
       >
-        {isStreaming ? (
-          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-        ) : null}
-        {isStreaming ? "Searching" : "Find awards"}
+        Search
         <ArrowRight className="size-4" />
       </Button>
+      {airportChecks > 20 && (
+        <p className="search-form-error text-muted-foreground">
+          This broad search includes up to {airportChecks} airport/date
+          combinations. It may reach the search limit; use a shorter date window
+          for faster, more complete checks.
+        </p>
+      )}
       {message && (
-        <p role="alert" className="col-span-full text-sm text-destructive">
+        <p role="alert" className="search-form-error">
           {message}
         </p>
       )}

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
+import "./product.css";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,8 +36,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0e1a" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f4ed" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1518" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -49,7 +50,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const themeCookie = (await cookies()).get("theme")?.value;
-  const isDark = themeCookie !== "light";
+  const appearance =
+    themeCookie === "light" || themeCookie === "dark" ? themeCookie : "system";
+  const isDark = appearance === "dark";
 
   return (
     <html
@@ -57,8 +60,16 @@ export default async function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full ${
         isDark ? "dark" : ""
       }`}
+      data-appearance={appearance}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=document.documentElement.dataset.appearance;document.documentElement.classList.toggle('dark',t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches));})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full bg-background text-foreground font-sans antialiased">
         <a
           href="#main"

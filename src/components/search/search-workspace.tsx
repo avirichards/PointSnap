@@ -21,8 +21,13 @@ import { Button } from "@/components/ui/button";
 import { AwardResults, programName } from "./award-results";
 import { useAwardSearch } from "@/hooks/use-award-search";
 import { parseQuery, queryParams } from "@/lib/award-search/query";
+import {
+  cityGroup,
+  physicalAirport,
+  placeName,
+  airportPairs,
+} from "@/lib/search-places";
 import type { SearchQuery } from "@/lib/types";
-import { AIRPORTS } from "@/db/seed/airports";
 import { SavedSearches, NearbyDates } from "./search-tools";
 import { bookingUrl } from "@/lib/bookingHandoff";
 const RouteGlobe = dynamic(
@@ -93,6 +98,7 @@ function Workspace() {
           origin: query.dest,
           dest: query.origin,
           departDate: query.returnDate,
+          flexDays: query.returnFlexDays ?? query.flexDays,
           returnDate: undefined,
         }
       : query;
@@ -148,7 +154,8 @@ function Workspace() {
     (c) => c.state === "success" || c.state === "empty",
   ).length;
   const unavailable = stream.coverage.filter(
-    (c) => c.state === "unavailable" || c.state === "error",
+    (c) =>
+      c.state === "unavailable" || c.state === "error" || c.state === "partial",
   ).length;
   return (
     <div className="min-h-screen">
@@ -182,6 +189,7 @@ function Workspace() {
             initialQuery={query ?? draft}
             onDraftChange={setDraft}
             onSubmit={search}
+            isStreaming={stream.loading}
           />
         </section>
         <SavedSearches query={query} />
@@ -223,11 +231,7 @@ function Workspace() {
                     <span>{draft.dest}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {AIRPORTS.find((a) => a.iata === draft.origin)?.city ??
-                      draft.origin}{" "}
-                    to{" "}
-                    {AIRPORTS.find((a) => a.iata === draft.dest)?.city ??
-                      draft.dest}
+                    {placeName(draft.origin)} to {placeName(draft.dest)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-4 flex items-center gap-2">
                     <CornerDownRight className="size-3.5" />
@@ -237,8 +241,8 @@ function Workspace() {
               </div>
               <RouteGlobe
                 key={`${draft.origin}-${draft.dest}`}
-                origin={draft.origin}
-                destination={draft.dest}
+                origin={physicalAirport(draft.origin)}
+                destination={physicalAirport(draft.dest)}
                 onDestination={(dest) => choose(draft.origin, dest)}
               />
               <aside className="route-shortcuts">
@@ -299,7 +303,11 @@ function Workspace() {
         {query && (
           <div className="mt-7 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
+              <div className="route-heading-block">
+                <h1 className="route-heading">
+                  {placeName(active!.origin)} <span>to</span>{" "}
+                  {placeName(active!.dest)}
+                </h1>
                 <span className="route-pill">
                   {active!.origin}
                   <ArrowRight className="size-3.5 text-primary" />
@@ -344,16 +352,26 @@ function Workspace() {
                 </Button>
               </div>
             </div>
+            {(cityGroup(active!.origin) || cityGroup(active!.dest)) && (
+              <p className="text-sm text-muted-foreground">
+                {airportPairs(active!.origin, active!.dest).length} airport
+                pairs ·{" "}
+                {cityGroup(active!.origin)?.airports.join(", ") ??
+                  active!.origin}{" "}
+                → {cityGroup(active!.dest)?.airports.join(", ") ?? active!.dest}
+                . Each pair is checked separately.
+              </p>
+            )}
             {showMap && (
               <div className="result-map">
                 <RouteGlobe
                   key={`${active!.origin}-${active!.dest}`}
-                  origin={active!.origin}
-                  destination={active!.dest}
+                  origin={physicalAirport(active!.origin)}
+                  destination={physicalAirport(active!.dest)}
                 />
                 <p className="text-xs text-muted-foreground text-center pb-4">
-                  Geographic route between your selected airports. Actual flight
-                  connections appear in each result.
+                  Map uses a representative airport for city searches. Each
+                  result shows the actual airports and connections.
                 </p>
               </div>
             )}
@@ -388,13 +406,23 @@ function Workspace() {
                 className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm flex justify-between gap-3"
               >
                 <span>{stream.error}</span>
-                <Link
-                  href={`/sign-in?next=${encodeURIComponent("/search?" + raw)}`}
+                <button
+                  disabled={stream.loading}
+                  onClick={stream.retry}
                   className="underline shrink-0"
                 >
-                  Account
-                </Link>
+                  Retry search
+                </button>
               </div>
+            )}
+            {stream.tasks.length > 1 && (
+              <p role="status" className="text-xs text-muted-foreground">
+                {stream.tasks.filter((t) => t.state === "complete").length} of{" "}
+                {stream.tasks.length} airport/date searches completed
+                {stream.loading
+                  ? " · Two searches run at a time. Results appear as sources respond."
+                  : " · See source coverage for incomplete checks."}
+              </p>
             )}
             <AwardResults
               key={activeParams}
@@ -404,6 +432,7 @@ function Workspace() {
               minCabin={query.minCabin}
               loading={stream.loading}
               dates={stream.dates}
+              requestedDate={active!.departDate}
               dayStatus={stream.days}
             />
             <section className="rounded-xl border bg-card">
@@ -421,7 +450,7 @@ function Workspace() {
                       stream.coverage.filter((c) => c.state === "pending")
                         .length
                     }{" "}
-                    searching · {unavailable} unavailable
+                    searching · {unavailable} incomplete
                   </span>
                 </span>
                 <ChevronDown
@@ -435,7 +464,7 @@ function Workspace() {
                       <p className="font-medium">{programName(c.programId)}</p>
                       <p className="text-muted-foreground mt-1">
                         {c.state === "partial"
-                          ? "Some dates checked; others incomplete"
+                          ? "Some airport/date searches are incomplete"
                           : c.state === "success"
                             ? c.inventory === "calendar"
                               ? "Daily fare summary only"

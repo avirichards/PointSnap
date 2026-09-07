@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
-import { parseQuery, selectedPrograms } from "@/lib/award-search/query";
+import {
+  assertPhysicalQuery,
+  parseQuery,
+  selectedPrograms,
+} from "@/lib/award-search/query";
 import { hasPaidProvider, runSearch } from "@/lib/award-search/engine";
 import { allowSearch } from "@/lib/award-search/limit";
 import { currentUser } from "@/lib/supabase/server";
@@ -8,9 +12,18 @@ import type { AwardEvent } from "@/lib/award-search/types";
 export const runtime = "nodejs";
 export const maxDuration = 210;
 export async function GET(req: NextRequest) {
+  if (process.env.POINTSNAP_UI_PREVIEW === "1")
+    return Response.json(
+      {
+        message:
+          "Live collectors are paused in this separate UI preview. Use the clearly labeled design preview to try the interface.",
+      },
+      { status: 503 },
+    );
   let query, ids;
   try {
     query = parseQuery(req.nextUrl.searchParams);
+    assertPhysicalQuery(query);
     ids = selectedPrograms(req.nextUrl.searchParams);
   } catch {
     return Response.json(
