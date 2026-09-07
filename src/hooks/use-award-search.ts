@@ -4,6 +4,10 @@ import { rememberSearch } from "@/lib/search-history";
 import type { AwardResult } from "@/lib/award-search/types";
 import { readEvents } from "@/lib/award-search/sse";
 import {
+  searchRetryAt,
+  waitForSearchCooldown,
+} from "@/lib/award-search/search-cooldown";
+import {
   aggregateSearchDays,
   buildSearchTasks,
   summarizeCoverage,
@@ -15,6 +19,7 @@ export function useAwardSearch(params: string | null) {
     [loading, setLoading] = useState(!!params),
     [error, setError] = useState(""),
     [duration, setDuration] = useState<number | null>(null),
+    [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null),
     [revision, setRevision] = useState(0);
   const active = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -33,6 +38,7 @@ export function useAwardSearch(params: string | null) {
       setTasks([]);
       setError("");
       setDuration(null);
+      setRateLimitUntil(null);
       setLoading(true);
       const base = new URLSearchParams(params!);
       const central = base.get("departDate")!,
@@ -55,6 +61,7 @@ export function useAwardSearch(params: string | null) {
           a.date.localeCompare(b.date),
       );
       let index = 0;
+      let resumeAfter = 0;
       async function worker() {
         while (index < queue.length && update()) {
           const { id, date, origin, destination } = queue[index++];
@@ -70,10 +77,37 @@ export function useAwardSearch(params: string | null) {
           query.delete("windowMin");
           query.delete("windowMax");
           try {
-            const res = await fetch(`/api/search?${query}`, {
-              signal: controller.signal,
-              cache: "no-store",
-            });
+            let res: Response;
+            while (true) {
+              if (Date.now() < resumeAfter)
+                patch(id, (d) => ({
+                  ...d,
+                  state: "queued",
+                  message: "Waiting for the search limit to reset.",
+                }));
+              await waitForSearchCooldown(() => resumeAfter, controller.signal);
+              if (Date.now() < resumeAfter) continue;
+              if (resumeAfter) {
+                resumeAfter = 0;
+                if (update()) setRateLimitUntil(null);
+              }
+              patch(id, (d) => ({
+                ...d,
+                state: "searching",
+                message: undefined,
+              }));
+              res = await fetch(`/api/search?${query}`, {
+                signal: controller.signal,
+                cache: "no-store",
+              });
+              if (res.status !== 429) break;
+              await res.body?.cancel();
+              resumeAfter = Math.max(
+                resumeAfter,
+                searchRetryAt(res.headers.get("Retry-After")),
+              );
+              if (update()) setRateLimitUntil(resumeAfter);
+            }
             if (!res.ok) {
               const body = await res.json();
               throw new Error(body.message ?? "Search failed.");
@@ -177,6 +211,7 @@ export function useAwardSearch(params: string | null) {
   const stop = useCallback(() => {
     active.current?.abort();
     setLoading(false);
+    setRateLimitUntil(null);
     setTasks((previous) =>
       previous.map((d) =>
         d.state === "queued" || d.state === "searching"
@@ -202,6 +237,7 @@ export function useAwardSearch(params: string | null) {
     loading,
     error,
     duration,
+    rateLimitUntil,
     retry,
     stop,
     days,

@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { SearchQuery } from "@/lib/types";
 import { cityGroup } from "@/lib/search-places";
 import { PROGRAM_IDS } from "@/lib/programs";
+import { MAX_DATE_FLEX_DAYS } from "./date-window";
 export const querySchema = z
   .object({
     origin: z
@@ -16,8 +17,13 @@ export const querySchema = z
       .regex(/^[A-Z]{3}$/),
     departDate: z.iso.date(),
     returnDate: z.iso.date().optional(),
-    flexDays: z.coerce.number().int().min(0).max(7).optional(),
-    returnFlexDays: z.coerce.number().int().min(0).max(7).optional(),
+    flexDays: z.coerce.number().int().min(0).max(MAX_DATE_FLEX_DAYS).optional(),
+    returnFlexDays: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_DATE_FLEX_DAYS)
+      .optional(),
     pax: z.coerce.number().int().min(1).max(9).default(1),
     minCabin: z.enum(["Y", "W", "J", "F"]).default("Y"),
   })

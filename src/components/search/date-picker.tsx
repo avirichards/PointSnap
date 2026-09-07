@@ -1,6 +1,14 @@
 "use client";
-import { useRef, useState, type KeyboardEvent } from "react";
+import {
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { MAX_DATE_FLEX_DAYS } from "@/lib/award-search/date-window";
 import {
   Popover,
   PopoverContent,
@@ -40,8 +48,13 @@ export function DatePicker({
     [month, setMonth] = useState(value ?? min),
     [focused, setFocused] = useState(value ?? min);
   const grid = useRef<HTMLTableElement>(null),
-    weeks = monthDays(month),
+    weeks = monthDays(month).filter((week) =>
+      week.some((date) => date.slice(0, 7) === month.slice(0, 7)),
+    ),
     initial = clampDate(value ?? min, min, max);
+  const flexChoices = [0, 1, 3, 7, MAX_DATE_FLEX_DAYS];
+  // Keep an older saved search's chosen range visible without changing its meaning.
+  if (!flexChoices.includes(flexibility)) flexChoices.push(flexibility);
   function focusDate(next: string) {
     const bounded = clampDate(next, min, max);
     setFocused(bounded);
@@ -79,7 +92,8 @@ export function DatePicker({
       <label htmlFor={id} className="search-field-label">
         {label}
       </label>
-      <Popover
+      <CalendarPopup
+        title={`Choose ${label.toLowerCase()} date`}
         open={open}
         onOpenChange={(next) => {
           setOpen(next);
@@ -88,8 +102,7 @@ export function DatePicker({
             setFocused(initial);
           }
         }}
-      >
-        <PopoverTrigger asChild>
+        trigger={
           <button
             id={id}
             type="button"
@@ -105,123 +118,148 @@ export function DatePicker({
               <Plus aria-hidden className="size-4" />
             )}
           </button>
-        </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="calendar-popover"
-          role="dialog"
-          aria-label={`Choose ${label.toLowerCase()} date`}
-          onOpenAutoFocus={(event) => {
-            event.preventDefault();
-            requestAnimationFrame(() =>
-              grid.current
-                ?.querySelector<HTMLButtonElement>(`[data-date="${initial}"]`)
-                ?.focus(),
-            );
-          }}
-        >
-          <div className="calendar-heading">
-            <button
-              type="button"
-              aria-label="Previous month"
-              disabled={month.slice(0, 7) <= min.slice(0, 7)}
-              onClick={() => focusDate(moveMonth(focused, -1))}
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <span id={`${id}-month`} aria-live="polite">
-              {dateLabel(month, {
-                month: "long",
-                year: "numeric",
-                day: undefined,
-              })}
-            </span>
-            <button
-              type="button"
-              aria-label="Next month"
-              disabled={month.slice(0, 7) >= max.slice(0, 7)}
-              onClick={() => focusDate(moveMonth(focused, 1))}
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
-          <table
-            ref={grid}
-            role="grid"
-            aria-labelledby={`${id}-month`}
-            className="calendar-grid"
+        }
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          requestAnimationFrame(() =>
+            grid.current
+              ?.querySelector<HTMLButtonElement>(`[data-date="${initial}"]`)
+              ?.focus(),
+          );
+        }}
+      >
+        <div className="calendar-heading">
+          <button
+            type="button"
+            aria-label="Previous month"
+            disabled={month.slice(0, 7) <= min.slice(0, 7)}
+            onClick={() => focusDate(moveMonth(focused, -1))}
           >
-            <thead>
-              <tr>
-                {[
-                  "Sunday",
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday",
-                  "Saturday",
-                ].map((day) => (
-                  <th key={day} scope="col">
-                    <abbr title={day}>{day.slice(0, 2)}</abbr>
-                  </th>
+            <ChevronLeft className="size-4" />
+          </button>
+          <span id={`${id}-month`} aria-live="polite">
+            {dateLabel(month, {
+              month: "long",
+              year: "numeric",
+              day: undefined,
+            })}
+          </span>
+          <button
+            type="button"
+            aria-label="Next month"
+            disabled={month.slice(0, 7) >= max.slice(0, 7)}
+            onClick={() => focusDate(moveMonth(focused, 1))}
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+        <table
+          ref={grid}
+          role="grid"
+          aria-labelledby={`${id}-month`}
+          className="calendar-grid"
+        >
+          <thead>
+            <tr>
+              {[
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ].map((day) => (
+                <th key={day} scope="col">
+                  <abbr title={day}>{day.slice(0, 2)}</abbr>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {weeks.map((week, index) => (
+              <tr key={index}>
+                {week.map((date) => (
+                  <td key={date} role="gridcell" aria-selected={date === value}>
+                    <button
+                      type="button"
+                      data-date={date}
+                      tabIndex={date === focused ? 0 : -1}
+                      disabled={date < min || date > max}
+                      aria-label={dateLabel(date, {
+                        weekday: "long",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                      data-outside={date.slice(0, 7) !== month.slice(0, 7)}
+                      className={date === value ? "is-selected" : ""}
+                      onKeyDown={(event) => keyboard(event, date)}
+                      onClick={() => {
+                        onChange(date);
+                        setFocused(date);
+                        setMonth(date);
+                      }}
+                    >
+                      {Number(date.slice(8))}
+                    </button>
+                  </td>
                 ))}
               </tr>
-            </thead>
-            <tbody>
-              {weeks.map((week, index) => (
-                <tr key={index}>
-                  {week.map((date) => (
-                    <td
-                      key={date}
-                      role="gridcell"
-                      aria-selected={date === value}
-                    >
-                      <button
-                        type="button"
-                        data-date={date}
-                        tabIndex={date === focused ? 0 : -1}
-                        disabled={date < min || date > max}
-                        aria-label={dateLabel(date, {
-                          weekday: "long",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                        data-outside={date.slice(0, 7) !== month.slice(0, 7)}
-                        className={date === value ? "is-selected" : ""}
-                        onKeyDown={(event) => keyboard(event, date)}
-                        onClick={() => {
-                          onChange(date);
-                          setOpen(false);
-                        }}
-                      >
-                        {Number(date.slice(8))}
-                      </button>
-                    </td>
-                  ))}
-                </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="calendar-footer">
+          <label htmlFor={`${id}-exact`}>
+            Enter a date
+            <input
+              id={`${id}-exact`}
+              type="date"
+              min={min}
+              max={max}
+              value={value ?? ""}
+              onChange={(event) => {
+                const next = event.target.value;
+                if (next && next >= min && next <= max) {
+                  onChange(next);
+                  setMonth(next);
+                  setFocused(next);
+                }
+              }}
+            />
+          </label>
+          <fieldset className="calendar-flexibility" disabled={!value}>
+            <legend>
+              <span className="sr-only">{label} </span>Date flexibility
+            </legend>
+            <div className="calendar-flex-options">
+              {flexChoices.map((days) => (
+                <label key={days}>
+                  <input
+                    className="sr-only"
+                    type="radio"
+                    name={`${id}-flex`}
+                    value={days}
+                    aria-label={
+                      days === 0
+                        ? "Exact date"
+                        : `± ${days} ${days === 1 ? "day" : "days"}`
+                    }
+                    checked={(value ? flexibility : 0) === days}
+                    onChange={() => onFlexibilityChange(days)}
+                  />
+                  <span>{days === 0 ? "Exact date" : `±${days}`}</span>
+                </label>
               ))}
-            </tbody>
-          </table>
-          <div className="calendar-footer">
-            <label htmlFor={`${id}-exact`}>
-              Enter a date
-              <input
-                id={`${id}-exact`}
-                type="date"
-                min={min}
-                max={max}
-                value={value ?? ""}
-                onChange={(event) => {
-                  const next = event.target.value;
-                  if (next && next >= min && next <= max) {
-                    onChange(next);
-                    setMonth(next);
-                    setFocused(next);
-                  }
-                }}
-              />
-            </label>
+            </div>
+          </fieldset>
+          <p className="calendar-flexibility-hint" aria-live="polite">
+            {!value
+              ? "Choose a date to add flexibility."
+              : flexibility
+                ? `Up to ${2 * flexibility + 1} dates · ${flexibility} ${flexibility === 1 ? "day" : "days"} before and after`
+                : "Search only your selected date."}
+          </p>
+          <div className="calendar-actions">
             {optional && value && (
               <button
                 type="button"
@@ -234,25 +272,82 @@ export function DatePicker({
                 <X className="size-3.5" /> Remove return
               </button>
             )}
+            <button
+              type="button"
+              className="calendar-done"
+              onClick={() => setOpen(false)}
+            >
+              Done
+            </button>
           </div>
-        </PopoverContent>
-      </Popover>
-      <label className="date-flexibility" htmlFor={`${id}-flex`}>
-        <span className="sr-only">{label} date flexibility</span>
-        <select
-          id={`${id}-flex`}
-          disabled={!value}
-          value={value ? flexibility : 0}
-          onChange={(event) => onFlexibilityChange(Number(event.target.value))}
-        >
-          <option value={0}>{value ? "Exact date" : "Optional"}</option>
-          {[1, 2, 3, 5, 7].map((days) => (
-            <option key={days} value={days}>
-              ± {days} {days === 1 ? "day" : "days"}
-            </option>
-          ))}
-        </select>
-      </label>
+        </div>
+      </CalendarPopup>
+      <span className="date-flexibility">
+        {!value
+          ? "Optional"
+          : flexibility
+            ? `± ${flexibility} ${flexibility === 1 ? "day" : "days"}`
+            : "Exact date"}
+      </span>
     </div>
+  );
+}
+
+const compactQuery = "(max-width: 640px)";
+function watchCompact(listener: () => void) {
+  const query = window.matchMedia(compactQuery);
+  query.addEventListener("change", listener);
+  return () => query.removeEventListener("change", listener);
+}
+function CalendarPopup({
+  open,
+  onOpenChange,
+  title,
+  trigger,
+  onOpenAutoFocus,
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  trigger: ReactNode;
+  onOpenAutoFocus: (event: Event) => void;
+  children: ReactNode;
+}) {
+  const compact = useSyncExternalStore(
+    watchCompact,
+    () => window.matchMedia(compactQuery).matches,
+    () => false,
+  );
+  if (compact)
+    return (
+      <Dialog.Root open={open} onOpenChange={onOpenChange}>
+        <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="calendar-overlay" />
+          <Dialog.Content
+            className="calendar-popover calendar-sheet"
+            aria-describedby={undefined}
+            onOpenAutoFocus={onOpenAutoFocus}
+          >
+            <Dialog.Title className="sr-only">{title}</Dialog.Title>
+            {children}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    );
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="calendar-popover"
+        role="dialog"
+        aria-label={title}
+        onOpenAutoFocus={onOpenAutoFocus}
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
   );
 }

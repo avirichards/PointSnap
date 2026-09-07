@@ -93,4 +93,33 @@ describe("calendar and metro searches", () => {
       "2026-10-07",
     ]);
   });
+  it("round-trips independent 14-day windows and expands every airport and date", () => {
+    const params = new URLSearchParams(
+      "origin=NYC&dest=LAX&departDate=2026-10-06&returnDate=2026-11-16&flexDays=14&returnFlexDays=9",
+    );
+    const q = parseQuery(params, now);
+    expect(parseQuery(queryParams(q), now)).toEqual(q);
+    const outbound = buildSearchTasks(
+      q.origin,
+      q.dest,
+      q.departDate,
+      q.flexDays!,
+      now,
+    );
+    expect(outbound).toHaveLength(87);
+    expect(new Set(outbound.map((task) => task.date)).size).toBe(29);
+    const returning = buildSearchTasks(
+      q.dest,
+      q.origin,
+      q.returnDate!,
+      q.returnFlexDays!,
+      now,
+    );
+    expect(returning).toHaveLength(57);
+    for (const key of ["flexDays", "returnFlexDays"]) {
+      const invalid = new URLSearchParams(params);
+      invalid.set(key, "15");
+      expect(() => parseQuery(invalid, now)).toThrow();
+    }
+  });
 });

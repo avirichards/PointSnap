@@ -37,7 +37,11 @@ export function SearchForm({
   onDraftChange,
   isStreaming,
 }: Props) {
-  const [draft, setDraft] = useState(initialQuery),
+  const [draft, setDraft] = useState<SearchQuery>({
+      ...initialQuery,
+      // Preserve legacy links once, then let each calendar change independently.
+      returnFlexDays: initialQuery.returnFlexDays ?? initialQuery.flexDays ?? 0,
+    }),
     [message, setMessage] = useState("");
   const dates = useMemo(() => {
     const today = new Date();
@@ -222,10 +226,10 @@ export function SearchForm({
         <ArrowRight className="size-4" />
       </Button>
       {airportChecks > 20 && (
-        <p className="search-form-error text-muted-foreground">
+        <p className="search-form-note">
           This broad search includes up to {airportChecks} airport/date
-          combinations. It may reach the search limit; use a shorter date window
-          for faster, more complete checks.
+          combinations. Wider windows take longer; searches resume automatically
+          if a limit is reached.
         </p>
       )}
       {message && (
